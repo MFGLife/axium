@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luma Console - AI Text Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/torchjs/dist/torch.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tokenizers@latest/dist/tokenizers.js"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #4f46e5;
+            animation: pulse 1s infinite;
+            vertical-align: middle;
+        }
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        @media (max-width: 640px) {
+            .chat-container {
+                height: calc(100vh - 160px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="flex items-center justify-between mb-8">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">Luma Console</h1>
+            </div>
+            <div class="flex space-x-2">
+                <button id="clear-btn" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-md text-sm transition">
+                    Clear
+                </button>
+                <button id="save-btn" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-md text-sm transition">
+                    Save Log
+                </button>
+            </div>
+        </header>
+
+        <!-- Status Bar -->
+        <div id="status-bar" class="mb-4 px-4 py-2 rounded-md bg-gray-800 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div id="status-indicator" class="w-2 h-2 rounded-full bg-red-500"></div>
+                <span id="status-text" class="text-sm">Initializing...</span>
+            </div>
+            <div class="text-xs text-gray-400">
+                Tokenzier: ByteLevelBPETokenizer | Model: GPT
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div id="chat-container" class="chat-container overflow-y-auto mb-4 p-4 rounded-lg bg-gray-800 shadow-inner border border-gray-700">
+            <div id="chat-messages" class="space-y-4">
+                <div class="text-center py-8 text-gray-400">
+                    Loading AI model...
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+            <div class="flex space-x-2">
+                <textarea 
+                    id="prompt-input" 
+                    class="flex-1 bg-gray-700 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    rows="2"
+                    placeholder="Enter your prompt here... (type 'exit' to quit)"
+                ></textarea>
+                <button id="send-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-md transition duration-200 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-2 flex justify-between items-center">
+                <div class="text-xs text-gray-400">
+                    <label for="temp-slider" class="mr-1">Temp:</label>
+                    <input type="range" id="temp-slider" min="0" max="1" step="0.1" value="0.8" class="w-20">
+                    <span id="temp-value" class="ml-1">0.8</span>
+                </div>
+                <div class="text-xs text-gray-400">
+                    <label for="tokens-slider" class="mr-1">Tokens:</label>
+                    <input type="range" id="tokens-slider" min="50" max="500" step="50" value="150" class="w-20">
+                    <span id="tokens-value" class="ml-1">150</span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-6 text-center text-xs text-gray-500">
+            Powered by GPT model with Byte-Level BPE tokenizer
+        </footer>
+    </div>
+
+    <script>
+        // UI Elements
+        const promptInput = document.getElementById('prompt-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatMessages = document.getElementById('chat-messages');
+        const clearBtn = document.getElementById('clear-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const tempSlider = document.getElementById('temp-slider');
+        const tempValue = document.getElementById('temp-value');
+        const tokensSlider = document.getElementById('tokens-slider');
+        const tokensValue = document.getElementById('tokens-value');
+        
+        // Simulation of model loading
+        let modelReady = false;
+        
+        // Initialize UI
+        function initUI() {
+            // Update slider displays
+            tempSlider.addEventListener('input', () => {
+                tempValue.textContent = tempSlider.value;
+            });
+            
+            tokensSlider.addEventListener('input', () => {
+                tokensValue.textContent = tokensSlider.value;
+            });
+            
+            // Handle send button click
+            sendBtn.addEventListener('click', sendPrompt);
+            
+            // Handle Enter key in textarea
+            promptInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendPrompt();
+                }
+            });
+            
+            // Clear chat
+            clearBtn.addEventListener('click', () => {
+                chatMessages.innerHTML = '';
+            });
+            
+            // Save chat log
+            saveBtn.addEventListener('click', saveChatLog);
+        }
+        
+        // Simulate model initialization
+        async function initModel() {
+            updateStatus('Loading tokenizer...', 'yellow');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            updateStatus('Loading model weights...', 'yellow');
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            updateStatus('Model ready', 'green');
+            chatMessages.innerHTML = `
+                <div class="text-center py-8 text-gray-400">
+                    Model initialized. Start chatting with Luma Console.
+                </div>
+            `;
+            modelReady = true;
+        }
+        
+        // Update status indicator
+        function updateStatus(text, color = 'gray') {
+            statusText.textContent = text;
+            
+            const colors = {
+                'gray': 'bg-gray-500',
+                'green': 'bg-green-500',
+                'yellow': 'bg-yellow-500',
+                'red': 'bg-red-500'
+            };
+            
+            statusIndicator.className = `w-2 h-2 rounded-full ${colors[color]}`;
+        }
+        
+        // Add message to chat
+        function addMessage(role, content, isTyping = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = `max-w-3/4 rounded-lg px-4 py-2 ${
+                role === 'user' 
+                    ? 'bg-indigo-600 rounded-tr-none' 
+                    : 'bg-gray-700 rounded-tl-none'
+            }`;
+            
+            if (isTyping) {
+                bubble.innerHTML = '<span class="typing-cursor"></span>';
+            } else {
+                bubble.textContent = content;
+            }
+            
+            messageDiv.appendChild(bubble);
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return bubble;
+        }
+        
+    async function generateText(prompt) {
+    if (!modelReady) return "Model still initializing. Please wait...";
+
+    const temperature = parseFloat(tempSlider.value);
+    const maxTokens = parseInt(tokensSlider.value);
+
+    try {
+        const res = await fetch("http://localhost:5000/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, temperature, max_tokens: maxTokens })
+        });
+
+        const data = await res.json();
+        if (data.response) return data.response;
+        return `⚠️ Server Error: ${data.error || 'Unknown error'}`;
+    } catch (err) {
+        return `⚠️ Network Error: ${err.message}`;
+    }
+}
+
+        
+        // Handle sending prompt
+        async function sendPrompt() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+            
+            if (prompt.toLowerCase() === 'exit') {
+                addMessage('bot', "👋 Goodbye.");
+                return;
+            }
+            
+            // Add user message
+            addMessage('user', prompt);
+            promptInput.value = '';
+            
+            // Add typing indicator
+            const botMessage = addMessage('bot', '', true);
+            
+            // Generate response
+            try {
+                const response = await generateText(prompt);
+                
+                // Replace typing indicator with actual response
+                botMessage.innerHTML = response.replace(/\n/g, '<br>');
+            } catch (error) {
+                botMessage.innerHTML = `⚠️ Error: ${error.message}`;
+            }
+        }
+        
+        // Save chat log
+        function saveChatLog() {
+            const messages = Array.from(chatMessages.children)
+                .map(el => {
+                    const isUser = el.classList.contains('justify-end');
+                    const content = el.querySelector('div').textContent;
+                    return `${isUser ? 'You' : 'Luma'}: ${content}`;
+                })
+                .join('\n\n');
+            
+            const blob = new Blob([messages], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `luma-chat-${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+        
+        // Initialize
+        initUI();
+        initModel();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+chmod +x install_luma.sh
+./install_luma.sh
