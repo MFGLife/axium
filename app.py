@@ -1,7 +1,6 @@
 import os
 import sys
 import torch
-import pickle
 from pathlib import Path
 from datetime import datetime
 from model import GPT, GPTConfig
@@ -17,7 +16,7 @@ MERGES_PATH = BASE_DIR / "merges.txt"
 LOG_PATH = BASE_DIR / "luma_log.txt"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# --- Validation ---
+# --- File Validation ---
 def assert_file(path, name):
     if not path.exists():
         sys.exit(f"❌ Missing {name}: {path}")
@@ -39,7 +38,7 @@ model_args["vocab_size"] = VOCAB_SIZE
 model = GPT(GPTConfig(**model_args))
 model.load_state_dict(checkpoint["model"])
 model.to(DEVICE)
-model.train()  # TRAIN mode
+model.train()  # Enable learning
 
 # --- Optimizer ---
 optimizer = model.configure_optimizers(
@@ -49,23 +48,23 @@ optimizer = model.configure_optimizers(
     device_type="cuda" if DEVICE == "cuda" else "cpu"
 )
 
-# --- Training Step ---
+# --- Training Function ---
 def train_on_pair(prompt, response, epochs=1):
-    input_ids = encode(prompt)
-    target_ids = encode(response)
-
-    x = torch.tensor(input_ids, dtype=torch.long).unsqueeze(0).to(DEVICE)
-    y = torch.tensor(target_ids, dtype=torch.long).unsqueeze(0).to(DEVICE)
+    # Train on a single sequence of prompt + response (autoregressive)
+    joined = prompt + "\n" + response
+    ids = encode(joined)
+    x = torch.tensor(ids[:-1], dtype=torch.long).unsqueeze(0).to(DEVICE)
+    y = torch.tensor(ids[1:], dtype=torch.long).unsqueeze(0).to(DEVICE)
 
     for _ in range(epochs):
         logits, loss = model(x, y)
         optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # for stability
         optimizer.step()
-
     return loss.item()
 
-# --- Generate Response ---
+# --- Generation Function ---
 @torch.no_grad()
 def generate(prompt, max_new_tokens=150, temperature=0.8, top_k=None):
     input_ids = torch.tensor(encode(prompt), dtype=torch.long).unsqueeze(0).to(DEVICE)
@@ -84,14 +83,17 @@ def generate(prompt, max_new_tokens=150, temperature=0.8, top_k=None):
 # --- Log Interaction ---
 def log_interaction(prompt, response, loss=None):
     with open(LOG_PATH, "a", encoding="utf-8") as log:
-        log.write(f"[{datetime.now().isoformat()}]\nYou: {prompt}\nLuma: {response}")
+        log.write(f"[{datetime.now().isoformat()}]\n")
+        log.write(f"Prompt: {prompt}\n")
+        log.write(f"Response: {response}\n")
         if loss is not None:
-            log.write(f"\nLoss: {loss:.4f}")
-        log.write("\n\n")
+            log.write(f"Loss: {loss:.4f}\n")
+        log.write("\n")
 
 # --- Main Loop ---
 def main():
     print(f"🌀 {APP_NAME} — type 'exit' to quit — type 'save' to persist model\n")
+    step = 0
     while True:
         prompt = input("You: ").strip()
         if prompt.lower() == "exit":
@@ -108,6 +110,12 @@ def main():
             loss = train_on_pair(prompt, response)
             log_interaction(prompt, response, loss)
             print(f"📈 Trained on interaction — Loss: {loss:.4f}")
+
+            step += 1
+            if step % 50 == 0:  # Auto-save every 50 interactions
+                torch.save({"model": model.state_dict(), "model_args": model_args}, CHECKPOINT_PATH)
+                print("💾 Autosaved model.")
+
         except Exception as e:
             print(f"⚠️ Error: {e}")
 
