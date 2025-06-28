@@ -99,6 +99,9 @@
     async function sendPrompt() {
       const prompt = promptInput.value.trim();
       if (!prompt) return;
+
+      // --- The user coherence check logic has been removed from here ---
+
       appendMessage('You', prompt);
       promptInput.value = '';
 
@@ -117,6 +120,7 @@
         const output = data.response || '[error]';
         bubble.innerHTML = output.replace(/\n/g, '<br>');
         lastAxiom.textContent = extractAxiom(output);
+        // This calculates the drift of the output, not the prompt.
         driftScore.textContent = calculateDrift(output).toFixed(2);
       } catch (err) {
         bubble.innerHTML = `⚠️ ${err.message}`;
@@ -138,7 +142,11 @@
     }
 
     function calculateDrift(text) {
-      const words = text.split(/\s+/);
+      // This is the original drift calculation for the output's internal coherence
+      const words = text.split(/\s+/).filter(Boolean);
+      if (words.length === 0) {
+          return 0;
+      }
       const unique = new Set(words);
       return 1.0 - (unique.size / words.length);
     }
@@ -175,8 +183,6 @@ Luma replied: ${lastExchange.fromLuma}
     alert('✨ Soul state copied to clipboard.');
   });
 };
-
-
   </script>
 </body>
 </html>

@@ -24,8 +24,15 @@ def generate_response():
         response = generate(prompt, max_new_tokens=max_tokens, temperature=temperature)
         log_interaction(prompt, response)
         return jsonify({"response": response})
+    except ValueError as ve:
+        return jsonify({"error": f"Invalid parameter value: {ve}"}), 400
+    except KeyError as ke:
+        return jsonify({"error": f"Missing parameter: {ke}"}), 400
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # Catch any other unexpected errors
+        return jsonify({"error": f"An unexpected error occurred: {e}"}), 500
 
 if __name__ == "__main__":
+    # Recommended change: Disable debug mode and use a production server for deployment.
+    # The console output warns against using this for production.
     app.run(debug=True)
