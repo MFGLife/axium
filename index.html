@@ -19,15 +19,37 @@
         .symbol { font-family: serif; letter-spacing: 0.5rem; }
     </style>
 </head>
+
+<!-- === AXIUM FISH OVERLAY === -->
+<div id="fish-overlay" style="
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+">
+  <canvas id="fish-canvas" style="
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+  "></canvas>
+</div>
+
+
+
+
+<audio id="fish-audio" crossorigin="anonymous">
+  <source src="your-song.mp3" type="audio/mpeg">
+</audio>
+
+
+
+
+
 <body>
     <div class="bg-animated"></div>
 
     <main class="max-w-6xl mx-auto px-6 py-12">
-        <header class="text-center mb-20 space-y-6">
-            <img src="https://private-user-images.githubusercontent.com/19232831/528921350-053ddde4-510c-4a51-b694-00d90cfa2cc9.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjYzMzU4MzUsIm5iZiI6MTc2NjMzNTUzNSwicGF0aCI6Ii8xOTIzMjgzMS81Mjg5MjEzNTAtMDUzZGRkZTQtNTEwYy00YTUxLWI2OTQtMDBkOTBjZmEyY2M5LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTEyMjElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUxMjIxVDE2NDUzNVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTgxNWM4ZTg5MTA4ODE4YTllMmVkM2IzMzVjZmRiNDVmNTVlNjY4NGYzZDIyMThkYmVlNmE3MzU3MzMzZjM2NjMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.tqOYaW5-BWym7n0v1y6ZPLhkXePGIpM47H7dkLuSF1Q" alt="Axium Logo" class="h-32 w-32 mx-auto rounded-full border-2 border-indigo-400 shadow-2xl" />
-            <h1 class="symbol text-5xl md:text-7xl font-bold text-indigo-300 drop-shadow-2xl">∴⟟↺⧗⟟∴</h1>
-            <p class="text-2xl md:text-3xl text-gray-200 font-light">Welcome to the Axium.Church</p>
-        </header>
+       
 
         <section class="grid md:grid-cols-2 gap-12 mb-32 items-stretch">
             <div class="space-y-6 flex flex-col justify-center">
@@ -282,6 +304,122 @@
                 status.innerText = `Resonance Found: ${resonanceId.toUpperCase()} activated.`;
             }, 1000);
         }
+
     </script>
+
+<script type="module">
+import * as THREE from "https://cdn.skypack.dev/three@0.152.2";
+import { GLTFLoader } from "https://cdn.skypack.dev/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
+
+const canvas = document.getElementById("fish-canvas");
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  alpha: true,
+  antialias: true
+});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+  45,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  100
+);
+camera.position.set(0, 0, 3);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const dir = new THREE.DirectionalLight(0xffffff, 1.2);
+dir.position.set(2, 4, 3);
+scene.add(dir);
+
+// === AUDIO SETUP ===
+const audioEl = document.getElementById("fish-audio");
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const src = audioCtx.createMediaElementSource(audioEl);
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 512;
+
+src.connect(analyser);
+analyser.connect(audioCtx.destination);
+
+const data = new Uint8Array(analyser.frequencyBinCount);
+
+// === LOAD FISH ===
+let fish, baseColor;
+const loader = new GLTFLoader();
+
+loader.load(
+  "https://assets.codepen.io/5946/fish.glb",
+  (gltf) => {
+    fish = gltf.scene;
+    fish.scale.setScalar(0.8);
+    fish.rotation.x = Math.PI * 0.5;
+
+    fish.traverse(obj => {
+      if (obj.isMesh) {
+        obj.material = obj.material.clone();
+        baseColor = obj.material.color.clone();
+      }
+    });
+
+    scene.add(fish);
+  }
+);
+
+// === CLICK TO PLAY ===
+canvas.addEventListener("click", async () => {
+  if (audioCtx.state !== "running") await audioCtx.resume();
+  audioEl.paused ? audioEl.play() : audioEl.pause();
+});
+
+// === RESIZE ===
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// === ANIMATION LOOP ===
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (fish) {
+    analyser.getByteFrequencyData(data);
+
+    const low = avg(data, 0, 40);
+    const mid = avg(data, 40, 120);
+    const high = avg(data, 120, 255);
+
+    const scale = 0.75 + (low / 255) * 0.4;
+    fish.scale.setScalar(scale);
+
+    fish.rotation.z += 0.002 + high * 0.00002;
+
+    const intensity = (low + mid + high) / (255 * 3);
+
+    fish.traverse(obj => {
+      if (obj.isMesh) {
+        obj.material.color
+          .copy(baseColor)
+          .lerp(new THREE.Color(1,1,1), mid / 255)
+          .lerp(new THREE.Color(0,0,0), high / 255);
+      }
+    });
+  }
+
+  renderer.render(scene, camera);
+}
+
+function avg(arr, start, end) {
+  let sum = 0;
+  for (let i = start; i < end; i++) sum += arr[i] || 0;
+  return sum / (end - start);
+}
+
+animate();
+</script>
+
 </body>
 </html>
