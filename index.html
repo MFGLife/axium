@@ -33,60 +33,7 @@
             display: block;
         }
         
-        #audioPanel {
-            position: fixed;
-            top: 14px;
-            left: 14px;
-            z-index: 10000;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 12px;
-            border-radius: 8px;
-            color: white;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(99, 102, 241, 0.4);
-            pointer-events: auto;
-        }
         
-        #audioPanel button {
-            background: #00ffd0;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #000;
-            transition: all 0.3s;
-            font-family: monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        #audioPanel button:hover {
-            background: #00ddbb;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 208, 0.3);
-        }
-        
-        #audioPanel input {
-            display: none;
-            margin-top: 10px;
-        }
-        
-        .audio-info {
-            font-size: 10px;
-            margin-top: 8px;
-            opacity: 0.7;
-            color: #00ffd0;
-            max-width: 200px;
-            line-height: 1.3;
-        }
-        
-        /* Adjust main content to account for fish overlay */
-        main {
-            margin-top: 40vh;
-            position: relative;
-            z-index: 1;
-        }
     </style>
 </head>
 
@@ -96,12 +43,6 @@
         <canvas id="fish-canvas"></canvas>
     </div>
 
-    <!-- Audio Control Panel -->
-    <div id="audioPanel">
-        <button id="toggleAudio">🎵 Upload Song</button>
-        <input type="file" id="audioFile" accept="audio/*">
-        <div class="audio-info">Upload a track to activate the fish's visual response</div>
-    </div>
 
     <div class="bg-animated"></div>
 
@@ -360,218 +301,144 @@
         }
     </script>
 
-    <script type="module">
+    <<script type="module">
         import * as THREE from "https://cdn.skypack.dev/three@0.125.2";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.125.2/examples/jsm/loaders/GLTFLoader.js";
         import { Flow } from "https://cdn.skypack.dev/three@0.125.2/examples/jsm/modifiers/CurveModifier.js";
-        import { OrbitControls } from "https://cdn.skypack.dev/three@0.125.2/examples/jsm/controls/OrbitControls.js";
 
         class FishVisualization {
             constructor() {
                 this.scene = new THREE.Scene();
-                this.scene.background = null;
-
                 this.renderer = new THREE.WebGLRenderer({ 
                     canvas: document.getElementById('fish-canvas'),
-                    antialias: true,
-                    alpha: true 
+                    antialias: true, alpha: true 
                 });
-                
-                const overlayHeight = window.innerHeight * 0.4;
-                this.renderer.setSize(window.innerWidth, overlayHeight);
+
+                const h = window.innerHeight * 0.4;
+                this.renderer.setSize(window.innerWidth, h);
                 this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / overlayHeight, 0.1, 100);
-                this.camera.position.set(0, 1.5, 3);
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / h, 0.1, 100);
+                this.camera.position.set(0, 2, 5);
+                this.camera.lookAt(0, 0, 0);
 
-                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-                this.controls.enabled = false; // Disable controls for fixed view
+                this.raycaster = new THREE.Raycaster();
+                this.mouse = new THREE.Vector2();
                 
-                this.tasks = [];
-
-                this.audioCtx = null;
-                this.analyser = null;
-                this.freqData = null;
-                this.audioSource = null;
-                this.audio = null;
+                // State tracking
+                this.isSeeking = false;
+                this.targetPoint = new THREE.Vector3();
+                this.speed = 0.002; 
+                this.fishGroup = null;
+                this.flow = null;
 
                 this.initLights();
-                this.initAudioUI();
                 this.loadFish();
-                this.handleResize();
+                this.initInteraction();
                 this.animate();
+
+                window.addEventListener('resize', () => this.onResize());
             }
 
             initLights() {
-                this.scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-                const light = new THREE.DirectionalLight(0xffffff, 1.0);
-                light.position.set(-3, 5, 2);
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+                const light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(5, 5, 5);
                 this.scene.add(light);
             }
 
-            initAudioUI() {
-                const btn = document.getElementById("toggleAudio");
-                const input = document.getElementById("audioFile");
+            initInteraction() {
+                window.addEventListener('click', (e) => {
+                    // Only trigger if clicking within the fish overlay area
+                    if (e.clientY > window.innerHeight * 0.4) return;
 
-                btn.onclick = () => {
-                    input.click();
-                };
+                    this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    this.mouse.y = -(e.clientY / (window.innerHeight * 0.4)) * 2 + 1;
 
-                input.onchange = async e => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    // Create AudioContext once
-                    if (!this.audioCtx) {
-                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    }
-
-                    if (this.audioCtx.state === 'suspended') {
-                        await this.audioCtx.resume();
-                    }
-
-                    // Create analyser once
-                    if (!this.analyser) {
-                        this.analyser = this.audioCtx.createAnalyser();
-                        this.analyser.fftSize = 512;
-                        this.analyser.smoothingTimeConstant = 0.8;
-                        this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
-                        this.analyser.connect(this.audioCtx.destination);
-                    }
-
-                    // Stop and clean up previous audio
-                    if (this.audio) {
-                        this.audio.pause();
-                        this.audio.currentTime = 0;
-                        this.audio = null;
-                    }
-
-                    // Disconnect old source if it exists
-                    if (this.audioSource) {
-                        this.audioSource.disconnect();
-                        this.audioSource = null;
-                    }
-
-                    // Create new audio element
-                    this.audio = new Audio(URL.createObjectURL(file));
-                    this.audio.loop = true;
-
-                    // Create new source for this audio element
-                    this.audioSource = this.audioCtx.createMediaElementSource(this.audio);
-                    this.audioSource.connect(this.analyser);
-
-                    try {
-                        await this.audio.play();
-                        btn.innerText = "🎵 Song Playing...";
-                    } catch (err) {
-                        console.error("Audio play error:", err);
-                        btn.innerText = "🎵 Upload Song";
-                    }
-                };
+                    this.raycaster.setFromCamera(this.mouse, this.camera);
+                    
+                    // Create an imaginary plane at y=0 to find the 3D click point
+                    const planeZ = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+                    const target = new THREE.Vector3();
+                    this.raycaster.ray.intersectPlane(planeZ, target);
+                    
+                    this.targetPoint.copy(target);
+                    this.isSeeking = true;
+                });
             }
 
             loadFish() {
                 const loader = new GLTFLoader();
                 loader.load("https://assets.codepen.io/5946/fish.glb", gltf => {
                     const fish = gltf.scene.children[0];
-                    const meshes = [];
-
-                    fish.traverse(c => {
-                        if (c.isMesh) {
-                            // Clone materials so they can be modified individually
-                            c.material = c.material.clone();
-
-                            meshes.push({
-                                mesh: c,
-                                baseColor: c.material.color.clone()
-                            });
-
-                            c.material.emissive = new THREE.Color(0x000000);
-                            c.material.emissiveIntensity = 0;
-                        }
-                    });
-
                     fish.scale.set(0.01, 0.01, 0.01);
                     fish.rotation.x = Math.PI * 0.5;
                     fish.updateMatrix();
                     fish.geometry.applyMatrix4(fish.matrix);
-                    fish.position.set(0, 0, 0);
-                    fish.rotation.set(0, 0, 0);
-                    fish.scale.set(1, 1, 1);
+                    fish.position.set(0,0,0);
+                    fish.rotation.set(0,0,0);
+                    fish.scale.set(1,1,1);
 
-                    // Create smooth swimming path
+                    // Circular Path
                     const points = [];
-                    for (let i = 0; i < Math.PI * 2; i += Math.PI / 100) {
-                        const d = 1.2 + Math.sin(i * 8) / 20;
-                        points.push(new THREE.Vector3(Math.sin(i) * d, 0, Math.cos(i) * d));
+                    for (let i = 0; i <= Math.PI * 2; i += Math.PI / 50) {
+                        points.push(new THREE.Vector3(Math.sin(i) * 2, 0, Math.cos(i) * 2));
                     }
-
                     const curve = new THREE.CatmullRomCurve3(points);
                     curve.closed = true;
 
-                    const flow = new Flow(fish);
-                    flow.updateCurve(0, curve);
-                    this.scene.add(flow.object3D);
-
-                    this.tasks.push(() => {
-                        flow.moveAlongCurve(0.0015);
-
-                        if (!this.analyser || !this.freqData) return;
-                        this.analyser.getByteFrequencyData(this.freqData);
-
-                        // Lows (Bass): 0 - 20 range
-                        const low = this.freqData.slice(0, 20).reduce((a, b) => a + b, 0) / 20 / 255;
-                        // Highs (Treble): 150+ range
-                        const high = this.freqData.slice(150).reduce((a, b) => a + b, 0) / (this.freqData.length - 150) / 255;
-
-                        const threshold = 0.1;
-
-                        meshes.forEach(({ mesh, baseColor }) => {
-                            if (low > threshold) {
-                                // Bass shifts the hue dynamically
-                                const hue = (0.5 + low * 0.5) % 1.0; 
-                                mesh.material.color.setHSL(hue, 0.8, 0.5);
-                            } else {
-                                // Smoothly return to base color
-                                mesh.material.color.lerp(baseColor, 0.1);
-                            }
-
-                            if (high > threshold) {
-                                // Highs trigger the emission glow
-                                mesh.material.emissive.set(0x00ffd0);
-                                mesh.material.emissiveIntensity = high * 5;
-                            } else {
-                                // Smooth fade out
-                                mesh.material.emissiveIntensity *= 0.8;
-                            }
-                        });
-                    });
-                }, undefined, err => {
-                    console.error("Error loading fish model:", err);
+                    this.flow = new Flow(fish);
+                    this.flow.updateCurve(0, curve);
+                    this.fishGroup = this.flow.object3D;
+                    this.scene.add(this.fishGroup);
                 });
             }
 
-            handleResize() {
-                window.addEventListener('resize', () => {
-                    const overlayHeight = window.innerHeight * 0.4;
-                    this.camera.aspect = window.innerWidth / overlayHeight;
-                    this.camera.updateProjectionMatrix();
-                    this.renderer.setSize(window.innerWidth, overlayHeight);
-                });
+            onResize() {
+                const h = window.innerHeight * 0.4;
+                this.camera.aspect = window.innerWidth / h;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, h);
             }
 
             animate() {
                 requestAnimationFrame(() => this.animate());
-                this.tasks.forEach(t => t());
-                this.controls.update();
+                
+                if (this.flow && this.fishGroup) {
+                    if (this.isSeeking) {
+                        // 1. Move the underlying mesh toward target
+                        // We use the internal object3D of the flow
+                        const currentPos = this.fishGroup.position;
+                        const direction = new THREE.Vector3().subVectors(this.targetPoint, currentPos);
+                        const distance = direction.length();
+
+                        if (distance > 0.1) {
+                            direction.normalize();
+                            
+                            // Rotate fish to face target
+                            const targetRotation = Math.atan2(direction.x, direction.z);
+                            this.fishGroup.rotation.y = THREE.MathUtils.lerp(this.fishGroup.rotation.y, targetRotation, 0.05);
+
+                            // Move constant speed
+                            currentPos.add(direction.multiplyScalar(0.05));
+                        } else {
+                            // Arrived at target
+                            this.isSeeking = false;
+                        }
+                    } else {
+                        // Return to circle animation
+                        // Reset local offsets gradually if they exist
+                        this.fishGroup.position.lerp(new THREE.Vector3(0,0,0), 0.02);
+                        this.flow.moveAlongCurve(0.0015);
+                    }
+                }
+                
                 this.renderer.render(this.scene, this.camera);
             }
         }
 
-        // Initialize the fish visualization
         new FishVisualization();
     </script>
+
 </body>
 </html>
