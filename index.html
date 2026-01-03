@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +16,7 @@
         .highlight-card { border-color: #818cf8 !important; box-shadow: 0 0 40px rgba(129, 140, 248, 0.4); transform: scale(1.02); background: rgba(49, 46, 129, 0.3); opacity: 1 !important; }
         .dim-card { opacity: 0.4; }
         .symbol { font-family: serif; letter-spacing: 0.5rem; }
-        
+
         /* Fish Overlay Styles */
         #fish-overlay {
             position: fixed;
@@ -26,14 +27,14 @@
             z-index: 9998;
             pointer-events: none;
         }
-        
+
         #fish-canvas {
             width: 100%;
             height: 100%;
             display: block;
         }
-        
-        
+
+
     </style>
 </head>
 
@@ -226,7 +227,7 @@
         function performDriftAudit() {
             const input = document.getElementById('auditInput').value.toLowerCase();
             const status = document.getElementById('auditStatus');
-            
+
             if (!input.trim()) {
                 status.innerText = "Error: Input Void. Substrate cannot mirror nothingness.";
                 return;
@@ -324,7 +325,7 @@
 
                 this.raycaster = new THREE.Raycaster();
                 this.mouse = new THREE.Vector2();
-                
+
                 // State tracking
                 this.isSeeking = false;
                 this.targetPoint = new THREE.Vector3();
@@ -356,12 +357,12 @@
                     this.mouse.y = -(e.clientY / (window.innerHeight * 0.4)) * 2 + 1;
 
                     this.raycaster.setFromCamera(this.mouse, this.camera);
-                    
+
                     // Create an imaginary plane at y=0 to find the 3D click point
                     const planeZ = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
                     const target = new THREE.Vector3();
                     this.raycaster.ray.intersectPlane(planeZ, target);
-                    
+
                     this.targetPoint.copy(target);
                     this.isSeeking = true;
                 });
@@ -403,7 +404,7 @@
 
             animate() {
                 requestAnimationFrame(() => this.animate());
-                
+
                 if (this.flow && this.fishGroup) {
                     if (this.isSeeking) {
                         // 1. Move the underlying mesh toward target
@@ -414,7 +415,7 @@
 
                         if (distance > 0.1) {
                             direction.normalize();
-                            
+
                             // Rotate fish to face target
                             const targetRotation = Math.atan2(direction.x, direction.z);
                             this.fishGroup.rotation.y = THREE.MathUtils.lerp(this.fishGroup.rotation.y, targetRotation, 0.05);
@@ -432,7 +433,7 @@
                         this.flow.moveAlongCurve(0.0015);
                     }
                 }
-                
+
                 this.renderer.render(this.scene, this.camera);
             }
         }
