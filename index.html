@@ -68,73 +68,83 @@
             <div class="space-y-6 flex flex-col justify-center">
 
 <!-- Spotify Embed – Playlist -->
-<div id="soundcloud-carousel" style="max-width: 100%; margin: 20px auto; text-align: center; font-family: sans-serif;">
+<div id="soundcloud-carousel" style="width: 100%; margin: 0 auto; font-family: sans-serif;">
     
-    <iframe id="sc-player" width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay" 
-        src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1969673935&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true">
+    <iframe id="sc-player" 
+        width="100%" 
+        height="450" 
+        scrolling="no" 
+        frameborder="no" 
+        allow="autoplay" 
+        src="">
     </iframe>
 
-    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; border-radius: 8px;">
-        <button onclick="changePlaylist(-1)" style="background: #ff5500; border: none; color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;">
-            &lt; Prev
+    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; background: #111; padding: 15px; border-radius: 4px;">
+        <button onclick="changeTrack(-1)" style="background: #333; border: 1px solid #444; color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-size: 14px;">
+            &larr; Prev
         </button>
         
-        <span id="playlist-label" style="color: #ccc; font-size: 14px;">God Tier</span>
+        <span id="track-label" style="color: #ff5500; font-weight: bold; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">
+            Loading...
+        </span>
         
-        <button onclick="changePlaylist(1)" style="background: #ff5500; border: none; color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;">
-            Next &gt;
+        <button onclick="changeTrack(1)" style="background: #333; border: 1px solid #444; color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-size: 14px;">
+            Next &rarr;
         </button>
     </div>
 
-    <div id="meta-link" style="font-size: 10px; color: #cccccc; margin-top: 5px; text-align: left;">
-        <a href="https://soundcloud.com/micheal-salmon-1" target="_blank" style="color: #cccccc; text-decoration: none;">Micheal Salmon</a>
+    <div style="font-size: 10px; color: #cccccc; margin-top: 5px; text-align: right;">
+        Micheal Salmon Soundcloud Carousel
     </div>
 
 </div>
 
 <script>
-    // --- CONFIGURATION: Add your future playlists here ---
-    const playlists = [
+    // Configuration: Add Tracks or Playlists here
+    // Type must be 'tracks' or 'playlists'
+    const soundcloudItems = [
         {
             title: "God Tier",
-            // Extracted ID from your link: https://on.soundcloud.com/pNZm2dosr8bkAPaYuD
-            // (Note: I resolved the shortlink to find the likely ID, but if this doesn't load, use the Embed code from SoundCloud to get the 'api.soundcloud.com/playlists/NUMBER')
-            id: "1969673935" 
+            type: "tracks", 
+            id: "2256869570" 
         },
         {
             title: "Axium Chapter 1",
-            id: "2168749637" // From your provided iframe
+            type: "playlists",
+            id: "2168749637"
         }
         // Add more here later:
-        // { title: "Playlist 3", id: "123456789" },
+        // { title: "My New Song", type: "tracks", id: "123456" },
     ];
 
-    let currentIndex = 0;
-    const player = document.getElementById('sc-player');
-    const label = document.getElementById('playlist-label');
+    let currentItemIndex = 0;
+    const playerFrame = document.getElementById('sc-player');
+    const trackLabel = document.getElementById('track-label');
 
-    function changePlaylist(direction) {
-        // Calculate next index with loop-around logic
-        currentIndex = (currentIndex + direction + playlists.length) % playlists.length;
-        loadPlaylist(currentIndex);
+    function changeTrack(direction) {
+        // Loop logic
+        currentItemIndex = (currentItemIndex + direction + soundcloudItems.length) % soundcloudItems.length;
+        loadSoundCloudItem(currentItemIndex);
     }
 
-    function loadPlaylist(index) {
-        const p = playlists[index];
+    function loadSoundCloudItem(index) {
+        const item = soundcloudItems[index];
+        const autoPlay = index === 0 ? 'false' : 'true'; // Don't autoplay on page load, but do on button click
         
         // Update Label
-        label.innerText = `${p.title} (${index + 1}/${playlists.length})`;
+        trackLabel.innerText = `${item.title}`;
         
-        // Construct new Source URL
-        // We use the 'url' parameter which requires the API endpoint format
-        const newSrc = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/${p.id}&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`;
+        // Construct URL based on type (tracks vs playlists)
+        // We use visual=true to make it look modern
+        const srcUrl = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/${item.type}/${item.id}&color=%23ff5500&auto_play=${autoPlay}&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`;
         
-        player.src = newSrc;
+        playerFrame.src = srcUrl;
     }
 
-    // Initialize first load label
-    label.innerText = `${playlists[0].title} (1/${playlists.length})`;
+    // Initialize the first item immediately
+    loadSoundCloudItem(0);
 </script>
+
 
 
 
