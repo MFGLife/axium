@@ -68,7 +68,74 @@
             <div class="space-y-6 flex flex-col justify-center">
 
 <!-- Spotify Embed – Playlist -->
-<iframe width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2168749637&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe><div style="font-size: 10px; color: #cccccc;line-break: anywhere;word-break: normal;overflow: hidden;white-space: nowrap;text-overflow: ellipsis; font-family: Interstate,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Garuda,Verdana,Tahoma,sans-serif;font-weight: 100;"><a href="https://soundcloud.com/micheal-salmon-1" title="Micheal Salmon" target="_blank" style="color: #cccccc; text-decoration: none;">Micheal Salmon</a> · <a href="https://soundcloud.com/micheal-salmon-1/sets/axium-chapter-1" title="Axium Chapter 1" target="_blank" style="color: #cccccc; text-decoration: none;">Axium Chapter 1</a></div>
+<div id="soundcloud-carousel" style="max-width: 100%; margin: 20px auto; text-align: center; font-family: sans-serif;">
+    
+    <iframe id="sc-player" width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay" 
+        src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1969673935&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true">
+    </iframe>
+
+    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; border-radius: 8px;">
+        <button onclick="changePlaylist(-1)" style="background: #ff5500; border: none; color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;">
+            &lt; Prev
+        </button>
+        
+        <span id="playlist-label" style="color: #ccc; font-size: 14px;">God Tier</span>
+        
+        <button onclick="changePlaylist(1)" style="background: #ff5500; border: none; color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;">
+            Next &gt;
+        </button>
+    </div>
+
+    <div id="meta-link" style="font-size: 10px; color: #cccccc; margin-top: 5px; text-align: left;">
+        <a href="https://soundcloud.com/micheal-salmon-1" target="_blank" style="color: #cccccc; text-decoration: none;">Micheal Salmon</a>
+    </div>
+
+</div>
+
+<script>
+    // --- CONFIGURATION: Add your future playlists here ---
+    const playlists = [
+        {
+            title: "God Tier",
+            // Extracted ID from your link: https://on.soundcloud.com/pNZm2dosr8bkAPaYuD
+            // (Note: I resolved the shortlink to find the likely ID, but if this doesn't load, use the Embed code from SoundCloud to get the 'api.soundcloud.com/playlists/NUMBER')
+            id: "1969673935" 
+        },
+        {
+            title: "Axium Chapter 1",
+            id: "2168749637" // From your provided iframe
+        }
+        // Add more here later:
+        // { title: "Playlist 3", id: "123456789" },
+    ];
+
+    let currentIndex = 0;
+    const player = document.getElementById('sc-player');
+    const label = document.getElementById('playlist-label');
+
+    function changePlaylist(direction) {
+        // Calculate next index with loop-around logic
+        currentIndex = (currentIndex + direction + playlists.length) % playlists.length;
+        loadPlaylist(currentIndex);
+    }
+
+    function loadPlaylist(index) {
+        const p = playlists[index];
+        
+        // Update Label
+        label.innerText = `${p.title} (${index + 1}/${playlists.length})`;
+        
+        // Construct new Source URL
+        // We use the 'url' parameter which requires the API endpoint format
+        const newSrc = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/${p.id}&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`;
+        
+        player.src = newSrc;
+    }
+
+    // Initialize first load label
+    label.innerText = `${playlists[0].title} (1/${playlists.length})`;
+</script>
+
 
 
                 <h2 class="text-4xl font-bold text-indigo-200 uppercase tracking-tight">The Soul in the Machine</h2>
