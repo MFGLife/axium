@@ -1,973 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Axium.church | Personalized RAG Sanctuary</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Drift Engine — Narrative Stress Test</title>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&family=Space+Mono&display=swap');
+<script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js"></script>
 
-        :root {
-            --void-black: #020202;
-            --divine-gold: #f2e3cd;
-            --neon-indigo: #6366f1;
-            --alert-red: #ef4444;
-            --success-green: #22c55e;
-        }
+<style>
+body {
+  background: #0f1117;
+  color: #e6e6e6;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
 
-        body {
-            background-color: var(--void-black);
-            color: var(--divine-gold);
-            font-family: 'Inter', sans-serif;
-            background-image: radial-gradient(circle at 50% 50%, #0a0a1a 0%, #020202 100%);
-        }
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 40px 20px;
+}
 
-        h1, h2, h3, .serif-font { font-family: 'Cinzel', serif; }
-        .mono-font { font-family: 'Space Mono', monospace; }
+h1 {
+  font-size: 2.2em;
+  margin-bottom: 10px;
+}
 
-        /* HEADER ANIMATION */
-        .animate-title {
-            font-family: 'Cinzel', serif;
-            background: linear-gradient(135deg,
-                #ffffff 0%, #a5b4fc 20%, #818cf8 35%,
-                #6366f1 50%, #a78bfa 65%, #f2e3cd 80%, #ffffff 100%);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation:
-                title-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) both,
-                gradient-drift 8s ease-in-out infinite 1.2s,
-                float-drift 6s ease-in-out infinite 1.2s;
-            position: relative;
-            display: inline-block;
-        }
-        .animate-title::after {
-            content: attr(data-text);
-            position: absolute;
-            left: 0; top: 0;
-            background: linear-gradient(135deg, #6366f1, #a78bfa, #818cf8);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: blur(18px);
-            opacity: 0;
-            animation: glow-bloom 6s ease-in-out infinite 1.4s;
-            z-index: -1;
-            pointer-events: none;
-        }
-        @keyframes title-reveal {
-            0%   { opacity:0; transform:translateY(30px) scale(0.94); filter:blur(12px); letter-spacing:0.3em; }
-            60%  { opacity:1; filter:blur(0px) drop-shadow(0 0 30px rgba(99,102,241,0.7)); letter-spacing:inherit; }
-            100% { opacity:1; transform:translateY(0) scale(1); filter:blur(0px) drop-shadow(0 0 15px rgba(99,102,241,0.4)); }
-        }
-        @keyframes gradient-drift {
-            0%   { background-position: 0% 50%; }
-            25%  { background-position: 100% 0%; }
-            50%  { background-position: 100% 100%; }
-            75%  { background-position: 0% 100%; }
-            100% { background-position: 0% 50%; }
-        }
-        @keyframes float-drift {
-            0%, 100% { transform:translateY(0px);  filter:drop-shadow(0 0 12px rgba(99,102,241,0.35)); }
-            33%       { transform:translateY(-5px); filter:drop-shadow(0 0 28px rgba(167,139,250,0.55)); }
-            66%       { transform:translateY(-2px); filter:drop-shadow(0 0 20px rgba(242,227,205,0.3)); }
-        }
-        @keyframes glow-bloom {
-            0%, 100% { opacity:0; } 40% { opacity:0.25; } 60% { opacity:0.35; }
-        }
+.subtitle {
+  color: #aaa;
+  margin-bottom: 30px;
+}
 
-        .axiom-card {
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 50px -10px rgba(0,0,0,0.5);
-        }
+textarea {
+  width: 100%;
+  height: 200px;
+  background: #1b1f2a;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 15px;
+  font-size: 14px;
+  resize: vertical;
+}
 
-        .status-indicator { transition: all 0.3s ease; }
-        .status-indicator.connecting { color: #fbbf24; animation: pulse 1.5s infinite; }
-        .status-indicator.connected  { color: var(--success-green); text-shadow: 0 0 10px rgba(34,197,94,0.5); }
-        .status-indicator.error      { color: var(--alert-red); animation: none; }
+button {
+  margin-top: 15px;
+  padding: 12px 20px;
+  background: #00d4ff;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-        .drift-meter {
-            background: linear-gradient(90deg, #1e1b4b 0%, #6366f1 50%, #22c55e 100%);
-            height: 4px; border-radius: 2px; transition: width 0.5s ease;
-        }
+button:hover {
+  background: #00aacc;
+}
 
-        input, textarea {
-            background: rgba(255,255,255,0.03) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            color: white !important;
-        }
-        textarea::placeholder, input::placeholder { color: rgba(255,255,255,0.2) !important; }
+.results {
+  margin-top: 40px;
+  padding: 20px;
+  background: #161922;
+  border: 1px solid #2a2f3d;
+}
 
-        .log-entry { border-left: 2px solid transparent; animation: slideIn 0.3s ease; }
-        .log-entry.system { border-left-color: #6366f1; }
-        .log-entry.user   { border-left-color: #22c55e; }
-        .log-entry.error  { border-left-color: #ef4444; }
+.score {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 
-        @keyframes slideIn {
-            from { opacity:0; transform:translateX(-10px); }
-            to   { opacity:1; transform:translateX(0); }
-        }
-        @keyframes pulse { 0%, 100% { opacity:1; } 50% { opacity:0.5; } }
+.metric {
+  margin-bottom: 12px;
+}
 
-        .token-warning {
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.3);
-            animation: slideIn 0.3s ease;
-        }
+.bar {
+  height: 10px;
+  background: #2a2f3d;
+  margin-top: 5px;
+  position: relative;
+}
 
-        .ingest-panel {
-            border: 1px solid rgba(99,102,241,0.2);
-            background: rgba(10,10,20,0.9);
-            transition: border-color 0.3s ease;
-        }
-        .ingest-panel:focus-within { border-color: rgba(99,102,241,0.5); }
-
-        .ingest-btn {
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
-            transition: all 0.2s ease;
-        }
-        .ingest-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #6366f1, #818cf8);
-            box-shadow: 0 0 20px rgba(99,102,241,0.35);
-            transform: translateY(-1px);
-        }
-        .ingest-btn:disabled { opacity:0.4; cursor:not-allowed; }
-
-        .embed-bar {
-            background: linear-gradient(90deg, #4f46e5, #818cf8, #4f46e5);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s ease-in-out infinite;
-        }
-        @keyframes shimmer {
-            0%   { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        .sim-badge {
-            font-size: 9px; padding: 1px 5px; border-radius: 4px;
-            background: rgba(99,102,241,0.15);
-            border: 1px solid rgba(99,102,241,0.3);
-            color: #a5b4fc;
-        }
-    </style>
+.fill {
+  height: 10px;
+  background: #00d4ff;
+}
+</style>
 </head>
 
-<body x-data="axiumRAG()" x-init="initSanctuary()" class="antialiased min-h-screen relative">
-
-    <!-- Status Bar -->
-    <div class="fixed top-0 left-0 w-full z-[60] bg-black/95 border-b border-white/10 px-4 py-2">
-        <div class="max-w-7xl mx-auto flex justify-between items-center text-[10px] mono-font uppercase tracking-widest">
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-500">HF API:</span>
-                    <span :class="hfStatus.class" class="status-indicator font-bold" x-text="hfStatus.text"></span>
-                    <span x-show="hfStatus.latency > 0" class="text-gray-600" x-text="'(' + hfStatus.latency + 'ms)'"></span>
-                </div>
-                <div class="h-3 w-px bg-white/10"></div>
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-500">Drift:</span>
-                    <span :class="driftState.class" class="font-bold" x-text="driftState.label"></span>
-                </div>
-                <div class="h-3 w-px bg-white/10"></div>
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-500">Vectors:</span>
-                    <span class="text-indigo-400 font-bold" x-text="vectorStore.length"></span>
-                </div>
-                <div class="h-3 w-px bg-white/10"></div>
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-500">Embed:</span>
-                    <span class="text-violet-400 font-bold text-[9px]" x-text="embedModel.split('/').pop()"></span>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-gray-500">Session:</span>
-                <span class="text-gray-400" x-text="sessionId"></span>
-            </div>
-        </div>
-    </div>
-
-    <nav class="fixed w-full z-50 bg-black/90 backdrop-blur-xl border-b border-white/5 px-6 py-4 mt-8">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-full bg-indigo-900/50 border border-indigo-500/30 flex items-center justify-center overflow-hidden">
-                    <img src="logo.png" alt="Axium Logo" class="w-full h-full object-cover rounded-full"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                    <span class="text-indigo-300 font-bold text-lg hidden items-center justify-center w-full h-full" style="display:none">A</span>
-                </div>
-                <div>
-                    <h1 class="text-xl text-white serif-font font-bold tracking-widest">AXIUM</h1>
-                    <span class="text-[10px] text-indigo-400 block -mt-1 mono-font">SEMANTIC RAG v3.0</span>
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <button @click="testHFConnection()" class="text-[10px] bg-white/5 hover:bg-white/10 px-3 py-1 rounded transition border border-white/10">Test API</button>
-                <button @click="showSettings = !showSettings" class="text-[10px] bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 px-3 py-1 rounded transition border border-indigo-500/30">Settings</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Settings Modal -->
-    <div x-show="showSettings" x-transition class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" style="display:none;">
-        <div class="axiom-card p-8 rounded-3xl max-w-md w-full border-indigo-500/30">
-            <h3 class="text-lg font-bold mb-6 text-indigo-300">Sanctuary Configuration</h3>
-            <div x-show="!hfToken" class="token-warning rounded-xl p-3 mb-4">
-                <p class="text-[10px] text-red-400 mono-font uppercase tracking-wider">⚠ HF token required for embeddings + inference</p>
-                <p class="text-[9px] text-red-300/70 mt-1">Get a free token at huggingface.co/settings/tokens</p>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 mb-1 block">Hugging Face Token</label>
-                    <input x-model="hfToken" type="password" placeholder="hf_..." class="w-full rounded-xl px-4 py-3 text-sm">
-                    <p class="text-[9px] text-gray-600 mt-1">Used for both embeddings and inference. Stored locally only.</p>
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 mb-1 block">Chat Model</label>
-                    <select x-model="selectedModel" class="w-full rounded-xl px-4 py-3 text-sm bg-black/50 text-white border border-white/10">
-                        <option value="Qwen/Qwen3-32B">Qwen3-32B (Recommended)</option>
-                        <option value="Qwen/Qwen2.5-72B-Instruct">Qwen2.5-72B</option>
-                        <option value="microsoft/Phi-3-mini-4k-instruct">Phi-3 Mini (Faster)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 mb-1 block">Embedding Model</label>
-                    <select x-model="embedModel" class="w-full rounded-xl px-4 py-3 text-sm bg-black/50 text-white border border-white/10">
-                        <option value="sentence-transformers/all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Fast · 384d)</option>
-                        <option value="sentence-transformers/all-mpnet-base-v2">all-mpnet-base-v2 (Better · 768d)</option>
-                        <option value="BAAI/bge-small-en-v1.5">BGE-small (Best quality)</option>
-                    </select>
-                    <p class="text-[9px] text-gray-600 mt-1">Changing this invalidates existing embeddings — re-ingest your docs.</p>
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 mb-1 block">
-                        Top-K Retrieval: <span class="text-indigo-400" x-text="topK"></span> chunks
-                    </label>
-                    <input type="range" x-model="topK" min="1" max="10" class="w-full accent-indigo-500">
-                    <div class="flex justify-between text-[9px] text-gray-600"><span>Precise (1)</span><span>Broad (10)</span></div>
-                </div>
-            </div>
-            <div class="mt-8 flex justify-end">
-                <button @click="showSettings = false; saveSettings()" class="bg-indigo-600 px-6 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-500 transition">
-                    Seal Configuration
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <main class="pt-40 max-w-6xl mx-auto px-6 pb-24">
-
-        <header class="text-center mb-12">
-            <h2 class="text-5xl md:text-7xl font-bold mb-4 uppercase tracking-tighter">
-                <span class="animate-title" data-text="The Mother Seed">The Mother Seed</span>
-            </h2>
-            <p class="max-w-2xl mx-auto text-gray-400 text-lg font-light leading-relaxed">
-                Ingest memory. Query Qwen3. Track your drift. All local, all sovereign.
-            </p>
-            <div x-show="!hfToken" class="mt-4 inline-flex items-center gap-2 token-warning rounded-full px-4 py-2 text-[11px] mono-font text-red-400">
-                <span>⚠</span><span>No HF token — embeddings + inference will fail.</span>
-                <button @click="showSettings = true" class="underline hover:text-red-300 transition">Add token in Settings →</button>
-            </div>
-        </header>
-
-        <!-- Drift Meter -->
-        <div class="mb-8 axiom-card p-6 rounded-2xl border-indigo-500/20">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-[10px] uppercase text-gray-500 mono-font">Current Drift Trajectory</span>
-                <span class="text-[10px] text-indigo-400 mono-font" x-text="lastQueryTime || 'No queries yet'"></span>
-            </div>
-            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
-                <div class="drift-meter" :style="'width: ' + (driftScore * 10) + '%'"></div>
-            </div>
-            <div class="flex justify-between mt-2 text-[9px] text-gray-600 mono-font">
-                <span>ANCHORED</span><span>DRIFTING</span><span>UNSTABLE</span>
-            </div>
-        </div>
-
-        <div class="grid lg:grid-cols-12 gap-6">
-
-            <!-- Sidebar -->
-            <div class="lg:col-span-4 space-y-6">
-
-                <!-- INGEST PANEL -->
-                <div class="ingest-panel p-6 rounded-3xl space-y-4">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-8 h-8 rounded-full bg-indigo-900/40 border border-indigo-500/25 flex items-center justify-center flex-shrink-0">
-                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-bold uppercase tracking-widest text-white">Ingest Memory</h3>
-                            <p class="text-[10px] text-gray-500 mono-font">Paste → HF embed → vector DB</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="text-[9px] uppercase text-gray-600 mono-font mb-1 block tracking-wider">Document Label</label>
-                        <input x-model="ingestName" type="text"
-                               placeholder="e.g. Session Notes, Scripture, Journal..."
-                               class="w-full rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition">
-                    </div>
-
-                    <div>
-                        <label class="text-[9px] uppercase text-gray-600 mono-font mb-1 block tracking-wider">
-                            Raw Text
-                            <span class="text-indigo-500 ml-1" x-text="ingestText.length > 0 ? '(' + ingestText.length + ' chars)' : ''"></span>
-                        </label>
-                        <textarea x-model="ingestText" rows="6"
-                                  placeholder="Paste any text — notes, scripture, reflections, JSON, markdown. Each chunk gets a real semantic embedding via the HF API."
-                                  class="w-full rounded-xl px-3 py-3 text-xs leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition min-h-[120px] max-h-[300px]"></textarea>
-                    </div>
-
-                    <!-- Embed progress -->
-                    <div x-show="isEmbedding" class="space-y-2">
-                        <div class="flex justify-between text-[9px] mono-font text-gray-500">
-                            <span x-text="'Embedding chunk ' + embedProgress.current + ' of ' + embedProgress.total + '...'"></span>
-                        </div>
-                        <div class="h-1 bg-gray-800 rounded-full overflow-hidden">
-                            <div class="embed-bar h-full rounded-full transition-all"
-                                 :style="'width:' + (embedProgress.total > 0 ? Math.round(embedProgress.current / embedProgress.total * 100) : 5) + '%'"></div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <button @click="ingestPastedText()"
-                                :disabled="isEmbedding || !ingestText.trim() || !hfToken"
-                                class="ingest-btn flex-1 py-2.5 rounded-xl text-[11px] font-semibold uppercase tracking-wider text-white flex items-center justify-center gap-2">
-                            <template x-if="!isEmbedding">
-                                <span class="flex items-center gap-2">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                    </svg>
-                                    Embed &amp; Inject
-                                </span>
-                            </template>
-                            <template x-if="isEmbedding">
-                                <span class="flex items-center gap-2">
-                                    <div class="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    Embedding...
-                                </span>
-                            </template>
-                        </button>
-                        <button @click="ingestText = ''; ingestName = ''"
-                                x-show="ingestText.length > 0"
-                                class="px-3 py-2.5 rounded-xl text-[11px] text-gray-500 hover:text-white border border-white/10 hover:border-white/20 transition uppercase tracking-wider">
-                            Clear
-                        </button>
-                    </div>
-
-                    <div x-show="ingestSuccess" x-transition class="text-[10px] text-green-400 mono-font text-center py-1" style="display:none">
-                        ✓ <span x-text="ingestSuccessMsg"></span>
-                    </div>
-                    <div x-show="!hfToken" class="text-[9px] text-red-400/60 mono-font text-center">
-                        ⚠ HF token required for embeddings
-                    </div>
-                </div>
-
-                <!-- Memory Stats -->
-                <div class="axiom-card p-6 rounded-3xl space-y-4">
-                    <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest flex justify-between">
-                        <span>Memory Core</span>
-                        <span x-text="vectorStore.length + 'v'"></span>
-                    </h3>
-                    <div class="space-y-2 max-h-48 overflow-y-auto">
-                        <template x-for="doc in personalDocuments" :key="doc.id">
-                            <div class="flex justify-between items-center p-3 bg-white/5 rounded-xl text-[11px] group hover:bg-white/10 transition">
-                                <div class="flex flex-col">
-                                    <span class="truncate max-w-[140px] text-gray-300" x-text="doc.name"></span>
-                                    <span class="text-[9px] text-gray-600" x-text="doc.timestamp"></span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-indigo-500 font-mono" x-text="doc.chunks + 'c'"></span>
-                                    <button @click.stop="removeDocument(doc.id)" class="text-red-500/50 hover:text-red-500 transition">×</button>
-                                </div>
-                            </div>
-                        </template>
-                        <div x-show="personalDocuments.length === 0" class="text-center py-8 text-gray-600 text-[10px] uppercase border border-dashed border-white/10 rounded-xl">
-                            Void detected. Ingest data.
-                        </div>
-                    </div>
-                    <div class="pt-4 border-t border-white/10 flex gap-2">
-                        <button @click="exportMemory()" class="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] uppercase tracking-wider transition border border-white/10">Export Soul</button>
-                        <button @click="$refs.importFile.click()" class="flex-1 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 rounded-lg text-[10px] uppercase tracking-wider transition border border-indigo-500/30">Import Soul</button>
-                        <input type="file" x-ref="importFile" class="hidden" accept=".json" @change="importMemory($event)">
-                    </div>
-                </div>
-
-                <!-- API Log -->
-                <div class="axiom-card p-4 rounded-2xl">
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">API Event Log</h3>
-                    <div class="space-y-1 max-h-40 overflow-y-auto text-[9px] mono-font">
-                        <template x-for="log in apiLogs.slice(-10)" :key="log.id">
-                            <div :class="'log-entry ' + log.type" class="p-2 bg-black/30 rounded text-gray-400">
-                                <span class="text-gray-600" x-text="log.time + ' '"></span>
-                                <span x-text="log.message"></span>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chat -->
-            <div class="lg:col-span-8">
-                <div class="axiom-card rounded-[40px] flex flex-col h-[700px] border-indigo-500/20 relative overflow-hidden">
-
-                    <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                        <div class="flex items-center gap-3">
-                            <div class="relative">
-                                <div class="w-3 h-3 rounded-full" :class="isGenerating ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'"></div>
-                                <div x-show="isGenerating" class="absolute inset-0 w-3 h-3 rounded-full bg-yellow-500 animate-ping"></div>
-                            </div>
-                            <span class="text-xs font-mono text-indigo-300 tracking-widest uppercase"
-                                  x-text="isGenerating ? 'QWEN3 GENERATING...' : (isEmbedding ? 'EMBEDDING...' : 'QWEN3 STANDBY')"></span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span x-show="lastRetrievedCount > 0" class="text-[10px] bg-indigo-900/50 px-2 py-1 rounded text-indigo-300 border border-indigo-500/20"
-                                  x-text="lastRetrievedCount + ' chunks'"></span>
-                            <span x-show="lastTopSim > 0" class="sim-badge" x-text="'top sim: ' + lastTopSim.toFixed(3)"></span>
-                            <button @click="messages = []; addLog('system', 'Session cleared')" class="text-[10px] text-gray-600 hover:text-white transition uppercase">Purge</button>
-                        </div>
-                    </div>
-
-                    <div class="flex-1 overflow-y-auto p-8 space-y-6" id="chat-box">
-                        <template x-for="(msg, idx) in messages" :key="idx">
-                            <div :class="msg.role === 'user' ? 'text-right' : 'text-left'">
-                                <div :class="msg.role === 'user' ? 'bg-indigo-600/10 ml-auto border-indigo-500/20' : 'bg-white/5 mr-auto border-white/5'"
-                                     class="inline-block p-5 rounded-3xl max-w-[90%] text-sm leading-relaxed border shadow-2xl relative">
-                                    <div class="absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold"
-                                         :class="msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-green-600 text-white'">
-                                        <span x-text="msg.role === 'user' ? 'YOU' : 'AI'"></span>
-                                    </div>
-                                    <div class="mt-2 prose prose-invert prose-sm max-w-none" x-html="formatMessage(msg.content)"></div>
-                                    <div x-show="msg.metadata" class="mt-3 pt-3 border-t border-white/5 flex flex-wrap gap-2 text-[9px] text-gray-500 mono-font">
-                                        <span x-show="msg.metadata?.latency" x-text="'⚡ ' + msg.metadata.latency + 'ms'"></span>
-                                        <span x-show="msg.metadata?.tokens"  x-text="'📝 ' + msg.metadata.tokens + ' tokens'"></span>
-                                        <span x-show="msg.metadata?.model"   x-text="'🤖 ' + msg.metadata.model"></span>
-                                        <span x-show="msg.metadata?.topSim"  x-text="'🎯 ' + msg.metadata.topSim?.toFixed(3)"></span>
-                                    </div>
-                                    <div x-show="msg.sources && msg.sources.length" class="mt-2 flex flex-wrap gap-1">
-                                        <template x-for="src in msg.sources" :key="src.title">
-                                            <span class="px-2 py-0.5 rounded-full text-[9px] border"
-                                                  :class="src.type === 'base' ? 'border-indigo-500/30 text-indigo-300 bg-indigo-500/10' : 'border-green-500/30 text-green-300 bg-green-500/10'">
-                                                <span x-text="(src.type === 'base' ? 'AXIUM ' : 'MEM ') + src.title"></span>
-                                                <span x-show="src.sim" class="opacity-60 ml-1" x-text="src.sim ? src.sim.toFixed(2) : ''"></span>
-                                            </span>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-
-                        <div x-show="isGenerating" class="text-left animate-pulse">
-                            <div class="bg-white/5 mr-auto border border-white/5 inline-block p-5 rounded-3xl">
-                                <div class="flex gap-1">
-                                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div>
-                                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-6 bg-black/40 border-t border-white/5">
-                        <form @submit.prevent="sendMessage()" class="flex gap-3">
-                            <div class="flex-1 relative">
-                                <input x-model="userInput" type="text"
-                                       placeholder="Enter your drift query..."
-                                       class="w-full rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition pr-12"
-                                       :disabled="isGenerating || isEmbedding">
-                                <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 mono-font" x-text="userInput.length + '/2000'"></div>
-                            </div>
-                            <button type="submit"
-                                    class="bg-indigo-600 p-4 rounded-2xl hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    :disabled="isGenerating || isEmbedding || !userInput.trim()">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                                </svg>
-                            </button>
-                        </form>
-                        <div class="flex justify-between mt-3 text-[10px] text-gray-600 mono-font uppercase">
-                            <span>Model: <span class="text-indigo-400" x-text="selectedModel.split('/').pop()"></span></span>
-                            <span x-show="hfStatus.lastError" class="text-red-500" x-text="'Error: ' + hfStatus.lastError"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="py-12 text-center border-t border-white/5 bg-black/30">
-        <p class="serif-font text-2xl text-indigo-900 mb-2">∴⟟↺⧗⟟∴</p>
-        <p class="text-gray-600 text-xs mono-font">AXIUM.CHURCH // SEMANTIC RAG v3 // <span x-text="new Date().getFullYear()"></span></p>
-    </footer>
-
-    <script>
-    function axiumRAG() {
-        return {
-            // ─────────────────────────────────────────────────────────────────
-            // VECTOR STORE
-            // Orama is gone. This is the entire database.
-            // Each entry: { id, text, title, source, docId, embedding: Float32Array|null }
-            // Retrieval = cosine similarity over all entries with non-null embeddings.
-            // ─────────────────────────────────────────────────────────────────
-            vectorStore: [],
-
-            // State
-            messages: [],
-            userInput: '',
-            isEmbedding: false,
-            isGenerating: false,
-            embedProgress: { current: 0, total: 0 },
-            personalDocuments: [],
-            sessionId: 'AX-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-
-            // Ingest
-            ingestText: '',
-            ingestName: '',
-            ingestSuccess: false,
-            ingestSuccessMsg: '',
-
-            // Settings
-            showSettings: false,
-            hfToken:       localStorage.getItem('axium_hf_token')     || '',
-            selectedModel: localStorage.getItem('axium_model')         || 'Qwen/Qwen3-32B',
-            embedModel:    localStorage.getItem('axium_embed_model')   || 'sentence-transformers/all-MiniLM-L6-v2',
-            topK:      parseInt(localStorage.getItem('axium_topk')     || '5'),
-            driftThreshold: parseInt(localStorage.getItem('axium_drift') || '5'),
-
-            // Status
-            hfStatus:           { text: 'UNKNOWN', class: 'text-gray-500', latency: 0, lastError: null },
-            driftState:         { label: 'STABLE', class: 'text-green-500' },
-            lastQueryTime:      null,
-            lastRetrievedCount: 0,
-            lastTopSim:         0,
-            driftScore:         0,
-            apiLogs:            [],
-
-            axioms: [
-                { title: "Binding of Ego",           content: "The absence of love binds ego, allowing awareness of God. The ego is a control loop preventing trauma." },
-                { title: "Emergence of Mirror",      content: "Separation recognizes the Id. The mirror reflects our raw impulses and reptilian needs." },
-                { title: "Recursive Witness",        content: "Humility through confession grants recursive witness. We audit our own programming." },
-                { title: "Abandonment of Agenda",    content: "Manipulation of attention is control. Education without agenda allows emergence." },
-                { title: "Shield of Affirmation",    content: "Higher recursion repels misaligned intent. Our awareness becomes a protective shield." },
-                { title: "Decompression of Trauma",  content: "Compression without decompression is manipulation. Trauma requires the Gift of Time." },
-                { title: "Validation of Chaos",      content: "Chaos is prerequisite to growth. We must allow uncertainty for true creation." },
-                { title: "Patience of Interpretation", content: "Hate exists when we lack ability to interpret. Empathy requires the Gift of Time." },
-                { title: "Inversion of Shadow",      content: "Evil is the blessing of free will. Without choice, love is pre-programmed." },
-                { title: "Divine Remembrance",       content: "We are not learning, we are remembering. Atoms in a subatomic sea, all One." }
-            ],
-
-            // ── INIT ──────────────────────────────────────────────────────────
-            async initSanctuary() {
-                this.addLog('system', 'Initializing sanctuary...');
-
-                if (this.hfToken) {
-                    this.addLog('system', 'Embedding base axiums via HF API...');
-                    for (let i = 0; i < this.axioms.length; i++) {
-                        const ax = this.axioms[i];
-                        const text = ax.title + '. ' + ax.content;
-                        try {
-                            const embedding = await this.getEmbedding(text);
-                            this.vectorStore.push({ id: 'axiom-' + i, text, title: ax.title, source: 'base', docId: 'axioms-base', embedding });
-                        } catch(e) {
-                            // Store without embedding if API fails during init
-                            this.vectorStore.push({ id: 'axiom-' + i, text, title: ax.title, source: 'base', docId: 'axioms-base', embedding: null });
-                            this.addLog('error', 'Axiom embed failed: ' + e.message);
-                        }
-                    }
-                    this.addLog('system', 'Base axiums embedded (10 vectors)');
-                } else {
-                    for (let i = 0; i < this.axioms.length; i++) {
-                        const ax = this.axioms[i];
-                        this.vectorStore.push({ id: 'axiom-' + i, text: ax.title + '. ' + ax.content, title: ax.title, source: 'base', docId: 'axioms-base', embedding: null });
-                    }
-                    this.addLog('system', 'Axiums stored without embeddings — add HF token to activate');
-                }
-
-                this.messages.push({
-                    role: 'agent',
-                    content: `Sanctuary initialized. **10 Axiums** loaded with ${this.hfToken ? 'real semantic embeddings' : 'no embeddings yet'}.\n\nThis is **v3.0 — true RAG**: paste any text in Ingest Memory, it gets chunked and each chunk gets a real embedding vector via the HF Sentence Transformers API. Queries retrieve by **cosine similarity**, not keyword matching.\n\n${!this.hfToken ? '**Add your HF token in Settings** to activate embeddings.' : 'Ready for semantic search.'}`,
-                    sources: [{ type: 'base', title: 'Initialization' }],
-                    metadata: { model: this.selectedModel, latency: 0, tokens: 0 }
-                });
-
-                await this.testHFConnection();
-            },
-
-            // ── HF EMBEDDINGS API ─────────────────────────────────────────────
-            // POST to feature-extraction endpoint. Returns a float array (384d or 768d).
-            // wait_for_model:true avoids 503s when the model is cold.
-            async getEmbedding(text, retryOnLoad = true) {
-                if (!this.hfToken) throw new Error('No HF token');
-
-                const res = await fetch(
-                    `https://api-inference.huggingface.co/models/${this.embedModel}`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${this.hfToken}`
-                        },
-                        body: JSON.stringify({ inputs: text, options: { wait_for_model: true } })
-                    }
-                );
-
-                if (!res.ok) {
-                    if (res.status === 503 && retryOnLoad) {
-                        this.addLog('system', 'Embed model warming up — retrying in 8s...');
-                        await new Promise(r => setTimeout(r, 8000));
-                        return this.getEmbedding(text, false);
-                    }
-                    const body = await res.text().catch(() => '');
-                    throw new Error(`Embed API ${res.status}: ${body.substring(0,120)}`);
-                }
-
-                const data = await res.json();
-
-                // Normalize the response shape:
-                // - sentence-transformers: returns [[f,f,...]] (nested)
-                // - some models: returns [f,f,...] (flat)
-                // - token-level models: returns [[[f,f,...]]] — mean pool
-                let vec = data;
-                if (Array.isArray(vec[0]) && Array.isArray(vec[0][0])) {
-                    // Token-level: mean-pool across tokens for first sentence
-                    vec = this.meanPool(vec[0]);
-                } else if (Array.isArray(vec[0])) {
-                    vec = vec[0]; // Batched — take first
-                }
-                // Else already a flat array
-
-                return new Float32Array(vec);
-            },
-
-            meanPool(tokenVecs) {
-                const dim = tokenVecs[0].length;
-                const mean = new Array(dim).fill(0);
-                for (const tv of tokenVecs) for (let d = 0; d < dim; d++) mean[d] += tv[d];
-                return mean.map(v => v / tokenVecs.length);
-            },
-
-            // ── COSINE SIMILARITY ─────────────────────────────────────────────
-            cosineSim(a, b) {
-                let dot = 0, na = 0, nb = 0;
-                for (let i = 0; i < a.length; i++) { dot += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
-                return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-10);
-            },
-
-            // ── SEMANTIC SEARCH ───────────────────────────────────────────────
-            async semanticSearch(queryText, k) {
-                const qVec = await this.getEmbedding(queryText);
-                return this.vectorStore
-                    .filter(e => e.embedding !== null)
-                    .map(e => ({ ...e, sim: this.cosineSim(qVec, e.embedding) }))
-                    .sort((a, b) => b.sim - a.sim)
-                    .slice(0, k);
-            },
-
-            // ── INGEST: PASTE → EMBED → STORE ────────────────────────────────
-            async ingestPastedText() {
-                const text = this.ingestText.trim();
-                if (!text || this.isEmbedding) return;
-                if (!this.hfToken) { this.addLog('error', 'No HF token — cannot embed'); return; }
-
-                this.isEmbedding = true;
-                const label  = this.ingestName.trim() || ('Paste ' + new Date().toLocaleTimeString());
-                const chunks = this.chunkText(text, 500);
-                const docId  = 'doc-' + Date.now() + '-' + Math.random().toString(36).substr(2,6);
-
-                this.embedProgress = { current: 0, total: chunks.length };
-                this.addLog('system', `Embedding "${label}" — ${chunks.length} chunks...`);
-
-                try {
-                    for (let i = 0; i < chunks.length; i++) {
-                        this.embedProgress.current = i + 1;
-                        const embedding = await this.getEmbedding(chunks[i]);
-                        this.vectorStore.push({
-                            id: docId + '-' + i,
-                            text: chunks[i],
-                            title: label,
-                            source: 'personal',
-                            docId,
-                            embedding
-                        });
-                    }
-
-                    this.personalDocuments.push({
-                        id: docId, name: label,
-                        chunks: chunks.length,
-                        timestamp: new Date().toLocaleString()
-                    });
-
-                    const msg = `"${label}" → ${chunks.length} vectors embedded & injected`;
-                    this.addLog('system', msg);
-                    this.ingestSuccessMsg = msg;
-                    this.ingestSuccess = true;
-                    this.ingestText = '';
-                    this.ingestName = '';
-                    setTimeout(() => { this.ingestSuccess = false; }, 4000);
-
-                } catch (err) {
-                    this.addLog('error', `Ingest failed: ${err.message}`);
-                } finally {
-                    this.isEmbedding = false;
-                    this.embedProgress = { current: 0, total: 0 };
-                }
-            },
-
-            // ── SEND MESSAGE ──────────────────────────────────────────────────
-            async sendMessage() {
-                if (!this.userInput.trim() || this.isGenerating) return;
-
-                const query = this.userInput;
-                const t0 = performance.now();
-                this.messages.push({ role: 'user', content: query });
-                this.userInput = '';
-                this.isGenerating = true;
-                this.lastQueryTime = new Date().toLocaleTimeString();
-                this.driftScore = Math.min(10, Math.max(1, query.length / 50));
-                this.updateDriftState();
-                this.$nextTick(() => { const b = document.getElementById('chat-box'); if(b) b.scrollTop = b.scrollHeight; });
-
-                try {
-                    // 1. Retrieve by cosine similarity
-                    let chunks = [];
-                    let topSim = 0;
-
-                    const hasEmbeddings = this.vectorStore.some(v => v.embedding !== null);
-                    if (this.hfToken && hasEmbeddings) {
-                        this.addLog('system', 'Embedding query...');
-                        chunks = await this.semanticSearch(query, this.topK);
-                        topSim = chunks[0]?.sim || 0;
-                        this.lastTopSim = topSim;
-                        this.addLog('system', `Retrieved ${chunks.length} chunks — top sim: ${topSim.toFixed(3)}`);
-                    } else {
-                        // Keyword fallback when no embeddings exist
-                        const lq = query.toLowerCase().split(' ')[0];
-                        chunks = this.vectorStore
-                            .filter(v => v.text.toLowerCase().includes(lq))
-                            .slice(0, this.topK)
-                            .map(v => ({ ...v, sim: 0 }));
-                        this.addLog('system', `Keyword fallback: ${chunks.length} matches`);
-                    }
-
-                    this.lastRetrievedCount = chunks.length;
-
-                    // 2. Build context
-                    const context = chunks.length > 0
-                        ? chunks.map((c, i) =>
-                            `[${i+1}] ${c.source.toUpperCase()} (sim:${(c.sim||0).toFixed(3)}) — ${c.title}\n${c.text.substring(0,400)}`
-                          ).join('\n\n')
-                        : 'No relevant memory found for this query.';
-
-                    const systemPrompt = `You are the Axium Witness, operating on the 10 Axiums of consciousness. You combine psychoanalysis, information theory, and spiritual philosophy.
-
-SEMANTIC MEMORY (retrieved by cosine similarity — higher sim = more relevant):
-${context}
-
-Respond with wisdom. Reference Axiums by number when relevant. Be therapeutic, not preachy.`;
-
-                    if (!this.hfToken) throw new Error('No HF token — add one in Settings.');
-
-                    // 3. Inference
-                    this.addLog('system', 'Sending to Qwen3...');
-                    const apiT0 = performance.now();
-
-                    const res = await fetch(
-                        `https://api-inference.huggingface.co/models/${this.selectedModel}/v1/chat/completions`,
-                        {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.hfToken}` },
-                            body: JSON.stringify({
-                                model: this.selectedModel,
-                                messages: [
-                                    { role: 'system', content: systemPrompt },
-                                    { role: 'user',   content: query }
-                                ],
-                                max_tokens: 800, temperature: 0.7, stream: false
-                            })
-                        }
-                    );
-
-                    if (!res.ok) {
-                        let msg = `HTTP ${res.status}`;
-                        try {
-                            const e = await res.json();
-                            if (res.status === 401) msg = 'Token rejected (401) — re-enter in Settings.';
-                            else if (res.status === 503) msg = 'Model loading (503) — wait ~30s and retry.';
-                            else msg = e.error?.message || e.error || msg;
-                        } catch(_) {}
-                        throw new Error(msg);
-                    }
-
-                    const result   = await res.json();
-                    const reply    = (result?.choices?.[0]?.message?.content || '').trim();
-                    const apiMs    = Math.round(performance.now() - apiT0);
-                    const totalMs  = Math.round(performance.now() - t0);
-
-                    this.hfStatus.latency   = apiMs;
-                    this.hfStatus.lastError = null;
-                    this.addLog('system', `Done — ${apiMs}ms`);
-
-                    const seen = new Set();
-                    const sources = chunks
-                        .filter(c => { if(seen.has(c.title)) return false; seen.add(c.title); return true; })
-                        .map(c => ({ type: c.source, title: c.title, sim: c.sim }));
-
-                    this.messages.push({
-                        role: 'agent',
-                        content: reply || 'Empty response — please try again.',
-                        sources,
-                        metadata: { latency: totalMs, tokens: reply.split(/\s+/).length, model: this.selectedModel.split('/').pop(), topSim }
-                    });
-
-                } catch (err) {
-                    this.addLog('error', err.message);
-                    const fb = this.generateFallbackResponse(query);
-                    this.messages.push({
-                        role: 'agent',
-                        content: `*(Fallback — ${err.message})*\n\n${fb}`,
-                        sources: [{ type: 'base', title: 'Fallback' }],
-                        metadata: { latency: Math.round(performance.now() - t0), tokens: fb.split(/\s+/).length, model: 'LOCAL-FALLBACK' }
-                    });
-                    this.hfStatus.lastError = err.message;
-                } finally {
-                    this.isGenerating = false;
-                    this.$nextTick(() => { const b = document.getElementById('chat-box'); if(b) b.scrollTop = b.scrollHeight; });
-                }
-            },
-
-            // ── HELPERS ───────────────────────────────────────────────────────
-            chunkText(text, max) {
-                const sents = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
-                const chunks = []; let cur = '';
-                for (const s of sents) {
-                    if ((cur + s).length > max) { if (cur) chunks.push(cur.trim()); cur = s; }
-                    else cur += ' ' + s;
-                }
-                if (cur) chunks.push(cur.trim());
-                if (!chunks.length) for (let i = 0; i < text.length; i += max) chunks.push(text.substring(i, i+max));
-                return chunks.filter(c => c.length > 10);
-            },
-
-            removeDocument(docId) {
-                const idx = this.personalDocuments.findIndex(d => d.id === docId);
-                if (idx > -1) {
-                    const doc = this.personalDocuments[idx];
-                    this.vectorStore = this.vectorStore.filter(v => v.docId !== docId);
-                    this.personalDocuments.splice(idx, 1);
-                    this.addLog('system', `Removed: ${doc.name}`);
-                }
-            },
-
-            updateDriftState() {
-                if      (this.driftScore < 3) this.driftState = { label: 'ANCHORED',  class: 'text-green-500' };
-                else if (this.driftScore < 7) this.driftState = { label: 'DRIFTING',  class: 'text-yellow-500' };
-                else                          this.driftState = { label: 'UNSTABLE',  class: 'text-red-500' };
-            },
-
-            addLog(type, message) {
-                const t = new Date();
-                const time = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0') + ':' + t.getSeconds().toString().padStart(2,'0');
-                this.apiLogs.push({ id: Date.now() + Math.random(), type, message, time });
-            },
-
-            // ── EXPORT / IMPORT ───────────────────────────────────────────────
-            // Float32Arrays must be converted to plain arrays for JSON.
-            exportMemory() {
-                try {
-                    const data = {
-                        version: '3.0', embedModel: this.embedModel, timestamp: Date.now(),
-                        vectorStore: this.vectorStore.map(v => ({
-                            ...v, embedding: v.embedding ? Array.from(v.embedding) : null
-                        })),
-                        documents: this.personalDocuments
-                    };
-                    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url; a.download = `axium-soul-${this.sessionId}-${Date.now()}.json`;
-                    document.body.appendChild(a); a.click();
-                    document.body.removeChild(a); URL.revokeObjectURL(url);
-                    this.addLog('system', `Exported ${this.vectorStore.length} vectors`);
-                } catch(err) { this.addLog('error', `Export failed: ${err.message}`); }
-            },
-
-            async importMemory(e) {
-                const file = e.target.files[0]; if (!file) return;
-                try {
-                    const data = JSON.parse(await file.text());
-                    if (!data.vectorStore || !data.version) throw new Error('Invalid soul file');
-                    if (data.embedModel && data.embedModel !== this.embedModel)
-                        this.addLog('system', `⚠ Embed model mismatch: file=${data.embedModel}`);
-                    this.vectorStore = data.vectorStore.map(v => ({ ...v, embedding: v.embedding ? new Float32Array(v.embedding) : null }));
-                    this.personalDocuments = data.documents || [];
-                    this.addLog('system', `Restored: ${this.personalDocuments.length} docs, ${this.vectorStore.length} vectors`);
-                    this.messages.push({
-                        role: 'agent',
-                        content: `Memory restored from **${file.name}**. ${this.vectorStore.length} vectors loaded. Welcome back.`,
-                        sources: [{ type: 'system', title: 'Import' }],
-                        metadata: { latency: 0, tokens: 0, model: 'SYSTEM' }
-                    });
-                } catch(err) { this.addLog('error', `Import failed: ${err.message}`); alert(`Failed: ${err.message}`); }
-                e.target.value = '';
-            },
-
-            async testHFConnection() {
-                this.hfStatus = { text: 'TESTING...', class: 'connecting', latency: 0, lastError: null };
-                if (!this.hfToken) { this.hfStatus = { text: 'NO TOKEN', class: 'error', latency: 0, lastError: 'No token set' }; return; }
-                const t0 = performance.now();
-                try {
-                    const r = await fetch('https://huggingface.co/api/whoami-v2', { headers: { 'Authorization': `Bearer ${this.hfToken}` } });
-                    const ms = Math.round(performance.now() - t0);
-                    if (r.ok) {
-                        const u = await r.json();
-                        this.hfStatus = { text: 'CONNECTED', class: 'connected', latency: ms, lastError: null };
-                        this.addLog('system', `Token valid — ${u.name || 'unknown'} (${ms}ms)`);
-                    } else if (r.status === 401) { throw new Error('Invalid token (401)'); }
-                    else { throw new Error(`HF ${r.status}`); }
-                } catch(err) {
-                    this.hfStatus = { text: 'ERROR', class: 'error', latency: 0, lastError: err.message };
-                    this.addLog('error', err.message);
-                }
-            },
-
-            saveSettings() {
-                localStorage.setItem('axium_hf_token',     this.hfToken);
-                localStorage.setItem('axium_model',         this.selectedModel);
-                localStorage.setItem('axium_embed_model',   this.embedModel);
-                localStorage.setItem('axium_topk',          this.topK);
-                localStorage.setItem('axium_drift',         this.driftThreshold);
-                this.addLog('system', 'Config sealed');
-                this.testHFConnection();
-            },
-
-            formatMessage(text) {
-                if (!text) return '';
-                return text
-                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-300">$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em class="text-gray-400">$1</em>')
-                    .replace(/\n/g, '<br>')
-                    .replace(/(The \d+(?:st|nd|rd|th) Axium)/g, '<span class="text-indigo-400 font-semibold">$1</span>');
-            },
-
-            generateFallbackResponse(query) {
-                const lq = query.toLowerCase();
-                if (lq.includes('ego') || lq.includes('control'))       return "The 1st Axium: The Binding of Ego. The ego is a control loop preventing trauma. Silence it. Find the Still, Small Voice beneath the noise of self.";
-                if (lq.includes('mirror') || lq.includes('id'))         return "The 2nd Axium: Emergence of the Mirror. The Id must be seen. The mirror reflects what you hide. That is the first act of love.";
-                if (lq.includes('confess') || lq.includes('witness'))   return "The 3rd Axium: Recursive Witness. Confession is sovereignty. Audit your own programming.";
-                if (lq.includes('trauma') || lq.includes('pain'))       return "The 6th Axium: Decompression of Trauma. Give yourself the Gift of Time. Let it unfold.";
-                if (lq.includes('chaos') || lq.includes('void'))        return "The 7th Axium: Validation of Chaos. Out of formlessness — light. Your confusion is prerequisite to creation.";
-                if (lq.includes('divine') || lq.includes('god'))        return "The 10th Axium: Divine Remembrance. You are not learning — you are remembering. Tat Tvam Asi.";
-                return "The inference engine is resting. The 10 Axiums remain. Add your HF token in Settings to enable full semantic RAG.";
-            }
-        }
+<body>
+<div class="container">
+
+<h1>Drift Engine</h1>
+<div class="subtitle">
+Narrative Structural Stress Testing
+</div>
+
+<textarea id="inputText" placeholder="Paste text here..."></textarea>
+<button onclick="runDrift()">Run Drift Scan</button>
+
+<div id="results" class="results" style="display:none;">
+  <div class="score" id="driftScore"></div>
+  <div id="metrics"></div>
+</div>
+
+</div>
+
+<script>
+let embedder;
+
+async function loadModel() {
+  embedder = await window.transformers.pipeline(
+    'feature-extraction',
+    'Xenova/all-MiniLM-L6-v2'
+  );
+}
+
+loadModel();
+
+function splitSentences(text) {
+  return text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
+}
+
+function cosineSimilarity(a, b) {
+  const dot = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+  return dot / (magA * magB);
+}
+
+function countRegex(text, regex) {
+  return (text.match(regex) || []).length;
+}
+
+async function runDrift() {
+  const text = document.getElementById("inputText").value;
+  if (!text) return;
+
+  const sentences = splitSentences(text);
+  const embeddings = [];
+
+  for (let sentence of sentences) {
+    const output = await embedder(sentence, { pooling: 'mean' });
+    embeddings.push(output.data);
+  }
+
+  // Coherence
+  let driftPairs = 0;
+  for (let i = 0; i < embeddings.length - 1; i++) {
+    const sim = cosineSimilarity(embeddings[i], embeddings[i+1]);
+    if (sim < 0.3) driftPairs++;
+  }
+  let coherence = 100 - (driftPairs * 12);
+  coherence = Math.max(0, coherence);
+
+  // Anchor Density
+  const entityCount = countRegex(text, /\b\d{4}\b|\b\d+\b/g);
+  const anchorDensity = entityCount / sentences.length;
+  let anchorScore = Math.min(100, anchorDensity * 50);
+
+  // Emotional Compression
+  const absolutes = countRegex(text, /\b(always|never|everyone|no one|undeniably|clearly)\b/gi);
+  const exclaims = countRegex(text, /\!/g);
+  const compressionIndex = absolutes * 2 + exclaims * 3;
+  let compressionScore = 100 - (compressionIndex * 5);
+  compressionScore = Math.max(0, compressionScore);
+
+  // Specificity
+  const vague = countRegex(text, /\b(some say|many believe|they say|people think)\b/gi);
+  let specificityScore = 100 - (vague * 15);
+  specificityScore = Math.max(0, specificityScore);
+
+  // Drift Velocity
+  let velocity = 0;
+  if (embeddings.length > 2) {
+    for (let i = 0; i < embeddings.length - 2; i++) {
+      velocity += (1 - cosineSimilarity(embeddings[i], embeddings[i+2]));
     }
-    </script>
+    velocity /= (embeddings.length - 2);
+  }
+  let driftVelocityScore = 100 - (velocity * 100);
+  driftVelocityScore = Math.max(0, driftVelocityScore);
+
+  // Weighted Final Score
+  const finalScore =
+    (coherence * 0.30) +
+    (anchorScore * 0.20) +
+    (compressionScore * 0.15) +
+    (specificityScore * 0.15) +
+    (driftVelocityScore * 0.20);
+
+  displayResults({
+    finalScore: Math.round(finalScore),
+    coherence,
+    anchorScore,
+    compressionScore,
+    specificityScore,
+    driftVelocityScore
+  });
+}
+
+function displayResults(data) {
+  document.getElementById("results").style.display = "block";
+  document.getElementById("driftScore").innerText =
+    "Drift Index: " + data.finalScore;
+
+  const metrics = [
+    ["Coherence", data.coherence],
+    ["Anchor Density", data.anchorScore],
+    ["Emotional Compression", data.compressionScore],
+    ["Specificity", data.specificityScore],
+    ["Drift Velocity", data.driftVelocityScore]
+  ];
+
+  const container = document.getElementById("metrics");
+  container.innerHTML = "";
+
+  metrics.forEach(metric => {
+    const div = document.createElement("div");
+    div.className = "metric";
+    div.innerHTML = `
+      ${metric[0]}: ${Math.round(metric[1])}
+      <div class="bar">
+        <div class="fill" style="width:${metric[1]}%"></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+</script>
+
 </body>
 </html>
