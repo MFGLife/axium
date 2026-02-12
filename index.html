@@ -538,7 +538,7 @@
 
                 async testHFConnection() {
                     this.hfStatus = { text: 'TESTING...', class: 'connecting', latency: 0, lastError: null };
-                    this.addLog('system', 'Testing HF API connection...');
+                    this.addLog('system', 'Testing HF token...');
 
                     if (!this.hfToken) {
                         this.hfStatus = { text: 'NO TOKEN', class: 'error', latency: 0, lastError: 'No token set. Open Settings.' };
@@ -549,23 +549,27 @@
                     const start = performance.now();
 
                     try {
-                        const response = await fetch(`https://api-inference.huggingface.co/models/${this.selectedModel}`, {
-                            method: 'HEAD',
+                        // Use whoami endpoint: validates token without waking the model
+                        // (model endpoint can 503 while loading, which looks like auth failure)
+                        const response = await fetch('https://huggingface.co/api/whoami-v2', {
                             headers: { 'Authorization': `Bearer ${this.hfToken}` }
                         });
 
                         const latency = Math.round(performance.now() - start);
 
-                        if (response.ok || response.status === 405) {
+                        if (response.ok) {
+                            const user = await response.json();
                             this.hfStatus = { 
                                 text: 'CONNECTED', 
                                 class: 'connected', 
                                 latency: latency,
                                 lastError: null 
                             };
-                            this.addLog('system', `HF API connected (${latency}ms)`);
+                            this.addLog('system', `Token valid — user: ${user.name || 'unknown'} (${latency}ms)`);
+                        } else if (response.status === 401) {
+                            throw new Error('Invalid token. Re-enter it in Settings.');
                         } else {
-                            throw new Error(`Status ${response.status} — check token`);
+                            throw new Error(`HF returned ${response.status}`);
                         }
                     } catch (err) {
                         this.hfStatus = { 
@@ -574,7 +578,7 @@
                             latency: 0,
                             lastError: err.message 
                         };
-                        this.addLog('error', `HF API failed: ${err.message}`);
+                        this.addLog('error', `Token check failed: ${err.message}`);
                     }
                 },
 
@@ -639,75 +643,70 @@ Respond with wisdom. Reference specific Axiums by number when relevant (e.g., "T
                             throw new Error('No Hugging Face token. Add one in Settings.');
                         }
 
-                        // 3. Call HF Inference API with properly closed template literal
+                        // 3. Call HF via OpenAI-compatible /v1/chat/completions endpoint
+                        // This is more reliable than the raw inference endpoint for Qwen3,
+                        // handles model loading gracefully, and returns cleaner responses.
                         const apiStart = performance.now();
                         this.addLog('system', 'Sending inference request...');
 
-                        const promptText = `<|im_start|>system\n${systemPrompt}\n<|im_end|>\n<|im_start|>user\n${query}\n<|im_end|>\n<|im_start|>assistant\n`;
-
-                        const response = await fetch(`https://api-inference.huggingface.co/models/${this.selectedModel}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${this.hfToken}`
-                            },
-                            body: JSON.stringify({
-                                inputs: promptText,
-                                parameters: {
-                                    max_new_tokens: 800,
+                        const response = await fetch(
+                            `https://api-inference.huggingface.co/models/${this.selectedModel}/v1/chat/completions`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${this.hfToken}`
+                                },
+                                body: JSON.stringify({
+                                    model: this.selectedModel,
+                                    messages: [
+                                        { role: 'system', content: systemPrompt },
+                                        { role: 'user',   content: query }
+                                    ],
+                                    max_tokens: 800,
                                     temperature: 0.7,
-                                    do_sample: true,
-                                    return_full_text: false
-                                }
-                            })
-                        });
+                                    stream: false
+                                })
+                            }
+                        );
 
                         if (!response.ok) {
-                            const errorData = await response.json().catch(() => ({}));
-                            throw new Error(errorData.error || `HTTP ${response.status}`);
+                            let errMsg = `HTTP ${response.status}`;
+                            try {
+                                const errData = await response.json();
+                                if (response.status === 401) {
+                                    errMsg = 'Token rejected by HF (401). Re-enter it in Settings.';
+                                } else if (response.status === 503) {
+                                    errMsg = 'Model is loading on HF servers (503). Wait ~30s and retry.';
+                                } else {
+                                    errMsg = errData.error?.message || errData.error || errMsg;
+                                }
+                            } catch (_) {}
+                            throw new Error(errMsg);
                         }
 
                         const result = await response.json();
-
-                        // Handle both array and object response shapes from HF
-                        let generatedText = '';
-                        if (Array.isArray(result) && result[0]) {
-                            generatedText = result[0].generated_text || '';
-                        } else if (result && typeof result === 'object') {
-                            generatedText = result.generated_text || '';
-                        }
-                        
-                        // Clean up any prompt echo (return_full_text: false should prevent this,
-                        // but some models ignore the flag)
-                        const cleanResponse = generatedText
-                            .replace(/<\|im_start\|>[\s\S]*?<\|im_end\|>/g, '')
-                            .replace(/<\|im_start\|>/g, '')
-                            .replace(/<\|im_end\|>/g, '')
-                            .replace(/<\|.*?\|>/g, '')
-                            .trim();
+                        const generatedText = result?.choices?.[0]?.message?.content || '';
+                        const cleanResponse = generatedText.trim();
 
                         const apiLatency = Math.round(performance.now() - apiStart);
                         const totalLatency = Math.round(performance.now() - queryStart);
 
                         this.hfStatus.latency = apiLatency;
+                        this.hfStatus.lastError = null;
                         this.addLog('system', `Inference complete (${apiLatency}ms)`);
 
-                        // Extract unique sources for display
                         const seenTitles = new Set();
                         const sources = retrievedChunks
-                            .filter(c => { 
-                                if (seenTitles.has(c.title)) return false; 
-                                seenTitles.add(c.title); 
-                                return true; 
-                            })
+                            .filter(c => { if (seenTitles.has(c.title)) return false; seenTitles.add(c.title); return true; })
                             .map(c => ({ type: c.source, title: c.title }));
 
                         this.messages.push({
                             role: 'agent',
-                            content: cleanResponse || "The model returned an empty response. Please try again.",
+                            content: cleanResponse || 'The model returned an empty response. Please try again.',
                             sources: sources,
-                            metadata: { 
-                                latency: totalLatency, 
+                            metadata: {
+                                latency: totalLatency,
                                 tokens: cleanResponse.split(/\s+/).length,
                                 model: this.selectedModel.split('/')[1]
                             }
