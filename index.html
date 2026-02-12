@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Axium.church | Personalized RAG Sanctuary</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Load Orama first via dynamic import, THEN boot Alpine.
+         This eliminates all race conditions: Alpine won't touch any component
+         until window.Orama is fully populated with create/insert/search/save/load. -->
     <script type="module">
-        // v1.3.1 is the last browser-safe Orama release.
-        // v2.x introduced hrtime.bigint (Node.js-only) and changed validateSchema —
-        // both break in browsers with no polyfill available.
-        import { create, insert, search, save, load } from 'https://cdn.jsdelivr.net/npm/@orama/orama@1.3.1/+esm';
+        // 1. Load Orama ESM
+        const { create, insert, search, save, load } = await import(
+            'https://cdn.jsdelivr.net/npm/@orama/orama@1.3.1/+esm'
+        );
         window.Orama = { create, insert, search, save, load };
-        window.OramaReady = true;
-        window.dispatchEvent(new Event('orama-ready'));
+
+        // 2. Now dynamically load Alpine — it will initialize AFTER Orama is ready
+        const alpine = document.createElement('script');
+        alpine.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js';
+        alpine.defer = true;
+        document.head.appendChild(alpine);
     </script>
 
     <style>
@@ -149,7 +155,7 @@
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 rounded-full bg-indigo-900/50 border border-indigo-500/30 flex items-center justify-center overflow-hidden">
-                    <img src="Logo.png" alt="Axium Logo"
+                    <img src="logo.png" alt="Axium Logo"
                          class="w-full h-full object-cover rounded-full"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                     <span class="text-indigo-300 font-bold text-lg hidden items-center justify-center w-full h-full" style="display:none">A</span>
@@ -483,9 +489,10 @@
                 ],
 
                 async initSanctuary() {
-                    // Wait for the Orama ES module to finish loading (it's async via <script type="module">)
-                    if (!window.OramaReady) {
-                        await new Promise(resolve => window.addEventListener('orama-ready', resolve, { once: true }));
+                    // Guard: if Orama UMD didn't load (CDN failure), show error
+                    if (!window.Orama || typeof window.Orama.create !== 'function') {
+                        this.addLog('error', 'Orama failed to load from CDN. Check network.');
+                        return;
                     }
 
                     // Initialize Orama v1.3.1 — 'id' is auto-managed, do NOT include it in schema
@@ -584,6 +591,10 @@
 
                 async sendMessage() {
                     if (!this.userInput.trim() || this.isGenerating) return;
+                    if (!this.db) {
+                        this.addLog('error', 'Database not ready — Orama may still be loading. Try again.');
+                        return;
+                    }
 
                     const query = this.userInput;
                     const queryStart = performance.now();
@@ -855,6 +866,7 @@ Respond with wisdom. Reference specific Axiums by number when relevant (e.g., "T
                 },
 
                 async indexDocument(name, text, type) {
+                    if (!this.db) throw new Error('Database not ready — please wait a moment and try again.');
                     const chunks = this.chunkText(text, 800);
                     const docId = `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                     const timestamp = new Date().toLocaleString();
