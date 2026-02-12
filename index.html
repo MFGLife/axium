@@ -601,10 +601,14 @@ Respond with wisdom. Reference specific Axiums by number when relevant (e.g., "T
                                 'Content-Type': 'application/json',
                                 'Authorization': this.hfToken ? `Bearer ${this.hfToken}` : 'Bearer hf_demo'
                             },
-                            body: JSON.stringify({
-                                inputs: `<|im_start|>system\n${systemPrompt}
-
-                            })
+                           body: JSON.stringify({
+    inputs: `<|im_start|>system\n${systemPrompt}\n<|im_end|>\n<|im_start|>user\n${query}\n<|im_end|>\n<|im_start|>assistant\n`,
+    parameters: {
+        max_new_tokens: 800,
+        temperature: 0.7,
+        return_full_text: false
+    }
+})
                         });
 
                         if (!response.ok) {
