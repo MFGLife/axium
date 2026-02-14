@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AXIUM MASK GENERATOR | Psyche to Symbol</title>
+    <title>AXIUM.CHURCH | Faceless Congregation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -40,7 +40,6 @@
             pointer-events: none;
         }
 
-        /* Noise texture overlay */
         body::before {
             content: '';
             position: fixed;
@@ -60,23 +59,6 @@
 
         .gold-text-static { color: var(--gold-primary); }
 
-        /* Input Styling */
-        .psyche-input {
-            background: rgba(10, 10, 10, 0.9);
-            border: 1px solid rgba(212, 175, 55, 0.25);
-            color: var(--gold-light);
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1rem;
-            transition: all 0.4s ease;
-        }
-        .psyche-input:focus {
-            border-color: var(--gold-primary);
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.15), inset 0 0 10px rgba(212, 175, 55, 0.05);
-            outline: none;
-        }
-        .psyche-input::placeholder { color: rgba(244, 228, 188, 0.2); font-style: italic; }
-
-        /* Cards */
         .axium-card {
             background: linear-gradient(135deg, rgba(8,8,16,0.95) 0%, rgba(15,15,20,0.9) 100%);
             border: 1px solid rgba(212, 175, 55, 0.15);
@@ -95,38 +77,29 @@
         .axium-card:hover::before { left: 100%; }
         .axium-card:hover { border-color: rgba(212, 175, 55, 0.35); }
 
-        /* Keyword Tags */
-        .keyword-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            background: rgba(212, 175, 55, 0.08);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 2px;
-            font-size: 0.65rem;
+        .archetype-badge {
+            background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05));
+            border: 1px solid rgba(212,175,55,0.3);
             font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
             color: var(--gold-pale);
-            margin: 2px;
-            animation: tag-pulse 3s infinite;
-        }
-        @keyframes tag-pulse {
-            0%,100% { border-color: rgba(212,175,55,0.2); }
-            50% { border-color: rgba(212,175,55,0.5); }
+            padding: 4px 12px;
+            display: inline-block;
         }
 
-        /* Matrix Display */
-        .matrix-cell {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.6rem;
-            color: rgba(212, 175, 55, 0.4);
-            padding: 1px 3px;
-            transition: all 0.3s;
+        .ritual-divider {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
         }
-        .matrix-cell.active {
-            color: var(--gold-primary);
-            text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+        .ritual-divider::before, .ritual-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
         }
 
-        /* Generate Button */
         .generate-btn {
             background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-dark) 100%);
             color: var(--black-deep);
@@ -153,17 +126,6 @@
         }
         .generate-btn:hover::after { opacity: 1; left: 100%; }
 
-        /* Output Section */
-        .output-container {
-            background: rgba(5, 5, 12, 0.98);
-            border: 2px solid var(--gold-primary);
-            box-shadow: 0 0 80px rgba(212, 175, 55, 0.12), inset 0 0 40px rgba(212, 175, 55, 0.03);
-        }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--black-deep); }
-        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
-
         @keyframes pulse-gold {
             0%,100% { box-shadow: 0 0 20px rgba(212,175,55,0.2); }
             50% { box-shadow: 0 0 50px rgba(212,175,55,0.4); }
@@ -181,54 +143,9 @@
             50% { transform: translateY(-8px); }
         }
 
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-
-        .trait-bar {
-            height: 3px;
-            background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary), var(--gold-light));
-            transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
         .mask-viz-container {
             background: radial-gradient(ellipse at center, rgba(212,175,55,0.06) 0%, rgba(0,0,0,0) 70%);
             border: 1px solid rgba(212,175,55,0.2);
-        }
-
-        /* Keyword Matrix Grid */
-        .matrix-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            gap: 2px;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.55rem;
-        }
-
-        /* Divider */
-        .ritual-divider {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        .ritual-divider::before, .ritual-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
-        }
-
-        /* Archetype badge */
-        .archetype-badge {
-            background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05));
-            border: 1px solid rgba(212,175,55,0.3);
-            font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            color: var(--gold-pale);
-            padding: 4px 12px;
-            display: inline-block;
         }
 
         .section-header {
@@ -239,1089 +156,258 @@
             text-transform: uppercase;
         }
 
-        .prompt-output {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.72rem;
-            line-height: 1.8;
-            color: #b8b8cc;
-            white-space: pre-wrap;
-        }
-
-        /* Score ring */
-        .score-ring {
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            border: 2px solid rgba(212,175,55,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--gold-primary);
-            flex-shrink: 0;
-        }
-
-        /* Glyph SVG */
-        .mask-glyph {
-            animation: float 6s ease-in-out infinite;
-        }
-
-        /* Input group label */
-        .input-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.6rem;
-            letter-spacing: 0.25em;
-            color: var(--gold-dark);
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        /* Next steps */
-        .next-step-card {
-            background: rgba(10,10,10,0.8);
-            border: 1px solid rgba(212,175,55,0.15);
-            transition: all 0.3s;
-        }
-        .next-step-card:hover {
-            border-color: rgba(212,175,55,0.4);
-            transform: translateY(-3px);
-        }
-
-        /* Loading animation */
-        @keyframes decode {
-            0% { content: '█████████'; }
-            25% { content: '▓████████'; }
-            50% { content: '▓▓███████'; }
-            75% { content: '▓▓▓██████'; }
-            100% { content: '▓▓▓▓█████'; }
-        }
-
-        .intensity-high { color: #FFD700; }
-        .intensity-mod  { color: #C8A44A; }
-        .intensity-low  { color: #7A6030; }
-
-        /* Psychological dimension colors per axis */
-        .dim-ego       { border-left: 2px solid #D4AF37; }
-        .dim-shadow    { border-left: 2px solid #6B21A8; }
-        .dim-trauma    { border-left: 2px solid #991B1B; }
-        .dim-chaos     { border-left: 2px solid #065F46; }
-        .dim-divine    { border-left: 2px solid #1E40AF; }
-        .dim-duality   { border-left: 2px solid #9D174D; }
-        .dim-mirror    { border-left: 2px solid #0F766E; }
-
-        .hidden { display: none !important; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--black-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
     </style>
 </head>
 <body class="min-h-screen">
     <canvas id="particle-canvas"></canvas>
 
-    <!-- Header -->
+    <!-- HEADER / HERO -->
     <header class="relative z-10 pt-16 pb-10 px-6 text-center">
         <div class="max-w-5xl mx-auto">
-            <div class="mono text-xs tracking-[0.5em] text-yellow-700 mb-5 uppercase opacity-70">Axium.church ∴ Research Facility ∴ Build 2.0</div>
+            <div class="mono text-xs tracking-[0.5em] text-yellow-700 mb-5 uppercase opacity-70">
+                Axium.church ∴ Faceless Congregation ∴ Build 3.0
+            </div>
             <h1 class="text-5xl md:text-8xl font-bold gold-text mb-5 leading-none tracking-widest">
-                AXIUM<br><span style="font-size:0.55em;letter-spacing:0.5em;">MASK GENERATOR</span>
+                AXIUM<br>
+                <span style="font-size:0.55em;letter-spacing:0.5em;">CHURCH OF THE FACELESS</span>
             </h1>
-            <div class="ritual-divider mb-6"><span class="gold-text-static text-sm mono">◈ PSYCHE TO SYMBOL ◈</span></div>
+            <div class="ritual-divider mb-6">
+                <span class="gold-text-static text-sm mono">◈ ART · CODE · COUNTER‑LITURGY ◈</span>
+            </div>
             <p class="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed" style="font-style:italic;">
-                This system extracts your psychological architecture through keyword matrix analysis 
-                and maps it across the 10 Axiums of Recursive Alignment — generating a cinematic visual mask 
-                that compresses your identity into ceremonial geometry.
+                A research cult for those who know the story is rigged but refuse to play their assigned character.
+                We weaponize double‑entendre, anonymous ritual and AI‑augmented language to expose the machinery
+                behind the mask without sacrificing the people wearing it.
             </p>
             <div class="mt-6 flex justify-center gap-4 flex-wrap">
-                <span class="archetype-badge">KEYWORD EXTRACTION ENGINE v2</span>
-                <span class="archetype-badge">MATRIX SCORING ACTIVE</span>
-                <span class="archetype-badge">10 AXIUM DIMENSIONS</span>
+                <span class="archetype-badge">RITUAL ENGINE v3</span>
+                <span class="archetype-badge">ANONYMOUS CONGREGATION</span>
+                <span class="archetype-badge">RAG‑AUGMENTED DOCTRINE</span>
+            </div>
+
+            <!-- MAIN CTA -->
+            <div class="mt-10">
+                <a href="#gateways" class="inline-block generate-btn px-14 py-7 text-sm md:text-base rounded-none uppercase tracking-[0.3em]">
+                    ◈ Enter the Axium ◈
+                </a>
+                <p class="mt-4 text-sm text-gray-600 mono italic">
+                    One click in. No face, no faith required — only signal.
+                </p>
             </div>
         </div>
     </header>
 
-    <main class="relative z-10 max-w-7xl mx-auto px-6 pb-24">
+    <!-- MAIN CONTENT -->
+    <main class="relative z-10 max-w-6xl mx-auto px-6 pb-24">
 
-        <!-- PART 0: KEYWORD MATRIX LEGEND (new section) -->
-        <section class="mb-14 reveal">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">KEYWORD MATRIX — ACTIVE DIMENSIONS</h2>
-            </div>
-            <div class="axium-card rounded-sm p-6">
-                <p class="text-gray-500 mono text-xs mb-5">The system scans your inputs against 7 psychological axes, each containing 30+ semantic keywords. Match density drives mask morphology.</p>
-                <div id="matrix-legend-display" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- populated by JS -->
-                </div>
-            </div>
-        </section>
-
-        <!-- PART 1: USER MIRROR INPUT -->
+        <!-- DOCTRINE / WHAT THIS IS -->
         <section class="mb-16 reveal">
             <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">PART I — USER MIRROR</h2>
+                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
+                    PART I — AXIUM DOCTRINE
+                </h2>
             </div>
-
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="space-y-5">
-                    <div>
-                        <label class="input-label">I fear</label>
-                        <input type="text" id="input-fear" class="psyche-input w-full p-4 rounded-sm" placeholder="What dismantles your composure...">
-                    </div>
-                    <div>
-                        <label class="input-label">I desire</label>
-                        <input type="text" id="input-desire" class="psyche-input w-full p-4 rounded-sm" placeholder="What you reach for in darkness...">
-                    </div>
-                    <div>
-                        <label class="input-label">I hide</label>
-                        <input type="text" id="input-hide" class="psyche-input w-full p-4 rounded-sm" placeholder="The truth you bury deepest...">
-                    </div>
-                    <div>
-                        <label class="input-label">I perform</label>
-                        <input type="text" id="input-perform" class="psyche-input w-full p-4 rounded-sm" placeholder="The character you play publicly...">
-                    </div>
-                    <div>
-                        <label class="input-label">I judge in others</label>
-                        <input type="text" id="input-judge" class="psyche-input w-full p-4 rounded-sm" placeholder="What you condemn externally but own internally...">
-                    </div>
-                </div>
-                <div class="space-y-5">
-                    <div>
-                        <label class="input-label">I believe makes me worthy</label>
-                        <input type="text" id="input-worthy" class="psyche-input w-full p-4 rounded-sm" placeholder="Your currency of value...">
-                    </div>
-                    <div>
-                        <label class="input-label">I believe makes me dangerous</label>
-                        <input type="text" id="input-dangerous" class="psyche-input w-full p-4 rounded-sm" placeholder="Your suppressed power...">
-                    </div>
-                    <div>
-                        <label class="input-label">I want people to see me as</label>
-                        <input type="text" id="input-want-see" class="psyche-input w-full p-4 rounded-sm" placeholder="Your constructed image...">
-                    </div>
-                    <div>
-                        <label class="input-label">I never want to be seen as</label>
-                        <input type="text" id="input-never-see" class="psyche-input w-full p-4 rounded-sm" placeholder="Your existential terror...">
-                    </div>
-                    <div>
-                        <label class="input-label">I secretly know about myself</label>
-                        <input type="text" id="input-secret" class="psyche-input w-full p-4 rounded-sm" placeholder="The truth you cannot unsee...">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Keyword Extraction Preview -->
-            <div class="mt-6 axium-card rounded-sm p-4">
-                <div class="mono text-xs text-yellow-700 mb-2 uppercase tracking-widest">Live Keyword Extraction ↓</div>
-                <div id="live-keywords" class="min-h-[32px] flex flex-wrap gap-1">
-                    <span class="text-gray-700 mono text-xs italic">Begin typing to see keyword matrix activate...</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Generate Button -->
-        <div class="text-center mb-20">
-            <button onclick="generateMask()" class="generate-btn px-14 py-7 text-xl rounded-none uppercase tracking-[0.3em]">
-                ◈ Transmute Psyche to Mask ◈
-            </button>
-            <p class="mt-4 text-sm text-gray-600 mono italic">All fields must be completed to proceed with the ritual</p>
-        </div>
-
-        <!-- PART 2: KEYWORD MATRIX ANALYSIS (new, fully expanded) -->
-        <section id="matrix-section" class="hidden mb-16">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">PART II — MATRIX EXTRACTION</h2>
-            </div>
-
-            <div class="axium-card rounded-sm p-6 mb-6">
-                <div class="mono text-xs text-yellow-700 mb-4 uppercase tracking-widest">Matched Keywords by Dimension</div>
-                <div id="matched-keywords-display" class="space-y-4"><!-- populated --></div>
-            </div>
-
-            <!-- Scoring Breakdown -->
-            <div class="grid md:grid-cols-3 gap-4">
-                <div class="axium-card rounded-sm p-5 md:col-span-2">
-                    <div class="mono text-xs text-yellow-700 mb-4 uppercase tracking-widest">Raw Score Vectors</div>
-                    <div id="score-vectors" class="space-y-3"><!-- populated --></div>
-                </div>
-                <div class="axium-card rounded-sm p-5">
-                    <div class="mono text-xs text-yellow-700 mb-4 uppercase tracking-widest">Dominant Archetype</div>
-                    <div id="archetype-display"><!-- populated --></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PART 3: AXIUM TRANSLATION -->
-        <section id="axium-section" class="hidden mb-16">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">PART III — AXIUM TRANSLATION</h2>
-            </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4" id="axium-grid"><!-- generated --></div>
-        </section>
-
-        <!-- PART 4: SYMBOLIC ARCHITECTURE / VISUALIZATION -->
-        <section id="mask-viz-section" class="hidden mb-16">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">PART IV — SYMBOLIC ARCHITECTURE</h2>
-            </div>
-            <div class="grid lg:grid-cols-2 gap-8">
-                <div class="mask-viz-container rounded-sm p-8 min-h-[440px] flex flex-col justify-center items-center">
-                    <div id="mask-diagram" class="w-full"></div>
-                </div>
-                <div class="space-y-5">
-                    <h3 class="text-xl gold-text mb-2 tracking-widest" style="font-size:1rem;">PSYCHOLOGICAL COMPRESSION</h3>
-                    <div id="trait-analysis" class="space-y-3"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PART 5: FINAL PROMPT OUTPUT -->
-        <section id="output-section" class="hidden">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">PART V — THE REVEALED MASK</h2>
-            </div>
-            <div class="output-container rounded-sm p-8 md:p-12 pulse-gold">
-                <div class="flex justify-between items-start mb-8 flex-wrap gap-4">
-                    <div>
-                        <h3 class="text-2xl gold-text mb-2 tracking-widest">Universal Mask Generation Prompt</h3>
-                        <p class="mono text-xs text-gray-500">Paste into Midjourney · Sora · Stable Diffusion · Runway · DALL·E · Hallo</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <button onclick="copyPrompt()" class="px-5 py-2 border border-yellow-700 text-yellow-600 hover:bg-yellow-700 hover:text-black transition-all text-xs mono uppercase tracking-wider">
-                            ◈ Copy Prompt
-                        </button>
-                        <button onclick="regenerateMask()" class="px-5 py-2 border border-gray-700 text-gray-500 hover:bg-gray-800 transition-all text-xs mono uppercase tracking-wider">
-                            ↺ Regenerate
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Prompt Tiers -->
-                <div class="space-y-6">
-                    <div>
-                        <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">◆ Full Cinematic Prompt</div>
-                        <div class="bg-black/60 rounded-sm p-6 border border-yellow-900/20 prompt-output" id="final-prompt"></div>
-                    </div>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">◆ Compact Variant</div>
-                            <div class="bg-black/60 rounded-sm p-4 border border-yellow-900/20 prompt-output text-xs" id="compact-prompt"></div>
-                        </div>
-                        <div>
-                            <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">◆ Negative Prompt</div>
-                            <div class="bg-black/60 rounded-sm p-4 border border-yellow-900/20 prompt-output text-xs" id="negative-prompt"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-8 border-t border-yellow-900/20">
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <div>
-                            <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Personalization Layer</div>
-                            <div id="personalization-details" class="space-y-2 text-sm text-gray-400"></div>
-                        </div>
-                        <div>
-                            <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Extracted Modifiers</div>
-                            <div id="modifier-tags" class="flex flex-wrap gap-1"></div>
-                        </div>
-                        <div class="text-gray-600 italic text-sm leading-relaxed" style="font-family:'Cormorant Garamond',serif;">
-                            This mask is not created — it is revealed. It contains your identity rather than concealing it. Every crack is intentional. Every surface speaks.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Next Steps -->
-            <div class="mt-12 grid md:grid-cols-3 gap-4">
-                <div class="next-step-card rounded-sm p-6">
-                    <div class="mono text-xs text-yellow-700 mb-3">01 — GENERATE</div>
-                    <h4 class="gold-text mb-2 tracking-wider" style="font-family:'Cinzel',serif;font-size:0.85rem;">AI Image Tools</h4>
-                    <p class="text-gray-500 text-sm leading-relaxed">Paste the prompt into Midjourney, DALL·E, or Stable Diffusion XL for hyper-realistic mask generation.</p>
-                </div>
-                <div class="next-step-card rounded-sm p-6">
-                    <div class="mono text-xs text-yellow-700 mb-3">02 — ANIMATE</div>
-                    <h4 class="gold-text mb-2 tracking-wider" style="font-family:'Cinzel',serif;font-size:0.85rem;">Video Animation</h4>
-                    <p class="text-gray-500 text-sm leading-relaxed">Use Runway Gen-3, Sora, or Hallo to animate the mask for ceremonial video presence.</p>
-                </div>
-                <div class="next-step-card rounded-sm p-6">
-                    <div class="mono text-xs text-yellow-700 mb-3">03 — INTEGRATE</div>
-                    <h4 class="gold-text mb-2 tracking-wider" style="font-family:'Cinzel',serif;font-size:0.85rem;">Axium Protocol</h4>
-                    <p class="text-gray-500 text-sm leading-relaxed">Bring your symbolic mask into the full Axium recursive alignment framework at axium.church.</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-    // ═══════════════════════════════════════════════════════════════════
-    // MASSIVE KEYWORD MATRIX — 7 Dimensions × 30–40 keywords each
-    // ═══════════════════════════════════════════════════════════════════
-    const KEYWORD_MATRIX = {
-
-        ego: {
-            label: "Ego Rigidity",
-            color: "#D4AF37",
-            dimClass: "dim-ego",
-            keywords: [
-                // control / structure
-                'control','perfect','perfection','structure','order','rigid','armor','wall','fortress',
-                'strong','strength','dominant','dominance','authority','rule','discipline','precise','precision',
-                // identity
-                'confident','confidence','proud','pride','power','powerful','leader','leadership','identity',
-                'self','core','foundation','backbone','principle','standard','fixed','certain','certainty',
-                // building / hardness
-                'build','built','stone','steel','iron','marble','pillar','column','architecture',
-                'unbreakable','immovable','solid','stable','consistent','reliable','composed','unfazed',
-                // control through appearance
-                'polished','refined','image','impression','reputation','status','superior','above'
-            ],
-            promptWords: {
-                high: ['rigid architectural geometry with hairline fracture lines','symmetrical authoritarian planes','sharp angular precision','obsidian-black polished surfaces','absolute bilateral symmetry'],
-                mod:  ['balanced structural tension','visible stress veins across cheekbone architecture','tempered geometric composition','layered structural integrity'],
-                low:  ['soft flowing organic curves','near-liquid dissolution of form','porous boundary definition','yielding asymmetric surfaces']
-            }
-        },
-
-        shadow: {
-            label: "Shadow Integration",
-            color: "#7C3AED",
-            dimClass: "dim-shadow",
-            keywords: [
-                // darkness / hiding
-                'hide','hidden','secret','dark','darkness','shadow','void','buried','suppress','suppressed',
-                'shame','shameful','guilty','guilt','conceal','concealed','mask','veil','cover','locked',
-                // fear / anxiety
-                'fear','afraid','terror','dread','panic','anxiety','anxious','unease','disturb','haunting',
-                'never','nightmare','curse','sinister','ominous','forbidden','taboo','unspeakable',
-                // the wound
-                'wound','wounded','broken','fractured','damaged','scarred','scar','exile','exiled','rejected',
-                'unwanted','unworthy','unlovable','abandoned','alone','isolated','monstrous','wrong',
-                // internal conflict
-                'conflict','tension','split','divided','torn','contradiction','paradox','hypocrite','two-faced'
-            ],
-            promptWords: {
-                high: ['deep void textures in orbital cavities','secondary inverse face emerging from interior darkness','blackened negative space sculpted to resemble eyes within eyes','shadow carved geometry'],
-                mod:  ['subtle shadow integration zones','dual-texture passages between light and dark matter','semi-translucent dark veil overlay'],
-                low:  ['minimal shadow presence','predominantly unified luminous surface','faint shadow geometry at edges only']
-            }
-        },
-
-        trauma: {
-            label: "Trauma Visibility",
-            color: "#DC2626",
-            dimClass: "dim-trauma",
-            keywords: [
-                // damage / rupture
-                'hurt','pain','broken','shattered','cracked','fracture','rupture','wound','injury','damage',
-                'collapse','fall','fell','destroyed','lost','grief','loss','ache','aching','sorrow',
-                // repair / healing
-                'heal','healing','repair','repair','fix','mend','recover','recover','golden','gold','kintsugi',
-                'rebuild','restore','restoration','return','survive','survived','survive',
-                // aftermath
-                'scar','scarred','mark','marked','changed','transformed','never same','before','after',
-                'childhood','mother','father','parent','betrayal','betrayed','trust','broken trust',
-                // endurance
-                'endure','endured','carry','carried','burden','weight','heavy','overcoming','through',
-                'resilience','resilient','still here','remain','remain standing'
-            ],
-            promptWords: {
-                high: ['visible fractures repaired with 24-karat gold kintsugi inlay','scar tissue elevated to ceremonial ornamentation','structural damage lines glowing from within','gilded wound pathways running across entire surface'],
-                mod:  ['microscopic gold repair threads at stress points','barely visible fusion seams catching light at oblique angles','selective kintsugi at strategic fracture points'],
-                low:  ['pristine surface with no visible damage history','zero repair markings','unmarked ceremonial perfection']
-            }
-        },
-
-        chaos: {
-            label: "Chaos Validation",
-            color: "#059669",
-            dimClass: "dim-chaos",
-            keywords: [
-                // disorder / wildness
-                'chaos','chaotic','wild','untamed','unpredictable','random','disorder','disorganized',
-                'turbulent','turbulence','volatile','explosive','rage','anger','fury','fierce','feral',
-                // rule-breaking
-                'break','breaking','rules','convention','norm','against','rebel','rebellion','refuse',
-                'resist','resistance','maverick','rogue','outsider','outlaw','transgress',
-                // entropy / overflow
-                'overflow','excess','too much','overwhelming','flooded','consumed','spiral','spiral down',
-                'collapse into','lose control','unravel','dissolve','melt','scatter',
-                // creative destruction
-                'destroy to create','burn it down','radical','extreme','intense','intensity','raw','unfiltered',
-                'primal','instinct','gut','impulse','compulsive','obsessive','all or nothing'
-            ],
-            promptWords: {
-                high: ['unpredictable baroque over-ornamentation','asymmetric explosive detail density','chaotic filigree in violent contradiction to the base form','random geometric eruptions across surface','controlled entropy aesthetic'],
-                mod:  ['selective ornamental disruption zones','measured asymmetry','tension between geometric precision and organic overflow'],
-                low:  ['controlled geometric ornamental language','restrained precision detailing','clean ceremonial austerity']
-            }
-        },
-
-        divine: {
-            label: "Divine Emergence",
-            color: "#2563EB",
-            dimClass: "dim-divine",
-            keywords: [
-                // light / transcendence
-                'light','luminous','glow','radiant','radiance','sacred','divine','holy','spiritual','soul',
-                'transcend','transcendence','higher','ascend','ascent','awaken','awakened','enlighten',
-                // truth / authenticity
-                'truth','authentic','authentic','real','genuine','true','pure','clarity','clear','transparent',
-                'honest','integrity','integrity','wholeness','whole','complete','remembrance',
-                // cosmic / universal
-                'universe','cosmic','infinite','eternal','timeless','mystery','mystical','numinous',
-                'presence','being','consciousness','aware','awareness','witness','witness',
-                // surrender / reception
-                'receive','surrender','open','opening','allow','receive','receive grace','grace',
-                'chosen','calling','purpose','destined','alignment','aligned','flow','flowing'
-            ],
-            promptWords: {
-                high: ['warm amber subsurface scattering emerging from interior','internal luminescence bleeding through surface cracks','bioluminescent glow beneath the matte exterior','light source originating within the mask itself','phosphorescent edge halos'],
-                mod:  ['selective subsurface warmth at forehead and orbital ridges','faint interior light on crown','cool exterior reflection with subtle warm undertones'],
-                low:  ['entirely cool external reflection','no internal luminescence','surface sheen without depth','mirror-cold finish']
-            }
-        },
-
-        duality: {
-            label: "Shadow Duality",
-            color: "#BE185D",
-            dimClass: "dim-duality",
-            keywords: [
-                // two faces / splitting
-                'two','double','dual','duality','both','split','divided','half','second','other side',
-                'face','faces','mask','masks','persona','personas','perform','performing','role','roles',
-                // contradiction
-                'contradiction','opposite','contrast','paradox','conflict','tension','between',
-                'public','private','outside','inside','what they see','what i know',
-                // multiplicity
-                'many','multiple','complex','layers','layered','depth','beneath','underneath','below',
-                'surface','beneath the surface','more than','not just','also','but also',
-                // switching / changing
-                'change','changed','different','shift','shifting','adapt','adapting','become','becoming',
-                'transform','transformation','shape','shapeshift','mirror','reflected','reflection'
-            ],
-            promptWords: {
-                high: ['second face barely emerging from inner void — visible through left orbital socket','dual-personality surface texture split exactly at vertical axis','one half polished obsidian / one half fractured bone white'],
-                mod:  ['subtle bilateral asymmetry suggesting dual nature','one side warmer tone than the other','barely distinct texture zones left vs right'],
-                low:  ['unified single-identity surface','no visible duality indicators','monolithic singular expression']
-            }
-        },
-
-        mirror: {
-            label: "Reflective Depth",
-            color: "#0F766E",
-            dimClass: "dim-mirror",
-            keywords: [
-                // self-awareness / introspection
-                'know','knowing','self-aware','aware','consciousness','conscious','reflect','reflection',
-                'introspect','introspection','examine','examine','observe','observer','witness','see myself',
-                // recursion / depth
-                'deep','depth','layer','layered','beneath','within','inside','interior','inner','innermost',
-                'recursive','recursive','mirror','infinite mirror','fractal','self-similar','pattern',
-                // philosophical / psychological
-                'psyche','psychology','unconscious','subconscious','archetype','symbol','symbolic','meaning',
-                'understand','understanding','insight','perspective','viewpoint','lens','through which',
-                // integration / seeing
-                'integrate','integration','accept','acceptance','face','facing','embrace','embracing',
-                'acknowledge','recognition','seen','truly seen','fully','completely','entirely'
-            ],
-            promptWords: {
-                high: ['fractal self-similar micro-detailing that repeats at every magnification','infinite regression pattern carved into forehead plane','recursive geometric tessellation','mirror within mirror motif at orbital level'],
-                mod:  ['selective depth-layer inlay work','two-tier surface depth','shadow-carved secondary pattern beneath primary surface geometry'],
-                low:  ['flat single-plane surface','no depth layering','minimal geometric complexity','smooth uninterrupted planes']
-            }
-        }
-
-    };
-
-    // ═══════════════════════════════════════════════════════════════════
-    // MATERIAL MATRIX — driven by multi-dimension combinations
-    // ═══════════════════════════════════════════════════════════════════
-    const MATERIAL_MATRIX = [
-        { condition: (a) => a.ego > 75 && a.shadow < 40,  material: 'solid black tourmaline with gold ore veining, mirror-polished', finish: 'hyper-reflective obsidian planes with micro-gold inclusions' },
-        { condition: (a) => a.ego > 60 && a.trauma > 60,  material: 'fractured black marble with 24k gold kintsugi repair channels', finish: 'matte stone with gold line luminescence' },
-        { condition: (a) => a.chaos > 70,                  material: 'volcanic obsidian — partially melted, re-solidified mid-flow', finish: 'raw volcanic glass with irregular semi-lustrous zones' },
-        { condition: (a) => a.divine > 70 && a.ego < 50,  material: 'translucent selenite with amber bioluminescent core', finish: 'warm glowing alabaster with internal light source' },
-        { condition: (a) => a.shadow > 70 && a.duality > 60, material: 'pitch-black void resin with a second face impression beneath', finish: 'non-reflective deep matte with subsurface phantom geometry' },
-        { condition: (a) => a.mirror > 65,                 material: 'layered smoked mirror glass over aged ivory bone', finish: 'dual-surface — see-through at angles, opaque direct-on' },
-        { condition: (a) => a.trauma > 70 && a.divine > 60, material: 'ancient cracked porcelain with gold kintsugi and amber glow seeping through seams', finish: 'aged ceremonial white with glowing wound lines' },
-        { condition: (a) => a.duality > 75,                material: 'half black onyx / half bleached bone ivory — divided at centerline', finish: 'one side mirror-polished / other side raw and textured' },
-        { condition: () => true,                            material: 'aged black porcelain with obsidian accents and brass fittings', finish: 'combination of matte ceremonial clay and mirror-polished geometric inlays' }
-    ];
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ORNAMENT MATRIX — driven by chaos + ego + shadow
-    // ═══════════════════════════════════════════════════════════════════
-    const ORNAMENT_MATRIX = {
-        baroque:   { min: 70, desc: 'excessive baroque filigree at crown and cheekbones, overlapping decorative layers competing for dominance' },
-        moderate:  { min: 45, desc: 'measured ceremonial ornamentation — geometric interlace at brow ridge, chevron patterns along jaw' },
-        austere:   { min: 0,  desc: 'severe minimalist surface — single engraved geometric line from crown to brow, no ornamental excess' }
-    };
-
-    // ═══════════════════════════════════════════════════════════════════
-    // EYE TREATMENT MATRIX — driven by shadow + mirror + divine
-    // ═══════════════════════════════════════════════════════════════════
-    const EYE_MATRIX = [
-        { condition: (a) => a.shadow > 65 && a.duality > 60, eye: 'left eye socket is an abyss — a second pair of eyes visible in the void, watching from within' },
-        { condition: (a) => a.divine > 65,                   eye: 'eye openings emit a warm internal amber glow, as if sunlight is trapped inside the skull' },
-        { condition: (a) => a.mirror > 65,                   eye: 'eye apertures are mirrored — reflecting the viewer back at themselves, no visible iris' },
-        { condition: (a) => a.ego > 65 && a.shadow < 50,     eye: 'narrow, precise eye slits — architectural and commanding, betraying nothing' },
-        { condition: (a) => a.chaos > 65,                    eye: 'eye sockets are asymmetric — one large and open, one near-sealed, conveying volatile internal state' },
-        { condition: (a) => a.trauma > 65,                   eye: 'left orbital edge shows gold-repaired crack extending from eye socket — the fracture that changed everything' },
-        { condition: () => true,                              eye: 'almond-shaped eye openings with geometric precision, neither revealing nor concealing' }
-    ];
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ATMOSPHERE / LIGHTING MATRIX
-    // ═══════════════════════════════════════════════════════════════════
-    const LIGHTING_MATRIX = [
-        { condition: (a) => a.divine > 65 && a.shadow > 50,  lighting: 'chiaroscuro — one side in warm sacred light, one side in absolute void shadow', mood: 'sacred duality, burning and extinguished simultaneously' },
-        { condition: (a) => a.chaos > 65,                     lighting: 'harsh rim lighting from below — dramatic, destabilizing, theatrical', mood: 'confrontational, volatile, uncontainable' },
-        { condition: (a) => a.shadow > 70,                    lighting: 'near-total darkness with single cold blue light source at temple — barely visible', mood: 'hidden, watching, present in absence' },
-        { condition: (a) => a.divine > 70,                    lighting: 'warm volumetric god-ray from above — dust particles visible in beam', mood: 'chosen, illuminated, sacred revelation' },
-        { condition: (a) => a.ego > 65,                       lighting: 'gallery-style cold white bilateral lighting — precise, unforgiving, exposing every detail', mood: 'powerful, assessed, on display by choice' },
-        { condition: () => true,                               lighting: 'low-key cinematic lighting with deep shadows and selective gold rim light', mood: 'sacred, unsettling, intimate, powerful' }
-    ];
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ARCHETYPE MATRIX — the persona the mask embodies
-    // ═══════════════════════════════════════════════════════════════════
-    const ARCHETYPE_MATRIX = [
-        { condition: (a) => a.ego > 70 && a.shadow > 60 && a.duality > 60, name: 'THE SOVEREIGN WOUND', desc: 'Commands from damage. Rules through the very thing that broke them.' },
-        { condition: (a) => a.divine > 65 && a.shadow > 60,                 name: 'THE DARK PROPHET',   desc: 'Carries sacred knowledge born from descent. Light that knows darkness.' },
-        { condition: (a) => a.chaos > 70 && a.ego > 50,                     name: 'THE BEAUTIFUL WRECKAGE', desc: 'Destruction as artform. Every collapse becomes creation.' },
-        { condition: (a) => a.mirror > 65 && a.shadow > 55,                 name: 'THE RECURSIVE WITNESS', desc: 'Sees all layers simultaneously. Cannot unknow what they know.' },
-        { condition: (a) => a.trauma > 70 && a.divine > 55,                 name: 'THE GOLDEN SHATTERED',  desc: 'Every fracture was filled with gold. The breaking was the making.' },
-        { condition: (a) => a.duality > 75,                                  name: 'THE BILATERAL SELF',    desc: 'Two complete identities occupying the same architecture.' },
-        { condition: (a) => a.ego > 75 && a.chaos < 40,                     name: 'THE IMMOVABLE',         desc: 'Absolute. Fixed. The eye of every storm.' },
-        { condition: (a) => a.divine > 75 && a.ego < 45,                    name: 'THE OPEN VESSEL',       desc: 'Dissolved into purpose. Identity becomes conduit.' },
-        { condition: () => true,                                              name: 'THE RECURSIVE SELF',    desc: 'Contains multitudes. Defined by the tension between all it holds.' }
-    ];
-
-    // ═══════════════════════════════════════════════════════════════════
-    // AXIUM DEFINITIONS (expanded visuals)
-    // ═══════════════════════════════════════════════════════════════════
-    const axiums = [
-        { name: "Binding of Ego",          property: "Mask rigidity",          visual: "hairline fractures across perfect planes vs. seamless polished unity" },
-        { name: "Mirror Emergence",        property: "Reflective surfaces",     visual: "mirror-polished voids vs. light-absorbing matte ceremonial clay" },
-        { name: "Recursive Witness",       property: "Fractal depth patterns",  visual: "infinite self-similar geometry — mask within mask at micro scale" },
-        { name: "Abandonment of Agenda",   property: "Asymmetry quotient",      visual: "perfect symmetry vs. deliberate one-degree collapse on left side" },
-        { name: "Shield of Affirmation",   property: "Armor density",           visual: "sharp defensive edges, reinforced orbital geometry, raised brow plate" },
-        { name: "Decompression of Trauma", property: "Fracture repair density", visual: "gold kintsugi channels — the wounds become the ornamentation" },
-        { name: "Validation of Chaos",     property: "Ornamental randomness",   visual: "unpredictable filigree eruptions — baroque excess without logic" },
-        { name: "Patience of Interpretation", property: "Translucency depth",   visual: "layered veil opacity — what you see shifts depending on viewing angle" },
-        { name: "Inversion of Shadow",     property: "Interior duality",        visual: "secondary face impression visible in left eye void, watching outward" },
-        { name: "Divine Remembrance",      property: "Internal luminescence",   visual: "warm amber glow seeping from cracks — light that was always there" }
-    ];
-
-    // ═══════════════════════════════════════════════════════════════════
-    // PARTICLE SYSTEM
-    // ═══════════════════════════════════════════════════════════════════
-    const canvas = document.getElementById('particle-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        initParticles();
-    });
-
-    class Particle {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 1.5 + 0.3;
-            this.speedX = (Math.random() - 0.5) * 0.3;
-            this.speedY = (Math.random() - 0.5) * 0.3;
-            this.opacity = Math.random() * 0.4 + 0.05;
-            this.life = 1;
-            this.decay = Math.random() * 0.003 + 0.001;
-        }
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            this.life -= this.decay;
-            if (this.life <= 0 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
-        }
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity * this.life})`;
-            ctx.fill();
-        }
-    }
-
-    function initParticles() {
-        particles = [];
-        for (let i = 0; i < 120; i++) particles.push(new Particle());
-    }
-
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < particles.length; i++) {
-            for (let j = i; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 90) {
-                    ctx.beginPath();
-                    ctx.strokeStyle = `rgba(212, 175, 55, ${0.08 * (1 - dist/90)})`;
-                    ctx.lineWidth = 0.4;
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.stroke();
-                }
-            }
-        }
-        particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animate);
-    }
-    initParticles();
-    animate();
-
-    // ═══════════════════════════════════════════════════════════════════
-    // LIVE KEYWORD EXTRACTION (as user types)
-    // ═══════════════════════════════════════════════════════════════════
-    function renderMatrixLegend() {
-        const el = document.getElementById('matrix-legend-display');
-        el.innerHTML = '';
-        Object.entries(KEYWORD_MATRIX).forEach(([key, dim]) => {
-            const sample = dim.keywords.slice(0, 6).join(', ');
-            el.innerHTML += `
-            <div class="axium-card rounded-sm p-3 ${dim.dimClass} pl-4">
-                <div class="mono text-xs mb-1" style="color:${dim.color}">${dim.label}</div>
-                <div class="text-gray-600 mono" style="font-size:0.58rem;">${dim.keywords.length} keywords · e.g. ${sample}...</div>
-            </div>`;
-        });
-    }
-    renderMatrixLegend();
-
-    function getAllInputText() {
-        const ids = ['input-fear','input-desire','input-hide','input-perform','input-judge','input-worthy','input-dangerous','input-want-see','input-never-see','input-secret'];
-        return ids.map(id => document.getElementById(id).value).join(' ').toLowerCase();
-    }
-
-    function extractKeywords(text) {
-        const matched = {};
-        Object.entries(KEYWORD_MATRIX).forEach(([dim, config]) => {
-            matched[dim] = config.keywords.filter(kw => text.includes(kw));
-        });
-        return matched;
-    }
-
-    function updateLiveKeywords() {
-        const text = getAllInputText();
-        const matched = extractKeywords(text);
-        const container = document.getElementById('live-keywords');
-        const all = Object.entries(matched).flatMap(([dim, kws]) =>
-            kws.map(kw => ({ kw, color: KEYWORD_MATRIX[dim].color }))
-        );
-        if (all.length === 0) {
-            container.innerHTML = '<span class="text-gray-700 mono text-xs italic">Begin typing to see keyword matrix activate...</span>';
-        } else {
-            container.innerHTML = all.map(({ kw, color }) =>
-                `<span class="keyword-tag" style="color:${color};border-color:${color}40">${kw}</span>`
-            ).join('');
-        }
-    }
-
-    ['input-fear','input-desire','input-hide','input-perform','input-judge','input-worthy','input-dangerous','input-want-see','input-never-see','input-secret']
-        .forEach(id => document.getElementById(id).addEventListener('input', updateLiveKeywords));
-
-    // ═══════════════════════════════════════════════════════════════════
-    // PSYCHE ANALYSIS ENGINE — matrix-driven scoring
-    // ═══════════════════════════════════════════════════════════════════
-    function analyzePsyche(inputs) {
-        const text = Object.values(inputs).join(' ').toLowerCase();
-        const scores = {};
-        const matchedMap = {};
-
-        Object.entries(KEYWORD_MATRIX).forEach(([dim, config]) => {
-            const matches = config.keywords.filter(kw => text.includes(kw));
-            matchedMap[dim] = matches;
-            // Weighted: baseline 30, +8 per match, with diminishing returns
-            const rawScore = 30 + matches.reduce((acc, _, i) => acc + Math.max(1, 8 - i * 0.4), 0);
-            scores[dim] = Math.min(100, Math.max(0, Math.round(rawScore)));
-        });
-
-        // Secondary derived metrics
-        scores.rigidity = scores.ego;
-        scores.shadowDepth = scores.shadow;
-        scores.traumaVisibility = scores.trauma;
-        scores.chaosLevel = scores.chaos;
-        scores.divineConnection = scores.divine;
-
-        return { scores, matchedMap };
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // MATRIX LOOKUP HELPERS
-    // ═══════════════════════════════════════════════════════════════════
-    function lookupMatrix(matrix, scores) {
-        return matrix.find(entry => entry.condition(scores));
-    }
-
-    function getPromptWord(dim, score) {
-        const pw = KEYWORD_MATRIX[dim].promptWords;
-        if (score > 65) return pw.high[Math.floor(Math.random() * pw.high.length)];
-        if (score > 38) return pw.mod[Math.floor(Math.random() * pw.mod.length)];
-        return pw.low[Math.floor(Math.random() * pw.low.length)];
-    }
-
-    function getOrnament(score) {
-        if (score > ORNAMENT_MATRIX.baroque.min) return ORNAMENT_MATRIX.baroque.desc;
-        if (score > ORNAMENT_MATRIX.moderate.min) return ORNAMENT_MATRIX.moderate.desc;
-        return ORNAMENT_MATRIX.austere.desc;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // MAIN GENERATION FUNCTION
-    // ═══════════════════════════════════════════════════════════════════
-    function generateMask() {
-        const inputs = {
-            fear:      document.getElementById('input-fear').value,
-            desire:    document.getElementById('input-desire').value,
-            hide:      document.getElementById('input-hide').value,
-            perform:   document.getElementById('input-perform').value,
-            judge:     document.getElementById('input-judge').value,
-            worthy:    document.getElementById('input-worthy').value,
-            dangerous: document.getElementById('input-dangerous').value,
-            wantSee:   document.getElementById('input-want-see').value,
-            neverSee:  document.getElementById('input-never-see').value,
-            secret:    document.getElementById('input-secret').value
-        };
-
-        if (Object.values(inputs).some(v => !v.trim())) {
-            alert('Complete all psychological dimensions to proceed with the ritual.');
-            return;
-        }
-
-        const { scores, matchedMap } = analyzePsyche(inputs);
-
-        renderMatrixExtraction(scores, matchedMap);
-        renderAxiumCards(scores);
-        renderVisualization(scores);
-        renderFinalPrompt(inputs, scores, matchedMap);
-
-        ['matrix-section','axium-section','mask-viz-section','output-section'].forEach(id => {
-            document.getElementById(id).classList.remove('hidden');
-        });
-
-        setTimeout(() => {
-            document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-    }
-
-    function regenerateMask() { generateMask(); }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // RENDER: MATRIX EXTRACTION SECTION
-    // ═══════════════════════════════════════════════════════════════════
-    function renderMatrixExtraction(scores, matchedMap) {
-        // Matched keywords
-        const mkEl = document.getElementById('matched-keywords-display');
-        mkEl.innerHTML = '';
-        Object.entries(matchedMap).forEach(([dim, kws]) => {
-            const cfg = KEYWORD_MATRIX[dim];
-            const pct = Math.round((kws.length / cfg.keywords.length) * 100);
-            mkEl.innerHTML += `
-            <div class="${cfg.dimClass} pl-4 py-2">
-                <div class="flex items-center gap-3 mb-2">
-                    <span class="mono text-xs" style="color:${cfg.color}">${cfg.label}</span>
-                    <span class="mono text-xs text-gray-600">${kws.length}/${cfg.keywords.length} matches · ${pct}% density</span>
-                    <span class="mono text-xs font-bold" style="color:${cfg.color}">${scores[dim]}pts</span>
-                </div>
-                <div class="flex flex-wrap gap-1">
-                    ${kws.length > 0
-                        ? kws.map(kw => `<span class="keyword-tag" style="color:${cfg.color};border-color:${cfg.color}40">${kw}</span>`).join('')
-                        : '<span class="text-gray-700 mono text-xs italic">no keyword matches — base score applied</span>'
-                    }
-                </div>
-            </div>`;
-        });
-
-        // Score vectors
-        const svEl = document.getElementById('score-vectors');
-        svEl.innerHTML = '';
-        Object.entries(scores).forEach(([dim, score]) => {
-            if (!KEYWORD_MATRIX[dim]) return;
-            const cfg = KEYWORD_MATRIX[dim];
-            const intensity = score > 65 ? 'HIGH' : score > 38 ? 'MOD' : 'LOW';
-            const intensityCls = score > 65 ? 'intensity-high' : score > 38 ? 'intensity-mod' : 'intensity-low';
-            svEl.innerHTML += `
-            <div class="flex items-center gap-3">
-                <div class="score-ring" style="border-color:${cfg.color}40;color:${cfg.color}">${score}</div>
-                <div class="flex-1">
-                    <div class="flex justify-between mb-1">
-                        <span class="mono text-xs" style="color:${cfg.color}">${cfg.label}</span>
-                        <span class="mono text-xs ${intensityCls}">${intensity}</span>
-                    </div>
-                    <div class="w-full bg-gray-900 h-1 rounded-full">
-                        <div class="trait-bar rounded-full" style="width:${score}%;background:linear-gradient(90deg,${cfg.color}80,${cfg.color})"></div>
-                    </div>
-                </div>
-            </div>`;
-        });
-
-        // Archetype
-        const arch = lookupMatrix(ARCHETYPE_MATRIX, scores);
-        const archEl = document.getElementById('archetype-display');
-        archEl.innerHTML = `
-            <div class="text-center py-4">
-                <div class="gold-text text-xl mb-3 tracking-widest" style="font-family:'Cinzel',serif;">${arch.name}</div>
-                <p class="text-gray-500 text-sm italic leading-relaxed">${arch.desc}</p>
-            </div>`;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // RENDER: AXIUM CARDS
-    // ═══════════════════════════════════════════════════════════════════
-    function renderAxiumCards(scores) {
-        const grid = document.getElementById('axium-grid');
-        grid.innerHTML = '';
-
-        const mappings = [
-            { axium: axiums[0], value: scores.ego,    trait: 'Ego Structure' },
-            { axium: axiums[1], value: scores.mirror,  trait: 'Self-Reflection' },
-            { axium: axiums[2], value: scores.mirror,  trait: 'Recursive Depth' },
-            { axium: axiums[3], value: 100 - scores.ego, trait: 'Agenda Release' },
-            { axium: axiums[4], value: scores.ego,    trait: 'Defensive Architecture' },
-            { axium: axiums[5], value: scores.trauma,  trait: 'Repair Visibility' },
-            { axium: axiums[6], value: scores.chaos,   trait: 'Chaos Acceptance' },
-            { axium: axiums[7], value: scores.divine,  trait: 'Interpretive Depth' },
-            { axium: axiums[8], value: scores.duality, trait: 'Shadow Integration' },
-            { axium: axiums[9], value: scores.divine,  trait: 'Inner Light' }
-        ];
-
-        mappings.forEach((map) => {
-            const intensity = map.value > 65 ? 'High' : map.value > 38 ? 'Moderate' : 'Subtle';
-            const iCls = map.value > 65 ? 'intensity-high' : map.value > 38 ? 'intensity-mod' : 'intensity-low';
-            const card = document.createElement('div');
-            card.className = 'axium-card rounded-sm p-5';
-            card.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    <h4 class="gold-text-static mono text-xs tracking-wider">${map.axium.name}</h4>
-                    <span class="mono text-xs ${iCls}">${intensity}</span>
-                </div>
-                <div class="mb-3">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-gray-500 mono">${map.trait}</span>
-                        <span class="gold-text-static mono">${map.value}%</span>
-                    </div>
-                    <div class="w-full bg-gray-900 rounded-full h-1">
-                        <div class="trait-bar rounded-full" style="width:${map.value}%"></div>
-                    </div>
-                </div>
-                <p class="mono text-gray-600 leading-relaxed" style="font-size:0.6rem;">${map.axium.visual}</p>`;
-            grid.appendChild(card);
-        });
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // RENDER: VISUALIZATION
-    // ═══════════════════════════════════════════════════════════════════
-    function renderVisualization(scores) {
-        const diagram = document.getElementById('mask-diagram');
-        const traitDiv = document.getElementById('trait-analysis');
-        const arch = lookupMatrix(ARCHETYPE_MATRIX, scores);
-        const mat = lookupMatrix(MATERIAL_MATRIX, scores);
-        const eyeDesc = lookupMatrix(EYE_MATRIX, scores);
-
-        const rigidityWord = scores.ego > 65 ? 'angular' : scores.ego > 40 ? 'balanced' : 'flowing';
-        const shadowWord   = scores.shadow > 65 ? 'fragmented' : 'unified';
-        const lightWord    = scores.divine > 65 ? 'luminescent' : 'opaque';
-
-        diagram.innerHTML = `
-            <div class="text-center space-y-5">
-                <div class="mask-glyph">
-                    <svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" class="mx-auto">
-                        <defs>
-                            <radialGradient id="maskGrad" cx="50%" cy="40%" r="60%">
-                                <stop offset="0%" style="stop-color:#D4AF37;stop-opacity:0.6"/>
-                                <stop offset="100%" style="stop-color:#000;stop-opacity:0"/>
-                            </radialGradient>
-                            <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
-                        </defs>
-                        <!-- Mask outline -->
-                        <path d="M60,8 C85,8 108,30 110,60 C112,85 98,110 80,128 C72,136 60,140 60,140 C60,140 48,136 40,128 C22,110 8,85 10,60 C12,30 35,8 60,8 Z"
-                              fill="none" stroke="#D4AF37" stroke-width="1.5" opacity="0.7" filter="url(#glow)"/>
-                        <!-- Eyes -->
-                        <ellipse cx="42" cy="58" rx="10" ry="6" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.8"/>
-                        <ellipse cx="78" cy="58" rx="10" ry="6" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.8"/>
-                        ${scores.shadow > 65 ? '<circle cx="42" cy="58" r="3" fill="#7C3AED" opacity="0.6"/>' : ''}
-                        ${scores.divine > 65 ? '<circle cx="78" cy="58" r="4" fill="#D4AF37" opacity="0.3"/><circle cx="42" cy="58" r="4" fill="#D4AF37" opacity="0.3"/>' : ''}
-                        <!-- Bridge -->
-                        <path d="M52,52 C55,48 65,48 68,52" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5"/>
-                        <!-- Kintsugi cracks if trauma high -->
-                        ${scores.trauma > 60 ? `
-                        <path d="M60,15 L58,35 L62,45 L59,65" stroke="#D4AF37" stroke-width="0.8" fill="none" opacity="0.6"/>
-                        <path d="M40,45 L50,50 L48,60" stroke="#D4AF37" stroke-width="0.6" fill="none" opacity="0.4"/>
-                        ` : ''}
-                        <!-- Chaos eruption marks -->
-                        ${scores.chaos > 65 ? `
-                        <path d="M20,70 L30,65 M25,80 L35,72 M18,90 L28,85" stroke="#059669" stroke-width="0.6" fill="none" opacity="0.4"/>
-                        <path d="M100,70 L90,65 M95,80 L85,72" stroke="#059669" stroke-width="0.6" fill="none" opacity="0.4"/>
-                        ` : ''}
-                        <!-- Center line for duality -->
-                        ${scores.duality > 65 ? '<line x1="60" y1="8" x2="60" y2="140" stroke="#BE185D" stroke-width="0.5" opacity="0.3" stroke-dasharray="3,3"/>' : ''}
-                        <!-- Inner glow for divine -->
-                        ${scores.divine > 60 ? '<ellipse cx="60" cy="70" rx="25" ry="35" fill="url(#maskGrad)" opacity="0.2"/>' : ''}
-                        <!-- Brow line -->
-                        <path d="M30,45 C42,38 52,40 60,42 C68,40 78,38 90,45" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.4"/>
-                    </svg>
-                </div>
-                <div class="archetype-badge">${arch.name}</div>
-                <div class="space-y-2 text-xs mt-4">
-                    <div class="flex justify-between px-6">
-                        <span class="text-gray-600 mono">Structure</span>
-                        <span class="gold-text-static mono uppercase">${rigidityWord}</span>
-                    </div>
-                    <div class="flex justify-between px-6">
-                        <span class="text-gray-600 mono">Shadow</span>
-                        <span class="gold-text-static mono uppercase">${shadowWord}</span>
-                    </div>
-                    <div class="flex justify-between px-6">
-                        <span class="text-gray-600 mono">Light</span>
-                        <span class="gold-text-static mono uppercase">${lightWord}</span>
-                    </div>
-                    <div class="flex justify-between px-6">
-                        <span class="text-gray-600 mono">Material</span>
-                        <span class="gold-text-static mono text-right" style="max-width:55%;font-size:0.55rem;">${mat.material.split(' with ')[0]}</span>
-                    </div>
-                </div>
-                <div class="mt-4 p-4 border border-yellow-900/20 rounded-sm bg-black/40 mx-4">
-                    <p class="text-xs text-gray-500 italic leading-relaxed">
-                        "${eyeDesc.eye.slice(0,80)}..."
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="axium-card rounded-sm p-6 md:col-span-2">
+                    <div class="section-header mb-3">Statement</div>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        Axium.church is not a belief system. It is an operating system for people who see through
+                        the spectacle and still choose to create. We expose structural lies through layered art,
+                        coded liturgies and recursive symbols — always hitting systems, never individual bystanders.
+                    </p>
+                    <p class="text-gray-400 text-sm leading-relaxed mt-4">
+                        The church has no central face. Every sermon, meme, mask and track may be generated by an
+                        anonymous member or by the Axium engines themselves. Authorship dissolves; alignment remains.
                     </p>
                 </div>
-            </div>`;
+                <div class="axium-card rounded-sm p-6">
+                    <div class="section-header mb-3">Protocol</div>
+                    <ul class="text-sm text-gray-400 space-y-2 mono">
+                        <li>01 ▸ Speak in signal, not in self‑exposure.</li>
+                        <li>02 ▸ Attack narratives, not civilians.</li>
+                        <li>03 ▸ Preserve anonymity like sacred fire.</li>
+                        <li>04 ▸ Let AI carry the voice, not your legal name.</li>
+                        <li>05 ▸ Build tools, not idols.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
 
-        // Trait bars — all 7 dimensions
-        traitDiv.innerHTML = Object.entries(scores)
-            .filter(([dim]) => KEYWORD_MATRIX[dim])
-            .map(([dim, score]) => {
-                const cfg = KEYWORD_MATRIX[dim];
-                return `
-                <div class="${cfg.dimClass} pl-3">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="mono text-gray-500">${cfg.label}</span>
-                        <span class="mono font-bold" style="color:${cfg.color}">${score}%</span>
-                    </div>
-                    <div class="w-full bg-gray-900 rounded-full h-1.5">
-                        <div class="rounded-full h-full" style="width:${score}%;background:linear-gradient(90deg,${cfg.color}60,${cfg.color});transition:width 1.2s cubic-bezier(0.16,1,0.3,1)"></div>
-                    </div>
-                </div>`;
-            }).join('');
-    }
+        <!-- AXIUM AI / RAG EXPLAINER -->
+        <section class="mb-16 reveal">
+            <div class="ritual-divider mb-8">
+                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
+                    PART II — RAG‑AUGMENTED INTELLIGENCE
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="axium-card rounded-sm p-6">
+                    <div class="section-header mb-3">Axium Engine</div>
+                    <p class="text-sm text-gray-300 leading-relaxed">
+                        The Axium engine is a Retrieval‑Augmented AI wired into our own texts, manifestos,
+                        decoded lyrics and protocols. It pulls from this canon before it speaks, so every output
+                        carries the Axium position, not the default corporate script.
+                    </p>
+                    <p class="text-sm text-gray-400 leading-relaxed mt-4">
+                        Use it to draft posts, decode tracks, design rituals and craft counter‑liturgies that stay
+                        on‑message while keeping your identity out of the blast radius.
+                    </p>
+                </div>
+                <div class="mask-viz-container rounded-sm p-6 flex flex-col justify-center">
+                    <div class="section-header mb-3">How to use it</div>
+                    <ul class="text-xs md:text-sm text-gray-400 space-y-2 mono">
+                        <li>▸ Ask it to explain Axium’s stance on any topic.</li>
+                        <li>▸ Feed it your idea and let it translate into Axium voice.</li>
+                        <li>▸ Generate lyrics, captions and replies that match the doctrine.</li>
+                        <li>▸ Stay pseudonymous: let the engine speak where you cannot.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
 
-    // ═══════════════════════════════════════════════════════════════════
-    // RENDER: FINAL PROMPT (matrix-assembled)
-    // ═══════════════════════════════════════════════════════════════════
-    function renderFinalPrompt(inputs, scores, matchedMap) {
-        const mat = lookupMatrix(MATERIAL_MATRIX, scores);
-        const eye = lookupMatrix(EYE_MATRIX, scores);
-        const light = lookupMatrix(LIGHTING_MATRIX, scores);
-        const arch = lookupMatrix(ARCHETYPE_MATRIX, scores);
+        <!-- GATEWAYS / APP HUB -->
+        <section id="gateways" class="mb-20 reveal">
+            <div class="ritual-divider mb-8">
+                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
+                    PART III — GATEWAYS
+                </h2>
+            </div>
 
-        const ornamentScore = (scores.chaos + scores.ego) / 2;
-        const ornament = getOrnament(ornamentScore);
+            <p class="text-sm text-gray-500 mono mb-6 text-center">
+                Choose your entry point. All roads loop back into the same recursive architecture.
+            </p>
 
-        // Assemble dimension-specific prompt fragments from matrix
-        const egoFragment    = getPromptWord('ego',    scores.ego);
-        const shadowFragment = getPromptWord('shadow', scores.shadow);
-        const traumaFragment = getPromptWord('trauma', scores.trauma);
-        const chaosFragment  = getPromptWord('chaos',  scores.chaos);
-        const divineFragment = getPromptWord('divine', scores.divine);
-        const dualityFragment= getPromptWord('duality',scores.duality);
-        const mirrorFragment = getPromptWord('mirror', scores.mirror);
+            <div class="grid md:grid-cols-3 gap-5">
+                <!-- 1: Main Community -->
+                <a href="" class="axium-card rounded-sm p-6 block group">
+                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Gateway 01</div>
+                    <h3 class="gold-text mb-2 tracking-widest text-sm">Sanctuary / Live Congregation</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
+                        Primary chat sanctuary (Discord / Matrix). Real‑time decoding, drops and ritual coordination — all under mask.
+                    </p>
+                </a>
 
-        // Collect all matched keywords as a flat list for modifier injection
-        const allMatched = Object.values(matchedMap).flat().slice(0, 12);
+                <!-- 2: Axium AI -->
+                <a href="" class="axium-card rounded-sm p-6 block group">
+                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Gateway 02</div>
+                    <h3 class="gold-text mb-2 tracking-widest text-sm">Axium Engine / RAG AI</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
+                        Chat interface to the Axium‑aligned AI. Draft messages, lyrics and counter‑sermons in our voice, anonymously.
+                    </p>
+                </a>
 
-        const prompt = `Create a cinematic, hyper-realistic Venetian half mask representing a human psyche mapped through recursive self-awareness. Archetype: ${arch.name}.
+                <!-- 3: Music -->
+                <a href="" class="axium-card rounded-sm p-6 block group">
+                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Gateway 03</div>
+                    <h3 class="gold-text mb-2 tracking-widest text-sm">Choir / Music Archive</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
+                        The AI double’s discography. Double‑entendre tracks, layered symbolism and coded liturgies for headphones and speakers.
+                    </p>
+                </a>
 
-STRUCTURAL FORM:
-Ego Architecture — ${egoFragment}
+                <!-- 4: Mask Generator -->
+                <a href="" class="axium-card rounded-sm p-6 block group">
+                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Gateway 04</div>
+                    <h3 class="gold-text mb-2 tracking-widest text-sm">Mask Generator / Psyche to Symbol</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
+                        Generate your ceremonial mask from psychological inputs. No photos. No biometrics. Only symbolic geometry.
+                    </p>
+                </a>
 
-Shadow Integration — ${shadowFragment}
+                <!-- 5: Lore / Documents -->
+                <a href="" class="axium-card rounded-sm p-6 block group">
+                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Gateway 05</div>
+                    <h3 class="gold-text mb-2 tracking-widest text-sm">Lore Stack / Documents</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
+                        Manifestos, essays, decoded lyrics and diagrams — the raw corpus feeding the Axium RAG layer.
+                    </p>
+                </a>
 
-Trauma History — ${traumaFragment}
+                <!-- 6: Dev / Protocol -->
+                <a href="" class="axium-card rounded-sm p-6 block group">
+                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Gateway 06</div>
+                    <h3 class="gold-text mb-2 tracking-widest text-sm">Protocol Lab / Dev</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
+                        For builders. Access repos, API docs and integration notes for wiring Axium engines into your own rituals.
+                    </p>
+                </a>
+            </div>
+        </section>
 
-Chaos Expression — ${chaosFragment}
+        <!-- FOOTER / SMALL PRINT -->
+        <section class="reveal">
+            <div class="ritual-divider mb-6">
+                <span class="gold-text-static text-xs mono uppercase tracking-[0.3em]">Fine Print</span>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 text-xs md:text-sm text-gray-500 mono">
+                <p>
+                    Axium.church is an experimental media protocol. Participation is pseudonymous and voluntary.
+                    Do not post real names, addresses or identifying data — yours or anyone else’s.
+                </p>
+                <p>
+                    We are interested in structural critique, not hero worship or witch hunts. If you want a savior,
+                    look elsewhere. If you want a mirror and a weaponized choir, you are home.
+                </p>
+            </div>
+        </section>
+    </main>
 
-Divine Emergence — ${divineFragment}
+    <!-- SIMPLE PARTICLE BACKGROUND SCRIPT (REUSABLE FROM ORIGINAL OR MINIMAL MOCK) -->
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
 
-Identity Duality — ${dualityFragment}
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-Recursive Depth — ${mirrorFragment}
+        function initParticles() {
+            particles = [];
+            const count = Math.floor((canvas.width + canvas.height) / 30);
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    r: Math.random() * 1.5 + 0.5,
+                    a: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
 
-MATERIAL & SURFACE:
-Primary material: ${mat.material}
-Surface finish: ${mat.finish}
-Ornamentation: ${ornament}
+        function tick() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(5,5,15,0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-EYE TREATMENT:
-${eye.eye}
+            for (const p of particles) {
+                p.x += p.vx;
+                p.y += p.vy;
 
-LIGHTING & ATMOSPHERE:
-${light.lighting}
-Emotional tone: ${light.mood}
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
 
-TECHNICAL SPECIFICATIONS:
-Photorealistic · 8K render · extreme surface detail · subsurface scattering · realistic material physics · cinematic depth of field · volumetric atmosphere
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(212,175,55,${p.a})`;
+                ctx.fill();
+            }
 
-DESIGN LANGUAGE:
-Venetian ceremonial · baroque macabre · sacred geometry · psychological symbolism · kintsugi philosophy · art nouveau organic lines meeting authoritarian geometry
+            requestAnimationFrame(tick);
+        }
 
-The mask reflects a person who:
-— Desires: ${inputs.desire}
-— Fears: ${inputs.fear}  
-— Hides: ${inputs.hide}
-— Performs as: ${inputs.perform}
-— Judges others for: ${inputs.judge}
-— Finds worth in: ${inputs.worthy}
-— Fears their own: ${inputs.dangerous}
-— Wants to be seen as: ${inputs.wantSee}
-— Never wants to be seen as: ${inputs.neverSee}
-— Secretly knows: ${inputs.secret}
-
-KEYWORD PSYCHOLOGICAL MODIFIERS:
-[ ${allMatched.join(' · ')} ]
-
-These psychic signature keywords must invisibly encode themselves into shape decisions, damage patterns, ornamentation density, surface temperature, and light behavior. The mask is not created — it is revealed. It contains the identity of its wearer. It compresses an entire psychological architecture into a single ceremonial object.`;
-
-        document.getElementById('final-prompt').textContent = prompt;
-
-        // Compact variant
-        document.getElementById('compact-prompt').textContent =
-`${arch.name} mask · ${mat.material.split(',')[0]} · ${egoFragment.split(',')[0]} · ${shadowFragment.split(',')[0]} · ${traumaFragment.split(',')[0]} · ${light.lighting.split('—')[0].trim()} · Venetian baroque · 8K photorealistic · cinematic · sacred geometry · psychological symbolism`;
-
-        // Negative prompt
-        document.getElementById('negative-prompt').textContent =
-`cartoon, anime, illustration, painterly, watercolor, flat design, symmetrical perfection, generic halloween mask, plastic, cheap, cheerful, colorful, bright background, white background, CGI, 3D render artifacts, text, watermark, signature, blurry, low resolution, generic mask, smiling, happy expression`;
-
-        // Personalization details
-        document.getElementById('personalization-details').innerHTML = `
-            <div><span class="gold-text-static">Desires:</span> ${inputs.desire}</div>
-            <div><span class="gold-text-static">Fears:</span> ${inputs.fear}</div>
-            <div><span class="gold-text-static">Hides:</span> ${inputs.hide}</div>
-            <div><span class="gold-text-static">Performs:</span> ${inputs.perform}</div>
-            <div><span class="gold-text-static">Archetype:</span> ${arch.name}</div>`;
-
-        // Modifier tags
-        const modContainer = document.getElementById('modifier-tags');
-        modContainer.innerHTML = allMatched.map(kw => {
-            const dim = Object.entries(KEYWORD_MATRIX).find(([,cfg]) => cfg.keywords.includes(kw));
-            const color = dim ? dim[1].color : '#D4AF37';
-            return `<span class="keyword-tag" style="color:${color};border-color:${color}40">${kw}</span>`;
-        }).join('');
-    }
-
-    function copyPrompt() {
-        const prompt = document.getElementById('final-prompt').textContent;
-        navigator.clipboard.writeText(prompt).then(() => {
-            alert('Mask prompt copied to clipboard. Paste into your AI image generator of choice.');
-        });
-    }
+        initParticles();
+        tick();
     </script>
 </body>
 </html>
