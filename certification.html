@@ -838,63 +838,97 @@
                 </div>
             </section>
 
-            <!-- ── V. CONTACT / COMMISSION ── -->
-            <section class="content-section">
-                <div class="ritual-divider">
-                    <h2 class="section-title gold-text">PART V — COMMISSION YOUR WORK</h2>
+          !-- ── V. CONTACT / COMMISSION ── -->
+<section class="content-section">
+    <div class="ritual-divider">
+        <h2 class="section-title gold-text">PART V — COMMISSION YOUR WORK</h2>
+    </div>
+
+    <div class="grid-2">
+        <div class="axium-card">
+            <div class="card-label">Begin Here</div>
+            <p class="text-body" style="color:#9ca3af; line-height:1.8; margin-bottom:1.5rem;">
+                Fill in what you need — your email client will open with 
+                everything pre-written and addressed. Michael reads every 
+                message personally. No sales cycle, no upsell theater.
+            </p>
+
+            <div class="form-group">
+                <label class="form-label">Your Name</label>
+                <input type="text" id="intake-name" class="form-input" placeholder="How you're known">
+            </div>
+            <div class="form-group">
+                <label class="form-label">What You Need</label>
+                <select id="intake-service" class="form-input" style="cursor:pointer;">
+                    <option value="" style="background:#080810;">— Select an offering —</option>
+                    <option value="AI System Audit — Snapshot ($490)" style="background:#080810;">AI System Audit — Snapshot ($490)</option>
+                    <option value="AI System Audit — Deep ($1,490)" style="background:#080810;">AI System Audit — Deep ($1,490)</option>
+                    <option value="Personal AI Build — Companion ($790)" style="background:#080810;">Personal AI Build — Companion ($790)</option>
+                    <option value="Personal AI Build — Architect ($2,490)" style="background:#080810;">Personal AI Build — Architect ($2,490)</option>
+                    <option value="Axium Certification" style="background:#080810;">Axium Certification</option>
+                    <option value="Not sure yet — I need a conversation first" style="background:#080810;">Not sure — I need a conversation first</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Brief Description</label>
+                <textarea id="intake-description" class="form-input" rows="5"
+                    placeholder="What system, what goal, what context. As brief or full as you'd like."
+                    style="resize:vertical;"></textarea>
+            </div>
+
+            <button class="generate-btn" onclick="openMailto()" style="width:100%; text-align:center; cursor:pointer; border:none;">
+                ◈ Open in Email ◈
+            </button>
+            <p class="mono text-xs-fluid" style="color:#4b5563; margin-top:0.75rem; text-align:center;">
+                Opens your email client. No data sent to us until you hit send.
+            </p>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap: clamp(0.75rem, 2vw, 1.25rem);">
+            <div class="axium-card">
+                <div class="card-label">Direct Contact</div>
+                <p class="text-body" style="color:#9ca3af; margin-bottom:0.75rem;">
+                    Prefer to write your own? Michael reads everything.
+                </p>
+                <a href="mailto:Micheal.mfg@gmail.com" class="mono text-small"
+                    style="color:var(--gold-dark); text-decoration:none; transition:color 0.2s;"
+                    onmouseenter="this.style.color='var(--gold-light)'"
+                    onmouseleave="this.style.color='var(--gold-dark)'">
+                    Micheal.mfg@gmail.com
+                </a>
+            </div>
+
+            <div class="axium-card">
+                <div class="card-label">What to Expect</div>
+                <div class="process-step">
+                    <div class="step-num">1</div>
+                    <div><p class="text-small" style="color:#9ca3af;">You send. Michael reads within 24 hours.</p></div>
                 </div>
+                <div class="process-step">
+                    <div class="step-num">2</div>
+                    <div><p class="text-small" style="color:#9ca3af;">A scoping proposal or 30-min call comes back — your choice.</p></div>
+                </div>
+                <div class="process-step">
+                    <div class="step-num">3</div>
+                    <div><p class="text-small" style="color:#9ca3af;">You approve scope and invoice. Work begins.</p></div>
+                </div>
+                <div class="process-step">
+                    <div class="step-num">4</div>
+                    <div><p class="text-small" style="color:#9ca3af;">Delivered on time — or you hear about it before the deadline, never after.</p></div>
+                </div>
+            </div>
 
-                <div class="grid-2">
-                    <div class="axium-card">
-                        <div class="card-label">Begin Here</div>
-                        <p class="text-body" style="color:#9ca3af; line-height:1.8; margin-bottom:1.5rem;">
-                            All engagements begin with a brief intake form. 
-                            We respond within one business day with a scoping call 
-                            or a direct proposal — no sales cycle, no upsell theater.
-                        </p>
-
-                        <div class="form-group">
-                            <label class="form-label">Your Name</label>
-                            <input type="text" class="form-input" placeholder="How you're known">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" placeholder="Where to reach you">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">What You Need</label>
-                            <select class="form-input" style="cursor:pointer;">
-                                <option value="" style="background:#080810;">— Select an offering —</option>
-                                <option value="snapshot" style="background:#080810;">AI System Audit — Snapshot ($490)</option>
-                                <option value="deep" style="background:#080810;">AI System Audit — Deep ($1,490)</option>
-                                <option value="continuous" style="background:#080810;">AI System Audit — Continuous ($990/mo)</option>
-                                <option value="companion" style="background:#080810;">Personal AI Build — Companion ($790)</option>
-                                <option value="architect" style="background:#080810;">Personal AI Build — Architect ($2,490)</option>
-                                <option value="certification" style="background:#080810;">Axium Certification (via Deep Audit)</option>
-                                <option value="unsure" style="background:#080810;">Not sure — I need a conversation first</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Brief Description</label>
-                            <textarea class="form-input" rows="4" placeholder="What system, what goal, what context. As brief or full as you'd like." style="resize:vertical;"></textarea>
-                        </div>
-
-                        <button class="generate-btn" style="width:100%; text-align:center; cursor:pointer; border:none;">
-                            ◈ Submit Commission ◈
-                        </button>
-                        <p class="mono text-xs-fluid" style="color:#4b5563; margin-top:0.75rem; text-align:center;">
-                            No spam. No CRM. One human reads this.
-                        </p>
-                    </div>
-
-                    <div style="display:flex; flex-direction:column; gap: clamp(0.75rem, 2vw, 1.25rem);">
-                        <div class="axium-card">
-                            <div class="card-label">Direct Contact</div>
-                            <p class="text-body" style="color:#9ca3af; margin-bottom:0.75rem;">
-                                Prefer to reach out directly? Michael reads everything.
-                            </p>
-                            <p class="mono text-small" style="color:var(--gold-dark);">michael@axium.church</p>
-                        </div>
+            <div class="axium-card">
+                <div class="card-label">The Guarantee</div>
+                <p class="text-body" style="color:#9ca3af; line-height:1.7;">
+                    If you are not satisfied with the audit report, we re-audit 
+                    at no cost. If the personal AI we build does not feel like 
+                    yours, we keep building until it does — within the 30-day 
+                    window. We have never asked someone to settle.
+                </p>
+            </div>
+        </div>
+    </div>
 
                         <div class="axium-card">
                             <div class="card-label">What to Expect</div>
