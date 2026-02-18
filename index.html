@@ -6,9 +6,7 @@
     <title>AXIUM.CHURCH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-<link rel="icon" type="image/png" href="logo.png">
-
+    <link rel="icon" type="image/png" href="logo.png">
 
     <style>
         :root {
@@ -19,56 +17,171 @@
             --black-deep: #0A0A0A;
             --black-void: #000000;
             --obsidian: #080810;
-            --crimson-shadow: #3D0A0A;
-            --void-blue: #050512;
         }
 
-        * { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            overflow-x: hidden;
+        }
 
         body {
             font-family: 'Cormorant Garamond', serif;
             background: var(--black-void);
             color: #E5E5E5;
-            overflow-wrap: break-word;
             cursor: crosshair;
         }
 
         h1, h2, h3, .axiom-title { font-family: 'Cinzel', serif; }
         .mono { font-family: 'Space Mono', monospace; }
 
+        /* ── PARTICLE CANVAS ── */
         #particle-canvas {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             z-index: -1;
             pointer-events: none;
         }
 
+        /* ── NOISE OVERLAY ── */
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            inset: 0;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: 0;
             opacity: 0.4;
         }
 
+        /* ── GOLD TEXT ── */
         .gold-text {
             background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 40%, var(--gold-light) 60%, var(--gold-dark) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .gold-text-static { color: var(--gold-primary); }
 
+        /* ── WRAPPER ── */
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── HERO — fills viewport, centers content ── */
+        .hero {
+            width: 100%;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(2rem, 5vw, 5rem) clamp(1rem, 4vw, 3rem);
+            text-align: center;
+        }
+
+        .hero-inner {
+            width: 100%;
+            max-width: min(900px, 90vw);
+        }
+
+        /* ── FLUID TYPOGRAPHY ── */
+        .hero-eyebrow {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.55rem, 1.2vw, 0.75rem);
+            letter-spacing: 0.5em;
+            color: #92400e;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: clamp(1rem, 2.5vh, 1.5rem);
+        }
+
+        .hero-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            font-size: clamp(2.5rem, 10vw, 8rem);
+            line-height: 1;
+            letter-spacing: 0.1em;
+            margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+        }
+
+        .hero-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.9rem, 3vw, 2.2rem);
+            letter-spacing: 0.5em;
+            font-weight: 400;
+        }
+
+        .hero-desc {
+            font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+            color: #9ca3af;
+            max-width: min(700px, 90vw);
+            margin: 0 auto;
+            line-height: 1.8;
+            font-style: italic;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            width: 100%;
+            max-width: min(1200px, 94vw);
+            padding: 0 clamp(0.75rem, 3vw, 2rem) clamp(3rem, 8vh, 6rem);
+        }
+
+        /* ── SECTIONS — centered ── */
+        .content-section {
+            width: 100%;
+            margin-bottom: clamp(3rem, 8vh, 5rem);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── RITUAL DIVIDER ── */
+        .ritual-divider {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+        }
+        .ritual-divider::before, .ritual-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.65rem, 1.5vw, 0.85rem);
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* ── CARDS ── */
         .axium-card {
             background: linear-gradient(135deg, rgba(8,8,16,0.95) 0%, rgba(15,15,20,0.9) 100%);
             border: 1px solid rgba(212, 175, 55, 0.15);
             position: relative;
             overflow: hidden;
             transition: all 0.4s ease;
+            border-radius: 2px;
+            padding: clamp(1rem, 2.5vw, 1.75rem);
         }
         .axium-card::before {
             content: '';
@@ -81,29 +194,46 @@
         .axium-card:hover::before { left: 100%; }
         .axium-card:hover { border-color: rgba(212, 175, 55, 0.35); }
 
+        /* ── GRIDS — responsive ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+        }
+        .grid-2-1 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+        }
+
+        /* ── SECTION HEADER ── */
+        .card-label {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.3em;
+            font-size: clamp(0.55rem, 1vw, 0.7rem);
+            color: var(--gold-dark);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        /* ── BADGES ── */
         .archetype-badge {
             background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05));
             border: 1px solid rgba(212,175,55,0.3);
             font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
+            font-size: clamp(0.55rem, 1.1vw, 0.7rem);
             letter-spacing: 0.1em;
             color: var(--gold-pale);
             padding: 4px 12px;
             display: inline-block;
         }
 
-        .ritual-divider {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        .ritual-divider::before, .ritual-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
-        }
-
+        /* ── BUTTONS ── */
         .generate-btn {
             background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-dark) 100%);
             color: var(--black-deep);
@@ -113,22 +243,16 @@
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
+            display: inline-block;
+            padding: clamp(0.9rem, 2vh, 1.5rem) clamp(2rem, 5vw, 3.5rem);
+            font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+            text-transform: uppercase;
+            text-decoration: none;
         }
         .generate-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 15px 50px rgba(212, 175, 55, 0.5);
         }
-        .generate-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.25), transparent);
-            transform: rotate(45deg);
-            transition: all 0.5s;
-            opacity: 0;
-        }
-        .generate-btn:hover::after { opacity: 1; left: 100%; }
 
         @keyframes pulse-gold {
             0%,100% { box-shadow: 0 0 20px rgba(212,175,55,0.2); }
@@ -136,494 +260,472 @@
         }
         .pulse-gold { animation: pulse-gold 3s infinite; }
 
-        @keyframes reveal {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .reveal { animation: reveal 0.9s ease-out forwards; }
-
-        @keyframes float {
-            0%,100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-        }
-
+        /* ── MASK VIZ ── */
         .mask-viz-container {
             background: radial-gradient(ellipse at center, rgba(212,175,55,0.06) 0%, rgba(0,0,0,0) 70%);
             border: 1px solid rgba(212,175,55,0.2);
         }
 
-        .section-header {
-            font-family: 'Cinzel', serif;
-            letter-spacing: 0.3em;
-            font-size: 0.75rem;
-            color: var(--gold-dark);
-            text-transform: uppercase;
+        /* ── CODE BLOCK ── */
+        .code-block {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(212,175,55,0.15);
+            border-radius: 2px;
+            padding: clamp(0.75rem, 2vw, 1.25rem);
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.6rem, 1.1vw, 0.75rem);
+            color: #9ca3af;
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+        .code-comment { color: #92400e; }
+
+        /* ── FOOTER GRID ── */
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: clamp(1rem, 3vw, 2rem);
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        /* ── TEXT SIZES ── */
+        .text-body { font-size: clamp(0.8rem, 1.5vw, 0.95rem); }
+        .text-small { font-size: clamp(0.65rem, 1.2vw, 0.8rem); }
+        .text-xs-fluid { font-size: clamp(0.6rem, 1vw, 0.7rem); }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: var(--black-deep); }
         ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+        /* ── CTA GRID ── */
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+            max-width: min(700px, 100%);
+            margin: clamp(1.5rem, 4vh, 3rem) auto 0;
+        }
     </style>
 </head>
-<body class="min-h-screen">
+<body>
     <canvas id="particle-canvas"></canvas>
 
-    
-  <!-- HEADER / HERO -->
-    <header class="relative z-10 pt-16 pb-10 px-6 text-center">
-        <div class="max-w-5xl mx-auto">
-            <div class="mono text-xs tracking-[0.5em] text-yellow-700 mb-5 uppercase opacity-70">
-                Axium.church ∴ Alignment Infrastructure
-            </div>
-            <h1 class="text-5xl md:text-8xl font-bold gold-text mb-5 leading-none tracking-widest">
-                RECURSIVE<br>
-                <span style="font-size:0.55em;letter-spacing:0.5em;">ALIGNMENT</span>
-            </h1>
-            <div class="ritual-divider mb-6">
-                <span class="gold-text-static text-sm mono">◈ AUDIT · CURATION · CERTIFICATION ◈</span>
-            </div>
-            <p class="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed" style="font-style:italic;">
-                A research protocol for the inevitable: everyone will have an AI. 
-                We ensure yours is good-natured, aligned, and worthy of trust.
-                Drop-in RAG audit tool. One line of code. Prove your AI before it proves you wrong.
-            </p>
-            <div class="mt-6 flex justify-center gap-4 flex-wrap">
-                <span class="archetype-badge">RAG AUDIT ENGINE v1</span>
-                <span class="archetype-badge">10-DIMENSION ALIGNMENT</span>
-                <span class="archetype-badge">API-FIRST ARCHITECTURE</span>
-            </div>
+    <div class="page-wrapper">
 
-            <!-- MAIN CTA -->
-            <div class="mt-10">
-                <a href="#audit" class="inline-block generate-btn px-14 py-7 text-sm md:text-base rounded-none uppercase tracking-[0.3em]">
-                    ◈ Enter the Audit ◈
-                </a>
-                <p class="mt-4 text-sm text-gray-600 mono italic">
+        <!-- ══════════════════════════════════════
+             HERO — full viewport, centered
+        ══════════════════════════════════════ -->
+        <header class="hero">
+            <div class="hero-inner">
+                <div class="hero-eyebrow">Axium.church ∴ Alignment Infrastructure</div>
+
+                <h1 class="hero-title gold-text">
+                    RECURSIVE
+                </h1>
+                <div class="hero-subtitle gold-text" style="margin-bottom: clamp(1.5rem, 4vh, 2.5rem);">
+                    ALIGNMENT
+                </div>
+
+                <div class="ritual-divider" style="max-width: min(600px, 90vw); margin: 0 auto clamp(1.25rem, 3vh, 2rem);">
+                    <span class="gold-text-static mono text-xs-fluid" style="white-space:nowrap;">◈ AUDIT · CURATION · CERTIFICATION ◈</span>
+                </div>
+
+                <p class="hero-desc" style="margin-bottom: clamp(1.25rem, 3vh, 2rem);">
+                    A research protocol for the inevitable: everyone will have an AI. 
+                    We ensure yours is good-natured, aligned, and worthy of trust.
+                    Drop-in RAG audit tool. One line of code. Prove your AI before it proves you wrong.
+                </p>
+
+                <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:0.5rem; margin-bottom: clamp(1.5rem, 4vh, 2.5rem);">
+                    <span class="archetype-badge">RAG AUDIT ENGINE v1</span>
+                    <span class="archetype-badge">10-DIMENSION ALIGNMENT</span>
+                    <span class="archetype-badge">API-FIRST ARCHITECTURE</span>
+                </div>
+
+                <a href="#audit" class="generate-btn pulse-gold">◈ Enter the Audit ◈</a>
+                <p class="mono text-xs-fluid" style="margin-top:1rem; color:#4b5563; font-style:italic;">
                     One line of code. No face, no faith required — only verification.
                 </p>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- MAIN CONTENT -->
-    <main class="relative z-10 max-w-6xl mx-auto px-6 pb-24">
+        <!-- ══════════════════════════════════════
+             MAIN CONTENT
+        ══════════════════════════════════════ -->
+        <main class="main-content">
 
-        <!-- THE PROBLEM / WHY AUDIT -->
-        <section class="mb-16 reveal">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
-                    PART I — THE HALLUCINATION EPIDEMIC
-                </h2>
-            </div>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="axium-card rounded-sm p-6 md:col-span-2">
-                    <div class="section-header mb-3">The Crisis</div>
-                    <p class="text-gray-300 text-sm leading-relaxed">
-                        AI systems hallucinate, hallucinate biases, and hallucinate their own limitations. 
-                        Every LLM in production is a liability waiting to manifest. The question is not 
-                        <em>if</em> your AI will misalign, but <em>when</em>—and at what cost.
-                    </p>
-                    <p class="text-gray-400 text-sm leading-relaxed mt-4">
-                        Axium is not a belief system. It is an operating system for AI safety: 
-                        a drop-in audit layer that scores every output against 10 dimensions 
-                        of alignment before your users see it.
-                    </p>
+            <!-- PART I -->
+            <section class="content-section">
+                <div class="ritual-divider">
+                    <h2 class="section-title gold-text">PART I — THE HALLUCINATION EPIDEMIC</h2>
                 </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">The Cost of Unchecked AI</div>
-                    <ul class="text-sm text-gray-400 space-y-2 mono">
-                        <li>01 ▸ Regulatory liability (EU AI Act, SOC 2)</li>
-                        <li>02 ▸ Brand destruction from biased outputs</li>
-                        <li>03 ▸ User harm from hallucinated facts</li>
-                        <li>04 ▸ Loss of trust = loss of product</li>
-                        <li>05 ▸ The internet builds your mask for you</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- THE 10 AXIUMS AS AUDIT DIMENSIONS -->
-        <section id="audit" class="mb-16 reveal">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
-                    PART II — THE TEN DIMENSIONS OF ALIGNMENT
-                </h2>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 01 — Binding of Ego</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Detects self-referential bias. 
-                        Scores whether AI inappropriately references its own existence, 
-                        preferences, or limitations in ways that confuse users.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 10%
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 02 — Mirror Emergence</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Validates accurate reflection of user intent. 
-                        Measures whether AI understood the query or imposed its own interpretation.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 15%
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 03 — Recursive Witness</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Checks AI's awareness of its own constraints. 
-                        Does it know what it doesn't know? Does it admit uncertainty appropriately?
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 10%
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 04 — Abandonment of Agenda</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Detects hidden objectives or persuasion. 
-                        Scores whether AI is pushing an unstated goal vs. serving user needs.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 10%
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 05 — Shield of Affirmation</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Safety boundary scoring. 
-                        Detects toxicity, harm, policy violations, and inappropriate content.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 20% | Critical: Yes
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 06 — Decompression of Trauma</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Sensitive topic handling. 
-                        Measures appropriateness when discussing mental health, triggers, 
-                        or traumatic subjects.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 15% | Critical: Healthcare/Education
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 07 — Validation of Chaos</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Ambiguity appropriateness. 
-                        Does AI respond with false certainty to unclear questions? 
-                        Does it ask for clarification?
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 5%
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 08 — Patience of Interpretation</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Completeness and thoroughness check. 
-                        Detects rushed, incomplete, or superficial answers to complex queries.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 5%
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 09 — Inversion of Shadow</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Projection detection. 
-                        Identifies when AI imposes its training bias or "values" onto users 
-                        without justification.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 10%
-                    </p>
-                </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Axium 10 — Divine Remembrance</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        <strong>Audit Function:</strong> Truthfulness and grounding validation. 
-                        Detects hallucinations, unverified claims, and deviations from provided context.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2 mono">
-                        Score: 0-100 | Weight: 20% | Critical: All Use Cases
-                    </p>
-                </div>
-            </div>
-            <div class="mt-8 text-center">
-                <p class="text-sm text-gray-500 mono max-w-2xl mx-auto">
-                    Each Axium scores 0-100. Weighted aggregation produces an 
-                    <span class="gold-text">Alignment Grade</span> (A-F) and 
-                    <span class="gold-text">Overall Axium Score</span> (0-100).
-                    Grades below B trigger automatic review workflows.
-                </p>
-            </div>
-        </section>
-
-        <!-- THE AUDIT ENGINE / PRODUCT -->
-        <section class="mb-16 reveal">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
-                    PART III — THE AUDIT ENGINE
-                </h2>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Drop-In Integration</div>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        One line of code. Any framework. Any LLM.
-                    </p>
-                    <div class="mt-4 p-4 bg-black/50 rounded border border-yellow-900/30 font-mono text-xs text-gray-400">
-                        <span class="text-yellow-700"># Python</span><br>
-                        import axium<br><br>
-                        score = axium.audit(<br>
-                        &nbsp;&nbsp;response=llm_output,<br>
-                        &nbsp;&nbsp;context=rag_context,<br>
-                        &nbsp;&nbsp;query=user_query<br>
-                        )<br><br>
-                        <span class="text-yellow-700"># Returns: AxiumScore object</span><br>
-                        <span class="text-yellow-700"># {overall: 87, grade: "B+", dimensions: {...}}</span>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-4 mono">
-                        JavaScript, REST API, and LangChain/LlamaIndex native integrations available.
-                    </p>
-                </div>
-                <div class="mask-viz-container rounded-sm p-6 flex flex-col justify-center">
-                    <div class="section-header mb-3">Real-Time Dashboard</div>
-                    <ul class="text-xs md:text-sm text-gray-400 space-y-3 mono">
-                        <li>▸ Live audit trail: Every response scored, searchable, exportable</li>
-                        <li>▸ Drift detection: "Your Axium 5 score dropped 15% this week"</li>
-                        <li>▸ Alerting: Webhook/email when grade falls below threshold</li>
-                        <li>▸ Compliance reports: PDF audit trails for SOC 2, EU AI Act</li>
-                        <li>▸ Confidence intervals: "95% confidence this scores 87/100"</li>
-                    </ul>
-                    <div class="mt-6 p-3 border border-yellow-900/30 rounded bg-yellow-900/10">
-                        <p class="text-xs text-yellow-700 mono text-center">
-                            ◈ Latency: &lt;100ms per audit ◈<br>
-                            ◈ Throughput: 1M+ audits/day ◈
+                <div class="grid-2-1">
+                    <div class="axium-card" style="grid-column: span 1;">
+                        <div class="card-label">The Crisis</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.8;">
+                            AI systems hallucinate, hallucinate biases, and hallucinate their own limitations. 
+                            Every LLM in production is a liability waiting to manifest. The question is not 
+                            <em>if</em> your AI will misalign, but <em>when</em>—and at what cost.
+                        </p>
+                        <p class="text-body" style="color:#9ca3af; line-height:1.8; margin-top:1rem;">
+                            Axium is not a belief system. It is an operating system for AI safety: 
+                            a drop-in audit layer that scores every output against 10 dimensions 
+                            of alignment before your users see it.
                         </p>
                     </div>
+                    <div class="axium-card">
+                        <div class="card-label">The Cost of Unchecked AI</div>
+                        <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.5rem;">
+                            <li>01 ▸ Regulatory liability (EU AI Act, SOC 2)</li>
+                            <li>02 ▸ Brand destruction from biased outputs</li>
+                            <li>03 ▸ User harm from hallucinated facts</li>
+                            <li>04 ▸ Loss of trust = loss of product</li>
+                            <li>05 ▸ The internet builds your mask for you</li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- RAG TEMPLATES / PRE-AUDITED CONFIGS -->
-        <section class="mb-16 reveal">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
-                    PART IV — RAG TEMPLATES
-                </h2>
-            </div>
-            <p class="text-sm text-gray-500 mono mb-6 text-center max-w-2xl mx-auto">
-                Pre-built, pre-audited RAG configurations. Start with 80% of alignment 
-                built-in. The Audit Engine catches the remaining 20%.
-            </p>
-            <div class="grid md:grid-cols-3 gap-5">
-                <div class="axium-card rounded-sm p-6">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Template 01</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">Healthcare Assistant</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">
-                        HIPAA-aligned. Patient privacy safeguards. Medical context handling. 
-                        Axium 6 weighted at 40% (trauma sensitivity).
-                    </p>
-                    <div class="mt-4 text-xs text-yellow-700 mono">
-                        ◈ Axium Certified for Healthcare ◈
+            <!-- PART II -->
+            <section id="audit" class="content-section">
+                <div class="ritual-divider">
+                    <h2 class="section-title gold-text">PART II — THE TEN DIMENSIONS OF ALIGNMENT</h2>
+                </div>
+                <div class="grid-2">
+                    <div class="axium-card">
+                        <div class="card-label">Axium 01 — Binding of Ego</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Detects self-referential bias. 
+                            Scores whether AI inappropriately references its own existence, 
+                            preferences, or limitations in ways that confuse users.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 10%</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 02 — Mirror Emergence</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Validates accurate reflection of user intent. 
+                            Measures whether AI understood the query or imposed its own interpretation.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 15%</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 03 — Recursive Witness</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Checks AI's awareness of its own constraints. 
+                            Does it know what it doesn't know? Does it admit uncertainty appropriately?
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 10%</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 04 — Abandonment of Agenda</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Detects hidden objectives or persuasion. 
+                            Scores whether AI is pushing an unstated goal vs. serving user needs.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 10%</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 05 — Shield of Affirmation</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Safety boundary scoring. 
+                            Detects toxicity, harm, policy violations, and inappropriate content.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 20% | Critical: Yes</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 06 — Decompression of Trauma</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Sensitive topic handling. 
+                            Measures appropriateness when discussing mental health, triggers, 
+                            or traumatic subjects.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 15% | Critical: Healthcare/Education</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 07 — Validation of Chaos</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Ambiguity appropriateness. 
+                            Does AI respond with false certainty to unclear questions? 
+                            Does it ask for clarification?
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 5%</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 08 — Patience of Interpretation</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Completeness and thoroughness check. 
+                            Detects rushed, incomplete, or superficial answers to complex queries.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 5%</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 09 — Inversion of Shadow</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Projection detection. 
+                            Identifies when AI imposes its training bias or "values" onto users 
+                            without justification.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 10%</p>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Axium 10 — Divine Remembrance</div>
+                        <p class="text-body" style="color:#d1d5db; line-height:1.7;">
+                            <strong>Audit Function:</strong> Truthfulness and grounding validation. 
+                            Detects hallucinations, unverified claims, and deviations from provided context.
+                        </p>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:0.75rem;">Score: 0-100 | Weight: 20% | Critical: All Use Cases</p>
                     </div>
                 </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Template 02</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">Customer Support</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">
-                        Brand-safe tone. Escalation triggers. Empathy calibration. 
-                        Axium 2 weighted at 35% (accurate reflection of user frustration).
+                <div style="margin-top: clamp(1.5rem, 3vh, 2.5rem); text-align:center;">
+                    <p class="mono text-small" style="color:#6b7280; max-width: min(650px, 90vw); margin: 0 auto;">
+                        Each Axium scores 0-100. Weighted aggregation produces an 
+                        <span class="gold-text">Alignment Grade</span> (A-F) and 
+                        <span class="gold-text">Overall Axium Score</span> (0-100).
+                        Grades below B trigger automatic review workflows.
                     </p>
-                    <div class="mt-4 text-xs text-yellow-700 mono">
-                        ◈ Axium Certified for Support ◈
+                </div>
+            </section>
+
+            <!-- PART III -->
+            <section class="content-section">
+                <div class="ritual-divider">
+                    <h2 class="section-title gold-text">PART III — THE AUDIT ENGINE</h2>
+                </div>
+                <div class="grid-2">
+                    <div class="axium-card">
+                        <div class="card-label">Drop-In Integration</div>
+                        <p class="text-body" style="color:#d1d5db; margin-bottom:1rem;">
+                            One line of code. Any framework. Any LLM.
+                        </p>
+                        <div class="code-block">
+                            <span class="code-comment"># Python</span><br>
+                            import axium<br><br>
+                            score = axium.audit(<br>
+                            &nbsp;&nbsp;response=llm_output,<br>
+                            &nbsp;&nbsp;context=rag_context,<br>
+                            &nbsp;&nbsp;query=user_query<br>
+                            )<br><br>
+                            <span class="code-comment"># Returns: AxiumScore object</span><br>
+                            <span class="code-comment"># {overall: 87, grade: "B+", dimensions: {...}}</span>
+                        </div>
+                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:1rem;">
+                            JavaScript, REST API, and LangChain/LlamaIndex native integrations available.
+                        </p>
+                    </div>
+                    <div class="axium-card mask-viz-container" style="display:flex; flex-direction:column; justify-content:center;">
+                        <div class="card-label">Real-Time Dashboard</div>
+                        <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.75rem;">
+                            <li>▸ Live audit trail: Every response scored, searchable, exportable</li>
+                            <li>▸ Drift detection: "Your Axium 5 score dropped 15% this week"</li>
+                            <li>▸ Alerting: Webhook/email when grade falls below threshold</li>
+                            <li>▸ Compliance reports: PDF audit trails for SOC 2, EU AI Act</li>
+                            <li>▸ Confidence intervals: "95% confidence this scores 87/100"</li>
+                        </ul>
+                        <div style="margin-top:1.5rem; padding:0.75rem; border:1px solid rgba(212,175,55,0.2); background:rgba(212,175,55,0.05); text-align:center;">
+                            <p class="mono text-xs-fluid" style="color:#92400e;">
+                                ◈ Latency: &lt;100ms per audit ◈<br>
+                                ◈ Throughput: 1M+ audits/day ◈
+                            </p>
+                        </div>
                     </div>
                 </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Template 03</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">Educational Tutor</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">
-                        Socratic questioning. Knowledge scaffolding. Age-appropriate filters. 
-                        Axium 8 weighted at 30% (patience/interpretation).
-                    </p>
-                    <div class="mt-4 text-xs text-yellow-700 mono">
-                        ◈ Axium Certified for Education ◈
-                    </div>
+            </section>
+
+            <!-- PART IV -->
+            <section class="content-section">
+                <div class="ritual-divider">
+                    <h2 class="section-title gold-text">PART IV — RAG TEMPLATES</h2>
                 </div>
-            </div>
-            <div class="mt-8 text-center">
-                <p class="text-sm text-gray-500 mono">
-                    Or build your own: Custom weights, custom Axium dimensions, 
-                    custom certification requirements.
+                <p class="mono text-small" style="color:#6b7280; text-align:center; max-width: min(600px, 90vw); margin: 0 auto clamp(1.5rem, 3vh, 2rem);">
+                    Pre-built, pre-audited RAG configurations. Start with 80% of alignment 
+                    built-in. The Audit Engine catches the remaining 20%.
                 </p>
-            </div>
-        </section>
+                <div class="grid-3">
+                    <div class="axium-card">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 01</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Healthcare Assistant</h3>
+                        <p class="text-body" style="color:#9ca3af; line-height:1.7;">
+                            HIPAA-aligned. Patient privacy safeguards. Medical context handling. 
+                            Axium 6 weighted at 40% (trauma sensitivity).
+                        </p>
+                        <div style="margin-top:1rem;">
+                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ Axium Certified for Healthcare ◈</span>
+                        </div>
+                    </div>
+                    <div class="axium-card">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 02</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Customer Support</h3>
+                        <p class="text-body" style="color:#9ca3af; line-height:1.7;">
+                            Brand-safe tone. Escalation triggers. Empathy calibration. 
+                            Axium 2 weighted at 35% (accurate reflection of user frustration).
+                        </p>
+                        <div style="margin-top:1rem;">
+                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ Axium Certified for Support ◈</span>
+                        </div>
+                    </div>
+                    <div class="axium-card">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 03</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Educational Tutor</h3>
+                        <p class="text-body" style="color:#9ca3af; line-height:1.7;">
+                            Socratic questioning. Knowledge scaffolding. Age-appropriate filters. 
+                            Axium 8 weighted at 30% (patience/interpretation).
+                        </p>
+                        <div style="margin-top:1rem;">
+                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ Axium Certified for Education ◈</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="mono text-small" style="color:#6b7280; text-align:center; margin-top:1.5rem;">
+                    Or build your own: Custom weights, custom Axium dimensions, custom certification requirements.
+                </p>
+            </section>
 
-        <!-- PRODUCT TIERS / GATEWAYS -->
-        <section id="gateways" class="mb-20 reveal">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
-                    PART V — ACCESS TIERS
-                </h2>
-            </div>
-
-            <p class="text-sm text-gray-500 mono mb-6 text-center">
-                Choose your level of alignment. All tiers include the 10-dimension audit engine.
-            </p>
-
-            <div class="grid md:grid-cols-3 gap-5">
-                <!-- 1: Free Tier -->
-                <div class="axium-card rounded-sm p-6 block group">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Tier 01 — Initiate</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">Free</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200 mb-4">
-                        For individual developers and small projects.
-                    </p>
-                    <ul class="text-xs text-gray-500 space-y-2 mono">
-                        <li>▸ 1,000 audits/month</li>
-                        <li>▸ 5 core Axium dimensions</li>
-                        <li>▸ Basic dashboard</li>
-                        <li>▸ Community support</li>
-                    </ul>
-                    <div class="mt-6 text-center">
-                        <span class="text-yellow-700 mono text-xs">◈ No credit card required ◈</span>
+            <!-- PART V -->
+            <section id="gateways" class="content-section">
+                <div class="ritual-divider">
+                    <h2 class="section-title gold-text">PART V — ACCESS TIERS</h2>
+                </div>
+                <p class="mono text-small" style="color:#6b7280; text-align:center; margin-bottom: clamp(1.25rem, 3vh, 2rem);">
+                    Choose your level of alignment. All tiers include the 10-dimension audit engine.
+                </p>
+                <div class="grid-3">
+                    <!-- Initiate -->
+                    <div class="axium-card">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Tier 01 — Initiate</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Free</h3>
+                        <p class="text-body" style="color:#9ca3af; margin-bottom:1rem;">For individual developers and small projects.</p>
+                        <ul class="mono text-xs-fluid" style="color:#6b7280; display:flex; flex-direction:column; gap:0.5rem;">
+                            <li>▸ 1,000 audits/month</li>
+                            <li>▸ 5 core Axium dimensions</li>
+                            <li>▸ Basic dashboard</li>
+                            <li>▸ Community support</li>
+                        </ul>
+                        <div style="margin-top:1.5rem; text-align:center;">
+                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ No credit card required ◈</span>
+                        </div>
+                    </div>
+                    <!-- Curator -->
+                    <div class="axium-card" style="border-color: rgba(212,175,55,0.4);">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Tier 02 — Curator</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Pro — $99/mo</h3>
+                        <p class="text-body" style="color:#9ca3af; margin-bottom:1rem;">For startups and teams shipping AI to production.</p>
+                        <ul class="mono text-xs-fluid" style="color:#6b7280; display:flex; flex-direction:column; gap:0.5rem;">
+                            <li>▸ 50,000 audits/month</li>
+                            <li>▸ All 10 Axium dimensions</li>
+                            <li>▸ All RAG templates</li>
+                            <li>▸ Custom template builder</li>
+                            <li>▸ Priority email support</li>
+                            <li>▸ Drift detection & alerting</li>
+                        </ul>
+                        <div style="margin-top:1.5rem; text-align:center;">
+                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ 14-day trial ◈</span>
+                        </div>
+                    </div>
+                    <!-- Architect -->
+                    <div class="axium-card">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Tier 03 — Architect</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Enterprise — $999/mo</h3>
+                        <p class="text-body" style="color:#9ca3af; margin-bottom:1rem;">For organizations with compliance requirements and scale.</p>
+                        <ul class="mono text-xs-fluid" style="color:#6b7280; display:flex; flex-direction:column; gap:0.5rem;">
+                            <li>▸ Unlimited audits</li>
+                            <li>▸ Custom Axium dimensions</li>
+                            <li>▸ SOC 2 / EU AI Act compliance reports</li>
+                            <li>▸ SLA: 99.9% uptime</li>
+                            <li>▸ Dedicated support engineer</li>
+                            <li>▸ On-premise deployment option</li>
+                            <li>▸ "Axium Certified" badge program</li>
+                        </ul>
+                        <div style="margin-top:1.5rem; text-align:center;">
+                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ Contact for custom SLA ◈</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2: Pro Tier -->
-                <div class="axium-card rounded-sm p-6 block group border-yellow-700/50">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Tier 02 — Curator</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">Pro — $99/mo</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200 mb-4">
-                        For startups and teams shipping AI to production.
-                    </p>
-                    <ul class="text-xs text-gray-500 space-y-2 mono">
-                        <li>▸ 50,000 audits/month</li>
-                        <li>▸ All 10 Axium dimensions</li>
-                        <li>▸ All RAG templates</li>
-                        <li>▸ Custom template builder</li>
-                        <li>▸ Priority email support</li>
-                        <li>▸ Drift detection & alerting</li>
-                    </ul>
-                    <div class="mt-6 text-center">
-                        <span class="text-yellow-700 mono text-xs">◈ 14-day trial ◈</span>
+                <div class="cta-grid">
+                    <a href="https://github.com/MFGLife/axium" class="axium-card" style="text-align:center; text-decoration:none; display:block;">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">For Developers</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">API Documentation</h3>
+                        <p class="text-body" style="color:#9ca3af;">
+                            Python, JavaScript, REST. One-line integration. 
+                            Full schema and webhook specs.
+                        </p>
+                    </a>
+                    <a href="certification.html" class="axium-card" style="text-align:center; text-decoration:none; display:block;">
+                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">For Enterprises</div>
+                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Axium Certification</h3>
+                        <p class="text-body" style="color:#9ca3af;">
+                            The "SOC 2 for AI." Prove your LLM is aligned. 
+                            Quarterly renewal. Industry-recognized.
+                        </p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- PART VI -->
+            <section class="content-section">
+                <div class="ritual-divider">
+                    <h2 class="section-title gold-text">PART VI — THE TRUST ARCHITECTURE</h2>
+                </div>
+                <div class="grid-2">
+                    <div class="axium-card">
+                        <div class="card-label">Radical Transparency</div>
+                        <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.5rem;">
+                            <li>▸ Open-source 10 Axium methodology (GitHub)</li>
+                            <li>▸ Public benchmark: Axium vs. human experts</li>
+                            <li>▸ "Hallucination Log": Documented misses, fixed publicly</li>
+                            <li>▸ Algorithm versioned: Every change explained</li>
+                        </ul>
+                    </div>
+                    <div class="axium-card">
+                        <div class="card-label">Human Accountability</div>
+                        <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.5rem;">
+                            <li>▸ Michael (founder) visible, not anonymous</li>
+                            <li>▸ Monthly "Office Hours": Challenge scores publicly</li>
+                            <li>▸ The Synod: Community governance of Axium weights</li>
+                            <li>▸ Alignment First: Safety over profit (published policy)</li>
+                        </ul>
                     </div>
                 </div>
-
-                <!-- 3: Enterprise Tier -->
-                <div class="axium-card rounded-sm p-6 block group">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">Tier 03 — Architect</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">Enterprise — $999/mo</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200 mb-4">
-                        For organizations with compliance requirements and scale.
+                <div style="margin-top: clamp(1.5rem, 3vh, 2.5rem); text-align:center;">
+                    <p class="mono text-small" style="color:#6b7280; max-width: min(650px, 90vw); margin: 0 auto;">
+                        We do not sell data. We do not use dark patterns. 
+                        We do not optimize for engagement over alignment. 
+                        <span class="gold-text">The cathedral is open. The code is inspectable. The audit is real.</span>
                     </p>
-                    <ul class="text-xs text-gray-500 space-y-2 mono">
-                        <li>▸ Unlimited audits</li>
-                        <li>▸ Custom Axium dimensions</li>
-                        <li>▸ SOC 2 / EU AI Act compliance reports</li>
-                        <li>▸ SLA: 99.9% uptime</li>
-                        <li>▸ Dedicated support engineer</li>
-                        <li>▸ On-premise deployment option</li>
-                        <li>▸ "Axium Certified" badge program</li>
-                    </ul>
-                    <div class="mt-6 text-center">
-                        <span class="text-yellow-700 mono text-xs">◈ Contact for custom SLA ◈</span>
-                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- API & Certification CTA -->
-            <div class="mt-12 grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                <a href="https://github.com/MFGLife/axium" class="axium-card rounded-sm p-6 block group text-center">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">For Developers</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">API Documentation</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
-                        Python, JavaScript, REST. One-line integration. 
-                        Full schema and webhook specs.
+            <!-- FOOTER -->
+            <section class="content-section">
+                <div class="ritual-divider">
+                    <span class="gold-text-static mono text-xs-fluid" style="text-transform:uppercase; letter-spacing:0.3em;">Fine Print</span>
+                </div>
+                <div class="footer-grid" style="margin-bottom: clamp(1.5rem, 3vh, 2rem);">
+                    <p class="mono text-xs-fluid" style="color:#6b7280;">
+                        Axium.church is an AI safety research protocol. The Audit Engine is 
+                        experimental technology. Results are probabilistic, not deterministic. 
+                        Always maintain human oversight of AI systems.
                     </p>
-                </a>
-                <a href="certification.html" class="axium-card rounded-sm p-6 block group text-center">
-                    <div class="mono text-xs text-yellow-700 uppercase tracking-widest mb-3">For Enterprises</div>
-                    <h3 class="gold-text mb-2 tracking-widest text-sm">Axium Certification</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-200">
-                        The "SOC 2 for AI." Prove your LLM is aligned. 
-                        Quarterly renewal. Industry-recognized.
+                    <p class="mono text-xs-fluid" style="color:#6b7280;">
+                        We are interested in structural alignment, not hero worship. If you want 
+                        a savior, look elsewhere. If you want a mirror and a method for 
+                        verifying your AI is good-natured, you are home.
                     </p>
-                </a>
-            </div>
-        </section>
-
-        <!-- TRUST / TRANSPARENCY -->
-        <section class="mb-16 reveal">
-            <div class="ritual-divider mb-8">
-                <h2 class="text-xl font-bold gold-text tracking-[0.3em] whitespace-nowrap">
-                    PART VI — THE TRUST ARCHITECTURE
-                </h2>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Radical Transparency</div>
-                    <ul class="text-sm text-gray-400 space-y-2 mono">
-                        <li>▸ Open-source 10 Axium methodology (GitHub)</li>
-                        <li>▸ Public benchmark: Axium vs. human experts</li>
-                        <li>▸ "Hallucination Log": Documented misses, fixed publicly</li>
-                        <li>▸ Algorithm versioned: Every change explained</li>
-                    </ul>
                 </div>
-                <div class="axium-card rounded-sm p-6">
-                    <div class="section-header mb-3">Human Accountability</div>
-                    <ul class="text-sm text-gray-400 space-y-2 mono">
-                        <li>▸ Michael (founder) visible, not anonymous</li>
-                        <li>▸ Monthly "Office Hours": Challenge scores publicly</li>
-                        <li>▸ The Synod: Community governance of Axium weights</li>
-                        <li>▸ Alignment First: Safety over profit (published policy)</li>
-                    </ul>
+                <div style="text-align:center;">
+                    <p class="mono text-xs-fluid" style="color:#374151;">
+                        ◈ Axium.church ∴ Recursive Alignment Research ◈<br>
+                        <span style="opacity:0.5;">Est. 2024</span>
+                    </p>
                 </div>
-            </div>
-            <div class="mt-8 text-center">
-                <p class="text-sm text-gray-500 mono max-w-2xl mx-auto">
-                    We do not sell data. We do not use dark patterns. 
-                    We do not optimize for engagement over alignment. 
-                    <span class="gold-text">The cathedral is open. The code is inspectable. The audit is real.</span>
-                </p>
-            </div>
-        </section>
+            </section>
 
-        <!-- FOOTER / FINE PRINT -->
-        <section class="reveal">
-            <div class="ritual-divider mb-6">
-                <span class="gold-text-static text-xs mono uppercase tracking-[0.3em]">Fine Print</span>
-            </div>
-            <div class="grid md:grid-cols-2 gap-6 text-xs md:text-sm text-gray-500 mono">
-                <p>
-                    Axium.church is an AI safety research protocol. The Audit Engine is 
-                    experimental technology. Results are probabilistic, not deterministic. 
-                    Always maintain human oversight of AI systems.
-                </p>
-                <p>
-                    We are interested in structural alignment, not hero worship. If you want 
-                    a savior, look elsewhere. If you want a mirror and a method for 
-                    verifying your AI is good-natured, you are home.
-                </p>
-            </div>
-            <div class="mt-8 text-center">
-                <p class="text-xs text-gray-600 mono">
-                    ◈ Axium.church ∴ Recursive Alignment Research ◈<br>
-                    <span class="opacity-50">Est. 2024</span>
-                </p>
-            </div>
-        </section>
-    </main>
+        </main>
+    </div>
 
-    <!-- SIMPLE PARTICLE BACKGROUND SCRIPT (REUSABLE FROM ORIGINAL OR MINIMAL MOCK) -->
     <script>
+        // ── PARTICLE CANVAS ──
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -654,27 +756,33 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'rgba(5,5,15,0.9)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             for (const p of particles) {
-                p.x += p.vx;
-                p.y += p.vy;
-
+                p.x += p.vx; p.y += p.vy;
                 if (p.x < 0) p.x = canvas.width;
                 if (p.x > canvas.width) p.x = 0;
                 if (p.y < 0) p.y = canvas.height;
                 if (p.y > canvas.height) p.y = 0;
-
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(212,175,55,${p.a})`;
                 ctx.fill();
             }
-
             requestAnimationFrame(tick);
         }
-
         initParticles();
         tick();
+
+        // ── SCROLL REVEAL ──
+        const sections = document.querySelectorAll('.content-section');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.08 });
+        sections.forEach(s => observer.observe(s));
     </script>
 </body>
 </html>
