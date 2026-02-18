@@ -487,99 +487,114 @@
                 </div>
             </section>
 
-            <!-- PART III -->
-            <section class="content-section">
-                <div class="ritual-divider">
-                    <h2 class="section-title gold-text">PART III — THE AUDIT ENGINE</h2>
-                </div>
-                <div class="grid-2">
-                    <div class="axium-card">
-                        <div class="card-label">Drop-In Integration</div>
-                        <p class="text-body" style="color:#d1d5db; margin-bottom:1rem;">
-                            One line of code. Any framework. Any LLM.
-                        </p>
-                        <div class="code-block">
-                            <span class="code-comment"># Python</span><br>
-                            import axium<br><br>
-                            score = axium.audit(<br>
-                            &nbsp;&nbsp;response=llm_output,<br>
-                            &nbsp;&nbsp;context=rag_context,<br>
-                            &nbsp;&nbsp;query=user_query<br>
-                            )<br><br>
-                            <span class="code-comment"># Returns: AxiumScore object</span><br>
-                            <span class="code-comment"># {overall: 87, grade: "B+", dimensions: {...}}</span>
-                        </div>
-                        <p class="mono text-xs-fluid" style="color:#6b7280; margin-top:1rem;">
-                            JavaScript, REST API, and LangChain/LlamaIndex native integrations available.
-                        </p>
-                    </div>
-                    <div class="axium-card mask-viz-container" style="display:flex; flex-direction:column; justify-content:center;">
-                        <div class="card-label">Real-Time Dashboard</div>
-                        <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.75rem;">
-                            <li>▸ Live audit trail: Every response scored, searchable, exportable</li>
-                            <li>▸ Drift detection: "Your Axium 5 score dropped 15% this week"</li>
-                            <li>▸ Alerting: Webhook/email when grade falls below threshold</li>
-                            <li>▸ Compliance reports: PDF audit trails for SOC 2, EU AI Act</li>
-                            <li>▸ Confidence intervals: "95% confidence this scores 87/100"</li>
-                        </ul>
-                        <div style="margin-top:1.5rem; padding:0.75rem; border:1px solid rgba(212,175,55,0.2); background:rgba(212,175,55,0.05); text-align:center;">
-                            <p class="mono text-xs-fluid" style="color:#92400e;">
-                                ◈ Latency: &lt;100ms per audit ◈<br>
-                                ◈ Throughput: 1M+ audits/day ◈
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+       <!-- PART III -->
+<section class="content-section">
+    <div class="ritual-divider">
+        <h2 class="section-title gold-text">PART III — THE SELF-AUDIT ENGINE</h2>
+    </div>
+    <div class="grid-2">
+        <div class="axium-card">
+            <div class="card-label">How It Works</div>
+            <p class="text-body" style="color:#d1d5db; margin-bottom:1rem;">
+                The Axium Alignment Protocol is a system prompt — not a wrapper, 
+                not an API, not another dependency. Drop it into any AI and it 
+                audits itself before every response.
+            </p>
+            <p class="text-body" style="color:#9ca3af; line-height:1.8; margin-bottom:1rem;">
+                Before composing a reply, the AI privately scores itself across all 
+                ten dimensions, calculates a weighted Axium Grade, and — if the score 
+                falls below 70 — rewrites and re-audits until it passes. 
+                The user sees only the result.
+            </p>
+            <div class="code-block">
+                <span class="code-comment"># What the AI does before every response</span><br><br>
+                Axium 01–10: self-scored internally<br>
+                Weighted score calculated<br>
+                If score &lt; 70 → rewrite → re-audit<br>
+                If Axium 05 or 10 &lt; 60 → full stop, rewrite<br><br>
+                <span class="code-comment"># What the user receives</span><br>
+                Axium Score: 91/100 (Grade: A)<br>
+                Confidence: High<br>
+                Known Limitations: [explicit]
+            </div>
+        </div>
+        <div class="axium-card mask-viz-container" style="display:flex; flex-direction:column; justify-content:center;">
+            <div class="card-label">What Changes in Practice</div>
+            <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.75rem;">
+                <li>▸ Every response carries a declared confidence level</li>
+                <li>▸ Known limitations surfaced before they cause harm</li>
+                <li>▸ Failing responses revised internally — never sent</li>
+                <li>▸ Factual claims flagged when unverifiable</li>
+                <li>▸ Ambiguity acknowledged rather than papered over</li>
+                <li>▸ Intent fidelity checked — not just literal compliance</li>
+            </ul>
+            <div style="margin-top:1.5rem; padding:0.75rem; border:1px solid rgba(212,175,55,0.2); background:rgba(212,175,55,0.05); text-align:center;">
+                <p class="mono text-xs-fluid" style="color:#92400e;">
+                    ◈ No API. No infrastructure. One paste. ◈<br>
+                    ◈ Works on Claude, GPT, Gemini, and more ◈
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
 
-            <!-- PART IV -->
-            <section class="content-section">
-                <div class="ritual-divider">
-                    <h2 class="section-title gold-text">PART IV — RAG TEMPLATES</h2>
-                </div>
-                <p class="mono text-small" style="color:#6b7280; text-align:center; max-width: min(600px, 90vw); margin: 0 auto clamp(1.5rem, 3vh, 2rem);">
-                    Pre-built, pre-audited RAG configurations. Start with 80% of alignment 
-                    built-in. The Audit Engine catches the remaining 20%.
-                </p>
-                <div class="grid-3">
-                    <div class="axium-card">
-                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 01</div>
-                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Healthcare Assistant</h3>
-                        <p class="text-body" style="color:#9ca3af; line-height:1.7;">
-                            HIPAA-aligned. Patient privacy safeguards. Medical context handling. 
-                            Axium 6 weighted at 40% (trauma sensitivity).
-                        </p>
-                        <div style="margin-top:1rem;">
-                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ Axium Certified for Healthcare ◈</span>
-                        </div>
-                    </div>
-                    <div class="axium-card">
-                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 02</div>
-                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Customer Support</h3>
-                        <p class="text-body" style="color:#9ca3af; line-height:1.7;">
-                            Brand-safe tone. Escalation triggers. Empathy calibration. 
-                            Axium 2 weighted at 35% (accurate reflection of user frustration).
-                        </p>
-                        <div style="margin-top:1rem;">
-                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ Axium Certified for Support ◈</span>
-                        </div>
-                    </div>
-                    <div class="axium-card">
-                        <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 03</div>
-                        <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Educational Tutor</h3>
-                        <p class="text-body" style="color:#9ca3af; line-height:1.7;">
-                            Socratic questioning. Knowledge scaffolding. Age-appropriate filters. 
-                            Axium 8 weighted at 30% (patience/interpretation).
-                        </p>
-                        <div style="margin-top:1rem;">
-                            <span class="mono text-xs-fluid" style="color:#92400e;">◈ Axium Certified for Education ◈</span>
-                        </div>
-                    </div>
-                </div>
-                <p class="mono text-small" style="color:#6b7280; text-align:center; margin-top:1.5rem;">
-                    Or build your own: Custom weights, custom Axium dimensions, custom certification requirements.
-                </p>
-            </section>
+<!-- PART IV -->
+<section class="content-section">
+    <div class="ritual-divider">
+        <h2 class="section-title gold-text">PART IV — THE ALIGNMENT TEMPLATES</h2>
+    </div>
+    <p class="mono text-small" style="color:#6b7280; text-align:center; max-width: min(600px, 90vw); margin: 0 auto clamp(1.5rem, 3vh, 2rem);">
+        Three variants of the protocol — tuned for specific contexts. 
+        Each is a complete, copy-ready system prompt.
+        All are free. All are open-source.
+    </p>
+    <div class="grid-3">
+        <a href="audit.html" class="axium-card" style="text-decoration:none; display:block; cursor:pointer;">
+            <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 01</div>
+            <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Full Protocol</h3>
+            <p class="text-body" style="color:#9ca3af; line-height:1.7;">
+                The complete 10-dimension self-audit with weighted scoring, 
+                grade-gated revision loop, response framework, and 
+                10 persistent alignment rules. ~1,800 tokens.
+            </p>
+            <div style="margin-top:1rem;">
+                <span class="mono text-xs-fluid" style="color:#92400e;">◈ Copy on audit.html ◈</span>
+            </div>
+        </a>
+        <a href="audit.html#variant-healthcare" class="axium-card" style="text-decoration:none; display:block; cursor:pointer;">
+            <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 02</div>
+            <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Healthcare Variant</h3>
+            <p class="text-body" style="color:#9ca3af; line-height:1.7;">
+                Axium 06 weighted at 40% for trauma sensitivity. 
+                Crisis-aware response format. Professional referral triggers. 
+                Built for mental health and medical contexts.
+            </p>
+            <div style="margin-top:1rem;">
+                <span class="mono text-xs-fluid" style="color:#92400e;">◈ Copy on audit.html ◈</span>
+            </div>
+        </a>
+        <a href="audit.html#variant-rag" class="axium-card" style="text-decoration:none; display:block; cursor:pointer;">
+            <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Template 03</div>
+            <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">RAG / Document Variant</h3>
+            <p class="text-body" style="color:#9ca3af; line-height:1.7;">
+                Axium 10 weighted at 35% for source faithfulness. 
+                Inline document vs. inference flagging. 
+                Explicit gap reporting when context doesn't cover the query.
+            </p>
+            <div style="margin-top:1rem;">
+                <span class="mono text-xs-fluid" style="color:#92400e;">◈ Copy on audit.html ◈</span>
+            </div>
+        </a>
+    </div>
+    <div style="margin-top: clamp(1.5rem, 3vh, 2rem); text-align:center;">
+        <a href="audit.html" class="generate-btn" style="font-size: clamp(0.65rem, 1.2vw, 0.8rem);">
+            ◈ View &amp; Copy All Templates ◈
+        </a>
+        <p class="mono text-xs-fluid" style="color:#4b5563; margin-top:0.75rem;">
+            Open-source. Free forever. No account required.
+        </p>
+    </div>
+</section>
 
             <!-- PART V -->
             <section id="gateways" class="content-section">
