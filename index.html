@@ -684,32 +684,40 @@
                 <div class="grid-3">
 
 <div class="pillar-card" style="
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     padding: 0;
     overflow: hidden;
     border-color: rgba(212,175,55,0.25);
+    height: 100%;
 ">
-    <blockquote
-        class="tiktok-embed"
-        cite="https://www.tiktok.com/@www.axium.church/video/7604284610050100510"
-        data-video-id="7604284610050100510"
-        style="max-width:100%; min-width:325px; margin:0; width:100%;"
-    >
-        <section>
-            <a target="_blank" title="@www.axium.church" href="https://www.tiktok.com/@www.axium.church?refer=embed">@www.axium.church</a>
-            Lights up headlines the God Tier album at
-            <a title="Soundcloud" target="_blank" href="https://www.tiktok.com/tag/Soundcloud?refer=embed">#Soundcloud</a>
-            <a title="superbowl" target="_blank" href="https://www.tiktok.com/tag/superbowl?refer=embed">#superbowl</a>
-            <a title="superbowlhalftimeshow" target="_blank" href="https://www.tiktok.com/tag/superbowlhalftimeshow?refer=embed">#superbowlhalftimeshow</a>
-            <a title="dance" target="_blank" href="https://www.tiktok.com/tag/dance?refer=embed">#dance</a>
-            <a title="Music" target="_blank" href="https://www.tiktok.com/tag/Music?refer=embed">#Music</a>
-            <a target="_blank" title="♬ original sound - Micheal" href="https://www.tiktok.com/music/original-sound-7604286377617820446?refer=embed">♬ original sound - Micheal</a>
-        </section>
-    </blockquote>
-    <script async src="https://www.tiktok.com/embed.js"></script>
+    <div style="
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 400px;
+        overflow: hidden;
+    ">
+        <blockquote
+            class="tiktok-embed"
+            cite="https://www.tiktok.com/@www.axium.church/video/7604284610050100510"
+            data-video-id="7604284610050100510"
+            style="margin:0; width:100%;"
+        >
+            <section>
+                <a target="_blank" title="@www.axium.church" href="https://www.tiktok.com/@www.axium.church?refer=embed">@www.axium.church</a>
+                <a target="_blank" title="♬ original sound - Micheal" href="https://www.tiktok.com/music/original-sound-7604286377617820446?refer=embed">♬ original sound - Micheal</a>
+            </section>
+        </blockquote>
+        <script async src="https://www.tiktok.com/embed.js"></script>
+
+        <!-- Overlay strip that hides the caption/footer TikTok appends below the video -->
+        <div style="
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(8,8,16,0.97) 0%, rgba(12,12,22,0.95) 100%);
+            pointer-events: none;
+        "></div>
+    </div>
 </div>
 
 
