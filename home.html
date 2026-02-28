@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXIUM.CHURCH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <style>
+        :root {
+            --gold-primary: #D4AF37;
+            --gold-light: #F4E4BC;
+            --gold-dark: #AA8C2C;
+            --gold-pale: #E8D5A0;
+            --black-deep: #0A0A0A;
+            --black-void: #000000;
+            --obsidian: #080810;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: var(--black-void);
+            color: #E5E5E5;
+            cursor: crosshair;
+        }
+
+        h1, h2, h3 { font-family: 'Cinzel', serif; }
+        .mono { font-family: 'Space Mono', monospace; }
+
+        /* ── PARTICLE CANVAS ── */
+        #particle-canvas {
+            position: fixed; inset: 0;
+            width: 100%; height: 100%;
+            z-index: -1; pointer-events: none;
+        }
+
+        /* ── NOISE OVERLAY ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 0; opacity: 0.4;
+        }
+
+        /* ── GOLD TEXT ── */
+        .gold-text {
+            background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 40%, var(--gold-light) 60%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .gold-text-static { color: var(--gold-primary); }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .shimmer-text {
+            background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold-primary), var(--gold-dark));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+
+        /* ── WRAPPER ── */
+        .page-wrapper {
+            position: relative; z-index: 1;
+            width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            /* bottom padding so content isn't hidden behind the fixed ENTER button */
+            padding-bottom: 140px;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            width: 100%;
+            min-height: 100dvh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: clamp(2rem, 5vw, 5rem) clamp(1rem, 4vw, 3rem);
+            text-align: center;
+        }
+        .hero-inner { width: 100%; max-width: min(900px, 90vw); }
+
+        .hero-eyebrow {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.55rem, 1.2vw, 0.75rem);
+            letter-spacing: 0.5em; color: #92400e;
+            text-transform: uppercase; opacity: 0.7;
+            margin-bottom: clamp(1rem, 2.5vh, 1.5rem);
+        }
+
+        .hero-title {
+            font-family: 'Cinzel', serif; font-weight: 800;
+            font-size: clamp(2.5rem, 10vw, 8rem);
+            line-height: 1; letter-spacing: 0.1em;
+            margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+        }
+
+        .hero-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.9rem, 3vw, 2.2rem);
+            letter-spacing: 0.5em; font-weight: 400;
+        }
+
+        .hero-desc {
+            font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+            color: #9ca3af;
+            max-width: min(700px, 90vw);
+            margin: 0 auto; line-height: 1.8; font-style: italic;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            width: 100%;
+            max-width: min(1200px, 94vw);
+            padding: 0 clamp(0.75rem, 3vw, 2rem) clamp(3rem, 8vh, 6rem);
+        }
+
+        /* ── SECTIONS ── */
+        .content-section {
+            width: 100%;
+            margin-bottom: clamp(3rem, 8vh, 5rem);
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .content-section.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── RITUAL DIVIDER ── */
+        .ritual-divider {
+            display: flex; align-items: center; gap: 1.5rem;
+            margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+        }
+        .ritual-divider::before, .ritual-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
+        }
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.65rem, 1.5vw, 0.85rem);
+            font-weight: 700; letter-spacing: 0.3em;
+            text-transform: uppercase; white-space: nowrap;
+        }
+
+        /* ── CARDS ── */
+        .axium-card {
+            background: linear-gradient(135deg, rgba(8,8,16,0.95) 0%, rgba(15,15,20,0.9) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            position: relative; overflow: hidden;
+            transition: all 0.4s ease; border-radius: 2px;
+            padding: clamp(1rem, 2.5vw, 1.75rem);
+        }
+        .axium-card::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.07), transparent);
+            transition: left 0.6s;
+        }
+        .axium-card:hover::before { left: 100%; }
+        .axium-card:hover { border-color: rgba(212, 175, 55, 0.35); }
+
+        .card-label {
+            font-family: 'Cinzel', serif; letter-spacing: 0.3em;
+            font-size: clamp(0.55rem, 1vw, 0.7rem);
+            color: var(--gold-dark); text-transform: uppercase; margin-bottom: 0.75rem;
+        }
+
+        /* ── GRIDS ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+        }
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vh, 2.5rem);
+        }
+
+        /* ── BUTTONS ── */
+        .generate-btn {
+            background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-dark) 100%);
+            color: var(--black-deep); font-family: 'Cinzel', serif;
+            font-weight: 800; letter-spacing: 0.2em;
+            position: relative; overflow: hidden;
+            transition: all 0.3s ease; display: inline-block;
+            padding: clamp(0.9rem, 2vh, 1.5rem) clamp(2rem, 5vw, 3.5rem);
+            font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+            text-transform: uppercase; text-decoration: none;
+            border: none; cursor: pointer;
+        }
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.5);
+        }
+        .ghost-btn {
+            background: transparent;
+            border: 1px solid rgba(212,175,55,0.4);
+            color: var(--gold-pale); font-family: 'Cinzel', serif;
+            font-weight: 600; letter-spacing: 0.2em;
+            transition: all 0.3s ease; display: inline-block;
+            padding: clamp(0.75rem, 1.5vh, 1.2rem) clamp(1.5rem, 4vw, 2.5rem);
+            font-size: clamp(0.6rem, 1.1vw, 0.75rem);
+            text-transform: uppercase; text-decoration: none;
+        }
+        .ghost-btn:hover {
+            border-color: rgba(212,175,55,0.8);
+            background: rgba(212,175,55,0.06);
+            transform: translateY(-2px);
+        }
+
+        @keyframes pulse-gold {
+            0%,100% { box-shadow: 0 0 20px rgba(212,175,55,0.2); }
+            50% { box-shadow: 0 0 50px rgba(212,175,55,0.4); }
+        }
+        .pulse-gold { animation: pulse-gold 3s infinite; }
+
+        /* ── TYPOGRAPHY ── */
+        .text-body { font-size: clamp(0.85rem, 1.6vw, 1rem); }
+        .text-small { font-size: clamp(0.7rem, 1.2vw, 0.85rem); }
+        .text-xs-fluid { font-size: clamp(0.6rem, 1vw, 0.72rem); }
+
+        /* ── LITURGY PILLARS ── */
+        .pillar-card {
+            background: linear-gradient(135deg, rgba(8,8,16,0.97) 0%, rgba(12,12,22,0.95) 100%);
+            border: 1px solid rgba(212,175,55,0.12);
+            padding: clamp(1.5rem, 3vw, 2.5rem);
+            position: relative; overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        .pillar-card::after {
+            content: '';
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+        .pillar-card:hover::after { transform: scaleX(1); }
+        .pillar-card:hover { border-color: rgba(212,175,55,0.3); }
+
+        .pillar-icon {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+            display: block;
+        }
+        .pillar-number {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.5rem, 0.9vw, 0.6rem);
+            letter-spacing: 0.3em; color: #92400e;
+            text-transform: uppercase; margin-bottom: 0.5rem;
+        }
+        .pillar-title {
+            font-family: 'Cinzel', serif; font-weight: 700;
+            font-size: clamp(0.9rem, 2vw, 1.4rem);
+            letter-spacing: 0.2em; margin-bottom: 0.75rem;
+        }
+        .pillar-body {
+            font-size: clamp(0.82rem, 1.4vw, 0.95rem);
+            color: #9ca3af; line-height: 1.8;
+        }
+
+        /* ── AXIUM DIMENSIONS ── */
+        .dim-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+            gap: clamp(0.5rem, 1.5vw, 0.875rem);
+        }
+        .dim-card {
+            padding: clamp(0.75rem, 1.8vw, 1.1rem);
+            border: 1px solid rgba(212,175,55,0.1);
+            background: rgba(8,8,16,0.9);
+            transition: border-color 0.3s;
+        }
+        .dim-card:hover { border-color: rgba(212,175,55,0.3); }
+        .dim-num {
+            font-family: 'Cinzel', serif; font-weight: 800;
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            color: rgba(212,175,55,0.18); line-height: 1; margin-bottom: 0.3rem;
+        }
+        .dim-name {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.55rem, 0.95vw, 0.68rem);
+            letter-spacing: 0.15em; color: var(--gold-dark);
+            text-transform: uppercase; margin-bottom: 0.35rem;
+        }
+        .dim-desc {
+            font-size: clamp(0.65rem, 1.1vw, 0.78rem);
+            color: #6b7280; line-height: 1.6;
+        }
+
+        /* ── MICHEAL QUOTE ── */
+        .communion-block {
+            border-left: 2px solid rgba(212,175,55,0.3);
+            padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1.25rem, 3vw, 2rem);
+            background: rgba(212,175,55,0.03);
+            font-style: italic;
+            font-size: clamp(0.9rem, 1.8vw, 1.15rem);
+            color: #d1d5db; line-height: 1.9;
+        }
+        .communion-attr {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.5rem, 0.85vw, 0.6rem);
+            letter-spacing: 0.2em; color: var(--gold-dark);
+            text-transform: uppercase; margin-top: 1rem;
+            font-style: normal;
+        }
+
+        /* ── FOOTER GRID ── */
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: clamp(1rem, 3vw, 2rem);
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--black-void); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+
+        /* ═══════════════════════════════════════════════
+           FIXED ENTER BUTTON (always visible at bottom)
+        ═══════════════════════════════════════════════ */
+        #fixed-enter-wrap {
+            position: fixed;
+            bottom: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 300;
+            pointer-events: auto;
+            transition: opacity 400ms, transform 400ms;
+        }
+        #fixed-enter-wrap.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(-50%) scale(0.8);
+        }
+
+        /* ═══════════════════════════════════════════════
+           ORBIT BUTTON SYSTEM (shared styles)
+        ═══════════════════════════════════════════════ */
+        .button-orbit {
+            position: relative;
+            width: min(180px, 42vw);
+            height: min(180px, 42vw);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Per-button orbit speeds */
+        #trigger-btn-wrap .button-orbit { animation: orbit-cw 26s linear infinite; }
+
+        @keyframes orbit-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes orbit-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+        /* Concentric pulsing rings */
+        .btn-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(212,175,55,0.2);
+            animation: ringPulse 3s ease-in-out infinite;
+        }
+        .r1 { width: 78px;  height: 78px;  animation-duration: 2.6s; animation-delay: 0s; }
+        .r2 { width: 102px; height: 102px; animation-duration: 3.2s; animation-delay: .5s; }
+        .r3 { width: 130px; height: 130px; animation-duration: 4s;   animation-delay: 1s; }
+        .r4 { width: 160px; height: 160px; animation-duration: 5s;   animation-delay: 1.6s; border-style: dashed; border-color: rgba(212,175,55,0.07); }
+
+        @keyframes ringPulse {
+            0%,100% { opacity:.15; transform:scale(1); }
+            50%      { opacity:.45; transform:scale(1.03); }
+        }
+
+        /* Spinning arcs */
+        .arc {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid transparent;
+        }
+        .arc1 { width: 88px;  height: 88px;  border-top-color: rgba(212,175,55,.65); border-bottom-color: rgba(212,175,55,.15); animation: spin 4s linear infinite; }
+        .arc2 { width: 68px;  height: 68px;  border-left-color: rgba(212,175,55,.4);  border-right-color: rgba(212,175,55,.1);  animation: spin 7s linear infinite reverse; }
+        .arc3 { width: 112px; height: 112px; border-top-color: rgba(212,175,55,.18);  border-right-color: rgba(212,175,55,.08); animation: spin 12s linear infinite; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Orbiting sigil glyphs */
+        .orbiter {
+            position: absolute;
+            color: rgba(212,175,55,0.55);
+            font-size: 11px;
+            transform-origin: 0 0;
+            animation-name: orbitGlyph;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        .orbiter.o1 { animation-duration: 8s;  animation-delay: 0s;   animation-direction: normal; }
+        .orbiter.o2 { animation-duration: 12s; animation-delay: -2s;  animation-direction: reverse; }
+        .orbiter.o3 { animation-duration: 18s; animation-delay: -4s;  animation-direction: normal; }
+        .orbiter.o4 { animation-duration: 26s; animation-delay: -6s;  animation-direction: reverse; }
+
+        @keyframes orbitGlyph {
+            0%   { transform: rotate(0deg)   translateX(62px) rotate(0deg);    opacity:.7; }
+            50%  { opacity:.25; }
+            100% { transform: rotate(360deg) translateX(62px) rotate(-360deg); opacity:.7; }
+        }
+
+        /* Diamond corner marks */
+        .diamond {
+            position: absolute;
+            width: 5px; height: 5px;
+            background: rgba(212,175,55,0.45);
+            transform: rotate(45deg);
+            animation: diamondPulse 2s ease-in-out infinite;
+        }
+        .d1 { top: -78px;   left: 50%; margin-left:-2px; animation-delay:0s; }
+        .d2 { bottom: -78px; left: 50%; margin-left:-2px; animation-delay:.5s; }
+        .d3 { left: -78px;  top: 50%;  margin-top:-2px;  animation-delay:1s; }
+        .d4 { right: -78px; top: 50%;  margin-top:-2px;  animation-delay:1.5s; }
+
+        @keyframes diamondPulse {
+            0%,100% { opacity:.4; transform:rotate(45deg) scale(1); }
+            50%      { opacity:1;  transform:rotate(45deg) scale(1.6); }
+        }
+
+        /* Core enter button */
+        .enter-btn {
+            position: relative;
+            z-index: 3;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 36% 34%, #1c1500, #000000);
+            border: 1px solid rgba(212,175,55,0.5);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            outline: none;
+            text-decoration: none;
+            box-shadow: 0 0 20px rgba(212,175,55,.07), inset 0 0 14px rgba(212,175,55,.05);
+            transition: border-color 300ms, box-shadow 300ms, transform 150ms;
+            overflow: hidden;
+        }
+        .enter-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(212,175,55,.06) 10%, transparent 20%);
+            animation: shimmerSpin 3s linear infinite;
+            opacity: 0;
+            transition: opacity 400ms;
+        }
+        .enter-btn:hover::before { opacity: 1; }
+        @keyframes shimmerSpin { to { transform: rotate(360deg); } }
+
+        .enter-btn:hover {
+            border-color: rgba(212,175,55,.9);
+            box-shadow: 0 0 28px rgba(212,175,55,.22), 0 0 55px rgba(212,175,55,.09), inset 0 0 18px rgba(212,175,55,.1);
+        }
+        .enter-btn:hover .b-icon  { transform: scale(1.25); opacity:1; }
+        .enter-btn:hover .b-label { letter-spacing:.22em; opacity:1; }
+        .enter-btn:active { transform: scale(0.93); }
+
+        .b-icon {
+            font-size: 18px;
+            color: #D4AF37;
+            opacity: .78;
+            line-height: 1;
+            transition: transform 300ms, opacity 300ms;
+            animation: iconBreathe 3.5s ease-in-out infinite;
+        }
+        @keyframes iconBreathe {
+            0%,100% { text-shadow: 0 0 4px rgba(212,175,55,.25); }
+            50%      { text-shadow: 0 0 12px rgba(212,175,55,.55), 0 0 26px rgba(212,175,55,.2); }
+        }
+        .b-label {
+            font-family: 'Cinzel', serif;
+            font-size
