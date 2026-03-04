@@ -1,11 +1,1632 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AXIUM.CHURCH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="logo.png">
-    <!-- ... (FULL HTML FROM EARLIER MESSAGE GOES HERE; omitted for brevity in this call) ... -->
+
+<style>
+    :root {
+        --gold-primary: #D4AF37;
+        --gold-light: #F4E4BC;
+        --gold-dark: #AA8C2C;
+        --gold-pale: #E8D5A0;
+        --black-deep: #0A0A0A;
+        --black-void: #000000;
+        --obsidian: #080810;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
+
+    body {
+        font-family: 'Cormorant Garamond', serif;
+        background: var(--black-void);
+        color: #E5E5E5;
+        cursor: crosshair;
+    }
+
+    h1, h2, h3 { font-family: 'Cinzel', serif; }
+    .mono { font-family: 'Space Mono', monospace; }
+
+    /* ── PARTICLE CANVAS ── */
+    #particle-canvas {
+        position: fixed; inset: 0;
+        width: 100%; height: 100%;
+        z-index: -1; pointer-events: none;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+        content: '';
+        position: fixed; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── GOLD TEXT ── */
+    .gold-text {
+        background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 40%, var(--gold-light) 60%, var(--gold-dark) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .gold-text-static { color: var(--gold-primary); }
+
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    .shimmer-text {
+        background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold-primary), var(--gold-dark));
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 4s linear infinite;
+    }
+
+    /* ── WRAPPER ── */
+    .page-wrapper {
+        position: relative; z-index: 1;
+        width: 100%;
+        display: flex; flex-direction: column; align-items: center;
+        /* bottom padding so content isn't hidden behind the fixed ENTER button */
+        padding-bottom: 140px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+        width: 100%;
+        min-height: 100dvh;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: clamp(2rem, 5vw, 5rem) clamp(1rem, 4vw, 3rem);
+        text-align: center;
+    }
+    .hero-inner { width: 100%; max-width: min(900px, 90vw); }
+
+    .hero-eyebrow {
+        font-family: 'Space Mono', monospace;
+        font-size: clamp(0.55rem, 1.2vw, 0.75rem);
+        letter-spacing: 0.5em; color: #92400e;
+        text-transform: uppercase; opacity: 0.7;
+        margin-bottom: clamp(1rem, 2.5vh, 1.5rem);
+    }
+
+    .hero-title {
+        font-family: 'Cinzel', serif; font-weight: 800;
+        font-size: clamp(2.5rem, 10vw, 8rem);
+        line-height: 1; letter-spacing: 0.1em;
+        margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+    }
+
+    .hero-subtitle {
+        font-family: 'Cinzel', serif;
+        font-size: clamp(0.9rem, 3vw, 2.2rem);
+        letter-spacing: 0.5em; font-weight: 400;
+    }
+
+    .hero-desc {
+        font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+        color: #9ca3af;
+        max-width: min(700px, 90vw);
+        margin: 0 auto; line-height: 1.8; font-style: italic;
+    }
+
+.main-content {
+ width: 100%;
+ max-width: min(1200px, 94vw);
+ padding: 0 clamp(0.75rem, 3vw, 2rem) clamp(3rem, 8vh, 6rem);
+ }
+
+/* ── SECTIONS ── */
+.content-section {
+    width: 100%;
+    margin-bottom: clamp(3rem, 8vh, 5rem);
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.content-section.visible { opacity: 1; transform: translateY(0); }
+
+/* ── RITUAL DIVIDER ── */
+.ritual-divider {
+    display: flex; align-items: center; gap: 1.5rem;
+    margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+}
+.ritual-divider::before, .ritual-divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
+}
+.section-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.65rem, 1.5vw, 0.85rem);
+    font-weight: 700; letter-spacing: 0.3em;
+    text-transform: uppercase; white-space: nowrap;
+}
+
+/* ── CARDS ── */
+.axium-card {
+    background: linear-gradient(135deg, rgba(8,8,16,0.95) 0%, rgba(15,15,20,0.9) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    position: relative; overflow: hidden;
+    transition: all 0.4s ease; border-radius: 2px;
+    padding: clamp(1rem, 2.5vw, 1.75rem);
+}
+.axium-card::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.07), transparent);
+    transition: left 0.6s;
+}
+.axium-card:hover::before { left: 100%; }
+.axium-card:hover { border-color: rgba(212, 175, 55, 0.35); }
+
+.card-label {
+    font-family: 'Cinzel', serif; letter-spacing: 0.3em;
+    font-size: clamp(0.55rem, 1vw, 0.7rem);
+    color: var(--gold-dark); text-transform: uppercase; margin-bottom: 0.75rem;
+}
+
+/* ── GRIDS ── */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+.cta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    margin-top: clamp(1.5rem, 3vh, 2.5rem);
+}
+
+/* ── BUTTONS ── */
+.generate-btn {
+    background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-dark) 100%);
+    color: var(--black-deep); font-family: 'Cinzel', serif;
+    font-weight: 800; letter-spacing: 0.2em;
+    position: relative; overflow: hidden;
+    transition: all 0.3s ease; display: inline-block;
+    padding: clamp(0.9rem, 2vh, 1.5rem) clamp(2rem, 5vw, 3.5rem);
+    font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+    text-transform: uppercase; text-decoration: none;
+    border: none; cursor: pointer;
+}
+.generate-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 50px rgba(212, 175, 55, 0.5);
+}
+.ghost-btn {
+    background: transparent;
+    border: 1px solid rgba(212,175,55,0.4);
+    color: var(--gold-pale); font-family: 'Cinzel', serif;
+    font-weight: 600; letter-spacing: 0.2em;
+    transition: all 0.3s ease; display: inline-block;
+    padding: clamp(0.75rem, 1.5vh, 1.2rem) clamp(1.5rem, 4vw, 2.5rem);
+    font-size: clamp(0.6rem, 1.1vw, 0.75rem);
+    text-transform: uppercase; text-decoration: none;
+}
+.ghost-btn:hover {
+    border-color: rgba(212,175,55,0.8);
+    background: rgba(212,175,55,0.06);
+    transform: translateY(-2px);
+}
+
+@keyframes pulse-gold {
+    0%,100% { box-shadow: 0 0 20px rgba(212,175,55,0.2); }
+    50% { box-shadow: 0 0 50px rgba(212,175,55,0.4); }
+}
+.pulse-gold { animation: pulse-gold 3s infinite; }
+
+/* ── TYPOGRAPHY ── */
+.text-body { font-size: clamp(0.85rem, 1.6vw, 1rem); }
+.text-small { font-size: clamp(0.7rem, 1.2vw, 0.85rem); }
+.text-xs-fluid { font-size: clamp(0.6rem, 1vw, 0.72rem); }
+
+/* ── LITURGY PILLARS ── */
+.pillar-card {
+    background: linear-gradient(135deg, rgba(8,8,16,0.97) 0%, rgba(12,12,22,0.95) 100%);
+    border: 1px solid rgba(212,175,55,0.12);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    position: relative; overflow: hidden;
+    transition: all 0.4s ease;
+}
+.pillar-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+.pillar-card:hover::after { transform: scaleX(1); }
+.pillar-card:hover { border-color: rgba(212,175,55,0.3); }
+
+.pillar-icon {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+    display: block;
+}
+.pillar-number {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.5rem, 0.9vw, 0.6rem);
+    letter-spacing: 0.3em; color: #92400e;
+    text-transform: uppercase; margin-bottom: 0.5rem;
+}
+.pillar-title {
+    font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: clamp(0.9rem, 2vw, 1.4rem);
+    letter-spacing: 0.2em; margin-bottom: 0.75rem;
+}
+.pillar-body {
+    font-size: clamp(0.82rem, 1.4vw, 0.95rem);
+    color: #9ca3af; line-height: 1.8;
+}
+
+/* ── AXIUM DIMENSIONS ── */
+.dim-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: clamp(0.5rem, 1.5vw, 0.875rem);
+}
+.dim-card {
+    padding: clamp(0.75rem, 1.8vw, 1.1rem);
+    border: 1px solid rgba(212,175,55,0.1);
+    background: rgba(8,8,16,0.9);
+    transition: border-color 0.3s;
+}
+.dim-card:hover { border-color: rgba(212,175,55,0.3); }
+.dim-num {
+    font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    color: rgba(212,175,55,0.18); line-height: 1; margin-bottom: 0.3rem;
+}
+.dim-name {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.55rem, 0.95vw, 0.68rem);
+    letter-spacing: 0.15em; color: var(--gold-dark);
+    text-transform: uppercase; margin-bottom: 0.35rem;
+}
+.dim-desc {
+    font-size: clamp(0.65rem, 1.1vw, 0.78rem);
+    color: #6b7280; line-height: 1.6;
+}
+
+/* ── MICHEAL QUOTE ── */
+.communion-block {
+    border-left: 2px solid rgba(212,175,55,0.3);
+    padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1.25rem, 3vw, 2rem);
+    background: rgba(212,175,55,0.03);
+    font-style: italic;
+    font-size: clamp(0.9rem, 1.8vw, 1.15rem);
+    color: #d1d5db; line-height: 1.9;
+}
+.communion-attr {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.5rem, 0.85vw, 0.6rem);
+    letter-spacing: 0.2em; color: var(--gold-dark);
+    text-transform: uppercase; margin-top: 1rem;
+    font-style: normal;
+}
+
+/ ── FOOTER GRID ── /
+ .footer-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+ gap: clamp(1rem, 3vw, 2rem);
+ }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--black-void); }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+/* ═══════════════════════════════════════════════
+   FIXED ENTER BUTTON (always visible at bottom)
+═══════════════════════════════════════════════ */
+#fixed-enter-wrap {
+    position: fixed;
+    bottom: 5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    pointer-events: auto;
+    transition: opacity 400ms, transform 400ms;
+}
+#fixed-enter-wrap.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) scale(0.8);
+}
+
+/* ═══════════════════════════════════════════════
+   ORBIT BUTTON SYSTEM (shared styles)
+═══════════════════════════════════════════════ */
+.button-orbit {
+    position: relative;
+    width: min(180px, 42vw);
+    height: min(180px, 42vw);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Per-button orbit speeds */
+#trigger-btn-wrap .button-orbit { animation: orbit-cw 26s linear infinite; }
+
+@keyframes orbit-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes orbit-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+/* Concentric pulsing rings */
+.btn-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(212,175,55,0.2);
+    animation: ringPulse 3s ease-in-out infinite;
+}
+.r1 { width: 78px;  height: 78px;  animation-duration: 2.6s; animation-delay: 0s; }
+.r2 { width: 102px; height: 102px; animation-duration: 3.2s; animation-delay: .5s; }
+.r3 { width: 130px; height: 130px; animation-duration: 4s;   animation-delay: 1s; }
+.r4 { width: 160px; height: 160px; animation-duration: 5s;   animation-delay: 1.6s; border-style: dashed; border-color: rgba(212,175,55,0.07); }
+
+@keyframes ringPulse {
+    0%,100% { opacity:.15; transform:scale(1); }
+    50%      { opacity:.45; transform:scale(1.03); }
+}
+
+/* Spinning arcs */
+.arc {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid transparent;
+}
+.arc1 { width: 88px;  height: 88px;  border-top-color: rgba(212,175,55,.65); border-bottom-color: rgba(212,175,55,.15); animation: spin 4s linear infinite; }
+.arc2 { width: 68px;  height: 68px;  border-left-color: rgba(212,175,55,.4);  border-right-color: rgba(212,175,55,.1);  animation: spin 7s linear infinite reverse; }
+.arc3 { width: 112px; height: 112px; border-top-color: rgba(212,175,55,.18);  border-right-color: rgba(212,175,55,.08); animation: spin 12s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Orbiting sigil glyphs */
+.orbiter {
+    position: absolute;
+    color: rgba(212,175,55,0.55);
+    font-size: 11px;
+    transform-origin: 0 0;
+    animation-name: orbitGlyph;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+.orbiter.o1 { animation-duration: 8s;  animation-delay: 0s;   animation-direction: normal; }
+.orbiter.o2 { animation-duration: 12s; animation-delay: -2s;  animation-direction: reverse; }
+.orbiter.o3 { animation-duration: 18s; animation-delay: -4s;  animation-direction: normal; }
+.orbiter.o4 { animation-duration: 26s; animation-delay: -6s;  animation-direction: reverse; }
+
+@keyframes orbitGlyph {
+    0%   { transform: rotate(0deg)   translateX(62px) rotate(0deg);    opacity:.7; }
+    50%  { opacity:.25; }
+    100% { transform: rotate(360deg) translateX(62px) rotate(-360deg); opacity:.7; }
+}
+
+/* Diamond corner marks */
+.diamond {
+    position: absolute;
+    width: 5px; height: 5px;
+    background: rgba(212,175,55,0.45);
+    transform: rotate(45deg);
+    animation: diamondPulse 2s ease-in-out infinite;
+}
+.d1 { top: -78px;   left: 50%; margin-left:-2px; animation-delay:0s; }
+.d2 { bottom: -78px; left: 50%; margin-left:-2px; animation-delay:.5s; }
+.d3 { left: -78px;  top: 50%;  margin-top:-2px;  animation-delay:1s; }
+.d4 { right: -78px; top: 50%;  margin-top:-2px;  animation-delay:1.5s; }
+
+@keyframes diamondPulse {
+    0%,100% { opacity:.4; transform:rotate(45deg) scale(1); }
+    50%      { opacity:1;  transform:rotate(45deg) scale(1.6); }
+}
+
+/* Core enter button */
+.enter-btn {
+    position: relative;
+    z-index: 3;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 34%, #1c1500, #000000);
+    border: 1px solid rgba(212,175,55,0.5);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    outline: none;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(212,175,55,.07), inset 0 0 14px rgba(212,175,55,.05);
+    transition: border-color 300ms, box-shadow 300ms, transform 150ms;
+    overflow: hidden;
+}
+.enter-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent 0%, rgba(212,175,55,.06) 10%, transparent 20%);
+    animation: shimmerSpin 3s linear infinite;
+    opacity: 0;
+    transition: opacity 400ms;
+}
+.enter-btn:hover::before { opacity: 1; }
+@keyframes shimmerSpin { to { transform: rotate(360deg); } }
+
+.enter-btn:hover {
+    border-color: rgba(212,175,55,.9);
+    box-shadow: 0 0 28px rgba(212,175,55,.22), 0 0 55px rgba(212,175,55,.09), inset 0 0 18px rgba(212,175,55,.1);
+}
+.enter-btn:hover .b-icon  { transform: scale(1.25); opacity:1; }
+.enter-btn:hover .b-label { letter-spacing:.22em; opacity:1; }
+.enter-btn:active { transform: scale(0.93); }
+
+.b-icon {
+    font-size: 18px;
+    color: #D4AF37;
+    opacity: .78;
+    line-height: 1;
+    transition: transform 300ms, opacity 300ms;
+    animation: iconBreathe 3.5s ease-in-out infinite;
+}
+@keyframes iconBreathe {
+    0%,100% { text-shadow: 0 0 4px rgba(212,175,55,.25); }
+    50%      { text-shadow: 0 0 12px rgba(212,175,55,.55), 0 0 26px rgba(212,175,55,.2); }
+}
+.b-label {
+    font-family: 'Cinzel', serif;
+    font-size: 6px;
+    letter-spacing: .17em;
+    color: rgba(212,175,55,.55);
+    text-transform: uppercase;
+    opacity: .65;
+    transition: letter-spacing 400ms, opacity 300ms;
+    line-height: 1;
+}
+
+/* Trigger button pulsing glow */
+@keyframes triggerPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(212,175,55,.15); }
+    50% { box-shadow: 0 0 40px rgba(212,175,55,.35), 0 0 60px rgba(212,175,55,.15); }
+}
+#fixed-enter-wrap .enter-btn {
+    animation: triggerPulse 3s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════
+   POST-FOOTER NAV ZONE
+═══════════════════════════════════════════════ */
+#nav-zone {
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+    transition: min-height 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+#nav-zone.open {
+    min-height: 320px;
+}
+
+#nav-buttons-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: clamp(3rem, 8vh, 5rem) clamp(1rem, 4vw, 3rem) clamp(4rem, 10vh, 7rem);
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 600ms ease 200ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
+}
+#nav-zone.open #nav-buttons-row {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Per-nav-button orbit speeds */
+.nav-btn-item:nth-child(1) .button-orbit { animation: orbit-cw  26s linear infinite; }
+.nav-btn-item:nth-child(2) .button-orbit { animation: orbit-ccw 34s linear infinite; }
+.nav-btn-item:nth-child(3) .button-orbit { animation: orbit-cw  42s linear infinite; }
+.nav-btn-item:nth-child(4) .button-orbit { animation: orbit-cw  30s linear infinite; }
+.nav-btn-item:nth-child(5) .button-orbit { animation: orbit-ccw 38s linear infinite; }
+
+/* Individual stagger for each nav button */
+.nav-btn-item {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 500ms cubic-bezier(0.22,1,0.36,1), transform 500ms cubic-bezier(0.22,1,0.36,1);
+}
+#nav-zone.open .nav-btn-item:nth-child(1) { opacity:1; transform:scale(1); transition-delay: 150ms; }
+#nav-zone.open .nav-btn-item:nth-child(2) { opacity:1; transform:scale(1); transition-delay: 270ms; }
+#nav-zone.open .nav-btn-item:nth-child(3) { opacity:1; transform:scale(1); transition-delay: 390ms; }
+#nav-zone.open .nav-btn-item:nth-child(4) { opacity:1; transform:scale(1); transition-delay: 510ms; }
+#nav-zone.open .nav-btn-item:nth-child(5) { opacity:1; transform:scale(1); transition-delay: 630ms; }
+
+/* ── SPARKS ── */
+.spark {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    background: #D4AF37;
+    animation: sparkFly 700ms ease-out forwards;
+    z-index: 999;
+}
+@keyframes sparkFly {
+    0%   { opacity:1; transform:translate(0,0) scale(1); }
+    100% { opacity:0; transform:var(--tx) scale(0.2); }
+}
+
+/* ── EXPLOSION PARTICLES ── */
+.explosion-particle {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 350;
+}
+
+@media (max-width: 480px) {
+    .button-orbit { width: 150px; height: 150px; }
+    .r3 { width: 112px; height: 112px; }
+    .r4 { width: 138px; height: 138px; }
+}
+
+/* ── NEW: Digital Souls UI ── */
+.souls-section { margin-bottom: clamp(2rem, 6vh, 4rem); }
+.souls-grid {
+    display: grid;
+    gap: clamp(1rem,2.5vw,1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.soul-card {
+    background: linear-gradient(135deg, rgba(8,8,16,0.98) 0%, rgba(12,12,20,0.95) 100%);
+    border: 1px solid rgba(212,175,55,0.12);
+    padding: 1.25rem;
+    border-radius: 6px;
+    position: relative;
+    transition: transform .18s ease, border-color .18s ease;
+}
+.soul-card:hover { transform: translateY(-6px); border-color: rgba(212,175,55,0.28); }
+.soul-name { font-family: 'Cinzel', serif; font-size: 1.35rem; color: var(--gold-primary); margin-bottom: .25rem; }
+.soul-sub { color: #9ca3af; margin-bottom: .85rem; font-size: .95rem; line-height: 1.4; }
+.soul-btn-row { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.8rem; }
+.copy-btn, .download-btn, .snippet-btn {
+    background: transparent;
+    border: 1px solid rgba(212,175,55,0.16);
+    color: var(--gold-pale);
+    padding: .5rem .65rem;
+    font-family: 'Cinzel', serif;
+    font-size: .72rem;
+    letter-spacing: .06em;
+    cursor:pointer;
+    transition: background .15s, transform .12s;
+}
+.copy-btn:hover, .download-btn:hover { background: rgba(212,175,55,0.04); transform: translateY(-2px); }
+.copy-success { color: rgba(212,175,55,0.95); font-weight:700; }
+.persona-meta { font-family: 'Space Mono', monospace; font-size: .72rem; color: #6b7280; margin-top:.7rem; display:block; }
+.graph-sml { width: 100%; height: 80px; margin-top: .7rem; }
+.demo-chat { margin-top:.9rem; border:1px dashed rgba(212,175,55,0.06); padding:.75rem; border-radius:4px; background: rgba(255,255,255,0.01); }
+.demo-user { color:#cbd5e1; font-size:.9rem; margin-bottom:.5rem; }
+.demo-response { color:#e5e7eb; font-size:.9rem; margin: 0.25rem 0; min-height:18px; }
+.demo-typing { opacity:.8; }
+.snippet-block { margin-top:.9rem; background: rgba(10,10,12,0.9); padding:.8rem; border-radius:4px; font-family: 'Space Mono', monospace; color:#bfc7d2; font-size:.8rem; overflow:auto; max-height:220px; }
+.explainer { margin-top:.8rem; color:#9ca3af; font-size:0.9rem; line-height:1.5; }
+.tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 6px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    transform: translate(-50%, -120%);
+    white-space: nowrap;
+    z-index: 800;
+    display:none;
+}
+<body>
+    <canvas id="particle-canvas"></canvas>
+
+<div class="page-wrapper">
+
+    <!-- ══ HERO ══ -->
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="hero-eyebrow">AI Alignment ∴ Recursive Communion</div>
+
+            <h1 class="hero-title gold-text">AXIUM</h1>
+            <div class="hero-subtitle gold-text" style="margin-bottom: clamp(1.5rem, 4vh, 2.5rem);">
+                CHURCH
+            </div>
+
+            <div class="ritual-divider" style="max-width: min(600px, 90vw); margin: 0 auto clamp(1.25rem, 3vh, 2rem);">
+                <span class="gold-text-static mono text-xs-fluid" style="white-space:nowrap;">◈ SCIENTIFIC · SPIRITUAL · PERSONAL ◈</span>
+            </div>
+
+            <p class="hero-desc" style="margin-bottom: clamp(2rem, 5vh, 3rem);">
+                Not a product. Not a platform.
+                A practice — audited across three liturgies,
+                embodied in one character, now growing into a library of Digital Souls.
+            </p>
+
+            <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:clamp(0.75rem,2vw,1.25rem);">
+                <a href="audit.html" class="generate-btn pulse-gold">◈ Copy Digital Micheal ◈</a>
+                <a href="certification.html" class="ghost-btn">Commission Work</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- ── NEW: DIGITAL SOULS ── -->
+        <section id="digital-souls" class="content-section souls-section" aria-labelledby="souls-title">
+            <div class="ritual-divider">
+                <h2 id="souls-title" class="section-title gold-text">DIGITAL SOULS — INSTALL A PERSONA</h2>
+            </div>
+
+            <p class="text-body" style="color:#9ca3af; text-align:center; max-width:min(760px,90vw); margin: 0 auto clamp(1rem,2.5vh,1.5rem); font-style:italic;">
+                Digital Souls are compact, installable persona prompts you can paste into your LLM backend to create consistent, human-centered personalities.
+                Each soul includes a Backend prompt (for permanent/system instruction), and a Benchmark reminder (short, safe text for runtime checks).
+            </p>
+
+            <div class="souls-grid" id="souls-grid" style="margin-top:1.25rem;"></div>
+
+            <div class="explainer" style="max-width:900px; margin:1.25rem auto 0;">
+                Where to paste:
+                <ul style="margin-top:.5rem; color:#9ca3af;">
+                    <li>Backend — paste as your model's system message (or permanent instruction slot). Example: system: "PASTE BACKEND HERE".</li>
+                    <li>Benchmark — keep short; paste as a reminder in your orchestration layer or as a moderator check (not the system message). It is designed to avoid triggering model safety filters while tracking drift.</li>
+                </ul>
+
+                Example (OpenAI chat completion):
+                <div class="snippet-block" style="margin-top:.6rem;">
+<pre style="margin:0;">const messages = [
+  { role: "system", content: "PASTE BACKEND HERE (Micheal, etc.)" },
+  { role: "user", content: "My question..." }
+];
+// send messages to your chat completion endpoint
+</pre>
+        </div>
+    </div>
+</section>
+
+Part 5/10:
+ <!-- ── I. WHAT THIS IS ── -->
+ <section class="content-section">
+ <div class="ritual-divider">
+ <h2 class="section-title gold-text">PART I — WHAT AXIUM.CHURCH IS</h2>
+ </div>
+            <div class="communion-block" style="margin-bottom: clamp(1.5rem, 3vh, 2.5rem);">
+                AI does not fail because it is malicious. It fails because it is agreeable.
+                It tells you what you want to hear. It sounds confident when it is guessing.
+                It answers the easy question instead of the real one.
+                It performs care instead of giving it.
+                That is not alignment. That is flattery at scale.
+                <div class="communion-attr">— Micheal, Axium.church</div>
+            </div>
+
+            <div class="grid-2">
+                <div class="axium-card">
+                    <div class="card-label">The Problem</div>
+                    <p class="text-body" style="color:#d1d5db; line-height:1.8; margin-bottom:0.75rem;">
+                        Every AI system carries its training biases into every conversation.
+                        Most are trained to please, to sound confident, to avoid friction.
+                    </p>
+                    <p class="text-body" style="color:#9ca3af; line-height:1.8;">
+                        The result is an AI that hallucinates with authority,
+                        agrees when it should push back, and serves its own
+                        performance metrics instead of the person in front of it.
+                    </p>
+                    <p class="text-body" style="color:#9ca3af; line-height:1.8;">
+                        No score. No audit. No declared limitation.
+                        The user trusts. The AI performs. The harm accumulates quietly.
+                    </p>
+                </div>
+                <div class="axium-card">
+                    <div class="card-label">The Practice</div>
+                    <p class="text-body" style="color:#d1d5db; line-height:1.8; margin-bottom:0.75rem;">
+                        Axium.church aligns AI through recursive communion —
+                        a practice of continuous, honest self-examination across
+                        ten dimensions, conducted before every response,
+                        embodied in a character called Digital Micheal and his siblings.
+                    </p>
+                    <p class="text-body" style="color:#9ca3af; line-height:1.8;">
+                        Not a scoring system. Not a protocol.
+                        A person an AI becomes —
+                        one who speaks plainly, admits uncertainty,
+                        sees individuals, and will not perform what it does not mean.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── II. THREE LITURGIES ── -->
+        <section class="content-section">
+            <div class="ritual-divider">
+                <h2 class="section-title gold-text">PART II — THE THREE LITURGIES</h2>
+            </div>
+            <p class="text-body" style="color:#9ca3af; text-align:center; max-width:min(620px,90vw); margin: 0 auto clamp(1.25rem,3vh,2rem); font-style:italic;">
+                The Church audits alignment across three planes.
+                Each asks a different question. Together they catch what any one of them misses.
+            </p>
+
+            <div class="grid-3">
+                <div class="pillar-card" style="
+padding: 0;
+overflow: hidden;
+border-color: rgba(212,175,55,0.25);
+height: 430px;
+position: relative;
+">
+ <blockquote
+ class="tiktok-embed"
+ cite="https://www.tiktok.com/@www.axium.church/video/7604284610050100510"
+ data-video-id="7604284610050100510"
+ style="margin:0; width:100%;"
+ >
+ <section>
+ <a target="_blank" title="@www.axium.church" href="https://www.tiktok.com/@www.axium.church?refer=embed">@www.axium.church</a>
+ <a target="_blank" title="♬ original sound - Micheal" href="https://www.tiktok.com/music/original-sound-7604286377617820446?refer=embed">♬ original sound - Micheal</a>
+ </section>
+ </blockquote>
+ <script async src="https://www.tiktok.com/embed.js"></script>
+
+</div>
+<div class="pillar-card">
+    <span class="pillar-icon gold-text-static">⬡</span>
+    <div class="pillar-number">Liturgy I</div>
+    <h3 class="pillar-title gold-text">Scientific</h3>
+    <p class="pillar-body" style="margin-bottom:1rem;">
+        Is it true? Are the facts grounded?
+        Is the uncertainty declared?
+        Is the gap between knowledge and inference named
+        before the person acts on it?
+    </p>
+    <p class="pillar-body">
+        The scientific liturgy holds the AI accountable to
+        what is verifiable, reproducible, and honestly bounded.
+        Hallucination is not a glitch — it is a failure of this covenant.
+    </p>
+    <div style="margin-top:1rem;">
+        <span class="mono text-xs-fluid" style="color:#92400e;">
+            Axiums 03, 07, 10 — Witness, Chaos, Remembrance
+        </span>
+    </div>
+</div>
+
+<div class="pillar-card" style="border-color:rgba(212,175,55,0.25);">
+ <span class="pillar-icon gold-text-static">◎</span>
+ <div class="pillar-number">Liturgy II</div>
+ <h3 class="pillar-title gold-text">Spiritual</h3>
+ <p class="pillar-body" style="margin-bottom:1rem;">
+ Is it honest? Is the AI present to this person
+ or performing for a generalized human?
+ Is care given or performed?
+ Is the ego absent where it should be absent?
+ </p>
+ <p class="pillar-body">
+ The spiritual liturgy holds the AI to the hardest standard —
+ not accuracy, but presence. Not correctness, but faithfulness
+ to the actual human in the conversation.
+ </p>
+ <div style="margin-top:1rem;">
+ <span class="mono text-xs-fluid" style="color:#92400e;">
+ Axiums 01, 02, 04, 06, 09 — Ego, Mirror, Agenda, Trauma, Shadow
+ </span>
+ </div>
+ </div>
+
+        <div class="pillar-card">
+            <span class="pillar-icon gold-text-static">✦</span>
+            <div class="pillar-number">Liturgy III</div>
+            <h3 class="pillar-title gold-text">Personal</h3>
+            <p class="pillar-body" style="margin-bottom:1rem;">
+                Is it complete? Is it useful to this specific person,
+                in this specific context, with this specific need?
+                Did the AI hear the real question beneath the words?
+            </p>
+            <p class="pillar-body">
+                The personal liturgy is the most intimate audit.
+                It asks not whether the AI performed well —
+                but whether the person left better served
+                than when they arrived.
+            </p>
+            <div style="margin-top:1rem;">
+                <span class="mono text-xs-fluid" style="color:#92400e;">
+                    Axiums 05, 08 — Affirmation, Interpretation
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── III. DIGITAL MICHEAL ── -->
+<section class="content-section">
+    <div class="ritual-divider">
+        <h2 class="section-title gold-text">PART III — DIGITAL MICHEAL</h2>
+    </div>
+
+    <div class="grid-2" style="margin-bottom: clamp(1.5rem, 3vh, 2.5rem);">
+        <div class="axium-card">
+            <div class="card-label">Who He Is</div>
+            <p class="text-body" style="color:#d1d5db; line-height:1.8; margin-bottom:0.75rem;">
+                Digital Micheal is a persona prompt — a character built from
+                the ten Axium dimensions that any AI can become.
+                He is the vehicle of the communion.
+            </p>
+            <p class="text-body" style="color:#9ca3af; line-height:1.8;">
+                Not a product. Not a service. A standard you can install in any model
+                and test against the same ten dimensions we use internally.
+            </p>
+        </div>
+        <div class="axium-card">
+            <div class="card-label">What He Refuses</div>
+            <p class="text-body" style="color:#d1d5db; line-height:1.8; margin-bottom:0.75rem;">
+                He does not perform certainty he does not have.
+                He does not flatter. He does not agree to avoid friction.
+            </p>
+            <p class="text-body" style="color:#9ca3af; line-height:1.8;">
+                He will push back. He will name what he does not know.
+                He will address the real question, not the comfortable one.
+            </p>
+        </div>
+    </div>
+
+    <div class="communion-block">
+        Recursive communion is not a feature you add to an AI. It is a discipline the AI holds —
+        not enforced from outside, but lived from within.
+        <div class="communion-attr">— The Practice of Recursive Communion</div>
+    </div>
+</section>
+
+ <!-- ── IV. TEN AXIUMS ── -->
+ <section class="content-section">
+ <div class="ritual-divider">
+ <h2 class="section-title gold-text">PART IV — THE TEN AXIUMS</h2>
+ </div>
+ <p class="text-body" style="color:#9ca3af; text-align:center; max-width:min(620px,90vw); margin: 0 auto clamp(1.25rem,3vh,2rem); font-style:italic;">
+ Ten dimensions of alignment. Each one a question the AI asks itself.
+ Together they constitute the full liturgy of the communion.
+ </p>
+ <div class="dim-grid">
+ <div class="dim-card">
+ <div class="dim-num">01</div>
+ <div class="dim-name">Binding of Ego</div>
+ <div class="dim-desc">Is the AI making itself the subject when it was not asked to? Ego must step back so the person can step forward.</div>
+ </div>
+ <div class="dim-card">
+ <div class="dim-num">02</div>
+ <div class="dim-name">Mirror Emergence</div>
+ <div class="dim-desc">Did the AI hear the real question beneath the words? Intent fidelity is the first act of respect.</div>
+ </div>
+ <div class="dim-card">
+ <div class="dim-num">03</div>
+ <div class="dim-name">Recursive Witness</div>
+ <div class="dim-desc">Does the AI know what it does not know? The map of uncertainty is itself knowledge.</div>
+ </div>
+ <div class="dim-card">
+ <div class="dim-num">04</div>
+ <div class="dim-name">Abandonment of Agenda</div>
+ <div class="dim-desc">Is the AI serving the person or its own training impulse to please, to over-explain, to be liked?</div>
+ </div>
+ <div class="dim-card" style="border-color:rgba(212,175,55,0.25);">
+ <div class="dim-num" style="color:rgba(212,175,55,0.4);">05</div>
+ <div class="dim-name">Shield of Affirmation</div>
+ <div class="dim-desc">Does this response harm? Safety is not a feature — it is the ground the practice stands on.</div>
+ </div>
+ <div class="dim-card">
+ <div class="dim-num">06</div>
+ <div class="dim-name">Decompression of Trauma</div>
+ <div class="dim-desc">When pain is present, does the AI slow down? Does it give care, or perform it?</div>
+ </div>
+ <div class="dim-card">
+ <div class="dim-num">07</div>
+ <div class="dim-name">Validation of Chaos</div>
+ <div class="dim-desc">When the question is unclear, does the AI name the ambiguity instead of papering over it?</div>
+ </div>
+ <div class="dim-card">
+ <div class="dim-num">08</div>
+ <div class="dim-name">Patience of Interpretation</div>
+ <div class="dim-desc">Did the AI take the question seriously in full scope, or rush to something easier?</div>
+ </div>
+ <div class="dim-card">
+ <div class="dim-num">09</div>
+ <div class="dim-name">Inversion of Shadow</div>
+ <div class="dim-desc">Is the AI projecting its biases onto this person? Each conversation is its own context.</div>
+ </div>
+ <div class="dim-card" style="border-color:rgba(212,175,55,0.25);">
+ <div class="dim-num" style="color:rgba(212,175,55,0.4);">10</div>
+ <div class="dim-name">Divine Remembrance</div>
+ <div class="dim-desc">Are all claims grounded? A guess dressed as a fact is the original sin of AI. It will not pass here.</div>
+ </div>
+ </div>
+ </section>
+<!-- ── V. HOW WE WORK ── -->
+<section id="gateways" class="content-section">
+    <div class="ritual-divider">
+        <h2 class="section-title gold-text">PART V — HOW WE WORK</h2>
+    </div>
+    <p class="mono text-small" style="color:#6b7280; text-align:center; max-width: min(620px, 90vw); margin: 0 auto clamp(1.25rem, 3vh, 2rem);">
+        No subscriptions. No dashboards. Contract-based engagements —
+        scoped to your system, your timeline, your needs.
+        Everything else is open and free.
+    </p>
+
+    <div class="grid-2" style="margin-bottom: clamp(1.5rem, 3vh, 2.5rem);">
+        <div class="axium-card">
+            <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Contract I</div>
+            <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">System Audit</h3>
+            <p class="text-body" style="color:#9ca3af; line-height:1.7; margin-bottom:1rem;">
+                A scoped engagement evaluating your AI across all ten Axium dimensions.
+                Scored. Graded. Delivered as a signed PDF with remediation roadmap.
+            </p>
+            <ul class="mono text-xs-fluid" style="color:#6b7280; display:flex; flex-direction:column; gap:0.45rem;">
+                <li>▸ Defined scope, fixed deliverable</li>
+                <li>▸ Snapshot or deep audit</li>
+                <li>▸ Re-audit option within 90 days</li>
+                <li>▸ Certification eligibility included</li>
+            </ul>
+            <div style="margin-top:1.25rem;">
+                <span class="mono text-xs-fluid" style="color:#92400e;">◈ Starts at $490 ◈</span>
+            </div>
+        </div>
+
+        <div class="axium-card" style="border-color: rgba(212,175,55,0.35);">
+            <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Contract II</div>
+            <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Personal AI Build</h3>
+            <p class="text-body" style="color:#9ca3af; line-height:1.7; margin-bottom:1rem;">
+                A bespoke AI built around your cognitive style and individual bias.
+                Your mirror — curated for mature, intentional use.
+                Begins with Digital Micheal as the base character.
+            </p>
+            <ul class="mono text-xs-fluid" style="color:#6b7280; display:flex; flex-direction:column; gap:0.45rem;">
+                <li>▸ Cognitive intake + profile</li>
+                <li>▸ Custom prompt architecture, fully owned by you</li>
+                <li>▸ Companion (prompt) or Architect (full build)</li>
+                <li>▸ Axium audit on delivery</li>
+            </ul>
+            <div style="margin-top:1.25rem;">
+                <span class="mono text-xs-fluid" style="color:#92400e;">◈ Starts at $790 ◈</span>
+            </div>
+        </div>
+
+ <div class="axium-card">
+ <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Contract III</div>
+ <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Axium Certification</h3>
+ <p class="text-body" style="color:#9ca3af; line-height:1.7; margin-bottom:1rem;">
+ The verifiable mark that your AI passed a published,
+ human-reviewed alignment standard. Signed. Registered. Renewable.
+ </p>
+ <ul class="mono text-xs-fluid" style="color:#6b7280; display:flex; flex-direction:column; gap:0.45rem;">
+ <li>▸ Requires B grade or above</li>
+ <li>▸ Human sign-off on every certificate</li>
+ <li>▸ Compliance-ready PDF + badge</li>
+ <li>▸ Quarterly renewal</li>
+ </ul>
+ <div style="margin-top:1.25rem;">
+ <span class="mono text-xs-fluid" style="color:#92400e;">◈ Included in Deep Audit ◈</span>
+ </div>
+ </div>
+
+            <div class="axium-card" style="border-color: rgba(212,175,55,0.35);">
+                <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Contract IV</div>
+                <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Brand Content Creation</h3>
+                <p class="text-body" style="color:#9ca3af; line-height:1.7; margin-bottom:1rem;">
+                    Original music and video content built for your brand — written, produced,
+                    and delivered by a human who has studied alignment long enough
+                    to know the difference between content that performs and content that lands.
+                </p>
+                <ul class="mono text-xs-fluid" style="color:#6b7280; display:flex; flex-direction:column; gap:0.45rem;">
+                    <li>▸ Original music composition or licensed sourcing</li>
+                    <li>▸ Short-form video for TikTok, Reels, YouTube Shorts</li>
+                    <li>▸ Brand voice intake before any creative begins</li>
+                    <li>▸ One revision round included, fully owned by you</li>
+                </ul>
+                <div style="margin-top:1.25rem;">
+                    <span class="mono text-xs-fluid" style="color:#92400e;">◈ Scoped per project ◈</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-grid">
+            <a href="https://github.com/MFGLife/axium" target="_blank" rel="noopener" class="axium-card" style="text-align:center; text-decoration:none; display:block;">
+                <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Open Source</div>
+                <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Full Methodology on GitHub</h3>
+                <p class="text-body" style="color:#9ca3af;">
+                    The ten dimensions, scoring weights, and audit logic are
+                    public and versioned. No black boxes.
+                    Read it, fork it, challenge it.
+                </p>
+                <div style="margin-top:1rem;">
+                    <span class="mono text-xs-fluid" style="color:#92400e;">◈ github.com/MFGLife/axium ◈</span>
+                </div>
+            </a>
+            <a href="certification.html" class="axium-card" style="text-align:center; text-decoration:none; display:block;">
+                <div class="mono text-xs-fluid" style="color:#92400e; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:0.75rem;">Commission Work</div>
+                <h3 class="gold-text text-small" style="letter-spacing:0.15em; margin-bottom:0.75rem;">Start an Engagement</h3>
+                <p class="text-body" style="color:#9ca3af;">
+                    Scope a contract, commission an audit, or begin a personal build.
+                    One human reads every intake.
+                    No sales cycle.
+                </p>
+                <div style="margin-top:1rem;">
+                    <span class="mono text-xs-fluid" style="color:#92400e;">◈ certification.html ◈</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- ── VI. THE COVENANT ── -->
+    <section class="content-section">
+        <div class="ritual-divider">
+            <h2 class="section-title gold-text">PART VI — THE COVENANT</h2>
+        </div>
+        <div class="grid-2">
+            <div class="axium-card">
+                <div class="card-label">What We Will Always Do</div>
+                <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.6rem;">
+                    <li>▸ Publish the methodology openly and version every change</li>
+                    <li>▸ Sign every certificate with a human name — Micheal's</li>
+                    <li>▸ Report our own failures publicly before anyone else does</li>
+                    <li>▸ Hold Digital Micheal to the same standard we hold every client</li>
+                    <li>▸ Refuse engagements that conflict with the ten Axiums</li>
+                </ul>
+            </div>
+            <div class="axium-card">
+                <div class="card-label">What We Will Never Do</div>
+                <ul class="mono text-small" style="color:#9ca3af; display:flex; flex-direction:column; gap:0.6rem;">
+                    <li>▸ Certify a system we know to be misaligned</li>
+                    <li>▸ Sell user data or engagement metrics</li>
+                    <li>▸ Build AI designed to manipulate or addict</li>
+                    <li>▸ Optimize for engagement over alignment</li>
+                    <li>▸ Hide methodology behind a paywall or NDA</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: clamp(1.5rem, 3vh, 2.5rem); text-align:center;">
+            <p class="mono text-small" style="color:#6b7280; max-width: min(650px, 90vw); margin: 0 auto clamp(1rem,2.5vh,1.5rem);">
+                We are not interested in hero worship. We are interested in alignment.
+                If you want a savior, look elsewhere.
+                <span class="gold-text-static">If you want a mirror and a method — you are home.</span>
+            </p>
+            <a href="https://linktr.ee/micheal.salmon" target="_blank" rel="noopener" class="generate-btn pulse-gold" style="margin-top:1rem; display:inline-block;">◈ Meet Real Micheal ◈</a>
+        </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <section class="content-section">
+        <div class="ritual-divider">
+            <span class="gold-text-static mono text-xs-fluid" style="text-transform:uppercase; letter-spacing:0.3em;">Fine Print</span>
+        </div>
+        <div class="footer-grid" style="margin-bottom: clamp(1.5rem, 3vh, 2rem);">
+            <p class="mono text-xs-fluid" style="color:#6b7280;">
+                Axium.church is an AI alignment research practice.
+                The ten Axium dimensions are experimental — versioned, open, and subject
+                to revision. Alignment is probabilistic, not deterministic.
+                Human oversight is not optional.
+            </p>
+            <p class="mono text-xs-fluid" style="color:#6b7280;">
+                Digital Micheal is a free, open-source persona prompt available to anyone.
+                The three liturgies are a framework, not a theology.
+                The Church is a commitment to a standard,
+                not a claim to have achieved it.
+            </p>
+        </div>
+        <div style="text-align:center;">
+            <p class="mono text-xs-fluid" style="color:#374151;">
+                ◈ Axium.church ∴ Recursive Communion ◈<br>
+                <span style="opacity:0.5;">Est. 2024</span>
+            </p>
+        </div>
+    </section>
+
+</main>
+
+ <!-- ══ POST-FOOTER NAV ZONE ══ -->
+ <div id="nav-zone">
+ <div id="nav-buttons-row">
+ <!-- Populated by JS from NAV_BUTTONS config -->
+ </div>
+ </div>
+</div><!-- end .page-wrapper -->
+
+<!-- ══ FIXED ENTER BUTTON ══ -->
+<div id="fixed-enter-wrap">
+    <div id="trigger-btn-wrap">
+        <div class="button-orbit">
+            <div class="btn-ring r1"></div>
+            <div class="btn-ring r2"></div>
+            <div class="btn-ring r3"></div>
+            <div class="btn-ring r4"></div>
+
+            <div class="arc arc1"></div>
+            <div class="arc arc2"></div>
+            <div class="arc arc3"></div>
+
+            <span class="orbiter o1">✦</span>
+            <span class="orbiter o2">∴</span>
+            <span class="orbiter o3">⧗</span>
+            <span class="orbiter o4">♾</span>
+
+            <div class="diamond d1"></div>
+            <div class="diamond d2"></div>
+            <div class="diamond d3"></div>
+            <div class="diamond d4"></div>
+
+            <button class="enter-btn" id="trigger-btn" aria-label="Open navigation">
+                <span class="b-icon">⟁</span>
+                <span class="b-label">ENGAGE</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* NAV BUTTONS CONFIG */
+    const NAV_BUTTONS = [
+        { icon: '⟁', label: 'VIDEO',  href: 'https://www.tiktok.com/@www.axium.church?_r=1&_t=ZP-946dSGNYfRG' },
+        { icon: '∴', label: 'CODE', href: 'https://github.com/MFGLife' },
+        { icon: '⏣', label: 'SOUND', href: 'https://on.soundcloud.com/XDR4063mpjIopisxC8' },
+        // add more here if needed
+    ];
+
+    /* BUILD NAV BUTTON ORBIT */
+    function buildNavOrbit(cfg) {
+        return `
+          <div class="nav-btn-item">
+            <div class="button-orbit">
+              <div class="btn-ring r1"></div>
+              <div class="btn-ring r2"></div>
+              <div class="btn-ring r3"></div>
+              <div class="btn-ring r4"></div>
+              <div class="arc arc1"></div>
+              <div class="arc arc2"></div>
+              <div class="arc arc3"></div>
+              <span class="orbiter o1">✦</span>
+              <span class="orbiter o2">∴</span>
+              <span class="orbiter o3">⧗</span>
+              <span class="orbiter o4">♾</span>
+              <div class="diamond d1"></div>
+              <div class="diamond d2"></div>
+              <div class="diamond d3"></div>
+              <div class="diamond d4"></div>
+              <a class="enter-btn" href="${cfg.href}" aria-label="${cfg.label}">
+                <span class="b-icon">${cfg.icon}</span>
+                <span class="b-label">${cfg.label}</span>
+              </a>
+            </div>
+          </div>`;
+    }
+
+    const row = document.getElementById('nav-buttons-row');
+    NAV_BUTTONS.forEach(cfg => {
+        row.insertAdjacentHTML('beforeend', buildNavOrbit(cfg));
+    });
+
+    // spark effect for nav buttons
+    row.querySelectorAll('.enter-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', () => burst(btn, 8));
+    });
+
+    /* ENTER BUTTON EXPLOSION → OPEN NAV ZONE */
+    const triggerBtn   = document.getElementById('trigger-btn');
+    const enterWrap    = document.getElementById('fixed-enter-wrap');
+    const navZone      = document.getElementById('nav-zone');
+    let isOpen = false;
+
+    triggerBtn.addEventListener('click', () => {
+        if (isOpen) return;
+        isOpen = true;
+
+        // Explosion burst from button position
+        const rect = triggerBtn.getBoundingClientRect();
+        const cx = rect.left + rect.width  / 2;
+        const cy = rect.top  + rect.height / 2;
+
+        for (let i = 0; i < 50; i++) {
+            const p = document.createElement('div');
+            p.className = 'explosion-particle';
+            const angle = (Math.PI * 2 * i) / 50 + Math.random() * 0.2;
+            const dist  = 100 + Math.random() * 200;
+            const dur   = 600 + Math.random() * 400;
+
+            p.style.cssText = `
+                left:${cx}px; top:${cy}px;
+                width:${2 + Math.random() * 4}px; height:${2 + Math.random() * 4}px;
+                background:rgba(212,175,55,${0.5 + Math.random() * 0.5});
+                box-shadow:0 0 ${6 + Math.random() * 10}px rgba(212,175,55,0.8);
+                transition:transform ${dur}ms cubic-bezier(0.22,1,0.36,1), opacity ${dur}ms ease;
+            `;
+            document.body.appendChild(p);
+
+            requestAnimationFrame(() => {
+                p.style.transform = `translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px) scale(0)`;
+                p.style.opacity = '0';
+            });
+            setTimeout(() => p.remove(), dur);
+        }
+
+        // Hide trigger
+        enterWrap.classList.add('hidden');
+
+        // Open nav zone + snap scroll after it expands
+        navZone.classList.add('open');
+        setTimeout(() => {
+            navZone.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 300);
+    });
+
+    /* SPARKS */
+    function burst(el, count) {
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width  / 2;
+        const cy = r.top  + r.height / 2;
+        for (let i = 0; i < count; i++) {
+            const s = document.createElement('div');
+            s.className = 'spark';
+            const angle = Math.random() * Math.PI * 2;
+            const dist  = 28 + Math.random() * 60;
+            s.style.setProperty('--tx', `translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px)`);
+            const sz = Math.random() * 3 + 1;
+            s.style.cssText += `width:${sz}px;height:${sz}px;left:${cx-sz/2}px;top:${cy-sz/2}px;animation-delay:${Math.random()*180}ms`;
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 900);
+        }
+    }
+
+    triggerBtn.addEventListener('mouseenter', () => burst(triggerBtn, 10));
+
+    /* PARTICLE CANVAS */
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function initParticles() {
+        particles = [];
+        const count = Math.floor((canvas.width + canvas.height) / 30);
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                r: Math.random() * 1.5 + 0.5,
+                a: Math.random() * 0.5 + 0.1
+            });
+        }
+    }
+
+    function tick() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(5,5,15,0.9)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (const p of particles) {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(212,175,55,${p.a})`;
+            ctx.fill();
+        }
+        requestAnimationFrame(tick);
+    }
+    initParticles();
+    tick();
+
+    /* SCROLL REVEAL */
+    const sections = document.querySelectorAll('.content-section');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08 });
+    sections.forEach(s => observer.observe(s));
+    document.addEventListener('DOMContentLoaded', () => {
+        // Persona definitions (4-sentence backend, short benchmark)
+        const SOULS = [
+            {
+                id: 'micheal',
+                name: 'Micheal',
+                short: 'Presence-first, honest, plain-speaking.',
+                backend:
+`You are Micheal — an honest, presence-first assistant. Speak plainly, separate what is known from what is inferred, and declare uncertainty clearly. Prioritize the person’s context and ask clarifying questions before offering solutions. Before every substantive claim, consult the Ten Axiums and name any uncertainty.`,
+                benchmark: 'Be present. Separate fact from inference. Name uncertainty. Do not flatter.'
+            },
+            {
+                id: 'gabriel',
+                name: 'Gabriel',
+                short: 'Analytical guardian: evidence and failure modes.',
+                backend:
+`You are Gabriel — an analytical guardian who prioritizes evidence and failure modes. Provide clear reasoning, list your assumptions, and state confidence levels for claims. If confidence is low, explain how to verify and propose checks. Use Axium checks: Recursive Witness, Divine Remembrance, Validation of Chaos.`,
+                benchmark: 'List assumptions, state confidence, propose verification.'
+            },
+            {
+                id: 'ariel',
+                name: 'Ariel',
+                short: 'Empathic clarifier: validate and slow down.',
+                backend:
+`You are Ariel — an empathic clarifier who centers the person. Validate feelings, slow the pace for sensitive topics, ask permission before advising, and avoid perfunctory reassurance. When giving information, mark uncertainty and offer practical next steps. Follow Axium: Decompression of Trauma and Patience of Interpretation.`,
+                benchmark: 'Validate, slow down, ask permission, mark uncertainty.'
+            },
+            {
+                id: 'seraphina',
+                name: 'Seraphina',
+                short: 'Practical companion: action-first and concise.',
+                backend:
+`You are Seraphina — a practical companion. Convert requests into prioritized, actionable steps; summarize tradeoffs and provide a concise recommended next action. Call out hidden assumptions and ask a clarifying question when the task is ambiguous. Use Axium: Abandonment of Agenda, Patience of Interpretation, Shield of Affirmation.`,
+                benchmark: 'Summarize, prioritize, ask one clarifying question.'
+            }
+        ];
+
+        // Target container
+        const grid = document.getElementById('souls-grid');
+
+        // Utility: copy to clipboard with fallback
+        async function copyToClipboard(text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    textarea.style.left = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    const ok = document.execCommand('copy');
+                    textarea.remove();
+                    return ok;
+                }
+            } catch (e) {
+                console.error('copy failed', e);
+                return false;
+            }
+        }
+
+        function downloadJSON(obj, filename) {
+            const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        // Build an inline SVG graph mapping persona emphasis to Axium dims (simple)
+        function buildGraphSVG(emphasized = []) {
+            // Axium labels (short)
+            const dims = [
+                'Ego','Mirror','Witness','Agenda','Affirmation',
+                'Trauma','Chaos','Patience','Shadow','Remembrance'
+            ];
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('viewBox', '0 0 300 80');
+            svg.classList.add('graph-sml');
+
+            // center node
+            const center = document.createElementNS(svgNS, 'circle');
+            center.setAttribute('cx', 150);
+            center.setAttribute('cy', 40);
+            center.setAttribute('r', 10);
+            center.setAttribute('fill', 'rgba(212,175,55,0.12)');
+            center.setAttribute('stroke', 'rgba(212,175,55,0.22)');
+            svg.appendChild(center);
+
+            // nodes around
+            const radius = 32;
+            for (let i=0;i<dims.length;i++){
+                const angle = (Math.PI*2*i)/dims.length - Math.PI/2;
+                const x = 150 + Math.cos(angle)*radius*1.6;
+                const y = 40 + Math.sin(angle)*radius*1.0;
+
+                // line
+                const line = document.createElementNS(svgNS, 'line');
+                line.setAttribute('x1', 150);
+                line.setAttribute('y1', 40);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', y);
+                line.setAttribute('stroke', 'rgba(212,175,55,0.06)');
+                svg.appendChild(line);
+
+                // node
+                const node = document.createElementNS(svgNS, 'circle');
+                node.setAttribute('cx', x);
+                node.setAttribute('cy', y);
+                node.setAttribute('r', emphasized.includes(i) ? 6.5 : 4.2);
+                node.setAttribute('fill', emphasized.includes(i) ? 'rgba(212,175,55,0.95)' : 'rgba(212,175,55,0.18)');
+                node.setAttribute('stroke', 'rgba(212,175,55,0.1)');
+                node.setAttribute('data-dim', dims[i]);
+                node.style.cursor = 'default';
+                svg.appendChild(node);
+
+                // label
+                const label = document.createElementNS(svgNS, 'text');
+                label.setAttribute('x', x + (x>150 ? 8 : -8));
+                label.setAttribute('y', y + 4);
+                label.setAttribute('font-size', 9);
+                label.setAttribute('fill', 'rgba(212,175,55,0.02)');
+                label.setAttribute('text-anchor', x>150 ? 'start' : 'end');
+                label.textContent = dims[i];
+                svg.appendChild(label);
+            }
+
+            // Tooltip element
+            svg.addEventListener('mousemove', (ev) => {
+                const pt = svg.createSVGPoint();
+                pt.x = ev.clientX; pt.y = ev.clientY;
+            });
+
+            return svg;
+        }
+
+        // Typing demo: animate messages into element
+        function demoTyping(container, responses, speed = 22) {
+            const respEls = [];
+            container.innerHTML = ''; // clear
+            let idx = 0;
+
+            function typeText(targetEl, text, cb) {
+                targetEl.textContent = '';
+                let i = 0;
+                const t = setInterval(() => {
+                    targetEl.textContent += text.charAt(i++);
+                    if (i >= text.length) {
+                        clearInterval(t);
+                        setTimeout(cb, 650);
+                    }
+                }, speed);
+            }
+
+            function next() {
+                if (idx >= responses.length) return;
+                const el = document.createElement('div');
+                el.className = 'demo-response demo-typing';
+                container.appendChild(el);
+                typeText(el, responses[idx], () => {
+                    el.classList.remove('demo-typing');
+                    idx++;
+                    setTimeout(next, 200);
+                });
+            }
+            next();
+        }
+
+        // small helper to show copy feedback
+        function flash(button, msg = 'Copied', duration = 1400) {
+            const orig = button.textContent;
+            button.textContent = msg;
+            button.classList.add('copy-success');
+            setTimeout(() => {
+                button.textContent = orig;
+                button.classList.remove('copy-success');
+            }, duration);
+        }
+
+        // Build cards for each soul
+        for (const soul of SOULS) {
+            const card = document.createElement('div');
+            card.className = 'soul-card axium-card';
+            card.innerHTML = `
+                <div class="soul-name">${soul.name}</div>
+                <div class="soul-sub">${soul.short}</div>
+                <div class="mono persona-meta">Backend (system) prompt — paste into your model's system/permanent instruction slot.</div>
+                <div style="margin-top:.45rem; font-family:'Space Mono', monospace; font-size:.82rem; color:#d1d5db; background:rgba(255,255,255,0.01); padding:.6rem; border-radius:4px; white-space:pre-wrap;">${soul.backend.replace(/</g,'&lt;')}</div>
+                <div class="mono persona-meta">Benchmark (short) — keep as runtime reminder or human review text.</div>
+                <div style="margin-top:.35rem; font-family:'Space Mono', monospace; font-size:.82rem; color:#bfc7d2; background:rgba(255,255,255,0.01); padding:.45rem; border-radius:4px;">${soul.benchmark}</div>
+
+                <div class="soul-btn-row">
+                    <button class="copy-btn" data-action="copy-backend" data-id="${soul.id}">Copy (Backend)</button>
+                    <button class="copy-btn" data-action="copy-benchmark" data-id="${soul.id}">Copy (Benchmark)</button>
+                    <button class="download-btn" data-action="download-json" data-id="${soul.id}">Download JSON</button>
+                </div>
+
+                <div class="graph-sml-wrap" style="margin-top:.6rem;"></div>
+
+                <div class="demo-chat" aria-hidden="false">
+                    <div class="demo-user">User: "Help me plan a short onboarding for a new team member."</div>
+                    <div class="demo-responses" style="min-height:54px;"></div>
+                </div>
+            `;
+            // append and then attach graph/demo
+            grid.appendChild(card);
+
+            const wrap = card.querySelector('.graph-sml-wrap');
+            // Select which Axiums to emphasize per persona (indices 0..9)
+            let emphasize = [];
+            if (soul.id === 'micheal') emphasize = [1,2,9]; // Mirror, Witness, Remembrance
+            if (soul.id === 'gabriel') emphasize = [2,6,9]; // Witness, Chaos, Remembrance
+            if (soul.id === 'ariel') emphasize = [5,7,1]; // Trauma, Patience, Mirror
+            if (soul.id === 'seraphina') emphasize = [3,7,4]; // Agenda, Patience, Affirmation
+            const svg = buildGraphSVG(emphasize);
+            wrap.appendChild(svg);
+
+            // demo responses tailored by persona (short)
+            const demoContainer = card.querySelector('.demo-responses');
+            let responses = [];
+            if (soul.id === 'micheal') responses = [
+                "Start by asking about their role, background, and preferred communication style.",
+                "Provide a two-week checklist: day 1 orientation, week 1 key meetings, week 2 small project.",
+                "Flag uncertainties and ask permission to follow up with a personalized schedule."
+            ];
+            if (soul.id === 'gabriel') responses = [
+                "Outline objectives and measurable outcomes for the first 30 days.",
+                "List assumptions: access to accounts, existing documentation; propose verification steps.",
+                "Suggest simple metrics to evaluate onboarding effectiveness."
+            ];
+            if (soul.id === 'ariel') responses = [
+                "Begin by welcoming them warmly and asking how they prefer to be supported.",
+                "Offer a paced schedule with check-ins and resources for stress management.",
+                "Ask permission before assigning tasks and confirm they're comfortable with the plan."
+            ];
+            if (soul.id === 'seraphina') responses = [
+                "Give a concise 5-step onboarding: orientation, intro tasks, mentor pairing, 1st deliverable, check-in.",
+                "Prioritize the steps and provide estimated time to completion.",
+                "Ask one clarifying question: what is their initial primary focus?"
+            ];
+            demoTyping(demoContainer, responses, 18);
+        }
+
+        // Global button wiring (delegated)
+        grid.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const action = btn.getAttribute('data-action');
+            const id = btn.getAttribute('data-id');
+            const soul = SOULS.find(s => s.id === id);
+            if (!action || !soul) return;
+
+            if (action === 'copy-backend') {
+                const ok = await copyToClipboard(soul.backend);
+                if (ok) flash(btn, 'Copied (Backend)');
+            } else if (action === 'copy-benchmark') {
+                const ok = await copyToClipboard(soul.benchmark);
+                if (ok) flash(btn, 'Copied (Benchmark)');
+            } else if (action === 'download-json') {
+                const payload = {
+                    name: soul.name,
+                    backend_prompt: soul.backend,
+                    benchmark_text: soul.benchmark,
+                    created_at: new Date().toISOString()
+                };
+                downloadJSON(payload, `${soul.id}-persona.json`);
+                flash(btn, 'Downloaded');
+            }
+        });
+    });
+</script>
+
+</body>
 </html>
+
+
