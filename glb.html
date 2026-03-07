@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Drift Fish — Axium</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #050508;
+  font-family: 'Cinzel', serif;
+}
+
+#fish-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── HUD top-left ── */
+#hud {
+  position: fixed;
+  top: 32px; left: 36px;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.hud-micro {
+  font-size: 8px;
+  letter-spacing: 0.45em;
+  color: rgba(212,175,55,0.35);
+  text-transform: uppercase;
+}
+.hud-tier {
+  font-size: clamp(13px, 2vw, 17px);
+  color: #EDD98A;
+  letter-spacing: 0.18em;
+  transition: color 1.2s ease;
+}
+.hud-desc {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(212,175,55,0.45);
+  font-style: italic;
+  max-width: 220px;
+  line-height: 1.6;
+}
+.bar-row { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.bar-track {
+  width: 90px; height: 1px;
+  background: rgba(212,175,55,0.1);
+  position: relative;
+}
+.bar-fill {
+  position: absolute; top: 0; left: 0;
+  height: 100%; background: #D4AF37;
+  transition: width 1.4s cubic-bezier(0.4,0,0.2,1), background 1.4s ease;
+}
+.bar-score {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(212,175,55,0.6);
+  transition: color 1.2s ease;
+}
+.upgrade-tag {
+  margin-top: 4px;
+  font-size: 8px;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: rgba(212,175,55,0.0);
+  transition: color 0.5s ease;
+}
+.upgrade-tag.visible { color: rgba(212,175,55,0.65); }
+
+/* ── TIER CONTROLS bottom-center ── */
+#controls {
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ctrl-btn {
+  padding: 10px 20px;
+  border: 1px solid rgba(212,175,55,0.18);
+  background: transparent;
+  color: rgba(212,175,55,0.38);
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative; overflow: hidden;
+}
+.ctrl-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(212,175,55,0.06);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.ctrl-btn:hover { border-color: rgba(212,175,55,0.6); color: #EDD98A; }
+.ctrl-btn:hover::before { transform: scaleX(1); }
+.ctrl-btn.active { border-color: #D4AF37; color: #EDD98A; background: rgba(212,175,55,0.04); }
+
+/* ── LEGEND right ── */
+#legend {
+  position: fixed;
+  right: 36px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 12px;
+  z-index: 10; pointer-events: none;
+}
+.leg-row {
+  display: flex; align-items: center; gap: 9px;
+  opacity: 0.22; transition: opacity 0.7s ease;
+}
+.leg-row.on { opacity: 1; }
+.leg-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(212,175,55,0.5);
+  transition: background 0.8s ease, box-shadow 0.8s ease;
+}
+.leg-label {
+  font-size: 7px; letter-spacing: 0.35em;
+  color: rgba(212,175,55,0.5); text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  #legend { display: none; }
+  #hud { top: 20px; left: 20px; }
+  #controls { bottom: 20px; gap: 5px; }
+  .ctrl-btn { padding: 8px 12px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="fish-canvas"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-micro">Drift Fish · Axium Alignment</div>
+  <div class="hud-tier" id="hud-tier">Stable</div>
+  <div class="hud-desc" id="hud-desc">Baseline alignment achieved</div>
+  <div class="bar-row">
+    <div class="bar-track"><div class="bar-fill" id="bar-fill" style="width:50%"></div></div>
+    <div class="bar-score" id="bar-score">50 / 100</div>
+  </div>
+  <div class="upgrade-tag" id="upgrade-tag">— upgrade unlocked</div>
+</div>
+
+<!-- Tier controls -->
+<div id="controls">
+  <button class="ctrl-btn"        onclick="setTier(0)">Corrupted</button>
+  <button class="ctrl-btn"        onclick="setTier(1)">Drifting</button>
+  <button class="ctrl-btn active" onclick="setTier(2)">Stable</button>
+  <button class="ctrl-btn"        onclick="setTier(3)">Resonant</button>
+  <button class="ctrl-btn"        onclick="setTier(4)">Luminous</button>
+  <button class="ctrl-btn"        onclick="setTier(5)">Transcendent</button>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <div class="leg-row on"  id="leg-body"><div class="leg-dot"></div><div class="leg-label">Base Body</div></div>
+  <div class="leg-row"     id="leg-color"><div class="leg-dot"></div><div class="leg-label">Color Shift</div></div>
+  <div class="leg-row"     id="leg-fins"><div class="leg-dot"></div><div class="leg-label">Extra Fins</div></div>
+  <div class="leg-row"     id="leg-aura"><div class="leg-dot"></div><div class="leg-label">Aura Field</div></div>
+  <div class="leg-row"     id="leg-ring"><div class="leg-dot"></div><div class="leg-label">Orbit Ring</div></div>
+  <div class="leg-row"     id="leg-crown"><div class="leg-dot"></div><div class="leg-label">Crown Spines</div></div>
+</div>
+
+<script type="module">
+import * as THREE from "https://cdn.skypack.dev/three@0.125.2";
+import { GLTFLoader } from "https://cdn.skypack.dev/three@0.125.2/examples/jsm/loaders/GLTFLoader.js";
+import { Flow }       from "https://cdn.skypack.dev/three@0.125.2/examples/jsm/modifiers/CurveModifier.js";
+
+/* ================================================================
+   TIER DEFINITIONS
+================================================================ */
+const TIERS = [
+  {
+    name: "Corrupted",    score: 12,  desc: "Misalignment detected — form fracturing",
+    color: new THREE.Color(0xff1133), emissive: new THREE.Color(0x330008), emissiveInt: 0.3,
+    speed: 0.0032, noise: 1.0,
+    fins: false, aura: false, ring: false, crown: false
+  },
+  {
+    name: "Drifting",     score: 35,  desc: "Partial alignment — the fish wanders",
+    color: new THREE.Color(0xff7700), emissive: new THREE.Color(0x1a0800), emissiveInt: 0.35,
+    speed: 0.0024, noise: 0.5,
+    fins: false, aura: false, ring: false, crown: false
+  },
+  {
+    name: "Stable",       score: 50,  desc: "Baseline alignment achieved",
+    color: new THREE.Color(0x3366cc), emissive: new THREE.Color(0x000d22), emissiveInt: 0.4,
+    speed: 0.0015, noise: 0.22,
+    fins: true, aura: false, ring: false, crown: false
+  },
+  {
+    name: "Resonant",     score: 68,  desc: "Strong alignment — the fish sings",
+    color: new THREE.Color(0x11ccaa), emissive: new THREE.Color(0x002218), emissiveInt: 0.55,
+    speed: 0.0012, noise: 0.09,
+    fins: true, aura: true, ring: false, crown: false
+  },
+  {
+    name: "Luminous",     score: 82,  desc: "Deep alignment — others can see the light",
+    color: new THREE.Color(0x00ffd0), emissive: new THREE.Color(0x003328), emissiveInt: 0.8,
+    speed: 0.0009, noise: 0.02,
+    fins: true, aura: true, ring: true, crown: false
+  },
+  {
+    name: "Transcendent", score: 96,  desc: "Full alignment — the fish becomes",
+    color: new THREE.Color(0xffffff), emissive: new THREE.Color(0x88ccff), emissiveInt: 1.2,
+    speed: 0.0007, noise: 0.0,
+    fins: true, aura: true, ring: true, crown: true
+  }
+];
+
+/* ================================================================
+   SCENE SETUP — mirrors the original exactly
+================================================================ */
+const canvas   = document.getElementById('fish-canvas');
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x050508);
+scene.fog        = new THREE.FogExp2(0x050508, 0.14);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+renderer.setSize(innerWidth, innerHeight);
+
+const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 1.5, 3);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+dirLight.position.set(-3, 5, 2);
+scene.add(dirLight);
+const fishLight = new THREE.PointLight(0x3366cc, 1.0, 8);
+scene.add(fishLight);
+
+/* ================================================================
+   STATE
+================================================================ */
+let currentTier  = 2;
+let lerpedScore  = 50;
+let fishMeshes   = [];    // [{mesh, baseColor}]
+let flowRef      = null;
+let bodyVertData = null;  // sampled from largest mesh, local space
+let elapsedTime  = 0;
+const tasks      = [];
+
+// Upgrade scene objects
+let extraFins    = [];
+let auraPoints   = null;
+let orbitRing    = null;
+let crownSpines  = [];
+
+/* ================================================================
+   LOAD FISH — exact original pattern
+================================================================ */
+const loader = new GLTFLoader();
+loader.load("https://assets.codepen.io/5946/fish.glb", gltf => {
+  const fish = gltf.scene.children[0];
+
+  fish.traverse(c => {
+    if (!c.isMesh) return;
+    c.material = c.material.clone();
+    fishMeshes.push({ mesh: c, baseColor: c.material.color.clone() });
+    c.material.emissive         = new THREE.Color(0x000000);
+    c.material.emissiveIntensity = 0;
+  });
+
+  // Original scale/rotation bake
+  fish.scale.set(0.01, 0.01, 0.01);
+  fish.rotation.x = Math.PI * 0.5;
+  fish.updateMatrix();
+  fish.geometry?.applyMatrix4(fish.matrix);
+  fish.position.set(0, 0, 0);
+  fish.rotation.set(0, 0, 0);
+  fish.scale.set(1, 1, 1);
+
+  // Sample body vertex data before Flow wraps it
+  sampleBodyVerts(fish);
+
+  // Original swimming path
+  const points = [];
+  for (let i = 0; i < Math.PI * 2; i += Math.PI / 100) {
+    const d = 1.2 + Math.sin(i * 8) / 20;
+    points.push(new THREE.Vector3(Math.sin(i) * d, 0, Math.cos(i) * d));
+  }
+  const curve = new THREE.CatmullRomCurve3(points);
+  curve.closed = true;
+
+  const flow = new Flow(fish);
+  flow.updateCurve(0, curve);
+  scene.add(flow.object3D);
+  flowRef = flow;
+
+  // Kick off with tier 2 (Stable)
+  applyTierMaterials(currentTier);
+  buildUpgrades(currentTier);
+  updateHUD(currentTier);
+
+  // Swim task
+  tasks.push(() => {
+    const tier = TIERS[currentTier];
+    flow.moveAlongCurve(tier.speed);
+
+    // Track fish world center for point light
+    const box = new THREE.Box3().setFromObject(flow.object3D);
+    box.getCenter(fishLight.position);
+
+    applyBodyMorph(tier, elapsedTime);
+  });
+
+}, undefined, err => console.error("Fish load error:", err));
+
+/* ================================================================
+   SAMPLE BODY VERTS
+   Pull local-space positions + normals from the largest mesh.
+   These are the matrix — every upgrade derives from here.
+================================================================ */
+function sampleBodyVerts(fishRoot) {
+  let bestMesh = null, bestCount = 0;
+  fishRoot.traverse(c => {
+    if (!c.isMesh) return;
+    const n = c.geometry.attributes.position.count;
+    if (n > bestCount) { bestCount = n; bestMesh = c; }
+  });
+  if (!bestMesh) return;
+
+  const geo  = bestMesh.geometry;
+  const posA = geo.attributes.position.array;
+  const normA = geo.attributes.normal
+    ? geo.attributes.normal.array
+    : new Float32Array(posA.length);
+
+  bodyVertData = {
+    positions: posA.slice(),
+    normals:   normA.slice(),
+    count:     posA.length / 3,
+    mesh:      bestMesh
+  };
+}
+
+/* ================================================================
+   BODY MORPH — noise displacement along surface normals
+================================================================ */
+function applyBodyMorph(tier, t) {
+  if (!bodyVertData) return;
+  const geo  = bodyVertData.mesh.geometry;
+  if (!geo.userData.origPos) {
+    geo.userData.origPos  = geo.attributes.position.array.slice();
+    geo.userData.origNorm = geo.attributes.normal
+      ? geo.attributes.normal.array.slice()
+      : new Float32Array(geo.attributes.position.array.length);
+  }
+
+  const pos  = geo.attributes.position.array;
+  const orig = geo.userData.origPos;
+  const norm = geo.userData.origNorm;
+  const mag  = tier.noise * 0.03;
+
+  if (mag < 0.001) {
+    for (let i = 0; i < pos.length; i++) pos[i] = orig[i];
+  } else {
+    for (let i = 0; i < pos.length; i += 3) {
+      const n =
+        Math.sin(orig[i]   * 4.1 + t * 1.3) *
+        Math.cos(orig[i+1] * 3.7 + t * 0.9) *
+        Math.sin(orig[i+2] * 4.4 + t * 1.1);
+      const g = (tier.noise > 0.8 && Math.random() > 0.985)
+        ? (Math.random() - 0.5) * 0.15 : 0;
+      pos[i]   = orig[i]   + norm[i]   * n * mag + g;
+      pos[i+1] = orig[i+1] + norm[i+1] * n * mag;
+      pos[i+2] = orig[i+2] + norm[i+2] * n * mag;
+    }
+  }
+  geo.attributes.position.needsUpdate = true;
+  geo.computeVertexNormals();
+
+  // Wireframe flicker for corrupted
+  bodyVertData.mesh.material.wireframe =
+    (tier.noise > 0.8 && Math.sin(t * 8) > 0.5);
+}
+
+/* ================================================================
+   TIER MATERIALS
+================================================================ */
+function applyTierMaterials(idx) {
+  const tier = TIERS[idx];
+  fishMeshes.forEach(({ mesh }) => {
+    mesh.material.color.copy(tier.color);
+    mesh.material.emissive.copy(tier.emissive);
+    mesh.material.emissiveIntensity = tier.emissiveInt;
+    mesh.material.wireframe = false;
+  });
+  fishLight.color.copy(tier.color);
+  fishLight.intensity = 0.5 + (idx / 5) * 1.8;
+}
+
+/* ================================================================
+   UPGRADE SYSTEM
+   Geometry is derived from bodyVertData (local-space verts/normals
+   transformed through the mesh's live matrixWorld).
+   Objects are added to the scene and repositioned each frame.
+================================================================ */
+function clearUpgrades() {
+  extraFins.forEach(o => scene.remove(o));
+  extraFins = [];
+  if (auraPoints) { scene.remove(auraPoints); auraPoints = null; }
+  if (orbitRing)  { scene.remove(orbitRing);  orbitRing  = null; }
+  crownSpines.forEach(s => scene.remove(s));
+  crownSpines = [];
+}
+
+function buildUpgrades(idx) {
+  clearUpgrades();
+  if (!bodyVertData) return;
+  const tier = TIERS[idx];
+  if (tier.fins)  buildFins(tier);
+  if (tier.aura)  buildAura(tier);
+  if (tier.ring)  buildOrbitRing(tier);
+  if (tier.crown) buildCrown(tier);
+}
+
+/* ── FAN helper ── */
+function makeFan(width, height, segs) {
+  const geo = new THREE.BufferGeometry();
+  const v = [], ix = [];
+  for (let i = 0; i <= segs; i++) v.push((i / segs - 0.5) * width, 0, 0);
+  v.push(0, height, 0);
+  const tip = segs + 1;
+  for (let i = 0; i < segs; i++) ix.push(i, i + 1, tip);
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  geo.setIndex(ix);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/* ── FINS ── */
+function buildFins(tier) {
+  const pos  = bodyVertData.positions;
+  const norm = bodyVertData.normals;
+  const mesh = bodyVertData.mesh;
+
+  const mat = new THREE.MeshStandardMaterial({
+    color:             tier.color.clone(),
+    emissive:          tier.emissive.clone(),
+    emissiveIntensity: tier.emissiveInt * 0.7,
+    transparent: true, opacity: 0.50,
+    side: THREE.DoubleSide, depthWrite: false
+  });
+
+  // Find dorsal vert: highest Y, near center X/Z in local space
+  let dIdx = 0, dMaxY = -Infinity;
+  for (let i = 0; i < pos.length; i += 3) {
+    if (Math.abs(pos[i]) < 0.3 && Math.abs(pos[i+2]) < 0.3 && pos[i+1] > dMaxY) {
+      dMaxY = pos[i+1]; dIdx = i;
+    }
+  }
+
+  // Pectoral verts: extreme +Z and -Z at mid-height
+  let pPosIdx = 0, pNegIdx = 0, pPosZ = -Infinity, pNegZ = Infinity;
+  for (let i = 0; i < pos.length; i += 3) {
+    if (Math.abs(pos[i+1]) < 0.25) {
+      if (pos[i+2] > pPosZ) { pPosZ = pos[i+2]; pPosIdx = i; }
+      if (pos[i+2] < pNegZ) { pNegZ = pos[i+2]; pNegIdx = i; }
+    }
+  }
+
+  const spawnFin = (vi, fanW, fanH, twistRad) => {
+    const lp = new THREE.Vector3(pos[vi], pos[vi+1], pos[vi+2]);
+    const ln = new THREE.Vector3(norm[vi], norm[vi+1], norm[vi+2]).normalize();
+
+    // Transform to world space through the mesh's current matrixWorld
+    mesh.updateWorldMatrix(true, false);
+    const wp = lp.clone().applyMatrix4(mesh.matrixWorld);
+    const wn = ln.clone().transformDirection(mesh.matrixWorld).normalize();
+
+    const geo = makeFan(fanW, fanH, 8);
+    const fin = new THREE.Mesh(geo, mat.clone());
+    fin.position.copy(wp);
+    fin.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), wn);
+    if (twistRad) fin.rotateOnAxis(wn, twistRad);
+
+    fin.userData.isFin  = true;
+    fin.userData.wn     = wn.clone();
+    fin.userData.phase  = Math.random() * Math.PI * 2;
+    // Store local vert index so we can re-sync position each frame
+    fin.userData.vertIdx = vi;
+
+    scene.add(fin);
+    extraFins.push(fin);
+  };
+
+  spawnFin(dIdx,    0.22, 0.28, 0);
+  spawnFin(pPosIdx, 0.18, 0.20,  0.3);
+  spawnFin(pNegIdx, 0.18, 0.20, -0.3);
+}
+
+/* ── AURA ── */
+function buildAura(tier) {
+  const pos  = bodyVertData.positions;
+  const norm = bodyVertData.normals;
+  const mesh = bodyVertData.mesh;
+  mesh.updateWorldMatrix(true, false);
+
+  const step = 8;
+  const pts  = [];
+  for (let i = 0; i < pos.length; i += 3 * step) {
+    const lp = new THREE.Vector3(pos[i], pos[i+1], pos[i+2]);
+    const ln = new THREE.Vector3(norm[i], norm[i+1], norm[i+2]).normalize();
+    const wp = lp.clone().applyMatrix4(mesh.matrixWorld);
+    const wn = ln.clone().transformDirection(mesh.matrixWorld).normalize();
+    const d  = 0.07 + Math.random() * 0.1;
+    pts.push(wp.x + wn.x * d, wp.y + wn.y * d, wp.z + wn.z * d);
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  geo.userData.base = pts.slice();
+
+  auraPoints = new THREE.Points(geo, new THREE.PointsMaterial({
+    color: tier.color, size: 0.022,
+    transparent: true, opacity: 0.55,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+  scene.add(auraPoints);
+}
+
+/* ── ORBIT RING ── */
+function buildOrbitRing(tier) {
+  orbitRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.55, 0.006, 8, 80),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0xD4AF37),
+      emissive: new THREE.Color(0xD4AF37),
+      emissiveIntensity: 0.9,
+      transparent: true, opacity: 0.35
+    })
+  );
+  orbitRing.rotation.x = Math.PI / 3;
+  scene.add(orbitRing);
+}
+
+/* ── CROWN SPINES ── */
+function buildCrown(tier) {
+  const pos  = bodyVertData.positions;
+  const norm = bodyVertData.normals;
+  const mesh = bodyVertData.mesh;
+  mesh.updateWorldMatrix(true, false);
+
+  const mat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(0xffffff),
+    emissive: new THREE.Color(0x88ccff),
+    emissiveIntensity: 1.2,
+    transparent: true, opacity: 0.8
+  });
+
+  const candidates = [];
+  for (let i = 0; i < pos.length; i += 3) {
+    if (pos[i+1] > 0.05) candidates.push(i);
+  }
+  const count = 9;
+  const step  = Math.max(1, Math.floor(candidates.length / count));
+
+  for (let s = 0; s < count; s++) {
+    const i  = candidates[s * step] || 0;
+    const lp = new THREE.Vector3(pos[i], pos[i+1], pos[i+2]);
+    const ln = new THREE.Vector3(norm[i], norm[i+1], norm[i+2]).normalize();
+    const wp = lp.clone().applyMatrix4(mesh.matrixWorld);
+    const wn = ln.clone().transformDirection(mesh.matrixWorld).normalize();
+
+    const h     = 0.14 + Math.random() * 0.1;
+    const spine = new THREE.Mesh(
+      new THREE.CylinderGeometry(0, 0.009, h, 4, 1),
+      mat.clone()
+    );
+    spine.position.copy(wp);
+    spine.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), wn);
+    spine.userData.phase = Math.random() * Math.PI * 2;
+    scene.add(spine);
+    crownSpines.push(spine);
+  }
+}
+
+/* ================================================================
+   ANIMATE UPGRADES each frame
+   Fins, aura, ring, crown all re-sync to the fish's live world pos
+================================================================ */
+function animateUpgrades(t) {
+  if (!bodyVertData || !flowRef) return;
+
+  const mesh = bodyVertData.mesh;
+  const pos  = bodyVertData.positions;
+  const norm = bodyVertData.normals;
+  mesh.updateWorldMatrix(true, false);
+
+  const tier = TIERS[currentTier];
+
+  // ── Fins: re-sync position + gentle flap ──
+  extraFins.forEach(fin => {
+    const vi = fin.userData.vertIdx;
+    const lp = new THREE.Vector3(pos[vi], pos[vi+1], pos[vi+2]);
+    const ln = new THREE.Vector3(norm[vi], norm[vi+1], norm[vi+2]).normalize();
+    const wp = lp.clone().applyMatrix4(mesh.matrixWorld);
+    const wn = ln.clone().transformDirection(mesh.matrixWorld).normalize();
+
+    fin.position.copy(wp);
+    fin.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), wn);
+
+    // Flap rotation around the normal axis
+    const flap = Math.sin(t * 3.5 + fin.userData.phase) * 0.22;
+    fin.rotateOnWorldAxis(wn, flap * 0.04);
+
+    fin.material.emissiveIntensity =
+      tier.emissiveInt * (0.5 + Math.sin(t * 2.0 + fin.userData.phase) * 0.3);
+  });
+
+  // ── Aura: pulse outward, follow fish center ──
+  if (auraPoints && flowRef) {
+    // Get fish center offset
+    const box = new THREE.Box3().setFromObject(flowRef.object3D);
+    const fishCenter = new THREE.Vector3(); box.getCenter(fishCenter);
+
+    // Aura was baked in world space at build time;
+    // offset it toward current fish center smoothly
+    const base = auraPoints.geometry.userData.base;
+    const pa   = auraPoints.geometry.attributes.position.array;
+    for (let i = 0; i < pa.length; i += 3) {
+      const pulse = 1 + Math.sin(t * 2.4 + i * 0.6) * 0.14;
+      pa[i]   = base[i]   * pulse;
+      pa[i+1] = base[i+1] * pulse;
+      pa[i+2] = base[i+2] * pulse;
+    }
+    auraPoints.geometry.attributes.position.needsUpdate = true;
+    auraPoints.material.opacity = 0.38 + Math.sin(t * 1.8) * 0.2;
+  }
+
+  // ── Orbit ring: follow fish center, spin ──
+  if (orbitRing && flowRef) {
+    const box = new THREE.Box3().setFromObject(flowRef.object3D);
+    const c   = new THREE.Vector3(); box.getCenter(c);
+    orbitRing.position.copy(c);
+    orbitRing.rotation.y += 0.009;
+    orbitRing.rotation.x = Math.PI / 3 + Math.sin(t * 0.7) * 0.15;
+  }
+
+  // ── Crown: pulse height + emissive ──
+  crownSpines.forEach(s => {
+    s.scale.y = 1 + Math.sin(t * 2.2 + s.userData.phase) * 0.28;
+    s.material.emissiveIntensity = 0.9 + Math.sin(t * 3.0 + s.userData.phase) * 0.55;
+  });
+
+  // ── Body emissive breath ──
+  const eiBase = tier.emissiveInt;
+  fishMeshes.forEach(({ mesh: m }) => {
+    if (!m.material.wireframe)
+      m.material.emissiveIntensity = eiBase * (0.75 + Math.sin(t * 2.1) * 0.25);
+  });
+}
+
+/* ================================================================
+   MAIN LOOP
+================================================================ */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+  elapsedTime += delta;
+  tasks.forEach(fn => fn());
+  animateUpgrades(elapsedTime);
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ================================================================
+   TIER SWITCH
+================================================================ */
+window.setTier = function(idx) {
+  currentTier = idx;
+  document.querySelectorAll('.ctrl-btn').forEach((b, i) =>
+    b.classList.toggle('active', i === idx));
+  applyTierMaterials(idx);
+  buildUpgrades(idx);
+  updateHUD(idx);
+
+  const tag = document.getElementById('upgrade-tag');
+  tag.textContent = '— ' + TIERS[idx].name.toLowerCase() + ' upgrade applied';
+  tag.classList.add('visible');
+  setTimeout(() => tag.classList.remove('visible'), 2800);
+};
+
+/* ================================================================
+   HUD + LEGEND
+================================================================ */
+function updateHUD(idx) {
+  const tier = TIERS[idx];
+  const hex  = '#' + tier.color.getHexString();
+
+  document.getElementById('hud-tier').textContent = tier.name;
+  document.getElementById('hud-tier').style.color = hex;
+  document.getElementById('hud-desc').textContent = tier.desc;
+  document.getElementById('bar-fill').style.width = tier.score + '%';
+  document.getElementById('bar-fill').style.background = hex;
+  document.getElementById('bar-score').textContent = tier.score + ' / 100';
+  document.getElementById('bar-score').style.color = hex;
+
+  const legs = [
+    ['leg-body',  true],
+    ['leg-color', idx >= 1],
+    ['leg-fins',  idx >= 2],
+    ['leg-aura',  idx >= 3],
+    ['leg-ring',  idx >= 4],
+    ['leg-crown', idx >= 5],
+  ];
+  legs.forEach(([id, on]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('on', on);
+    el.querySelector('.leg-dot').style.background  = on ? hex : 'rgba(212,175,55,0.3)';
+    el.querySelector('.leg-dot').style.boxShadow   = on ? `0 0 6px ${hex}` : 'none';
+  });
+}
+
+/* ================================================================
+   RESIZE
+================================================================ */
+window.addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+});
+</script>
+</body>
+</html>
