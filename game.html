@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AXIUM — Constellation Drift</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#04040a;font-family:'Cinzel',serif;touch-action:none;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+/* ── Bottom HUD ── */
+#hud{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  padding:0 0 22px;
+  pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+
+/* unlock word floats above ref box */
+#unlock-flash{
+  font-family:'Cinzel',serif;font-size:14px;letter-spacing:.12em;
+  color:rgba(212,175,55,0);text-shadow:none;
+  transition:color .7s,text-shadow .7s;
+}
+#unlock-flash.show{color:#D4AF37;text-shadow:0 0 22px rgba(212,175,55,.6)}
+
+/* Compact reference box */
+/* Reference panel (separate from game space) */
+#ref-box{
+  position:fixed;
+  bottom:120px;
+  right:18px;
+  z-index:120;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+
+  padding:14px;
+  width:190px;
+
+  background:linear-gradient(
+    180deg,
+    rgba(18,18,28,.85),
+    rgba(6,6,12,.92)
+  );
+
+  border:1px solid rgba(212,175,55,.35);
+  border-radius:10px;
+
+  box-shadow:
+    0 0 28px rgba(0,0,0,.6),
+    0 0 18px rgba(212,175,55,.15) inset;
+}
+#ref-lbl{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.22em;
+  color:rgba(255,255,255,.2);text-transform:uppercase;
+}
+#ref-canvas{
+  width:160px;
+  height:160px;
+
+  border-radius:8px;
+  border:1px solid rgba(212,175,55,.35);
+
+  background:radial-gradient(
+    circle at center,
+    rgba(12,12,24,.95),
+    rgba(2,2,6,1)
+  );
+
+  box-shadow:
+    0 0 20px rgba(212,175,55,.15),
+    inset 0 0 18px rgba(0,0,0,.8);
+}
+
+/* Info row */
+#info-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+#persona-lbl{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;letter-spacing:.1em}
+#shape-lbl{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.18em;color:rgba(255,255,255,.22);text-transform:uppercase}
+#progress-dots{display:flex;gap:5px;align-items:center}
+.pdot{width:6px;height:6px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);transition:all .35s}
+.pdot.hit{border-color:var(--c);background:var(--c);box-shadow:0 0 7px var(--c)}
+#found-count{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.12em;color:rgba(255,255,255,.16)}
+
+/* Overlays */
+#wrong-flash{position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(180,50,50,.18) 0%,transparent 60%);transition:opacity .2s}
+#complete-flash{position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;transition:opacity .7s}
+
+/* Next button */
+#next-btn{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:200;display:none;flex-direction:column;align-items:center;gap:12px;
+  cursor:pointer;pointer-events:auto;
+}
+#next-unlock-word{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;letter-spacing:.1em;color:rgba(255,255,255,.5);text-align:center}
+#next-btn-inner{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.26em;text-transform:uppercase;
+  color:#D4AF37;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.4);
+  padding:12px 32px;border-radius:2px;transition:all .35s;
+}
+#next-btn-inner:hover{background:rgba(212,175,55,.15);border-color:#D4AF37;box-shadow:0 0 26px rgba(212,175,55,.2)}
+
+/* Start screen */
+#start{
+  position:fixed;inset:0;z-index:300;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:rgba(4,4,10,.97);
+}
+.s-title{font-family:'Cinzel',serif;font-size:clamp(30px,6vw,58px);font-weight:800;letter-spacing:.15em;color:#D4AF37;text-shadow:0 0 50px rgba(212,175,55,.25);text-align:center}
+.s-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(14px,2.4vw,18px);color:rgba(255,255,255,.36);letter-spacing:.1em;text-align:center;max-width:380px;line-height:1.8}
+.s-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#D4AF37;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.42);padding:13px 36px;cursor:pointer;transition:all .3s;border-radius:2px}
+.s-btn:hover{background:rgba(212,175,55,.16);border-color:#D4AF37;box-shadow:0 0 30px rgba(212,175,55,.2)}
+.s-tag{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:rgba(212,175,55,.18)}
+
+#help-btn{
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  z-index:200;
+
+  font-family:'Space Mono',monospace;
+  font-size:9px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+
+  color:#D4AF37;
+  background:rgba(212,175,55,.08);
+  border:1px solid rgba(212,175,55,.35);
+
+  padding:10px 16px;
+  border-radius:3px;
+  cursor:pointer;
+
+  transition:all .25s;
+}
+
+#help-btn:hover{
+  background:rgba(212,175,55,.18);
+  border-color:#D4AF37;
+  box-shadow:0 0 18px rgba(212,175,55,.25);
+}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="wrong-flash"></div>
+<div id="complete-flash"></div>
+
+<div id="hud">
+  <div id="unlock-flash"></div>
+  <div id="info-row">
+    <div id="persona-lbl"></div>
+    <div id="shape-lbl"></div>
+    <div id="progress-dots"></div>
+    <div id="found-count"></div>
+  </div>
+</div>
+
+<button id="help-btn" onclick="showHint()">Hint</button>
+
+  <canvas id="ref-canvas" width="160" height="160" style="opacity: .7"></canvas>
+
+<div id="next-btn" onclick="nextRound()">
+  <div id="next-unlock-word"></div>
+  <div id="next-btn-inner">Next Constellation</div>
+</div>
+
+<div id="start">
+  <div class="s-title">CONSTELLATION<br>DRIFT</div>
+  <div class="s-sub">Find the hidden pattern among the stars.<br>The longer you drift, the more words are revealed.</div>
+  <button class="s-btn" onclick="beginGame()">Enter</button>
+  <div class="s-tag">AN AXIUM EXPERIENCE</div>
+</div>
+
+<script>
+// ── Word Matrix ───────────────────────────────────────────────────────────────
+const WM={
+  micheal:{
+    tier1:['Anchor','Ground','Truth','Hold','Presence','Center','Balance','Still','Rooted','Here','Weight','Base','Reality','Contact','Stand','Being','Steadying','Bearing','Now','Form'],
+    tier2:['Steady','Root','Core','Foundation','Gravitas','Centerline','Axis','Footing','Poise','Stillness','Gravity','Grounded','Equilibrium','Resolve','Stability','Posture','Support'],
+    tier3:['Firm','Solid','Depth','Silence','Stone','Bedrock','Mass','Density','Quiet','Continuum','Endurance','Calm','Anchorpoint','Substance','Continuity'],
+    tier4:['Declare','Bold','Direct','Clear','Steadfast','Name','State','Affirm','Reveal','Speak','Assert','Clarify','Stabilize','Proclaim','Confirm','Establish'],
+    rare:['Covenant','Witness','Stillpoint','Sanctuary','Keystone','Groundtruth','Anchorstone','Sanctum','Rootlaw','Deepcenter','Firststone']
+  },
+  gabriel:{
+    tier1:['Probe','Test','Verify','Logic','Proof','Query','Check','Assess','Inspect','Audit','Examine','Trace','Confirm','Scan','Evaluate','Seek','Observe','Parse','Review','Detect'],
+    tier2:['Map','Find','Survey','Index','Chart','Track','Locate','Profile','Compare','Crosscheck','Catalog','Deconstruct','Outline','Flag','Isolate'],
+    tier3:['Question','Doubt','Filter','Sort','Challenge','Screen','Dissect','Refine','Separate','Contrast','Triangulate','Interrogate','Analyze','Diagnose','Scrutinize','Validate'],
+    tier4:['Rank','Judge','Weigh','Measure','Cut','Prioritize','Score','Grade','Quantify','Benchmark','Select','Cull','Distill','Decide','Eliminate','Threshold'],
+    rare:['Falsify','Control','Blindspot','Assumption','Variance','Constraint','Failuremode','Signal','Noise','Edgecase','Integrity','Verification','Outlier','Traceability']
+  },
+  ariel:{
+    tier1:['Hold','Space','Breathe','Witness','Stay','Listen','Pause','Soft','Present','Here','Attend','Receive','Allow','Rest','Notice','Sit','Be','Remain','Observe','Calm'],
+    tier2:['Grief','Gentle','Patience','Warmth','Kind','Tenderness','Ease','Quiet','Slow','Care','Compassion','Mercy','Kindness','Restfulness','Acceptance','Peace'],
+    tier3:['Tender','Nurture','Support','Comfort','Cradle','Holdspace','Reassure','Sustain','Encourage','Protect','Guide','Accompany','Soothe','Affirm','Embrace','Shelter'],
+    tier4:['Heal','Accept','Console','Holdclose','Welcome','Honor','Witnessdeeply','Staynear','Tend','Encircle'],
+    rare:['Sanctuary','Harbor','Refuge','Haven','Quietus','Grace','Solace','Compassionfield','Heartspace','Gentlekeeping','Stillhaven','Warmthwell','Soulrest','Kindharbor']
+  },
+  seraphina:{
+    tier1:['Build','Plan','Make','Form','Shape','Start','Begin','Lay','Set','Create','Draft','Prepare','Outline','Frame','Construct','Assemble','Initiate','Organize','Arrange','Launch'],
+    tier2:['Design','Craft','Forge','Structure','Blueprint','Model','Engineer','Systemize','Architect','Develop','Compose','Pattern','Layout','Refine','Integrate','Configure'],
+    tier3:['System','Order','Path','Step','Move','Sequence','Process','Workflow','Method','Pipeline','Track','Route','Chain','Flow','Cycle','Stage','Layer','Mechanism','Channel'],
+    tier4:['Act','Do','Execute','Drive','Focus','Implement','Advance','Deliver','Push','Complete','Deploy','Operate','Commit','Engage','Finalize','Produce','Achieve','Perform'],
+    rare:['Ship','Milestone','Throughput','Execution','Fulfillment','Iteration','Integration','Scale','Production','Outcome','Momentum','Realization','Completion','Impact']
+  }
+};
+
+const PKEYS=['micheal','gabriel','ariel','seraphina'];
+const PS={
+  micheal:   {name:'Micheal',   role:'The Anchor',       rgb:[212,175,55],  hex:'#D4AF37'},
+  gabriel:   {name:'Gabriel',   role:'The Examiner',     rgb:[126,184,232], hex:'#7eb8e8'},
+  ariel:     {name:'Ariel',     role:'The Space-Holder', rgb:[212,160,200], hex:'#d4a0c8'},
+  seraphina: {name:'Seraphina', role:'The Architect',    rgb:[240,208,128], hex:'#f0d080'}
+};
+
+// ── Shapes ────────────────────────────────────────────────────────────────────
+const SHAPES=[
+  {n:3,pts:[[.5,.12],[.16,.84],[.84,.84]],                              edges:[[0,1],[1,2],[2,0]],            name:'Triangle'},
+  {n:4,pts:[[.1,.5],[.37,.5],[.63,.5],[.9,.5]],                        edges:[[0,1],[1,2],[2,3]],             name:'Line'},
+  {n:4,pts:[[.22,.18],[.22,.5],[.22,.82],[.65,.82]],                    edges:[[0,1],[1,2],[2,3]],             name:'Gamma'},
+  {n:4,pts:[[.5,.08],[.88,.5],[.5,.92],[.12,.5]],                       edges:[[0,1],[1,2],[2,3],[3,0]],       name:'Diamond'},
+  {n:5,pts:[[.5,.1],[.5,.48],[.18,.48],[.82,.48],[.5,.9]],              edges:[[0,1],[2,1],[1,3],[1,4]],       name:'Cross'},
+  {n:6,pts:[[.1,.8],[.28,.57],[.46,.62],[.64,.47],[.72,.27],[.9,.1]],   edges:[[0,1],[1,2],[2,3],[3,4],[4,5]], name:'Dipper'},
+  {n:5,pts:[[.1,.78],[.28,.36],[.5,.16],[.72,.36],[.9,.78]],            edges:[[0,1],[1,2],[2,3],[3,4]],       name:'Arc'},
+  {n:4,pts:[[.18,.18],[.82,.18],[.82,.82],[.18,.82]],                   edges:[[0,1],[1,2],[2,3],[3,0]],       name:'Square'},
+  {n:4,pts:[[.5,.84],[.5,.5],[.22,.2],[.78,.2]],                        edges:[[0,1],[1,2],[1,3]],             name:'Y'},
+  {n:5,pts:[[.5,.08],[.84,.34],[.7,.76],[.3,.76],[.16,.34]],            edges:[[0,1],[1,2],[2,3],[3,4],[4,0]], name:'Pentagon'},
+  {n:6,pts:[[.5,.06],[.86,.28],[.86,.72],[.5,.94],[.14,.72],[.14,.28]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]],name:'Hexagon'},
+  {n:4,pts:[[.15,.18],[.85,.18],[.15,.82],[.85,.82]],                   edges:[[0,1],[1,2],[2,3]],             name:'Z'},
+  {n:6,pts:[[.5,.1],[.82,.32],[.72,.72],[.28,.72],[.18,.32],[.5,.52]],  edges:[[0,1],[1,2],[2,3],[3,4],[4,0],[0,5]],name:'Crown'},
+];
+
+// ── Canvas / state ────────────────────────────────────────────────────────────
+const cv  =document.getElementById('sky');
+const ctx =cv.getContext('2d');
+const rcv =document.getElementById('ref-canvas');
+const rctx=rcv.getContext('2d');
+let W,H,T=0;
+let bgStars=[],shoots=[],particles=[];
+let field=[],targetIdxs=[],tapped=[];
+let curPKey,curSoul,curShape,curAngle,curMirror;
+let roundActive=false,roundDone=false,gameStarted=false;
+let hintTimer=0;
+
+// ── Persistence ───────────────────────────────────────────────────────────────
+function loadU(){const s=localStorage.getItem('axium_unlocked');return s?JSON.parse(s):{micheal:[],gabriel:[],ariel:[],seraphina:[]};}
+function saveU(u){localStorage.setItem('axium_unlocked',JSON.stringify(u));}
+function loadN(){return parseInt(localStorage.getItem('axium_constellation_count')||'0');}
+function saveN(n){localStorage.setItem('axium_constellation_count',String(n));}
+let unlocked=loadU(), foundCount=loadN();
+
+function pickWord(pk){
+  const m=WM[pk],have=unlocked[pk]||[];
+  for(const w of[...m.tier2,...m.tier3,...m.tier4,...m.rare]){
+    if(!have.includes(w)&&!m.tier1.includes(w))return w;
+  }
+  return null;
+}
+function doUnlock(pk,w){
+  if(!unlocked[pk])unlocked[pk]=[];
+  if(!unlocked[pk].includes(w)){unlocked[pk].push(w);saveU(unlocked);}
+}
+function showHint(){
+  if(!roundActive || roundDone) return;
+  hintTimer = 180; // about 3 seconds of glow
+}
+
+// ── RNG ───────────────────────────────────────────────────────────────────────
+function lcg(s){let v=s;return()=>{v=(v*1664525+1013904223)&0xffffffff;return(v>>>0)/0xffffffff;};}
+
+// ── Background stars — 300 stars, large, glowing, spiked ─────────────────────
+function makeBg(){
+  const r=lcg(42);
+  return Array.from({length:300},()=>({
+    x:r()*W, y:r()*H,
+    rad:0.4+r()*1.5,   // noticeably larger
+    mag:r(),
+    ph:r()*Math.PI*2,
+    spd:0.2+r()*0.45
+  }));
+}
+
+function drawBg(){
+  bgStars.forEach(s=>{
+    const tw=0.35+0.65*Math.abs(Math.sin(s.ph+T*s.spd));
+    const b=s.rad, gR=b*(2.6+tw*1.8);
+
+    // outer halo
+    const h1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2.2);
+    h1.addColorStop(0,`rgba(200,215,255,${(0.08*tw).toFixed(3)})`);
+    h1.addColorStop(1,'rgba(200,215,255,0)');
+    ctx.fillStyle=h1;ctx.beginPath();ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2);ctx.fill();
+
+    // inner glow
+    const h2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR);
+    h2.addColorStop(0,`rgba(255,255,255,${(0.92*tw).toFixed(2)})`);
+    h2.addColorStop(0.22,`rgba(200,215,255,${(0.55*tw).toFixed(2)})`);
+    h2.addColorStop(1,'rgba(200,215,255,0)');
+    ctx.fillStyle=h2;ctx.beginPath();ctx.arc(s.x,s.y,gR,0,Math.PI*2);ctx.fill();
+
+    // core
+    ctx.beginPath();ctx.arc(s.x,s.y,b,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(0.96*tw).toFixed(2)})`;ctx.fill();
+
+    // spike rays on mag>0.5 stars
+    if(s.mag>0.5){
+      [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
+        const sl=gR*1.7;
+        const sg=ctx.createLinearGradient(s.x,s.y,s.x+dx*sl,s.y+dy*sl);
+        sg.addColorStop(0,`rgba(255,255,255,${(0.18*tw).toFixed(2)})`);
+        sg.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=0.7;
+        ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+dx*sl,s.y+dy*sl);ctx.stroke();
+      });
+    }
+  });
+}
+
+// ── Shooting stars — copied verbatim from site.html logic ─────────────────────
+function spawnShoot(){
+  const rgb=curSoul?curSoul.rgb:[212,175,55];
+  const ang=0.2+Math.random()*0.35, spd=5+Math.random()*7;
+  shoots.push({
+    x:Math.random()*W*0.8, y:Math.random()*H*0.35,
+    vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd,
+    len:70+Math.random()*120, a:1, rgb
+  });
+}
+// fire one right away so there's always at least one on start
+spawnShoot();
+setInterval(()=>{if(Math.random()<0.5)spawnShoot();},5000);
+
+function drawShoots(){
+  const keep=[];
+  shoots.forEach(ss=>{
+    if(ss.a<=0.02)return;
+    const gd=ctx.createLinearGradient(ss.x,ss.y,ss.x-ss.vx*(ss.len/8),ss.y-ss.vy*(ss.len/8));
+    gd.addColorStop(0,`rgba(${ss.rgb.join(',')},${ss.a.toFixed(2)})`);
+    gd.addColorStop(1,`rgba(${ss.rgb.join(',')},0)`);
+    ctx.beginPath();ctx.strokeStyle=gd;ctx.lineWidth=1.2;
+    ctx.moveTo(ss.x,ss.y);ctx.lineTo(ss.x-ss.vx*(ss.len/8),ss.y-ss.vy*(ss.len/8));ctx.stroke();
+    ss.x+=ss.vx;ss.y+=ss.vy;ss.a-=0.012;keep.push(ss);
+  });
+  shoots.splice(0,shoots.length,...keep);
+}
+
+// ── Round ─────────────────────────────────────────────────────────────────────
+function generateRound(){
+  tapped=[];roundDone=false;roundActive=false;
+  document.getElementById('next-btn').style.display='none';
+  curPKey=PKEYS[Math.floor(Math.random()*4)];
+  curSoul=PS[curPKey];
+  const maxI=Math.min(SHAPES.length-1,2+Math.floor(foundCount/4));
+  curShape=SHAPES[Math.floor(Math.random()*(maxI+1))];
+  curAngle=Math.random()*Math.PI*2;
+  curMirror=Math.random()>0.5;
+  buildField();drawRef();buildDots();updateHUD();
+  roundActive=true;
+}
+
+function buildField(){
+  const mg=70,topY=60,botY=H-155;
+  const pW=W-mg*2,pH=botY-topY;
+  const sp=Math.min(pW,pH)*(0.26+Math.random()*0.18);
+  const cx=mg+sp*0.5+Math.random()*Math.max(0,pW-sp);
+  const cy=topY+sp*0.5+Math.random()*Math.max(0,pH-sp);
+  const cos=Math.cos(curAngle),sin=Math.sin(curAngle);
+
+  const tgts=curShape.pts.map(([px,py],i)=>{
+    let nx=px-0.5,ny=py-0.5;if(curMirror)nx=-nx;
+    return{x:cx+(nx*cos-ny*sin)*sp,y:cy+(nx*sin+ny*cos)*sp,
+      isT:true,seq:i,mag:0.5+Math.random()*0.5,ph:Math.random()*Math.PI*2,spd:0.5+Math.random()*0.8,tapped:false,wp:0,cp:0};
+  });
+
+  const nd=22+Math.floor(foundCount*1.8), md=Math.min(pW,pH)*0.05;
+  const dec=[];let att=0;
+  while(dec.length<nd&&att<5000){
+    att++;
+    const dx=mg+Math.random()*pW, dy=topY+Math.random()*pH;
+    if(tgts.every(t=>Math.hypot(t.x-dx,t.y-dy)>md)&&dec.every(d=>Math.hypot(d.x-dx,d.y-dy)>md*0.6))
+      dec.push({x:dx,y:dy,isT:false,seq:-1,mag:0.1+Math.random()*0.4,ph:Math.random()*Math.PI*2,spd:0.3+Math.random()*0.7,tapped:false,wp:0,cp:0});
+  }
+
+  field=[...tgts,...dec].sort(()=>Math.random()-0.5);
+  targetIdxs=field.reduce((a,s,i)=>{if(s.isT)a.push(i);return a;},[]);
+  targetIdxs.sort((a,b)=>field[a].seq-field[b].seq);
+}
+
+// ── Reference canvas ──────────────────────────────────────────────────────────
+function drawRef(){
+  const tw=rcv.width,th=rcv.height;
+  rctx.clearRect(0,0,tw,th);
+  const cx=tw/2,cy=th/2,sc=Math.min(tw,th)*0.36;
+  const cos=Math.cos(curAngle),sin=Math.sin(curAngle);
+  const[R,G,B]=curSoul.rgb;
+  const pts=curShape.pts.map(([px,py])=>{
+    let nx=px-0.5,ny=py-0.5;if(curMirror)nx=-nx;
+    return{x:cx+(nx*cos-ny*sin)*sc,y:cy+(nx*sin+ny*cos)*sc};
+  });
+  rctx.strokeStyle=`rgba(${R},${G},${B},.5)`;rctx.lineWidth=1.2;
+  curShape.edges.forEach(([a,b])=>{rctx.beginPath();rctx.moveTo(pts[a].x,pts[a].y);rctx.lineTo(pts[b].x,pts[b].y);rctx.stroke();});
+  pts.forEach((p,i)=>{
+    const g=rctx.createRadialGradient(p.x,p.y,0,p.x,p.y,8);
+    g.addColorStop(0,`rgba(${R},${G},${B},.6)`);g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    rctx.fillStyle=g;rctx.beginPath();rctx.arc(p.x,p.y,8,0,Math.PI*2);rctx.fill();
+    rctx.beginPath();rctx.arc(p.x,p.y,2.6,0,Math.PI*2);rctx.fillStyle=`rgba(${R},${G},${B},1)`;rctx.fill();
+    rctx.font='bold 7px Space Mono';rctx.textAlign='center';
+    rctx.fillStyle='rgba(255,255,255,.65)';rctx.fillText(i+1,p.x,p.y-5.5);
+  });
+}
+
+function buildDots(){
+  const row=document.getElementById('progress-dots');row.innerHTML='';
+  for(let i=0;i<curShape.n;i++){
+    const d=document.createElement('div');d.className='pdot';d.id='pd'+i;
+    d.style.setProperty('--c',curSoul.hex);row.appendChild(d);
+  }
+}
+function updateHUD(){
+  const pl=document.getElementById('persona-lbl');
+  pl.textContent=curSoul.name+' · '+curSoul.role;pl.style.color=curSoul.hex+'99';
+  document.getElementById('shape-lbl').textContent=curShape.name;
+  document.getElementById('found-count').textContent=foundCount>0?foundCount+' found':'';
+}
+
+// ── Tap ───────────────────────────────────────────────────────────────────────
+function handleTap(e){
+  if(!gameStarted||!roundActive||roundDone)return;
+  const rect=cv.getBoundingClientRect();
+  const tx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+  const ty=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+  const tapR=Math.max(44,Math.min(W,H)*0.06);
+  let best=-1,bestD=Infinity;
+  field.forEach((s,i)=>{
+    if(s.tapped)return;
+    const d=Math.hypot(s.x-tx,s.y-ty);
+    if(d<tapR&&d<bestD){best=i;bestD=d;}
+  });
+  if(best===-1)return;
+  const exp=targetIdxs[tapped.length];
+  if(best===exp){
+    const s=field[best];s.tapped=true;s.cp=1;tapped.push(best);
+    burstAt(s.x,s.y,curSoul.rgb,18);
+    const pd=document.getElementById('pd'+(tapped.length-1));if(pd)pd.classList.add('hit');
+    if(tapped.length===curShape.n)onComplete();
+  }else{
+    field[best].wp=14;
+    const wf=document.getElementById('wrong-flash');wf.style.opacity='1';setTimeout(()=>wf.style.opacity='0',230);
+  }
+}
+
+// ── Complete ──────────────────────────────────────────────────────────────────
+function onComplete(){
+  roundDone=true;roundActive=false;
+  foundCount++;saveN(foundCount);
+  targetIdxs.forEach(i=>burstAt(field[i].x,field[i].y,curSoul.rgb,32));
+  const[R,G,B]=curSoul.rgb;
+  const cf=document.getElementById('complete-flash');
+  cf.style.background=`radial-gradient(ellipse at center,rgba(${R},${G},${B},.22) 0%,transparent 65%)`;
+  cf.style.opacity='1';setTimeout(()=>cf.style.opacity='0',1400);
+
+  const iv=Math.max(1,Math.floor(foundCount/6));
+  let pw=null;
+  if(foundCount%iv===0){
+    pw=pickWord(curPKey);
+    if(pw){
+      doUnlock(curPKey,pw);
+      const uf=document.getElementById('unlock-flash');uf.textContent=pw;uf.classList.add('show');
+      setTimeout(()=>uf.classList.remove('show'),4200);
+    }
+  }
+
+  document.getElementById('found-count').textContent=foundCount+' found';
+  setTimeout(()=>{
+    const nb=document.getElementById('next-btn');nb.style.display='flex';
+    const nw=document.getElementById('next-unlock-word');
+    nw.textContent=pw?'"'+pw+'" unlocked in '+curSoul.name:'';
+    nw.style.color=curSoul.hex+'cc';
+  },900);
+}
+function nextRound(){generateRound();}
+
+// ── Particles ─────────────────────────────────────────────────────────────────
+function burstAt(x,y,rgb,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2,sp=0.8+Math.random()*4;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:0.018+Math.random()*0.025,r:0.5+Math.random()*2,rgb});
+  }
+}
+function tickP(){
+  particles=particles.filter(p=>p.life>0.02);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vx*=0.92;p.vy*=0.92;p.life-=p.dec;
+    const[R,G,B]=p.rgb;ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${R},${G},${B},${p.life.toFixed(2)})`;ctx.fill();
+  });
+}
+
+// ── Field draw ────────────────────────────────────────────────────────────────
+function drawField(){
+  const[R,G,B]=curSoul.rgb;
+  const expI=roundDone?-1:targetIdxs[tapped.length];
+
+  // faint nebula
+  if(targetIdxs.length){
+    const cx=targetIdxs.reduce((a,i)=>a+field[i].x,0)/targetIdxs.length;
+    const cy=targetIdxs.reduce((a,i)=>a+field[i].y,0)/targetIdxs.length;
+    const ng=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*0.22);
+    ng.addColorStop(0,`rgba(${R},${G},${B},.06)`);ng.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+  }
+
+  // edges
+  curShape.edges.forEach(([a,b])=>{
+    const ia=targetIdxs[a],ib=targetIdxs[b];
+    if(ia===undefined||ib===undefined)return;
+    const sa=field[ia],sb=field[ib];if(!sa||!sb)return;
+    const both=sa.tapped&&sb.tapped,either=sa.tapped||sb.tapped;if(!either)return;
+    const al=both?0.6:0.2,lw=both?1.6:0.8;
+    const eg=ctx.createLinearGradient(sa.x,sa.y,sb.x,sb.y);
+    eg.addColorStop(0,`rgba(${R},${G},${B},${al})`);
+    eg.addColorStop(0.5,`rgba(255,255,255,${al*0.4})`);
+    eg.addColorStop(1,`rgba(${R},${G},${B},${al})`);
+    ctx.beginPath();ctx.strokeStyle=eg;ctx.lineWidth=lw;ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+  });
+
+  // stars
+  field.forEach((s,i)=>{
+    const isT=s.isT,isN=i===expI&&!s.tapped;
+const hintGlow = hintTimer>0 && isT && !s.tapped;
+    const[SR,SG,SB]=isT?[R,G,B]:[180,188,215];
+    const tw=0.45+0.55*Math.sin(T*1.1*s.spd+s.ph);
+    const bR=s.tapped?2.8+s.mag*3.2:
+         hintGlow?3.6+s.mag*3.4:
+         isT?1.6+s.mag*2.4:
+         0.7+s.mag*1.4;
+    const gR=bR*(s.tapped?4.5:isN?4:isT?2.8:2.2);
+
+    if(s.wp>0){s.wp--;ctx.beginPath();ctx.arc(s.x,s.y,gR*2.5,0,Math.PI*2);ctx.fillStyle=`rgba(200,55,55,${(0.3*s.wp/14).toFixed(2)})`;ctx.fill();}
+    if(s.cp>0){s.cp=Math.max(0,s.cp-0.022);ctx.beginPath();ctx.arc(s.x,s.y,gR*(1.5+s.cp*4.5),0,Math.PI*2);ctx.fillStyle=`rgba(${SR},${SG},${SB},${(0.2*s.cp).toFixed(2)})`;ctx.fill();}
+    if(isN){const p=0.2+0.18*Math.sin(T*3.2);ctx.beginPath();ctx.arc(s.x,s.y,gR*2,0,Math.PI*2);ctx.strokeStyle=`rgba(${R},${G},${B},${p})`;ctx.lineWidth=1;ctx.stroke();}
+
+    const oA=s.tapped?0.28:isT?0.07:0.028;
+    const g1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2.2);
+    g1.addColorStop(0,`rgba(${SR},${SG},${SB},${oA})`);g1.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
+    ctx.fillStyle=g1;ctx.beginPath();ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2);ctx.fill();
+
+    const iA=s.tapped?0.9:isT?tw*0.42:tw*0.22;
+    const g2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR);
+    g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`);
+    g2.addColorStop(0.25,`rgba(${SR},${SG},${SB},${(iA*0.75).toFixed(2)})`);
+    g2.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
+    ctx.fillStyle=g2;ctx.beginPath();ctx.arc(s.x,s.y,gR,0,Math.PI*2);ctx.fill();
+
+    const cA=s.tapped?1:isT?0.72+0.28*tw:0.22+0.16*tw;
+    ctx.beginPath();ctx.arc(s.x,s.y,bR,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${cA.toFixed(2)})`;ctx.fill();
+
+    if(s.tapped||(isT&&s.mag>0.5)){
+      [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
+        const sl=gR*(s.tapped?2.2:1.4);
+        const sg=ctx.createLinearGradient(s.x,s.y,s.x+dx*sl,s.y+dy*sl);
+        sg.addColorStop(0,`rgba(${SR},${SG},${SB},${(0.15*tw).toFixed(2)})`);
+        sg.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
+        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=0.7;ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+dx*sl,s.y+dy*sl);ctx.stroke();
+      });
+    }
+
+    if(isT&&!s.tapped&&!roundDone){
+      const fs=Math.max(9,Math.min(12,W*0.015));
+      ctx.font=`${isN?'700':'400'} ${fs}px Space Mono`;ctx.textAlign='center';
+      const na=isN?0.6+0.25*Math.sin(T*3):0.22;
+      ctx.fillStyle=`rgba(${R},${G},${B},${na})`;
+      ctx.fillText(s.seq+1,s.x,s.y-bR-8);
+    }
+  });
+}
+
+// ── Main loop ─────────────────────────────────────────────────────────────────
+function draw(){
+  requestAnimationFrame(draw);T+=0.016;
+  if(hintTimer>0) hintTimer--;
+  ctx.fillStyle='#04040a';ctx.fillRect(0,0,W,H);
+  drawBg();
+  drawShoots();
+  if(gameStarted&&field.length)drawField();
+  tickP();
+}
+
+function resize(){
+  W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;
+  bgStars=makeBg();
+  if(gameStarted&&roundActive)buildField();
+}
+
+function beginGame(){
+  document.getElementById('start').style.display='none';
+  gameStarted=true;generateRound();
+}
+
+cv.addEventListener('mousedown',handleTap);
+cv.addEventListener('touchstart',e=>{e.preventDefault();handleTap(e);},{passive:false});
+window.addEventListener('resize',resize);
+resize();draw();
+</script>
+</body>
+</html>

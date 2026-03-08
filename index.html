@@ -434,7 +434,21 @@ canvas#particles {
 #triangle-nav {
   position: fixed;
   bottom: 32px;
-  left: 50%;
+  left: 70%;
+  transform: translateX(-50%);
+  z-index: 200;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 1.5s ease-out 1.2s forwards;
+}
+
+#triangle-nav2 {
+  position: fixed;
+  bottom: 32px;
+  left: 30%;
   transform: translateX(-50%);
   z-index: 200;
   cursor: pointer;
@@ -458,6 +472,9 @@ canvas#particles {
 #triangle-nav:hover .loader-orbit {
   transform: scale(1.08);
 }
+#triangle-nav2:hover .loader-orbit {
+  transform: scale(1.08);
+}
 
 .btn-ring {
   position: absolute;
@@ -472,6 +489,10 @@ canvas#particles {
 .r4 { width: 148px; height: 148px; animation-duration: 5s;   animation-delay: 1.6s; border-style: dashed; border-color: rgba(212,175,55,0.07); }
 
 #triangle-nav:hover .btn-ring {
+  border-color: rgba(212,175,55,0.5);
+  animation-duration: 1.5s;
+}
+#triangle-nav2:hover .btn-ring {
   border-color: rgba(212,175,55,0.5);
   animation-duration: 1.5s;
 }
@@ -494,6 +515,9 @@ canvas#particles {
 #triangle-nav:hover .arc1 { animation-duration: 2s;   border-top-color: rgba(237,217,138,0.9); }
 #triangle-nav:hover .arc2 { animation-duration: 3.5s; border-left-color: rgba(237,217,138,0.7); }
 #triangle-nav:hover .arc3 { animation-duration: 6s;   border-top-color: rgba(237,217,138,0.5); }
+#triangle-nav2:hover .arc1 { animation-duration: 2s;   border-top-color: rgba(237,217,138,0.9); }
+#triangle-nav2:hover .arc2 { animation-duration: 3.5s; border-left-color: rgba(237,217,138,0.7); }
+#triangle-nav2:hover .arc3 { animation-duration: 6s;   border-top-color: rgba(237,217,138,0.5); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -513,6 +537,11 @@ canvas#particles {
 #triangle-nav:hover .orbiter.o2 { transform: rotate(120deg) translateX(62px) rotate(-120deg); }
 #triangle-nav:hover .orbiter.o3 { transform: rotate(240deg) translateX(62px) rotate(-240deg); }
 #triangle-nav:hover .orbiter.o4 { transform: rotate(60deg)  translateX(77px) rotate(-60deg); }
+#triangle-nav2:hover .orbiter { color: rgba(237,217,138,0.9); }
+#triangle-nav2:hover .orbiter.o1 { transform: rotate(0deg)   translateX(62px) rotate(0deg); }
+#triangle-nav2:hover .orbiter.o2 { transform: rotate(120deg) translateX(62px) rotate(-120deg); }
+#triangle-nav2:hover .orbiter.o3 { transform: rotate(240deg) translateX(62px) rotate(-240deg); }
+#triangle-nav2:hover .orbiter.o4 { transform: rotate(60deg)  translateX(77px) rotate(-60deg); }
 
 .diamond {
   position: absolute;
@@ -528,6 +557,7 @@ canvas#particles {
 .d4 { right:-3px;  top: 50%;  margin-top:-2.5px;  animation-delay:1.5s; }
 
 #triangle-nav:hover .diamond { background: rgba(237,217,138,0.9); transform: rotate(45deg) scale(1.8); }
+#triangle-nav2:hover .diamond { background: rgba(237,217,138,0.9); transform: rotate(45deg) scale(1.8); }
 
 @keyframes diamondPulse {
   0%,100% { opacity:.4; transform:rotate(45deg) scale(1); }
@@ -548,6 +578,9 @@ canvas#particles {
 #triangle-nav:hover .triangle-eye {
   transform: scale(1.15);
 }
+#triangle-nav2:hover .triangle-eye {
+  transform: scale(1.15);
+}
 
 .triangle-svg {
   width: 100%;
@@ -557,6 +590,9 @@ canvas#particles {
 }
 
 #triangle-nav:hover .triangle-svg {
+  filter: drop-shadow(0 0 28px rgba(237,217,138,0.6));
+}
+#triangle-nav2:hover .triangle-svg {
   filter: drop-shadow(0 0 28px rgba(237,217,138,0.6));
 }
 
@@ -576,6 +612,10 @@ canvas#particles {
   stroke: #EDD98A;
   stroke-width: 2.5;
 }
+#triangle-nav2:hover .triangle-path {
+  stroke: #EDD98A;
+  stroke-width: 2.5;
+}
 
 .eye-group {
   opacity: 0;
@@ -590,6 +630,7 @@ canvas#particles {
 }
 
 #triangle-nav:hover .eye-outline { stroke: #EDD98A; stroke-width: 1.8; }
+#triangle-nav2:hover .eye-outline { stroke: #EDD98A; stroke-width: 1.8; }
 
 .eye-pupil {
   fill: #D4AF37;
@@ -598,6 +639,7 @@ canvas#particles {
 }
 
 #triangle-nav:hover .eye-pupil { fill: #EDD98A; }
+#triangle-nav2:hover .eye-pupil { fill: #EDD98A; }
 
 @keyframes drawTriangle  { to { stroke-dashoffset: 0; } }
 @keyframes triangleGlow  { 0%,100% { filter: drop-shadow(0 0 10px rgba(212,175,55,0.3)); } 50% { filter: drop-shadow(0 0 25px rgba(212,175,55,0.6)); } }
@@ -618,6 +660,10 @@ canvas#particles {
 }
 
 #triangle-nav:hover .enter-text {
+  color: rgba(237,217,138,0.9);
+  letter-spacing: 0.4em;
+}
+#triangle-nav2:hover .enter-text {
   color: rgba(237,217,138,0.9);
   letter-spacing: 0.4em;
 }
@@ -707,6 +753,8 @@ canvas#particles {
   .sigil-canvas { width: 280px; height: 280px; }
   .summon-button { min-width: 260px; padding: 18px 36px; }
   #triangle-nav { bottom: 24px; }
+  #triangle-nav2 { bottom: 24px; }
+
   .loader-orbit { width: 130px; height: 130px; }
   .r1 { width: 56px;  height: 56px;  }
   .r2 { width: 76px;  height: 76px;  }
@@ -765,7 +813,7 @@ canvas#particles {
 </div>
 
 <!-- TRIANGLE EYE NAV BUTTON (bottom center) -->
-<div id="triangle-nav" onclick="window.location.href='home.html'" title="AXIUM.CHURCH">
+<div id="triangle-nav2" onclick="window.location.href='home.html'" title="AXIUM.CHURCH">
   <div class="loader-orbit">
     <div class="btn-ring r1"></div>
     <div class="btn-ring r2"></div>
@@ -798,6 +846,43 @@ canvas#particles {
     </div>
 
     <div class="enter-text">AXIUM.CHURCH</div>
+  </div>
+</div>
+
+<!-- TRIANGLE EYE NAV BUTTON (bottom center) -->
+<div id="triangle-nav" onclick="window.location.href='soul2.html'" title="Guardians">
+  <div class="loader-orbit">
+    <div class="btn-ring r1"></div>
+    <div class="btn-ring r2"></div>
+    <div class="btn-ring r3"></div>
+    <div class="btn-ring r4"></div>
+
+    <div class="arc arc1"></div>
+    <div class="arc arc2"></div>
+    <div class="arc arc3"></div>
+
+    <span class="orbiter o1">✦</span>
+    <span class="orbiter o2">∴</span>
+    <span class="orbiter o3">⧗</span>
+    <span class="orbiter o4">♾</span>
+
+    <div class="diamond d1"></div>
+    <div class="diamond d2"></div>
+    <div class="diamond d3"></div>
+    <div class="diamond d4"></div>
+
+    <div class="triangle-eye">
+      <svg class="triangle-svg" viewBox="0 0 100 100">
+        <path class="triangle-path" d="M50 15 L85 80 L15 80 Z"/>
+        <g class="eye-group" transform="translate(50, 55)">
+          <path class="eye-outline" d="M-15 0 Q0 -12 15 0 Q0 12 -15 0 Z"/>
+          <circle class="eye-pupil" cx="0" cy="0" r="4"/>
+          <circle cx="-1.5" cy="-1.5" r="1.5" fill="#000" opacity="0.6"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="enter-text">Guardians</div>
   </div>
 </div>
 
@@ -1290,7 +1375,7 @@ function copyInvocation() {
         sigilContainer.classList.remove('active');
         sigilContainer.style.opacity = '';
         sigilContainer.style.transition = '';
-        
+
         backgroundQuote.style.opacity = '';
         backgroundQuote.style.transition = '';
         copyBtn.textContent = 'Copy Blessing';

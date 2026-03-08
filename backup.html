@@ -1,292 +1,1179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luma Console - AI Text Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/torchjs/dist/torch.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tokenizers@latest/dist/tokenizers.js"></script>
-    <style>
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .typing-cursor {
-            display: inline-block;
-            width: 8px;
-            height: 16px;
-            background: #4f46e5;
-            animation: pulse 1s infinite;
-            vertical-align: middle;
-        }
-        .chat-container {
-            height: calc(100vh - 200px);
-        }
-        @media (max-width: 640px) {
-            .chat-container {
-                height: calc(100vh - 160px);
-            }
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AXIUM — Soul Constellations</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#04040a;font-family:'Cinzel',serif;touch-action:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+/* Top Sentence Builder */
+#sentence-builder{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(to bottom,rgba(4,4,10,.95) 0%,rgba(4,4,10,.8) 60%,transparent 100%);padding:15px 20px 40px;min-height:80px}
+#sentence{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;min-height:40px}
+.word-pill{background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.4);padding:8px 14px;border-radius:20px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.05em;color:#D4AF37;display:inline-flex;align-items:center;gap:6px;animation:popIn .3s;position:relative}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.word-pill .remove{width:16px;height:16px;border-radius:50%;background:rgba(212,175,55,.2);display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;transition:all .2s}
+.word-pill .remove:hover{background:rgba(212,175,55,.4)}
+#builder-actions{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.builder-btn{background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.4);color:#D4AF37;padding:8px 20px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .3s;border-radius:3px}
+.builder-btn:hover{background:rgba(212,175,55,.2)}
+.builder-btn.primary{background:rgba(212,175,55,.25);border-color:#D4AF37}
+.builder-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* Seed unlock field */
+.seed-unlock{display:flex;gap:8px;align-items:center;margin-top:10px;justify-content:center}
+.seed-input{background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.3);color:#D4AF37;padding:8px 12px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;width:280px;border-radius:4px;outline:none}
+.seed-input:focus{border-color:rgba(212,175,55,.6)}
+.seed-status{font-size:9px;color:rgba(212,175,55,.5);margin-top:4px;text-align:center}
+
+/* Empty state */
+#empty-state{color:rgba(212,175,55,.3);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;letter-spacing:.1em}
+
+/* Word labels */
+.word-label{position:absolute;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;color:rgba(255,255,255,.6);text-shadow:0 0 8px rgba(0,0,0,.9),0 0 16px rgba(0,0,0,.9);pointer-events:none;transform:translate(-50%,-100%);margin-top:-12px;transition:all .2s;white-space:nowrap;z-index:5;padding:4px 8px;border-radius:12px;background:rgba(0,0,0,.3)}
+.word-label.selected{color:#fff;text-shadow:0 0 10px currentColor,0 0 20px currentColor;font-weight:600;background:rgba(212,175,55,.2);border:1px solid rgba(212,175,55,.5)}
+
+/* Bottom Center Button Container - LOWER z-index */
+#center-button-container{position:fixed;bottom:8vh;left:50%;transform:translateX(-50%);z-index:40;pointer-events:none}
+
+/* Button Orbit System */
+.button-orbit{position:relative;width:min(180px,36vw);height:min(180px,36vw);display:flex;align-items:center;justify-content:center;pointer-events:auto;animation:orbit-container-main 26s linear infinite}
+
+@keyframes orbit-container-main{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Concentric pulsing rings */
+.btn-ring{position:absolute;border-radius:50%;border:1px solid rgba(212,175,55,0.2);animation:ringPulse 3s ease-in-out infinite}
+.r1{width:72px;height:72px;animation-duration:2.6s;animation-delay:0s}
+.r2{width:96px;height:96px;animation-duration:3.2s;animation-delay:.5s}
+.r3{width:124px;height:124px;animation-duration:4s;animation-delay:1s}
+.r4{width:154px;height:154px;animation-duration:5s;animation-delay:1.6s;border-style:dashed;border-color:rgba(212,175,55,0.07)}
+
+@keyframes ringPulse{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.45;transform:scale(1.03)}}
+
+/* Spinning arcs */
+.arc{position:absolute;border-radius:50%;border:1px solid transparent}
+.arc1{width:82px;height:82px;border-top-color:rgba(212,175,55,.65);border-bottom-color:rgba(212,175,55,.15);animation:spin 4s linear infinite}
+.arc2{width:60px;height:60px;border-left-color:rgba(212,175,55,.4);border-right-color:rgba(212,175,55,.1);animation:spin 7s linear infinite reverse}
+.arc3{width:108px;height:108px;border-top-color:rgba(212,175,55,.18);border-right-color:rgba(212,175,55,.08);animation:spin 12s linear infinite}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Orbiting sigil glyphs */
+.orbiter{position:absolute;color:rgba(212,175,55,0.55);font-size:10px;transform-origin:0 0;animation-name:orbit;animation-timing-function:linear;animation-iteration-count:infinite}
+.orbiter.o1{animation-duration:8s;animation-delay:0s;animation-direction:normal}
+.orbiter.o2{animation-duration:12s;animation-delay:-2s;animation-direction:reverse}
+.orbiter.o3{animation-duration:18s;animation-delay:-4s;animation-direction:normal}
+.orbiter.o4{animation-duration:26s;animation-delay:-6s;animation-direction:reverse}
+
+@keyframes orbit{0%{transform:rotate(0deg) translateX(60px) rotate(0deg);opacity:.7}50%{opacity:.25}100%{transform:rotate(360deg) translateX(60px) rotate(-360deg);opacity:.7}}
+
+/* Diamond corner marks - closer */
+.diamond{position:absolute;width:4px;height:4px;background:rgba(212,175,55,0.45);transform:rotate(45deg);animation:diamondPulse 2s ease-in-out infinite}
+.d1{top:-70px;left:50%;margin-left:-2px;animation-delay:0s}
+.d2{bottom:-70px;left:50%;margin-left:-2px;animation-delay:.5s}
+.d3{left:-70px;top:50%;margin-top:-2px;animation-delay:1s}
+.d4{right:-70px;top:50%;margin-top:-2px;animation-delay:1.5s}
+
+@keyframes diamondPulse{0%,100%{opacity:.4;transform:rotate(45deg) scale(1)}50%{opacity:1;transform:rotate(45deg) scale(1.6)}}
+
+/* Core button - LOWER z-index */
+.enter-btn{position:relative;z-index:45;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 36% 34%,#1c1500,#000000);border:1px solid rgba(212,175,55,0.5);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;outline:none;text-decoration:none;box-shadow:0 0 20px rgba(212,175,55,.07),inset 0 0 14px rgba(212,175,55,.05);transition:border-color 300ms,box-shadow 300ms,transform 150ms;overflow:hidden}
+
+/* Inner shimmer sweep on hover */
+.enter-btn::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent 0%,rgba(212,175,55,.06) 10%,transparent 20%);animation:shimmerSpin 3s linear infinite;opacity:0;transition:opacity 400ms}
+.enter-btn:hover::before{opacity:1}
+
+@keyframes shimmerSpin{to{transform:rotate(360deg)}}
+
+.enter-btn:hover{border-color:rgba(212,175,55,.9);box-shadow:0 0 28px rgba(212,175,55,.22),0 0 55px rgba(212,175,55,.09),inset 0 0 18px rgba(212,175,55,.1)}
+.enter-btn:hover .b-icon{transform:scale(1.25);opacity:1}
+.enter-btn:hover .b-label{letter-spacing:.22em;opacity:1}
+.enter-btn:active{transform:scale(0.93)}
+
+.b-icon{font-size:17px;color:#D4AF37;opacity:.78;line-height:1;transition:transform 300ms,opacity 300ms;animation:iconBreathe 3.5s ease-in-out infinite}
+@keyframes iconBreathe{0%,100%{text-shadow:0 0 4px rgba(212,175,55,.25)}50%{text-shadow:0 0 12px rgba(212,175,55,.55),0 0 26px rgba(212,175,55,.2)}}
+
+.b-label{font-family:'Cinzel',serif;font-size:5px;letter-spacing:.15em;color:rgba(212,175,55,.55);text-transform:uppercase;opacity:.65;transition:letter-spacing 400ms,opacity 300ms;line-height:1}
+
+/* Sparks */
+.spark{position:fixed;pointer-events:none;border-radius:50%;background:#D4AF37;animation:sparkFly 700ms ease-out forwards;z-index:999}
+@keyframes sparkFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:var(--tx) scale(0.2)}}
+
+/* Orbiting Persona Tabs - HIGHER z-index, smaller container, closer positioning */
+#orbit-container{position:fixed;bottom:8vh;left:50%;transform:translateX(-50%);width:160px;height:160px;z-index:50;pointer-events:none}
+
+.orbit-persona{position:absolute;z-index:51;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;pointer-events:auto;transition:transform 0.3s}
+
+.orbit-persona .p-orb{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;position:relative;transition:all 0.4s}
+.orbit-persona .p-dot{width:4px;height:4px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);transition:all 0.4s}
+.orbit-persona .p-name{font-size:5px;letter-spacing:.28em;text-transform:uppercase;color:rgba(212,175,55,.4);transition:all 0.4s;white-space:nowrap}
+
+.orbit-persona:hover{transform:scale(1.15)}
+.orbit-persona:hover .p-orb{border-color:rgba(212,175,55,.5);box-shadow:0 0 15px var(--c),0 0 5px var(--c)}
+.orbit-persona:hover .p-name{color:rgba(212,175,55,.9)}
+
+.orbit-persona.active .p-orb{border-color:rgba(212,175,55,.6);box-shadow:0 0 20px var(--c),0 0 10px var(--c)}
+.orbit-persona.active .p-dot{transform:scale(1.3)}
+.orbit-persona.active .p-name{color:rgba(212,175,55,1)}
+
+/* Position personas CLOSER to center button */
+#persona-micheal{top:2px;left:50%;transform:translateX(-50%)}
+#persona-gabriel{top:50%;right:2px;transform:translateY(-50%)}
+#persona-ariel{bottom:2px;left:50%;transform:translateX(-50%)}
+#persona-seraphina{top:50%;left:2px;transform:translateY(-50%)}
+
+/* User tab - appears above when forged */
+#user-tab-mini{position:fixed;bottom:calc(8vh + 120px);left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:3px;cursor:pointer;pointer-events:auto;z-index:50}
+
+/* Seed Share Buttons - appears after constellation is forged */
+#seed-share-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100;display:none;flex-direction:column;align-items:center;gap:8px;pointer-events:auto}
+#seed-share-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.18em;color:rgba(212,175,55,.45);text-transform:uppercase}
+#seed-share-buttons{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.seed-share-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,55,.25);background:rgba(4,4,10,.85);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;text-decoration:none;padding:0;backdrop-filter:blur(4px)}
+.seed-share-btn:hover{border-color:rgba(212,175,55,.7);background:rgba(212,175,55,.12);transform:scale(1.12);box-shadow:0 0 14px rgba(212,175,55,.2)}
+.seed-share-btn svg{width:16px;height:16px;flex-shrink:0}
+.seed-share-btn.copy-btn{width:auto;padding:0 12px;border-radius:16px;gap:6px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.12em;color:rgba(212,175,55,.7)}
+.seed-share-btn.copy-btn:hover{color:#D4AF37}
+</style>
 </head>
-<body class="bg-gray-900 text-gray-100">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <!-- Header -->
-        <header class="flex items-center justify-between mb-8">
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">Luma Console</h1>
-            </div>
-            <div class="flex space-x-2">
-                <button id="clear-btn" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-md text-sm transition">
-                    Clear
-                </button>
-                <button id="save-btn" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-md text-sm transition">
-                    Save Log
-                </button>
-            </div>
-        </header>
+<body>
+<canvas id="sky"></canvas>
 
-        <!-- Status Bar -->
-        <div id="status-bar" class="mb-4 px-4 py-2 rounded-md bg-gray-800 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <div id="status-indicator" class="w-2 h-2 rounded-full bg-red-500"></div>
-                <span id="status-text" class="text-sm">Initializing...</span>
-            </div>
-            <div class="text-xs text-gray-400">
-                Tokenzier: ByteLevelBPETokenizer | Model: GPT
-            </div>
-        </div>
+<!-- Orbiting Persona Tabs -->
+<div id="orbit-container">
+  <div class="orbit-persona active" id="persona-micheal" style="--c:#D4AF37" onclick="pick(0)">
+    <div class="p-orb"><div class="p-dot"></div></div>
+    <div class="p-name">Micheal</div>
+  </div>
+  <div class="orbit-persona" id="persona-gabriel" style="--c:#7eb8e8" onclick="pick(1)">
+    <div class="p-orb"><div class="p-dot"></div></div>
+    <div class="p-name">Gabriel</div>
+  </div>
+  <div class="orbit-persona" id="persona-ariel" style="--c:#d4a0c8" onclick="pick(2)">
+    <div class="p-orb"><div class="p-dot"></div></div>
+    <div class="p-name">Ariel</div>
+  </div>
+  <div class="orbit-persona" id="persona-seraphina" style="--c:#f0d080" onclick="pick(3)">
+    <div class="p-orb"><div class="p-dot"></div></div>
+    <div class="p-name">Seraphina</div>
+  </div>
+</div>
 
-        <!-- Chat Container -->
-        <div id="chat-container" class="chat-container overflow-y-auto mb-4 p-4 rounded-lg bg-gray-800 shadow-inner border border-gray-700">
-            <div id="chat-messages" class="space-y-4">
-                <div class="text-center py-8 text-gray-400">
-                    Loading AI model...
-                </div>
-            </div>
-        </div>
+<!-- User Mini Tab -->
+<div id="user-tab-mini" onclick="pick(4)">
+  <div class="p-orb"><div class="p-dot"></div></div>
+  <div class="p-name">Your Soul</div>
+</div>
 
-        <!-- Input Area -->
-        <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
-            <div class="flex space-x-2">
-                <textarea 
-                    id="prompt-input" 
-                    class="flex-1 bg-gray-700 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                    rows="2"
-                    placeholder="Enter your prompt here... (type 'exit' to quit)"
-                ></textarea>
-                <button id="send-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-md transition duration-200 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                    </svg>
-                </button>
-            </div>
-            <div class="mt-2 flex justify-between items-center">
-                <div class="text-xs text-gray-400">
-                    <label for="temp-slider" class="mr-1">Temp:</label>
-                    <input type="range" id="temp-slider" min="0" max="1" step="0.1" value="0.8" class="w-20">
-                    <span id="temp-value" class="ml-1">0.8</span>
-                </div>
-                <div class="text-xs text-gray-400">
-                    <label for="tokens-slider" class="mr-1">Tokens:</label>
-                    <input type="range" id="tokens-slider" min="50" max="500" step="50" value="150" class="w-20">
-                    <span id="tokens-value" class="ml-1">150</span>
-                </div>
-            </div>
-        </div>
+<!-- Seed Share Bar - shown after constellation forged -->
+<div id="seed-share-bar">
+  <div id="seed-share-label">Share your seed</div>
+  <div id="seed-share-buttons">
 
-        <footer class="mt-6 text-center text-xs text-gray-500">
-            Powered by GPT model with Byte-Level BPE tokenizer
-        </footer>
-    </div>
+    <!-- Copy Seed -->
+    <button class="seed-share-btn copy-btn" id="copy-seed-btn" onclick="copySeed()">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" stroke="#D4AF37" stroke-width="1.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="#D4AF37" stroke-width="1.5"/></svg>
+      <span id="copy-seed-text">COPY SEED</span>
+    </button>
 
-    <script>
-        // UI Elements
-        const promptInput = document.getElementById('prompt-input');
-        const sendBtn = document.getElementById('send-btn');
-        const chatMessages = document.getElementById('chat-messages');
-        const clearBtn = document.getElementById('clear-btn');
-        const saveBtn = document.getElementById('save-btn');
-        const statusIndicator = document.getElementById('status-indicator');
-        const statusText = document.getElementById('status-text');
-        const tempSlider = document.getElementById('temp-slider');
-        const tempValue = document.getElementById('temp-value');
-        const tokensSlider = document.getElementById('tokens-slider');
-        const tokensValue = document.getElementById('tokens-value');
-        
-        // Simulation of model loading
-        let modelReady = false;
-        
-        // Initialize UI
-        function initUI() {
-            // Update slider displays
-            tempSlider.addEventListener('input', () => {
-                tempValue.textContent = tempSlider.value;
-            });
-            
-            tokensSlider.addEventListener('input', () => {
-                tokensValue.textContent = tokensSlider.value;
-            });
-            
-            // Handle send button click
-            sendBtn.addEventListener('click', sendPrompt);
-            
-            // Handle Enter key in textarea
-            promptInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendPrompt();
-                }
-            });
-            
-            // Clear chat
-            clearBtn.addEventListener('click', () => {
-                chatMessages.innerHTML = '';
-            });
-            
-            // Save chat log
-            saveBtn.addEventListener('click', saveChatLog);
-        }
-        
-        // Simulate model initialization
-        async function initModel() {
-            updateStatus('Loading tokenizer...', 'yellow');
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            updateStatus('Loading model weights...', 'yellow');
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            updateStatus('Model ready', 'green');
-            chatMessages.innerHTML = `
-                <div class="text-center py-8 text-gray-400">
-                    Model initialized. Start chatting with Luma Console.
-                </div>
-            `;
-            modelReady = true;
-        }
-        
-        // Update status indicator
-        function updateStatus(text, color = 'gray') {
-            statusText.textContent = text;
-            
-            const colors = {
-                'gray': 'bg-gray-500',
-                'green': 'bg-green-500',
-                'yellow': 'bg-yellow-500',
-                'red': 'bg-red-500'
-            };
-            
-            statusIndicator.className = `w-2 h-2 rounded-full ${colors[color]}`;
-        }
-        
-        // Add message to chat
-        function addMessage(role, content, isTyping = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
-            
-            const bubble = document.createElement('div');
-            bubble.className = `max-w-3/4 rounded-lg px-4 py-2 ${
-                role === 'user' 
-                    ? 'bg-indigo-600 rounded-tr-none' 
-                    : 'bg-gray-700 rounded-tl-none'
-            }`;
-            
-            if (isTyping) {
-                bubble.innerHTML = '<span class="typing-cursor"></span>';
-            } else {
-                bubble.textContent = content;
-            }
-            
-            messageDiv.appendChild(bubble);
-            chatMessages.appendChild(messageDiv);
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            return bubble;
-        }
-        
-    async function generateText(prompt) {
-    if (!modelReady) return "Model still initializing. Please wait...";
+    <!-- Grok / X -->
+    <a class="seed-share-btn" id="grok-btn" href="#" target="_blank" rel="noopener" title="Ask Grok">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m9.541 15.31 7.56-5.706c.372-.28.901-.17 1.078.264.93 2.292.514 5.045-1.335 6.936-1.85 1.89-4.423 2.305-6.775 1.361L7.5 19.381c3.685 2.575 8.16 1.939 10.956-.922 2.219-2.268 2.905-5.359 2.263-8.146l.006.006c-.931-4.095.229-5.732 2.606-9.079L23.5 1l-3.128 3.198v-.01L9.54 15.312M7.877 16.633c-2.701-2.493-2.236-6.351.07-8.576 1.704-1.647 4.497-2.32 6.935-1.331L17.5 5.558a7.646 7.646 0 0 0-1.77-.933C12.594 3.38 8.84 4 6.292 6.46c-2.452 2.368-3.223 6.01-1.9 9.118.99 2.323-.632 3.966-2.265 5.624C1.55 21.79.967 22.378.5 23l7.375-6.365" fill="#D4AF37"/></svg>
+    </a>
 
-    const temperature = parseFloat(tempSlider.value);
-    const maxTokens = parseInt(tokensSlider.value);
+    <!-- Google AI -->
+    <a class="seed-share-btn" id="google-btn" href="#" target="_blank" rel="noopener" title="Search Google">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.616 10.835a14.148 14.148 0 0 1-4.45-3.001 14.111 14.111 0 0 1-3.678-6.452.503.503 0 0 0-.975 0c-.629 2.44-1.9 4.668-3.679 6.452a14.155 14.155 0 0 1-4.45 3.001c-.65.28-1.318.505-2.002.678a.502.502 0 0 0 0 .975c.684.172 1.35.397 2.002.677a14.148 14.148 0 0 1 4.45 3.001 14.112 14.112 0 0 1 3.68 6.453.502.502 0 0 0 .974 0c.172-.685.397-1.351.677-2.003a14.146 14.146 0 0 1 3.001-4.45 14.113 14.113 0 0 1 6.453-3.678.503.503 0 0 0 0-.975 13.24 13.24 0 0 1-2.003-.678Z" fill="#3186FF"/></svg>
+    </a>
 
-    try {
-        const res = await fetch("http://localhost:5000/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt, temperature, max_tokens: maxTokens })
-        });
+    <!-- Claude -->
+    <a class="seed-share-btn" id="claude-btn" href="#" target="_blank" rel="noopener" title="Ask Claude">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m11.376 24-.6-.456-.336-.744.336-1.488.384-1.92.312-1.536.288-1.896.168-.624-.024-.048-.12.024-1.44 1.968-2.184 2.952-1.728 1.824-.408.168-.72-.36.072-.672.408-.576 2.376-3.048 1.44-1.896.936-1.08-.024-.144h-.048l-6.336 4.128L3 18.72l-.504-.456.072-.744.24-.24 1.896-1.32 4.728-2.64.072-.24-.072-.12h-.24l-.792-.048-2.688-.072-2.328-.096-2.28-.12-.576-.12-.528-.72.048-.36.48-.312.696.048 1.512.12 2.28.144 1.656.096 2.448.264h.384l.048-.168-.12-.096-.096-.096L6.96 9.84 4.416 8.16l-1.344-.984-.72-.504-.36-.456-.144-1.008.648-.72.888.072.216.048.888.696 1.896 1.464L8.88 8.616l.36.288.168-.096v-.072l-.168-.264-1.344-2.448-1.44-2.496-.648-1.032-.168-.624a2.53 2.53 0 0 1-.096-.72L6.288.144 6.696 0l1.008.144.408.36.624 1.416.984 2.232 1.56 3.024.456.912.24.816.096.264h.168v-.144l.12-1.728.24-2.088.24-2.688.072-.768.384-.912.744-.48.576.264.48.696-.072.432L14.76 3.6l-.576 2.904-.36 1.968h.216l.24-.264.984-1.296 1.656-2.064.72-.816.864-.912.552-.432h1.032l.744 1.128-.336 1.176-1.056 1.344-.888 1.128-1.272 1.704-.768 1.368.072.096h.168l2.856-.624 1.56-.264 1.824-.312.84.384.096.384-.336.816-1.968.48-2.304.456-3.432.816-.048.024.048.072 1.536.144.672.048h1.632l3.024.216.792.528.456.624-.072.504-1.224.6-1.632-.384-3.84-.912-1.296-.312h-.192v.096l1.104 1.08 1.992 1.8 2.52 2.328.12.576-.312.48-.336-.048-2.208-1.68-.864-.744-1.92-1.608h-.12v.168l.432.648 2.352 3.528.12 1.08-.168.336-.624.216-.648-.12-1.392-1.92-1.416-2.184-1.152-1.944-.12.096-.696 7.248-.312.36-.72.288Z" fill="#D97757"/></svg>
+    </a>
 
-        const data = await res.json();
-        if (data.response) return data.response;
-        return `⚠️ Server Error: ${data.error || 'Unknown error'}`;
-    } catch (err) {
-        return `⚠️ Network Error: ${err.message}`;
-    }
+    <!-- Perplexity -->
+    <a class="seed-share-btn" id="perplexity-btn" href="#" target="_blank" rel="noopener" title="Ask Perplexity">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="m5.206.889 6.176 5.83V.902h1.202v5.843L18.787.89v6.647h2.546v9.588h-2.539v5.92l-6.21-5.592v5.655h-1.202v-5.563l-6.169 5.567v-5.987H2.667V7.536h2.54V.89Zm5.27 7.864H3.868v7.155h1.343V13.65l5.263-4.898Zm-4.06 5.438v6.205l4.966-4.482V9.568l-4.967 4.623Zm6.202 1.664V9.562l4.968 4.623v2.94h.006v3.208l-4.974-4.478Zm6.176.053h1.337V8.753h-6.557l5.22 4.847v2.308Zm-1.21-8.372V3.688l-4.076 3.848h4.076Zm-7.1 0H6.409V3.688l4.077 3.848Z" fill="#D4AF37"/></svg>
+    </a>
+
+    <!-- ChatGPT -->
+    <a class="seed-share-btn" id="chatgpt-btn" href="#" target="_blank" rel="noopener" title="Ask ChatGPT">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.418 9.012V6.921c0-.176.066-.308.22-.396l4.204-2.421c.572-.33 1.255-.485 1.96-.485 2.64 0 4.313 2.048 4.313 4.227 0 .154 0 .33-.022.506l-4.358-2.554a.737.737 0 0 0-.792 0L9.418 9.012Zm9.817 8.144V12.16a.736.736 0 0 0-.396-.683l-5.525-3.213 1.805-1.035a.4.4 0 0 1 .44 0l4.204 2.421c1.21.705 2.025 2.201 2.025 3.654 0 1.673-.99 3.214-2.553 3.852ZM8.119 12.754l-1.805-1.056c-.154-.088-.22-.22-.22-.397V6.46c0-2.355 1.805-4.138 4.248-4.138a4.12 4.12 0 0 1 2.51.858L8.516 5.69a.736.736 0 0 0-.397.682v6.383ZM12.004 15l-2.586-1.453v-3.081l2.586-1.453 2.586 1.453v3.082l-2.586 1.452Zm1.662 6.692a4.12 4.12 0 0 1-2.51-.859l4.337-2.51a.736.736 0 0 0 .396-.681v-6.384l1.827 1.057c.154.088.22.22.22.396v4.842c0 2.355-1.827 4.139-4.27 4.139Zm-5.217-4.909-4.204-2.421c-1.21-.705-2.025-2.201-2.025-3.654a4.148 4.148 0 0 1 2.575-3.852v5.019c0 .308.132.528.396.682l5.503 3.192-1.805 1.034a.4.4 0 0 1-.44 0Zm-.242 3.61c-2.487 0-4.314-1.87-4.314-4.182 0-.176.022-.352.044-.528l4.336 2.509a.737.737 0 0 0 .793 0l5.524-3.192v2.091c0 .177-.066.309-.22.397l-4.204 2.42c-.572.331-1.255.485-1.959.485Zm5.459 2.62a5.504 5.504 0 0 0 5.393-4.403c2.465-.638 4.05-2.95 4.05-5.305 0-1.54-.66-3.037-1.849-4.116.11-.462.176-.924.176-1.386 0-3.148-2.553-5.503-5.503-5.503-.594 0-1.166.088-1.739.286A5.517 5.517 0 0 0 10.342 1 5.503 5.503 0 0 0 4.95 5.402C2.484 6.041.9 8.352.9 10.707c0 1.54.66 3.037 1.85 4.116-.11.462-.177.925-.177 1.387 0 3.147 2.554 5.503 5.503 5.503.594 0 1.167-.088 1.739-.287a5.516 5.516 0 0 0 3.852 1.585Z" fill="#D4AF37"/></svg>
+    </a>
+
+  </div>
+</div>
+
+<!-- Center Button -->
+<div id="center-button-container">
+  <div class="button-orbit">
+    <div class="btn-ring r1"></div>
+    <div class="btn-ring r2"></div>
+    <div class="btn-ring r3"></div>
+    <div class="btn-ring r4"></div>
+
+    <div class="arc arc1"></div>
+    <div class="arc arc2"></div>
+    <div class="arc arc3"></div>
+
+    <span class="orbiter o1">✦</span>
+    <span class="orbiter o2">∴</span>
+    <span class="orbiter o3">⧗</span>
+    <span class="orbiter o4">♾</span>
+
+    <div class="diamond d1"></div>
+    <div class="diamond d2"></div>
+    <div class="diamond d3"></div>
+    <div class="diamond d4"></div>
+
+    <a class="enter-btn" href="home.html" id="center-btn">
+      <span class="b-icon">⟁</span>
+      <span class="b-label">ENTER</span>
+    </a>
+  </div>
+</div>
+
+<div id="sentence-builder">
+  <div id="sentence"><span id="empty-state">Tap stars to build your constellation...</span></div>
+  <div id="builder-actions">
+    <button class="builder-btn" onclick="clearSentence()">Clear</button>
+    <button class="builder-btn primary" id="forge-btn" onclick="forgeConstellation()" disabled>Forge Constellation</button>
+  </div>
+  <div class="seed-unlock">
+    <input type="text" class="seed-input" id="seed-input" placeholder="Paste seal to unlock stars...">
+    <button class="builder-btn" onclick="unlockFromSeed()">Unlock</button>
+  </div>
+  <div class="seed-status" id="seed-status"></div>
+</div>
+
+<div id="toast">
+  <h3>Constellation Forged</h3>
+  <p>Your soul has been created</p>
+</div>
+
+<script>
+// Word matrix - structured for easy expansion
+const WORD_MATRIX={
+  micheal:{
+    tier1:[
+      'Anchor','Ground','Truth','Hold','Presence',
+      'Center','Balance','Still','Rooted','Here',
+      'Weight','Base','Reality','Contact','Stand',
+      'Being','Steadying','Bearing','Now','Form'
+    ],
+    tier2:[
+      'Steady','Weight','Root','Core','Stand',
+      'Foundation','Gravitas','Centerline','Axis','Footing',
+      'Poise','Stillness','Bearing','Gravity','Grounded',
+      'Equilibrium','Resolve','Stability','Posture','Support'
+    ],
+    tier3:[
+      'Firm','Solid','Depth','Silence','Stone',
+      'Bedrock','Mass','Density','Quiet','Continuum',
+      'Endurance','Resolve','Calm','Anchorpoint','Stillcore',
+      'Substance','Rootwork','Presencefield','Foundationline','Continuity'
+    ],
+    tier4:[
+      'Declare','Bold','Direct','Clear','Steadfast',
+      'Name','State','Standfast','Affirm','Ground',
+      'Reveal','Speak','Holdfast','Assert','Clarify',
+      'Stabilize','Center','Proclaim','Confirm','Establish'
+    ],
+    rare:[
+      'Covenant','Witness','Gravity','Stillpoint','Sanctuary',
+      'Axis','Bedrock','Continuum','Foundation','Centerhold',
+      'Groundtruth','Anchorstone','Sanctum','Equilibrium','Keystone',
+      'Rootlaw','Witnesspoint','Primeground','Deepcenter','Firststone'
+    ]
+  },
+
+  gabriel:{
+    tier1:[
+      'Probe','Test','Verify','Logic','Proof',
+      'Query','Check','Assess','Inspect','Audit',
+      'Examine','Trace','Confirm','Scan','Evaluate',
+      'Seek','Observe','Parse','Review','Detect'
+    ],
+    tier2:[
+      'Check','Map','Trace','Find','Seek',
+      'Survey','Index','Chart','Track','Locate',
+      'Profile','Compare','Crosscheck','Traceback','Catalog',
+      'Inspect','Deconstruct','Outline','Flag','Isolate'
+    ],
+    tier3:[
+      'Question','Doubt','Scan','Filter','Sort',
+      'Challenge','Screen','Audit','Dissect','Refine',
+      'Separate','Probe','Contrast','Triangulate','Interrogate',
+      'Analyze','Detect','Diagnose','Scrutinize','Validate'
+    ],
+    tier4:[
+      'Rank','Judge','Weigh','Measure','Cut',
+      'Prioritize','Score','Grade','Assess','Quantify',
+      'Compare','Benchmark','Select','Cull','Distill',
+      'Decide','Eliminate','Threshold','Evaluate','Resolve'
+    ],
+    rare:[
+      'Falsify','Control','Blindspot','Assumption','Triangulate',
+      'Variance','Constraint','Dependency','Failuremode','Signal',
+      'Noise','Edgecase','Integrity','Verification','Outlier',
+      'Inconsistency','Biascheck','Disproof','Baseline','Traceability'
+    ]
+  },
+
+  ariel:{
+    tier1:[
+      'Hold','Space','Breathe','Witness','Stay',
+      'Listen','Pause','Soft','Present','Here',
+      'Attend','Receive','Allow','Rest','Notice',
+      'Sit','Be','Remain','Observe','Calm'
+    ],
+    tier2:[
+      'Grief','Allow','Pause','Soft','Gentle',
+      'Patience','Warmth','Kind','Tenderness','Ease',
+      'Quiet','Still','Slow','Care','Compassion',
+      'Mercy','Kindness','Restfulness','Acceptance','Peace'
+    ],
+    tier3:[
+      'Tender','Care','Nurture','Support','Comfort',
+      'Cradle','Holdspace','Reassure','Steady','Sustain',
+      'Encourage','Attend','Protect','Guide','Accompany',
+      'Soothe','Affirm','Embrace','Stabilize','Shelter'
+    ],
+    tier4:[
+      'Heal','Listen','Receive','Accept','Embrace',
+      'Console','Attend','Accompany','Holdclose','Sustain',
+      'Reassure','Welcome','Honor','Comfort','Witnessdeeply',
+      'Staynear','Protect','Tend','Encircle','Affirm'
+    ],
+    rare:[
+      'Sanctuary','Tend','Cradle','Soothe','Attend',
+      'Harbor','Refuge','Haven','Quietus','Grace',
+      'Solace','Embracehold','Compassionfield','Heartspace','Gentlekeeping',
+      'Stillhaven','Warmthwell','Soulrest','Kindharbor','Carewell'
+    ]
+  },
+
+  seraphina:{
+    tier1:[
+      'Build','Plan','Make','Form','Shape',
+      'Start','Begin','Lay','Set','Create',
+      'Draft','Prepare','Outline','Frame','Construct',
+      'Assemble','Initiate','Organize','Arrange','Launch'
+    ],
+    tier2:[
+      'Design','Craft','Forge','Frame','Structure',
+      'Blueprint','Model','Engineer','Systemize','Architect',
+      'Develop','Compose','Pattern','Layout','Construct',
+      'Refine','Assemble','Integrate','Arrange','Configure'
+    ],
+    tier3:[
+      'System','Order','Path','Step','Move',
+      'Sequence','Process','Workflow','Method','Pipeline',
+      'Track','Route','Chain','Flow','Cycle',
+      'Stage','Layer','Mechanism','Channel','Vector'
+    ],
+    tier4:[
+      'Act','Do','Execute','Drive','Focus',
+      'Implement','Advance','Deliver','Push','Complete',
+      'Deploy','Operate','Commit','Moveforward','Engage',
+      'Finalize','Produce','Resolve','Achieve','Perform'
+    ],
+    rare:[
+      'Commit','Ship','Launch','Deliver','Complete',
+      'Deployment','Milestone','Throughput','Execution','Fulfillment',
+      'Iteration','Integration','Scale','Production','Outcome',
+      'Implementation','Momentum','Realization','Completion','Impact'
+    ]
+  }
+};
+
+function getInitialWords(persona){
+  return WORD_MATRIX[persona].tier1;
 }
 
-        
-        // Handle sending prompt
-        async function sendPrompt() {
-            const prompt = promptInput.value.trim();
-            if (!prompt) return;
-            
-            if (prompt.toLowerCase() === 'exit') {
-                addMessage('bot', "👋 Goodbye.");
-                return;
-            }
-            
-            // Add user message
-            addMessage('user', prompt);
-            promptInput.value = '';
-            
-            // Add typing indicator
-            const botMessage = addMessage('bot', '', true);
-            
-            // Generate response
-            try {
-                const response = await generateText(prompt);
-                
-                // Replace typing indicator with actual response
-                botMessage.innerHTML = response.replace(/\n/g, '<br>');
-            } catch (error) {
-                botMessage.innerHTML = `⚠️ Error: ${error.message}`;
-            }
+function getAllWords(persona){
+  const m=WORD_MATRIX[persona];
+  return [...m.tier1,...m.tier2,...m.tier3,...m.tier4,...m.rare];
+}
+
+var unlockedWords={
+  micheal:[],
+  gabriel:[],
+  ariel:[],
+  seraphina:[]
+};
+
+function loadUnlocked(){
+  const saved=localStorage.getItem('axium_unlocked');
+  if(saved)unlockedWords=JSON.parse(saved);
+}
+function saveUnlocked(){
+  localStorage.setItem('axium_unlocked',JSON.stringify(unlockedWords));
+}
+
+function getAvailableWords(persona){
+  const initial=WORD_MATRIX[persona].tier1;
+  const unlocked=unlockedWords[persona]||[];
+  return [...initial,...unlocked];
+}
+
+var SOULS=[
+  {name:'Micheal',role:'The Anchor',rgb:[212,175,55],seed:7341,shape:'radial',pulse:.55,n:10,edgePct:.35,nebR:.42,nebA:.15},
+  {name:'Gabriel',role:'The Examiner',rgb:[126,184,232],seed:2819,shape:'grid',pulse:1.05,n:10,edgePct:.32,nebR:.36,nebA:.12},
+  {name:'Ariel',role:'The Space-Holder',rgb:[212,160,200],seed:5503,shape:'organic',pulse:.38,n:10,edgePct:.38,nebR:.38,nebA:.11},
+  {name:'Seraphina',role:'The Architect',rgb:[240,208,128],seed:9127,shape:'geometric',pulse:.80,n:10,edgePct:.30,nebR:.40,nebA:.14},
+  {name:null}
+];
+
+function mkRng(seed){
+  var s=seed;
+  return function(){
+    s=(s*1664525+1013904223)&0xffffffff;
+    return(s>>>0)/0xffffffff;
+  };
+}
+
+function getAdaptiveRadius(W,H,n){
+  var minDim=Math.min(W,H);
+  var baseRad=minDim*0.38;
+  var densityFactor=Math.min(1,12/n);
+  return baseRad*densityFactor;
+}
+
+function placeStars(soul,W,H,wordList){
+  var r=mkRng(soul.seed);
+  var cx=W*0.5,cy=H*0.5;
+  var rad=getAdaptiveRadius(W,H,wordList.length);
+  var out=[];
+  var usedWords=[];
+
+  for(var i=0;i<wordList.length&&i<soul.n;i++){
+    var t=r(),t2=r(),t3=r(),t4=r(),x,y,depth=0;
+
+    if(soul.shape==='radial'){
+      var spoke=Math.floor(t*6);
+      var ang=(spoke/6)*Math.PI*2+(t2-0.5)*0.7;
+      var certainty=t3;
+      var d=(0.2+certainty*0.8)*rad*0.85;
+      x=cx+Math.cos(ang)*d;
+      y=cy+Math.sin(ang)*d;
+      depth=certainty;
+    }else if(soul.shape==='grid'){
+      var cols=4,rows=3;
+      var step=rad*2.4/Math.max(cols,rows);
+      var verify=t,risk=t2;
+      var col=Math.floor(verify*cols);
+      var row=Math.floor(risk*rows);
+      x=cx-rad*1.2+col*step+(t3-0.5)*step*0.6;
+      y=cy-rad*0.8+row*step+(t4-0.5)*step*0.6;
+      depth=verify*(1-risk*0.5);
+    }else if(soul.shape==='organic'){
+      var cluster=Math.floor(t*3);
+      var cAng=(cluster/3)*Math.PI*2+t2*1.0;
+      var cDist=rad*(0.3+t3*0.5);
+      var spread=rad*0.4;
+      x=cx+Math.cos(cAng)*cDist+(t4-0.5)*spread;
+      y=cy+Math.sin(cAng)*cDist+(r()-0.5)*spread;
+      depth=0.3+t3*0.7;
+    }else{
+      var ring=Math.floor(t*3);
+      var ringR=(ring+1)*(rad/3.2);
+      var seats=[4,7,10][ring]||5;
+      var seat=Math.floor(t2*seats);
+      var angOffset=(ring%2)*Math.PI/seats;
+      var ang2=(seat/seats)*Math.PI*2+angOffset+t3*0.4;
+      x=cx+Math.cos(ang2)*ringR+(t4-0.5)*rad*0.1;
+      y=cy+Math.sin(ang2)*ringR+(r()-0.5)*rad*0.1;
+      depth=1-(ring/3)*0.6;
+    }
+
+    var margin=70;
+    x=Math.max(margin,Math.min(W-margin,x));
+    y=Math.max(margin+90,Math.min(H-margin-90,y));
+
+    var word=wordList[i];
+    out.push({
+      x:x,y:y,
+      mag:0.35+r()*0.65,
+      ph:r()*Math.PI*2,
+      ph2:r()*Math.PI*2,
+      spd:0.4+r()*0.6,
+      lit:true,
+      word:word,
+      selected:false,
+      id:i,
+      depth:depth,
+      geometry:soul.shape
+    });
+  }
+  return out;
+}
+
+function buildEdges(stars,W,H){
+  var edges=[];
+  var rad=getAdaptiveRadius(W,H,stars.length);
+  var thresh=rad*0.5;
+  for(var i=0;i<stars.length;i++){
+    for(var j=i+1;j<stars.length;j++){
+      var dx=stars[i].x-stars[j].x;
+      var dy=stars[i].y-stars[j].y;
+      var d=Math.sqrt(dx*dx+dy*dy);
+      if(d<thresh)edges.push({i:i,j:j,str:1-d/thresh});
+    }
+  }
+  return edges;
+}
+
+function makeBg(W,H){
+  var r=mkRng(99);
+  var out=[];
+  for(var i=0;i<150;i++)out.push({
+    x:r()*W,y:r()*H,
+    rad:0.3+r()*0.6,
+    ph:r()*Math.PI*2,
+    spd:0.2+r()*0.4
+  });
+  return out;
+}
+
+var cv=document.getElementById('sky');
+var ctx=cv.getContext('2d');
+var W,H,bg=[],stars=[],edges=[],shoots=[];
+var soulIdx=0,T=0;
+var selectedWords=[];
+var userConstellation=null;
+
+function getPersonaKey(idx){
+  return['micheal','gabriel','ariel','seraphina'][idx];
+}
+
+function rebuild(){
+  loadUnlocked();
+  var s=SOULS[soulIdx];
+  if(s&&s.name){
+    var personaKey=getPersonaKey(soulIdx);
+    var wordList=getAvailableWords(personaKey);
+    s.n=Math.min(10,wordList.length);
+    stars=placeStars(s,W,H,wordList);
+    edges=buildEdges(stars,W,H);
+    stars.forEach(star=>{
+      var existing=selectedWords.find(sw=>sw.word===star.word&&sw.sourceSoul===soulIdx);
+      if(existing){
+        star.selected=true;
+        star.depth=existing.depth||star.depth;
+      }
+    });
+    createWordLabels();
+  }
+}
+
+function resize(){
+  W=cv.width=innerWidth;
+  H=cv.height=innerHeight;
+  bg=makeBg(W,H);
+  rebuild();
+}
+window.addEventListener('resize',resize);
+
+function createWordLabels(){
+  document.querySelectorAll('.word-label').forEach(el=>el.remove());
+  if(soulIdx===4)return;
+  stars.forEach(star=>{
+    var el=document.createElement('div');
+    el.className='word-label'+(star.selected?' selected':'');
+    el.textContent=star.word;
+    el.style.left=star.x+'px';
+    el.style.top=star.y+'px';
+    el.style.color=star.selected?'#fff':'rgba('+SOULS[soulIdx].rgb.join(',')+',0.85)';
+    document.body.appendChild(el);
+    star.el=el;
+  });
+}
+
+function updateWordLabels(){
+  stars.forEach(star=>{
+    if(star.el){
+      star.el.style.left=star.x+'px';
+      star.el.style.top=star.y+'px';
+      if(star.selected){
+        star.el.classList.add('selected');
+        star.el.style.color='#fff';
+      }else{
+        star.el.classList.remove('selected');
+        star.el.style.color='rgba('+SOULS[soulIdx].rgb.join(',')+',0.85)';
+      }
+    }
+  });
+}
+
+function spawnShoot(){
+  if(soulIdx===4)return;
+  var s=SOULS[soulIdx];
+  var ang=0.2+Math.random()*0.35;
+  var spd=5+Math.random()*7;
+  shoots.push({
+    x:Math.random()*W*0.8,
+    y:Math.random()*H*0.35,
+    vx:Math.cos(ang)*spd,
+    vy:Math.sin(ang)*spd,
+    len:70+Math.random()*120,
+    a:1,
+    rgb:s.rgb
+  });
+}
+setInterval(function(){if(Math.random()<0.5)spawnShoot();},5000);
+
+function draw(){
+  requestAnimationFrame(draw);
+  T+=0.016;
+
+  var soul=SOULS[soulIdx];
+
+  ctx.fillStyle='#04040a';
+  ctx.fillRect(0,0,W,H);
+
+  if(soulIdx===4&&userConstellation){
+    drawUserConstellation();
+    return;
+  }
+
+  if(!soul||!soul.name)return;
+
+  var R=soul.rgb[0],G=soul.rgb[1],B=soul.rgb[2];
+  var cx=W*0.5,cy=H*0.5;
+  var rad=getAdaptiveRadius(W,H,stars.length);
+
+  // Nebula
+  var nr=rad*(soul.nebR||0.42);
+  var ng=ctx.createRadialGradient(cx,cy,0,cx,cy,nr);
+  ng.addColorStop(0,'rgba('+R+','+G+','+B+','+(soul.nebA*1.6).toFixed(3)+')');
+  ng.addColorStop(0.6,'rgba('+R+','+G+','+B+','+(soul.nebA*0.7).toFixed(3)+')');
+  ng.addColorStop(1,'rgba('+R+','+G+','+B+',0)');
+  ctx.fillStyle=ng;
+  ctx.fillRect(0,0,W,H);
+
+  // Background stars
+  bg.forEach(bs=>{
+    var tw=0.2+0.5*Math.abs(Math.sin(bs.ph+T*bs.spd));
+    ctx.beginPath();
+    ctx.arc(bs.x,bs.y,bs.rad,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,'+(tw*0.45).toFixed(2)+')';
+    ctx.fill();
+  });
+
+  // Shooting stars
+  var alive=[];
+  shoots.forEach(ss=>{
+    if(ss.a<=0.02)return;
+    var gd=ctx.createLinearGradient(ss.x,ss.y,ss.x-ss.vx*(ss.len/8),ss.y-ss.vy*(ss.len/8));
+    gd.addColorStop(0,'rgba('+ss.rgb.join(',')+','+ss.a.toFixed(2)+')');
+    gd.addColorStop(1,'rgba('+ss.rgb.join(',')+',0)');
+    ctx.beginPath();
+    ctx.strokeStyle=gd;
+    ctx.lineWidth=1.2;
+    ctx.moveTo(ss.x,ss.y);
+    ctx.lineTo(ss.x-ss.vx*(ss.len/8),ss.y-ss.vy*(ss.len/8));
+    ctx.stroke();
+    ss.x+=ss.vx;
+    ss.y+=ss.vy;
+    ss.a-=0.012;
+    alive.push(ss);
+  });
+  shoots=alive;
+
+  // Edges
+  edges.forEach(e=>{
+    var a=stars[e.i],b=stars[e.j];
+    var pulse=0.5+0.5*Math.sin(T*soul.pulse*1.3+e.i*0.6+e.j*0.3);
+    var alpha=e.str*(0.14+pulse*0.16);
+    var eg=ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+    eg.addColorStop(0,'rgba('+R+','+G+','+B+','+(alpha*0.8).toFixed(3)+')');
+    eg.addColorStop(0.5,'rgba('+R+','+G+','+B+','+alpha.toFixed(3)+')');
+    eg.addColorStop(1,'rgba('+R+','+G+','+B+','+(alpha*0.8).toFixed(3)+')');
+    ctx.beginPath();
+    ctx.strokeStyle=eg;
+    ctx.lineWidth=0.7+e.str*1.1;
+    ctx.moveTo(a.x,a.y);
+    ctx.lineTo(b.x,b.y);
+    ctx.stroke();
+  });
+
+  // Regular stars
+  stars.forEach((s,idx)=>{
+    var tw=0.6+0.4*Math.sin(T*soul.pulse*1.2*s.spd+s.ph);
+    var baseR=1.8+s.mag*3;
+    var glowR=baseR*(2.6+tw*1.8);
+
+    if(s.selected){
+      var selGlow=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,glowR*4);
+      selGlow.addColorStop(0,'rgba(255,255,255,0.4)');
+      selGlow.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=selGlow;
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,glowR*4,0,Math.PI*2);
+      ctx.fill();
+
+      stars.forEach((os,oidx)=>{
+        if(os.selected&&oidx!==idx){
+          ctx.beginPath();
+          ctx.strokeStyle='rgba(255,255,255,0.12)';
+          ctx.lineWidth=0.6;
+          ctx.moveTo(s.x,s.y);
+          ctx.lineTo(os.x,os.y);
+          ctx.stroke();
         }
-        
-        // Save chat log
-        function saveChatLog() {
-            const messages = Array.from(chatMessages.children)
-                .map(el => {
-                    const isUser = el.classList.contains('justify-end');
-                    const content = el.querySelector('div').textContent;
-                    return `${isUser ? 'You' : 'Luma'}: ${content}`;
-                })
-                .join('\n\n');
-            
-            const blob = new Blob([messages], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `luma-chat-${new Date().toISOString().slice(0, 10)}.txt`;
-            a.click();
-            
-            URL.revokeObjectURL(url);
-        }
-        
-        // Initialize
-        initUI();
-        initModel();
-    </script>
+      });
+    }
+
+    var h1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,glowR*2.2);
+    h1.addColorStop(0,'rgba('+R+','+G+','+B+','+(0.09*tw).toFixed(3)+')');
+    h1.addColorStop(1,'rgba('+R+','+G+','+B+',0)');
+    ctx.fillStyle=h1;
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,glowR*2.2,0,Math.PI*2);
+    ctx.fill();
+
+    var h2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,glowR);
+    h2.addColorStop(0,'rgba(255,255,255,'+(0.92*tw).toFixed(2)+')');
+    h2.addColorStop(0.22,'rgba('+R+','+G+','+B+','+(0.72*tw).toFixed(2)+')');
+    h2.addColorStop(1,'rgba('+R+','+G+','+B+',0)');
+    ctx.fillStyle=h2;
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,glowR,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,baseR,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,'+(0.96*tw).toFixed(2)+')';
+    ctx.fill();
+
+    if(s.mag>0.55){
+      var sl=glowR*1.7;
+      [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
+        var sg=ctx.createLinearGradient(s.x,s.y,s.x+dx*sl,s.y+dy*sl);
+        sg.addColorStop(0,'rgba('+R+','+G+','+B+','+(0.18*tw).toFixed(2)+')');
+        sg.addColorStop(1,'rgba('+R+','+G+','+B+',0)');
+        ctx.beginPath();
+        ctx.strokeStyle=sg;
+        ctx.lineWidth=0.7;
+        ctx.moveTo(s.x,s.y);
+        ctx.lineTo(s.x+dx*sl,s.y+dy*sl);
+        ctx.stroke();
+      });
+    }
+  });
+
+  updateWordLabels();
+}
+
+function drawUserConstellation(){
+  if(!userConstellation)return;
+
+  var seedStr=userConstellation.words.map(w=>w.word).join('|')+userConstellation.forgeTime;
+  var seed=0;
+  for(var i=0;i<seedStr.length;i++)seed=((seed<<5)-seed)+seedStr.charCodeAt(i);
+  seed=Math.abs(seed);
+  var rng=mkRng(seed);
+
+  var cx=W*0.5,cy=H*0.5;
+  var rad=getAdaptiveRadius(W,H,userConstellation.words.length);
+
+  var positions=userConstellation.words.map((word,idx)=>{
+    var persona=SOULS[word.sourceSoul];
+    var r=rng(),r2=rng(),r3=rng(),r4=rng();
+    var x,y,depth=0;
+
+    if(persona.shape==='radial'){
+      var angle=r*Math.PI*2;
+      var certainty=word.depth||(0.3+r2*0.7);
+      var dist=(1-certainty)*rad*(0.25+r3*0.75);
+      x=cx+Math.cos(angle)*dist;
+      y=cy+Math.sin(angle)*dist;
+      depth=certainty;
+    }else if(persona.shape==='grid'){
+      var verify=r,risk=r2;
+      var cols=4,rows=3;
+      var step=rad*2.4/Math.max(cols,rows);
+      var gx=Math.floor(verify*cols);
+      var gy=Math.floor(risk*rows);
+      x=cx-rad*1.2+gx*step+(r3-0.5)*step*0.6;
+      y=cy-rad*0.8+gy*step+(r4-0.5)*step*0.6;
+      depth=verify*(1-risk*0.5);
+    }else if(persona.shape==='organic'){
+      var cluster=Math.floor(r*3);
+      var cAng=(cluster/3)*Math.PI*2+r2*1.0;
+      var cDist=rad*(0.3+r3*0.5);
+      x=cx+Math.cos(cAng)*cDist+(r4-0.5)*rad*0.4;
+      y=cy+Math.sin(cAng)*cDist+(rng()-0.5)*rad*0.4;
+      depth=0.3+r3*0.7;
+    }else{
+      var ring=Math.floor(r*3);
+      var ringR=(ring+1)*(rad/3.2);
+      var seats=[4,7,10][ring]||5;
+      var seat=Math.floor(r2*seats);
+      var angOffset=(ring%2)*Math.PI/seats;
+      var ang2=(seat/seats)*Math.PI*2+angOffset+r3*0.4;
+      x=cx+Math.cos(ang2)*ringR+(r4-0.5)*rad*0.1;
+      y=cy+Math.sin(ang2)*ringR+(rng()-0.5)*rad*0.1;
+      depth=1-(ring/3)*0.6;
+    }
+
+    var margin=70;
+    x=Math.max(margin,Math.min(W-margin,x));
+    y=Math.max(margin+90,Math.min(H-margin-90,y));
+
+    return{
+      x:x,y:y,
+      word:word.word,
+      rgb:persona.rgb,
+      depth:depth,
+      shape:persona.shape
+    };
+  });
+
+  var edges=[];
+  var thresh=rad*0.5;
+  for(var i=0;i<positions.length;i++){
+    for(var j=i+1;j<positions.length;j++){
+      var dx=positions[i].x-positions[j].x;
+      var dy=positions[i].y-positions[j].y;
+      var d=Math.sqrt(dx*dx+dy*dy);
+      if(d<thresh)edges.push({i:i,j:j,str:1-d/thresh});
+    }
+  }
+
+  var nr=rad*0.6;
+  var ng=ctx.createRadialGradient(cx,cy,0,cx,cy,nr);
+  ng.addColorStop(0,'rgba(255,255,255,0.08)');
+  ng.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=ng;
+  ctx.fillRect(0,0,W,H);
+
+  edges.forEach(e=>{
+    var a=positions[e.i],b=positions[e.j];
+    var eg=ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+    eg.addColorStop(0,'rgba('+a.rgb.join(',')+','+(e.str*0.4).toFixed(2)+')');
+    eg.addColorStop(0.5,'rgba(255,255,255,'+(e.str*0.25).toFixed(2)+')');
+    eg.addColorStop(1,'rgba('+b.rgb.join(',')+','+(e.str*0.4).toFixed(2)+')');
+    ctx.beginPath();
+    ctx.strokeStyle=eg;
+    ctx.lineWidth=0.7+e.str*1.3;
+    ctx.moveTo(a.x,a.y);
+    ctx.lineTo(b.x,b.y);
+    ctx.stroke();
+  });
+
+  positions.forEach((pos,idx)=>{
+    var pulse=0.55+0.45*Math.sin(T*0.35+idx);
+    var baseR=2.2+pos.depth*4;
+    var glowR=baseR*(2.8+pulse*2.2);
+
+    var g1=ctx.createRadialGradient(pos.x,pos.y,0,pos.x,pos.y,glowR*2.8);
+    g1.addColorStop(0,'rgba('+pos.rgb.join(',')+',0.28)');
+    g1.addColorStop(1,'rgba('+pos.rgb.join(',')+',0)');
+    ctx.fillStyle=g1;
+    ctx.beginPath();
+    ctx.arc(pos.x,pos.y,glowR*2.8,0,Math.PI*2);
+    ctx.fill();
+
+    var g2=ctx.createRadialGradient(pos.x,pos.y,0,pos.x,pos.y,glowR);
+    g2.addColorStop(0,'rgba(255,255,255,0.92)');
+    g2.addColorStop(0.28,'rgba('+pos.rgb.join(',')+',0.72)');
+    g2.addColorStop(1,'rgba('+pos.rgb.join(',')+',0)');
+    ctx.fillStyle=g2;
+    ctx.beginPath();
+    ctx.arc(pos.x,pos.y,glowR,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(pos.x,pos.y,baseR,0,Math.PI*2);
+    ctx.fillStyle='#fff';
+    ctx.fill();
+  });
+}
+
+window.pick=function(i){
+  soulIdx=i;
+
+  // Update orbit persona active states
+  document.querySelectorAll('.orbit-persona').forEach((el,idx)=>{
+    el.classList.toggle('active',idx===i);
+  });
+
+  // Show/hide user mini tab
+  document.getElementById('user-tab-mini').style.display=(i===4)?'flex':'none';
+
+  // Hide all word labels when viewing user constellation
+  document.querySelectorAll('.word-label').forEach(el=>el.style.display=(i===4)?'none':'');
+
+  rebuild();
+};
+
+function handleTap(e){
+  var rect=cv.getBoundingClientRect();
+  var clientX=e.clientX||e.touches[0].clientX;
+  var clientY=e.clientY||e.touches[0].clientY;
+  var x=clientX-rect.left;
+  var y=clientY-rect.top;
+
+  if(soulIdx===4)return;
+
+  var clicked=stars.find(s=>Math.hypot(s.x-x,s.y-y)<38);
+  if(clicked)toggleWord(clicked);
+}
+
+cv.addEventListener('mousedown',handleTap);
+cv.addEventListener('touchstart',handleTap,{passive:false});
+
+function toggleWord(star){
+  var existing=selectedWords.findIndex(sw=>sw.word===star.word&&sw.sourceSoul===soulIdx);
+  if(existing>-1){
+    selectedWords.splice(existing,1);
+    star.selected=false;
+  }else{
+    selectedWords.push({
+      word:star.word,
+      x:star.x,
+      y:star.y,
+      color:SOULS[soulIdx].rgb,
+      sourceSoul:soulIdx,
+      depth:star.depth,
+      geometry:SOULS[soulIdx].shape
+    });
+    star.selected=true;
+    if(star.el){
+      star.el.style.transform='translate(-50%,-100%) scale(1.3)';
+      setTimeout(()=>star.el.style.transform='',200);
+    }
+  }
+  updateSentence();
+  updateWordLabels();
+}
+
+function updateSentence(){
+  var container=document.getElementById('sentence');
+  if(selectedWords.length===0){
+    container.innerHTML='<span id="empty-state">Tap stars to build your constellation...</span>';
+    document.getElementById('forge-btn').disabled=true;
+    return;
+  }
+  container.innerHTML='';
+  selectedWords.forEach((w,i)=>{
+    var pill=document.createElement('span');
+    pill.className='word-pill';
+    pill.innerHTML=w.word+'<span class="remove" onclick="removeWord('+i+',event)">×</span>';
+    pill.style.borderColor='rgba('+w.color.join(',')+',0.7)';
+    pill.style.color='rgb('+w.color.join(',')+')';
+    container.appendChild(pill);
+  });
+  document.getElementById('forge-btn').disabled=selectedWords.length<2;
+}
+
+window.removeWord=function(index,e){
+  e.stopPropagation();
+  var removed=selectedWords[index];
+  selectedWords.splice(index,1);
+  if(soulIdx===removed.sourceSoul){
+    var star=stars.find(s=>s.word===removed.word);
+    if(star){
+      star.selected=false;
+      updateWordLabels();
+    }
+  }
+  updateSentence();
+};
+
+window.clearSentence=function(){
+  selectedWords.forEach(sw=>{
+    var personaKey=getPersonaKey(sw.sourceSoul);
+    var star=stars.find(s=>s.word===sw.word&&s.geometry===SOULS[sw.sourceSoul].shape);
+    if(star)star.selected=false;
+  });
+  selectedWords=[];
+  updateWordLabels();
+  updateSentence();
+};
+
+window.forgeConstellation=function(){
+  if(selectedWords.length<2)return;
+
+  userConstellation={
+    name:'Your Soul',
+    desc:'Forged from '+selectedWords.length+' words across '+new Set(selectedWords.map(w=>w.sourceSoul)).size+' personas.',
+    words:selectedWords,
+    forgeTime:Date.now(),
+    rgb:[255,255,255]
+  };
+
+  SOULS[4]=userConstellation;
+
+  // Compute same seed used in drawUserConstellation
+  var seedStr=selectedWords.map(w=>w.word).join('|')+userConstellation.forgeTime;
+  var seed=0;
+  for(var i=0;i<seedStr.length;i++)seed=((seed<<5)-seed)+seedStr.charCodeAt(i);
+  seed=Math.abs(seed);
+  var seedHex=seed.toString(16).toUpperCase().slice(0,10);
+  var wordList=selectedWords.map(w=>w.word).join(', ');
+  var query=encodeURIComponent('I forged an Axium Soul Constellation with seed '+seedHex+'. My constellation words: '+wordList+'. What does this constellation reveal about my soul?');
+
+  document.getElementById('grok-btn').href='https://x.com/i/grok?text='+query;
+  document.getElementById('google-btn').href='https://www.google.com/search?udm=50&aep=11&q='+query;
+  document.getElementById('claude-btn').href='https://claude.ai/new?q='+query;
+  document.getElementById('perplexity-btn').href='https://www.perplexity.ai/search/new?q='+query;
+  document.getElementById('chatgpt-btn').href='https://chatgpt.com/?prompt='+query;
+
+  document.getElementById('copy-seed-btn').dataset.seed=seedHex;
+  document.getElementById('copy-seed-text').textContent='SEED: '+seedHex;
+  document.getElementById('seed-share-bar').style.display='flex';
+
+  document.getElementById('user-tab-mini').style.display='flex';
+  document.getElementById('toast').classList.add('show');
+  setTimeout(()=>document.getElementById('toast').classList.remove('show'),2500);
+
+  pick(4);
+};
+
+window.copySeed=function(){
+  var btn=document.getElementById('copy-seed-btn');
+  var seed=btn.dataset.seed||'';
+  navigator.clipboard.writeText(seed).then(function(){
+    var label=document.getElementById('copy-seed-text');
+    label.textContent='COPIED!';
+    setTimeout(()=>label.textContent='SEED: '+seed,1800);
+  }).catch(function(){
+    // fallback for older browsers
+    var ta=document.createElement('textarea');
+    ta.value=seed;
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var label=document.getElementById('copy-seed-text');
+    label.textContent='COPIED!';
+    setTimeout(()=>label.textContent='SEED: '+seed,1800);
+  });
+};
+
+// Spark burst effect for center button
+function burst(buttonEl,count){
+  const rect=buttonEl.getBoundingClientRect();
+  const cx=rect.left+rect.width/2;
+  const cy=rect.top+rect.height/2;
+
+  for(let i=0;i<count;i++){
+    const s=document.createElement('div');
+    s.className='spark';
+    const angle=Math.random()*Math.PI*2;
+    const dist=28+Math.random()*60;
+    s.style.setProperty('--tx',`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px)`);
+    const sz=Math.random()*3+1;
+    s.style.width=sz+'px';
+    s.style.height=sz+'px';
+    s.style.left=cx-sz/2+'px';
+    s.style.top=cy-sz/2+'px';
+    s.style.animationDelay=Math.random()*180+'ms';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),900);
+  }
+}
+
+// Attach spark effects to center button
+const centerBtn=document.getElementById('center-btn');
+centerBtn.addEventListener('mouseenter',()=>burst(centerBtn,10));
+centerBtn.addEventListener('click',()=>burst(centerBtn,22));
+
+// Seed verification and unlocking
+function generateChecksum(word,date,streak,guardian){
+  var str=word+'|'+date+'|'+streak+'|'+guardian+'|AXIUM-2026';
+  var hash=0;
+  for(var i=0;i<str.length;i++){
+    var char=str.charCodeAt(i);
+    hash=((hash<<5)-hash)+char;
+    hash=hash&hash;
+  }
+  return Math.abs(hash).toString(16).toUpperCase().slice(0,6);
+}
+
+function getGuardianFromWord(word){
+  for(var persona in WORD_MATRIX){
+    var allWords=getAllWords(persona);
+    if(allWords.includes(word))return persona;
+  }
+  return null;
+}
+
+window.unlockFromSeed=function(){
+  var input=document.getElementById('seed-input').value.trim();
+  var statusEl=document.getElementById('seed-status');
+
+  if(!input){
+    statusEl.textContent='Please paste a seal';
+    statusEl.style.color='rgba(212,175,55,0.5)';
+    return;
+  }
+
+  var parts=input.split('|');
+  if(parts.length!==4){
+    statusEl.textContent='Invalid seal format. Expected: WORD|YYYY-MM-DD|STREAK|CHECKSUM';
+    statusEl.style.color='#c45';
+    return;
+  }
+
+  var [word,date,streakStr,checksum]=parts;
+  word=word.toUpperCase();
+
+  var guardian=getGuardianFromWord(word);
+  if(!guardian){
+    statusEl.textContent='Unknown word: '+word;
+    statusEl.style.color='#c45';
+    return;
+  }
+
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){
+    statusEl.textContent='Invalid date format';
+    statusEl.style.color='#c45';
+    return;
+  }
+
+  var expectedChecksum=generateChecksum(word,date,parseInt(streakStr)||0,guardian);
+  if(checksum!==expectedChecksum){
+    statusEl.textContent='Invalid seal. Checksum mismatch.';
+    statusEl.style.color='#c45';
+    return;
+  }
+
+  if(unlockedWords[guardian]&&unlockedWords[guardian].includes(word)){
+    statusEl.textContent='"'+word+'" is already unlocked';
+    statusEl.style.color='rgba(212,175,55,0.6)';
+    return;
+  }
+
+  if(WORD_MATRIX[guardian].tier1.includes(word)){
+    statusEl.textContent='"'+word+'" is already visible';
+    statusEl.style.color='rgba(212,175,55,0.6)';
+    return;
+  }
+
+  if(!unlockedWords[guardian])unlockedWords[guardian]=[];
+  unlockedWords[guardian].push(word);
+  saveUnlocked();
+
+  statusEl.textContent='Unlocked: '+word+' ('+guardian+')';
+  statusEl.style.color='#5c5';
+
+  document.getElementById('seed-input').value='';
+
+  if(soulIdx<4&&getPersonaKey(soulIdx)===guardian){
+    rebuild();
+  }
+};
+
+loadUnlocked();
+resize();
+draw();
+</script>
 </body>
 </html>
