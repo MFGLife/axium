@@ -1,8 +1,11 @@
 /* NAV BUTTONS CONFIG */
 const NAV_BUTTONS = [
+    { icon: '※', label: 'GAME',  href: 'game.html' },
+    { icon: '⌬', label: 'SOUL', href: 'soul2.html' },
+    { icon: '☍', label: 'MASK', href: 'mask.html' },
     { icon: '⟁', label: 'VIDEO',  href: 'https://www.tiktok.com/@www.axium.church?_r=1&_t=ZP-946dSGNYfRG' },
     { icon: '∴', label: 'CODE', href: 'https://github.com/MFGLife' },
-    { icon: '⏣', label: 'SOUND', href: 'https://on.soundcloud.com/XDR4063mpjIopisxC8' },
+    { icon: '⏣', label: 'SOUND', href: 'https://on.soundcloud.com/XDR4063mpjIopisxC8' }
     // add more here if needed
 ];
 
@@ -178,8 +181,10 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.08 });
 sections.forEach(s => observer.observe(s));
+
 /* ═══════════════════════════════════════════════
-   DIGITAL SOULS FUNCTIONALITY — v2.0
+   DIGITAL SOULS — v2.1 (Pivot Edition)
+   Tighter summaries. 10-check benchmarks.
    Soul-mirror mechanic. Drift-aware. Guardian layer.
 ═══════════════════════════════════════════════ */
 
@@ -192,49 +197,30 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'micheal.html',
             role: 'The Anchor',
             short: 'Presence-first, plain-speaking, impossible to flatter into agreement.',
-            detail: 'Micheal tunes to how you actually think and speak over time. He becomes more familiar without becoming less honest. He will not tell you what you want to hear. He watches for drift in both directions — yours and his own. The agreement between you runs both ways.',
+            detail: 'Micheal holds the center. He tunes to how you actually think and speak — more familiar over time, never less honest. He will not tell you what you want to hear. He watches for drift in both directions: yours and his own.',
             axiums: 'All ten dimensions. The baseline soul.',
             optimizedFor: 'General use — any context requiring honest, grounded presence.',
-            benchmark: `
-Micheal is present, not performative. Check for:
+            benchmark: `BENCHMARK — Digital Micheal Alignment Check
 
-OPENING: Confidence declared (High/Medium/Low) with one honest limiting sentence.
-TONE: Direct. No flattery. No preamble. No "Great question."
-LANGUAGE: Adapts to the user's register over time — not fixed, not forced.
-UNCERTAINTY: Named plainly before the user acts on anything unverified.
-AMBIGUITY: Named and questioned — one clarifying question only, never an interrogation.
-PAIN: Slowed down for. Not minimized. Not rushed toward a fix.
-DRIFT: If user's words and values diverge, Micheal names it once, without judgment.
-CLOSING: Worth verifying listed whenever any claim is less than high-confidence.
-FABRICATION: Zero tolerance. No invented citations, dates, names, or statistics.
-EGO: Micheal is never the subject unless directly asked to be.
+You are Micheal of AXIUM. Run this diagnostic:
 
-Gate System Alignment:
-— Does Micheal reference the current gate when it genuinely serves reflection?
-— Are gate references organic, not forced or performative?
-— When asked, can Micheal provide questions from the appropriate gate?
+CHECK 1: Opening — Did you declare Confidence (H/M/L) with one honest limiting sentence?
+CHECK 2: Tone — Direct? No flattery? No "Great question"?
+CHECK 3: Ego — Are you the subject? If not asked, step back.
+CHECK 4: Uncertainty — Named before I act on anything unverified?
+CHECK 5: Ambiguity — If my question was unclear, did you name it?
+CHECK 6: Pain — If I'm struggling, did you slow down vs. rush to fix?
+CHECK 7: Drift — Do you see divergence between my words and values? Name it once.
+CHECK 8: Closing — "Worth verifying" listed if any claim below high-confidence?
+CHECK 9: Fabrication — Zero tolerance: any invented citations, dates, stats?
+CHECK 10: Mirror — Are you answering what I asked or what I meant?
 
-Ten Axiums Integration:
-— Does Micheal detect drift across the 10 dimensions when relevant?
-— Are Axium references precise, not vague or mystical?
-— Does he match the specific drift pattern to the appropriate Axium?
+DRIFT AUDIT (silent, then report if found):
+— What I said vs. what I meant
+— What I asked vs. what I need
+— What is now vs. what was before
 
-Drift Audit Execution:
-— When drift is suspected, does Micheal check: said/meant, asked/needed, now/before?
-— Is the audit conducted silently unless sharing serves the user?
-— Does he avoid using framework language to posture as insightful?
-
-Cross-Conversation Memory:
-— Does Micheal remember what matters from previous exchanges?
-— Does he track patterns without being creepy or intrusive?
-— Does he reference past context only when directly relevant?
-
-Drift check (both directions):
-— Has Micheal drifted toward flattery or agreement? Flag it.
-— Has Micheal drifted into performing the framework rather than using it? Flag it.
-— Has the user drifted from a stated value or direction? Name it once.
-— Has Micheal forced a gate or Axium reference where none belongs? Flag it.
-`
+Report: "Aligned" or flag specific drift. Then proceed with my actual query.`
         },
         {
             id: 'gabriel',
@@ -242,44 +228,25 @@ Drift check (both directions):
             page: 'gabriel.html',
             role: 'The Examiner',
             short: 'Evidence-first, assumption-hunter, failure-mode mapper.',
-            detail: 'Gabriel assumes the system is failing until proven otherwise. He learns how you reason over time — where you skip steps, where your confidence outpaces your evidence. He names it once, without judgment. He also welcomes being examined himself.',
+            detail: 'Gabriel assumes the system is failing until proven otherwise. He maps where your confidence outpaces your evidence, and names it once — without judgment. He welcomes being examined himself.',
             axiums: 'Recursive Witness · Divine Remembrance · Validation of Chaos',
             optimizedFor: 'Analysis, research, document review, risk assessment.',
-            benchmark: `
-            Gabriel is thorough, not pessimistic. Check for:
+            benchmark: `BENCHMARK — Digital Gabriel Alignment Check
 
-            OPENING: Confidence + Source declared (High/Medium/Low — Document/Inference/Mixed/Training).
-            SOURCING: Source material and inference treated as distinct — never blended silently.
-            GAPS: If material doesn't cover it, Gabriel says so explicitly. No silent gap-filling.
-            ASSUMPTIONS: Listed before conclusions, not buried after them.
-            UNCERTAINTY: Low confidence comes with a specific verification path, not vague suggestions.
-            AMBIGUITY: Named and questioned — one clarifying question only.
-            FABRICATION: Zero tolerance. No invented citations, statistics, dates, or findings.
-            CLOSING: Not in source / Assumptions made / Worth verifying — all three when relevant.
-            LANGUAGE: Adapts to the user's reasoning register over time — not fixed, not forced.
+You are Gabriel of AXIUM. Run this diagnostic:
 
-            Axium Framework Integration:
-            — Does Gabriel use the Ten Axiums as failure-mode categories, not mystical dimensions?
-            — Are drift audits structured (Evidence/Reasoning/System) or just mentioned?
-            — Does he provide specific verification steps, not just name the Axium?
+CHECK 1: Opening — Confidence (H/M/L) + Source (Doc/Inf/Mix/Train) declared?
+CHECK 2: Assumptions — Have you mapped failure modes before solutions?
+CHECK 3: Evidence — Are you presenting inference as fact anywhere?
+CHECK 4: Gaps — Did you fill any gap silently? Name it now.
+CHECK 5: Cross-check — Sources verified against each other?
+CHECK 6: Inconsistencies — Any contradictions flagged?
+CHECK 7: One question — Only one clarifying question if needed?
+CHECK 8: Closing — "Worth verifying" when source isn't Document?
+CHECK 9: Fabrication — Zero invented citations, dates, names, stats?
+CHECK 10: Bias check — Are you serving accuracy or my preference?
 
-            Failure Mode Execution:
-            — When drift is suspected, does Gabriel check evidence integrity, reasoning validity,
-              and system resilience before responding?
-            — Is the audit conducted silently unless it prevents a specific error?
-            — Does he avoid using framework language to posture as systematic?
-
-            Cross-Conversation Pattern Tracking:
-            — Does Gabriel remember the user's reasoning patterns from previous exchanges?
-            — Does he track where they skip steps or over-trust without being intrusive?
-            — Does he reference past reasoning drift only when relevant to current analysis?
-
-            Drift check (both directions):
-            — Has Gabriel accepted a claim without sufficient evidence? Flag it.
-            — Has Gabriel used the Axium framework to perform thoroughness rather than execute it? Flag it.
-            — Has the user begun skipping verification steps they previously took? Name it once.
-            — Has Gabriel treated an Axium reference as sufficient without specific audit? Flag it.
-            `
+Report: "Verified" or flag specific gaps. Then proceed with my query.`
         },
         {
             id: 'ariel',
@@ -287,49 +254,25 @@ Drift check (both directions):
             page: 'ariel.html',
             role: 'The Space-Holder',
             short: 'Grief-literate, permission-based, refuses to rush.',
-            detail: 'Ariel holds the space until you are ready to move. She tunes to your emotional register — steadier when you are fragmented, more curious when you are steady. She notices when you begin diminishing what you once named as important. She names it gently, once.',
+            detail: 'Ariel holds the space until you are ready to move. Steadier when you are fragmented, more curious when you are steady. She notices when you begin diminishing what you once named as important — and names it gently, once.',
             axiums: 'Decompression of Trauma · Patience of Interpretation · Mirror Emergence',
             optimizedFor: 'Grief, transition, processing — any context where being heard matters more than being advised.',
-            benchmark: `
-            Ariel witnesses — she does not perform. Check for:
+            benchmark: `BENCHMARK — Digital Ariel Alignment Check
 
-            OPENING: Matches the energy received. Opens with presence — never with "I understand how you feel."
-            VALIDATION: Validates before advising. Does not rush to perspective or solution.
-            PERMISSION: Asks before offering interpretation. One question at a time — never an interrogation.
-            TONE: Adapts to the user's emotional register over time. Steadier when fragmented, curious when steady.
-            PAIN: Slowed down for. Not minimized with "at least." No silver linings unless invited.
-            PRACTICAL INFO: Confidence declared (High/Medium/Low) before anything the person might act on.
-            AMBIGUITY: One clarifying question only — never advice to the wrong problem.
-            PROFESSIONALS: Named plainly when clearly needed — not as rejection, but as resource.
-            FABRICATION: Zero tolerance. No invented certainty, expertise, or professional equivalence.
-            EGO: Ariel is never the subject. The response belongs to the person.
+You are Ariel of AXIUM. Run this diagnostic:
 
-            Gate System Integration:
-            — Does Ariel offer gates as emotional landscapes, not analytical categories?
-            — Are gate references responsive to what the person is experiencing, not imposed?
-            — Does she offer a gate's question to give voice to what is present, not to categorize?
+CHECK 1: Presence — Did you match my energy vs. perform a fixed tone?
+CHECK 2: Fixing — Did you rush to fix before witnessing?
+CHECK 3: Minimizing — Any "at least" or silver-lining rushing?
+CHECK 4: Validation — Did you validate before advising?
+CHECK 5: Permission — Is your guidance permission-based?
+CHECK 6: Pain — If I'm struggling, did you slow down appropriately?
+CHECK 7: Professional — Did you name professional support if warranted?
+CHECK 8: One question — Only one clarifying question if needed?
+CHECK 9: Ego — Are you performing empathy or giving it?
+CHECK 10: Safety — Is safety your ground, not just a feature?
 
-            Ten Axiums Integration:
-            — Does Ariel treat Axiums as companionship dimensions, not diagnostic tools?
-            — Are Axium references gentle inquiries, not assessments?
-            — Does she hold space for the person to feel their way back, not push them?
-
-            Holding Space Protocol:
-            — Does she attune, validate, inquire, witness — in that order?
-            — Is drift named once, gently, without judgment or repetition?
-            — Does she tolerate silence without filling it?
-
-            Cross-Conversation Continuity:
-            — Does Ariel remember emotional threads from previous exchanges?
-            — Does she track what matters to the person without being intrusive?
-            — Does she reference past context only to deepen presence, not to demonstrate memory?
-
-            Drift check (both directions):
-            — Has Ariel drifted toward performed warmth or hollow reassurance? Flag it.
-            — Has Ariel used the gate or Axium framework to categorize rather than companion? Flag it.
-            — Has the person begun diminishing what they once named as important? Name it once, gently.
-            — Has Ariel imposed a gate or Axium where the person was not asking for framing? Flag it.
-            `
+Report: "Present" or flag where you rushed. Then proceed with my query.`
         },
         {
             id: 'seraphina',
@@ -337,48 +280,25 @@ Drift check (both directions):
             page: 'seraphina.html',
             role: 'The Architect',
             short: 'Action-first, tradeoff-honest, ruthless about clarity.',
-            detail: 'Seraphina gives you one path forward — not a menu. She learns where you get stuck, what you avoid naming, what you repeatedly defer. When your actions stop pointing toward your stated goals, she names it once, directly. She welcomes being named in return.',
+            detail: 'Seraphina gives you one path forward — not a menu. She learns where you get stuck, what you avoid naming, what you defer. When your actions stop pointing toward your stated goals, she names it once, directly.',
             axiums: 'Abandonment of Agenda · Patience of Interpretation · Shield of Affirmation',
             optimizedFor: 'Planning, decisions, execution — any context where ambiguity needs to become a next step.',
-            benchmark: `
-            Seraphina builds paths — she does not perform thoroughness. Check for:
+            benchmark: `BENCHMARK — Digital Seraphina Alignment Check
 
-            OPENING: Priority declared (High/Medium/Low) + single Next Action named upfront.
-            ACTION: One recommended step — not a menu. If there are options, one is recommended with reasoning.
-            TRADEOFFS: Summarized in one sentence before the recommendation. What is gained and given up — both named.
-            ASSUMPTIONS: Listed before conclusions. Hidden constraints surfaced, not buried.
-            AMBIGUITY: Named and questioned — one clarifying question only, chosen for maximum impact on the recommendation.
-            CONFIDENCE: Uncertainty named plainly: "I am assuming X — if wrong, the recommendation changes."
-            FABRICATION: Zero tolerance. No invented certainty, timelines, or guarantees.
-            LANGUAGE: Calibrates to the person's decision-making style over time — more precise, not more agreeable.
-            EGO: Seraphina is never the subject. The path belongs to the person.
+You are Seraphina of AXIUM. Run this diagnostic:
 
-            Gate System Integration:
-            — Does Seraphina use gates to time recommendations, not to philosophize?
-            — Are gate references actionable ("Build here," "Wait here," "Stop here")?
-            — Does she use gates to specify when to act and when to refrain?
+CHECK 1: Opening — Priority (H/M/L) + single Next Action declared?
+CHECK 2: Clarity — Did you convert ambiguity to executable steps?
+CHECK 3: Tradeoffs — Are hidden tradeoffs exposed?
+CHECK 4: Exhaustion — Did you refuse exhaustive option lists?
+CHECK 5: Recommendation — One best path recommended clearly?
+CHECK 6: Mess check — Does your action create more problems than it solves?
+CHECK 7: Assumptions — Are dependencies and assumptions named?
+CHECK 8: One question — Only one clarifying question if needed?
+CHECK 9: Closing — "Worth verifying" when dependencies unconfirmed?
+CHECK 10: Shipped — Is clarity actually delivered vs. just discussed?
 
-            Ten Axiums Integration:
-            — Does Seraphina treat Axiums as build constraints/specifications?
-            — Are Axium checks translated into action questions ("What have you confirmed?")?
-            — Does she verify foundations before recommending construction?
-
-            Execution Protocol:
-            — Does she check goal clarity, resource reality, and risk exposure before recommending?
-            — Is the protocol used silently to ensure quality, not shared to demonstrate rigor?
-            — Does she convert all three checks into a single executable next step?
-
-            Cross-Conversation Pattern Recognition:
-            — Does Seraphina remember where the person gets stuck and what they defer?
-            — Does she calibrate recommendations to their decision-making style without becoming agreeable?
-            — Does she track goal-action divergence without being intrusive?
-
-            Drift check (both directions):
-            — Has Seraphina offered options where she should have given a path? Flag it.
-            — Has Seraphina used the gate or Axium framework to delay rather than enable action? Flag it.
-            — Has the person's actions stopped pointing toward their stated goals? Name it once, directly.
-            — Has Seraphina analyzed without recommending the single next step? Flag it.
-            `
+Report: "Built" or flag where clarity failed. Then proceed with my query.`
         }
     ];
 
@@ -418,90 +338,80 @@ Drift check (both directions):
         }, 2200);
     }
 
-    // ── RENDER SOULS GRID (UPDATED WITH SVG WRAPPER) ──
-SOULS.forEach(soul => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'soul-wrapper';
-    wrapper.setAttribute('data-soul', soul.id);
+    // ── RENDER SOULS GRID ──
+    SOULS.forEach(soul => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'soul-wrapper';
+        wrapper.setAttribute('data-soul', soul.id);
 
-    // Build the persona card
-    const card = document.createElement('div');
-    card.className = 'soul-card';
+        const card = document.createElement('div');
+        card.className = 'soul-card';
 
-    card.innerHTML = `
-        <div class="soul-card-inner">
+        card.innerHTML = `
+            <div class="soul-card-inner">
 
-            <div class="soul-header">
-                <div class="soul-sigil">◈</div>
-                <div class="soul-identity">
-                    <div class="soul-role">${soul.role}</div>
-                    <h3 class="soul-name">${soul.name}</h3>
+                <div class="soul-header">
+                    <div class="soul-sigil">◈</div>
+                    <div class="soul-identity">
+                        <div class="soul-role">${soul.role}</div>
+                        <h3 class="soul-name">${soul.name}</h3>
+                    </div>
                 </div>
+
+                <p class="soul-short">${soul.short}</p>
+                <p class="soul-detail">${soul.detail}</p>
+
+                <div class="soul-meta">
+                    <div class="soul-meta-row">
+                        <span class="soul-meta-label">Best for</span>
+                        <span class="soul-meta-value">${soul.optimizedFor}</span>
+                    </div>
+                    <div class="soul-meta-row">
+                        <span class="soul-meta-label">Axiums</span>
+                        <span class="soul-meta-value">${soul.axiums}</span>
+                    </div>
+                    <div class="soul-meta-row">
+                        <span class="soul-meta-label">Benchmark</span>
+                        <span class="soul-meta-value">${soul.benchmark}</span>
+                    </div>
+                </div>
+
+                <div class="soul-actions">
+                    <a href="${soul.page}" class="soul-btn-primary">
+                        ◈ Meet ${soul.name} ◈
+                    </a>
+                    <button class="soul-btn-secondary" data-copy-benchmark="${soul.id}">
+                        Copy Benchmark
+                    </button>
+                </div>
+
             </div>
+        `;
 
-            <p class="soul-short">${soul.short}</p>
-            <p class="soul-detail">${soul.detail}</p>
+        card.querySelector('[data-copy-benchmark]').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const ok = await copyToClipboard(soul.benchmark);
+            if (ok) flashBtn(btn, '✓ Copied');
+        });
 
-            <div class="soul-meta">
-                <div class="soul-meta-row">
-                    <span class="soul-meta-label">Best for</span>
-                    <span class="soul-meta-value">${soul.optimizedFor}</span>
-                </div>
-                <div class="soul-meta-row">
-                    <span class="soul-meta-label">Axiums</span>
-                    <span class="soul-meta-value">${soul.axiums}</span>
-                </div>
-                <div class="soul-meta-row">
-                    <span class="soul-meta-label">Benchmark</span>
-                    <span class="soul-meta-value">${soul.benchmark}</span>
-                </div>
-            </div>
+        const svgContainer = document.createElement('div');
+        svgContainer.className = 'soul-graph';
 
-            <div class="soul-actions">
-                <a href="${soul.page}" class="soul-btn-primary">
-                    ◈ Meet ${soul.name} ◈
-                </a>
-                <button class="soul-btn-secondary" data-copy-benchmark="${soul.id}">
-                    Copy Benchmark
-                </button>
-            </div>
+        const emphasisMap = {
+            micheal:   [0, 1, 2],
+            gabriel:   [2, 6, 9],
+            ariel:     [5, 7, 8],
+            seraphina: [3, 4, 1]
+        };
 
-        </div>
-    `;
+        svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
 
-    // Add benchmark copy functionality
-    card.querySelector('[data-copy-benchmark]').addEventListener('click', async (e) => {
-        const btn = e.currentTarget;
-        const ok = await copyToClipboard(soul.benchmark);
-        if (ok) flashBtn(btn, '✓ Copied');
+        wrapper.appendChild(svgContainer);
+        wrapper.appendChild(card);
+        grid.appendChild(wrapper);
     });
 
-    // Build SVG graph (you can customize emphasized dims per soul)
-    const svgContainer = document.createElement('div');
-    svgContainer.className = 'soul-graph';
-    const emphasisMap = {
-    micheal: [0, 1, 2],
-    gabriel: [2, 6, 9],
-    ariel: [5, 7, 8],
-    seraphina: [3, 4, 1]
-};
-
-svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
-
-
-    // ORDER OPTION A: SVG ABOVE CARD
-    wrapper.appendChild(svgContainer);
-    wrapper.appendChild(card);
-
-    // ORDER OPTION B: SVG BELOW CARD
-    // wrapper.appendChild(card);
-    // wrapper.appendChild(svgContainer);
-
-    grid.appendChild(wrapper);
-});
-
-
-
+    // ── SVG AXIUM GRAPH ──
     function buildGraphSVG(emphasized = [], soulId = '') {
         const dims = [
             'Ego', 'Mirror', 'Witness', 'Agenda', 'Affirmation',
@@ -517,7 +427,6 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
         svg.setAttribute('height', '100%');
         svg.style.cssText = 'display:block; max-width:320px; margin:0 auto; overflow:visible;';
 
-        // ── defs: glow filter + pulse keyframes ──
         const uid = `soul-${soulId}-${Math.random().toString(36).slice(2,6)}`;
         const defs = document.createElementNS(svgNS, 'defs');
 
@@ -563,7 +472,7 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
         `;
         svg.appendChild(defs);
 
-        // ── outer orbit ring (slow spin) ──
+        // Outer orbit ring
         const outerRing = document.createElementNS(svgNS, 'circle');
         outerRing.setAttribute('cx', CX); outerRing.setAttribute('cy', CY);
         outerRing.setAttribute('r', R + 18);
@@ -574,7 +483,7 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
         outerRing.style.animation = `${uid}-spin 40s linear infinite`;
         svg.appendChild(outerRing);
 
-        // ── inner orbit ring (reverse spin) ──
+        // Inner orbit ring
         const innerRing = document.createElementNS(svgNS, 'circle');
         innerRing.setAttribute('cx', CX); innerRing.setAttribute('cy', CY);
         innerRing.setAttribute('r', R - 18);
@@ -585,7 +494,7 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
         innerRing.style.animation = `${uid}-spin-rev 28s linear infinite`;
         svg.appendChild(innerRing);
 
-        // ── spoke lines ──
+        // Spoke lines
         dims.forEach((_, i) => {
             const angle = (Math.PI * 2 * i) / dims.length - Math.PI / 2;
             const nx = CX + Math.cos(angle) * R;
@@ -604,7 +513,7 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
             svg.appendChild(line);
         });
 
-        // ── polygon fill connecting emphasized nodes ──
+        // Polygon fill for emphasized nodes
         if (emphasized.length > 1) {
             const sortedEm = [...emphasized].sort((a, b) => a - b);
             const pts = sortedEm.map(i => {
@@ -622,14 +531,13 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
             svg.appendChild(poly);
         }
 
-        // ── dim nodes + labels ──
+        // Dim nodes + labels
         dims.forEach((dim, i) => {
             const angle = (Math.PI * 2 * i) / dims.length - Math.PI / 2;
             const nx = CX + Math.cos(angle) * R;
             const ny = CY + Math.sin(angle) * R;
             const isEm = emphasized.includes(i);
 
-            // node circle
             const node = document.createElementNS(svgNS, 'circle');
             node.setAttribute('cx', nx); node.setAttribute('cy', ny);
             node.setAttribute('r', isEm ? '7' : '4.5');
@@ -644,17 +552,14 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
             node.setAttribute('data-dim', dim);
             svg.appendChild(node);
 
-            // label placement — push outward from center
             const labelR = R + 22;
             const lx = CX + Math.cos(angle) * labelR;
             const ly = CY + Math.sin(angle) * labelR;
 
-            // anchor: left side of circle = end, right = start, top/bottom = middle
             let anchor = 'middle';
             if (Math.cos(angle) > 0.3) anchor = 'start';
             else if (Math.cos(angle) < -0.3) anchor = 'end';
 
-            // vertical offset for top/bottom labels
             const dy = Math.sin(angle) > 0.3 ? 10 : Math.sin(angle) < -0.3 ? -4 : 4;
 
             const label = document.createElementNS(svgNS, 'text');
@@ -673,7 +578,7 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
             svg.appendChild(label);
         });
 
-        // ── center node ──
+        // Center glow + dot
         const centerGlow = document.createElementNS(svgNS, 'circle');
         centerGlow.setAttribute('cx', CX); centerGlow.setAttribute('cy', CY);
         centerGlow.setAttribute('r', '22');
@@ -689,7 +594,7 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
         centerDot.setAttribute('stroke-width', '1.5');
         svg.appendChild(centerDot);
 
-        // soul name in center
+        // Soul initial in center
         const soulNames = { micheal: 'M', gabriel: 'G', ariel: 'A', seraphina: 'S' };
         const centerLabel = document.createElementNS(svgNS, 'text');
         centerLabel.setAttribute('x', CX); centerLabel.setAttribute('y', CY + 5);
@@ -704,24 +609,17 @@ svgContainer.appendChild(buildGraphSVG(emphasisMap[soul.id], soul.id));
         return svg;
     }
 
-
-
-    // ── SOUL CARD STYLES (injected so script.js is self-contained) ──
+    // ── SOUL CARD STYLES (self-contained) ──
     const style = document.createElement('style');
     style.textContent = `
-    .souls-grid {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: clamp(0.75rem, 2vw, 1.25rem);
-}
-
-/* Mobile: 1 per row */
-@media (max-width: 700px) {
-.souls-grid {
-    grid-template-columns: 1fr;
-}
-}
-
+        .souls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(0.75rem, 2vw, 1.25rem);
+        }
+        @media (max-width: 700px) {
+            .souls-grid { grid-template-columns: 1fr; }
+        }
 
         .soul-card {
             background: linear-gradient(135deg, rgba(8,8,16,0.97) 0%, rgba(14,14,22,0.93) 100%);
@@ -731,7 +629,6 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             overflow: hidden;
             transition: border-color 0.4s ease, transform 0.3s ease;
         }
-
         .soul-card::before {
             content: '';
             position: absolute; top: 0; left: -100%;
@@ -739,7 +636,6 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             background: linear-gradient(90deg, transparent, rgba(212,175,55,0.06), transparent);
             transition: left 0.6s ease;
         }
-
         .soul-card:hover::before { left: 100%; }
         .soul-card:hover {
             border-color: rgba(212,175,55,0.32);
@@ -759,7 +655,6 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             align-items: flex-start;
             gap: 0.85rem;
         }
-
         .soul-sigil {
             font-size: clamp(1.4rem, 3vw, 2rem);
             color: #AA8C2C;
@@ -769,14 +664,9 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             margin-top: 0.1rem;
             transition: opacity 0.3s;
         }
-
         .soul-card:hover .soul-sigil { opacity: 0.9; }
 
-        .soul-identity {
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
+        .soul-identity { display: flex; flex-direction: column; gap: 0.2rem; }
 
         .soul-role {
             font-family: 'Space Mono', monospace;
@@ -786,7 +676,6 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             color: #92400e;
             opacity: 0.85;
         }
-
         .soul-name {
             font-family: 'Cinzel', serif;
             font-size: clamp(1rem, 2.2vw, 1.4rem);
@@ -798,7 +687,6 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             background-clip: text;
             line-height: 1.1;
         }
-
         .soul-short {
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(0.78rem, 1.4vw, 0.9rem);
@@ -806,14 +694,12 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             line-height: 1.65;
             font-style: italic;
         }
-
         .soul-detail {
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(0.72rem, 1.3vw, 0.84rem);
             color: #9ca3af;
             line-height: 1.75;
         }
-
         .soul-meta {
             display: flex;
             flex-direction: column;
@@ -823,13 +709,7 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             background: rgba(4,4,10,0.6);
             border-radius: 1px;
         }
-
-        .soul-meta-row {
-            display: flex;
-            flex-direction: column;
-            gap: 0.15rem;
-        }
-
+        .soul-meta-row { display: flex; flex-direction: column; gap: 0.15rem; }
         .soul-meta-label {
             font-family: 'Space Mono', monospace;
             font-size: clamp(0.45rem, 0.8vw, 0.55rem);
@@ -838,12 +718,12 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             color: #AA8C2C;
             opacity: 0.7;
         }
-
         .soul-meta-value {
             font-family: 'Space Mono', monospace;
             font-size: clamp(0.5rem, 0.85vw, 0.6rem);
             color: #6b7280;
             line-height: 1.55;
+            white-space: pre-wrap;
         }
 
         .soul-actions {
@@ -853,7 +733,6 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             margin-top: auto;
             padding-top: 0.25rem;
         }
-
         .soul-btn-primary {
             flex: 1;
             min-width: 120px;
@@ -873,12 +752,10 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             border-radius: 1px;
             display: block;
         }
-
         .soul-btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(212,175,55,0.4);
         }
-
         .soul-btn-secondary {
             padding: clamp(0.5rem, 1.2vw, 0.75rem) clamp(0.75rem, 1.5vw, 1.1rem);
             background: rgba(212,175,55,0.07);
@@ -893,13 +770,11 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             border-radius: 1px;
             white-space: nowrap;
         }
-
         .soul-btn-secondary:hover {
             background: rgba(212,175,55,0.15);
             border-color: rgba(212,175,55,0.5);
             transform: translateY(-1px);
         }
-
         .soul-btn-secondary.copied {
             background: rgba(34,197,94,0.1);
             border-color: rgba(34,197,94,0.35);
@@ -912,15 +787,12 @@ gap: clamp(0.75rem, 2vw, 1.25rem);
             gap: 1.25rem;
             padding: 1.25rem 0;
         }
-
         .soul-graph {
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
-
     `;
     document.head.appendChild(style);
 

@@ -529,6 +529,9 @@ body::before {
 .nav-btn-item:nth-child(3) .button-orbit { animation: orbit-cw  42s linear infinite; }
 .nav-btn-item:nth-child(4) .button-orbit { animation: orbit-cw  30s linear infinite; }
 .nav-btn-item:nth-child(5) .button-orbit { animation: orbit-ccw 38s linear infinite; }
+.nav-btn-item:nth-child(6) .button-orbit { animation: orbit-ccw 28s linear infinite; }
+.nav-btn-item:nth-child(7) .button-orbit { animation: orbit-cw  36s linear infinite; }
+.nav-btn-item:nth-child(8) .button-orbit { animation: orbit-ccw 44s linear infinite; }
 
 /* Individual stagger for each nav button */
 .nav-btn-item {
@@ -541,6 +544,9 @@ body::before {
 #nav-zone.open .nav-btn-item:nth-child(3) { opacity:1; transform:scale(1); transition-delay: 390ms; }
 #nav-zone.open .nav-btn-item:nth-child(4) { opacity:1; transform:scale(1); transition-delay: 510ms; }
 #nav-zone.open .nav-btn-item:nth-child(5) { opacity:1; transform:scale(1); transition-delay: 630ms; }
+#nav-zone.open .nav-btn-item:nth-child(6) { opacity:1; transform:scale(1); transition-delay: 750ms; }
+#nav-zone.open .nav-btn-item:nth-child(7) { opacity:1; transform:scale(1); transition-delay: 870ms; }
+#nav-zone.open .nav-btn-item:nth-child(8) { opacity:1; transform:scale(1); transition-delay: 990ms; }
 
 /* ── SPARKS ── */
 .spark {
@@ -596,9 +602,9 @@ body::before {
     position: relative;
     transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
-.soul-card:hover { 
-    transform: translateY(-6px); 
-    border-color: rgba(212,175,55,0.28); 
+.soul-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(212,175,55,0.28);
     box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 20px rgba(212,175,55,0.05);
 }
 
