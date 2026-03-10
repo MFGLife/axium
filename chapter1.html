@@ -1,742 +1,803 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AXIUM — Chapter 1: The Binding of Ego</title>
-  <style>
-    /* Cathedral aesthetic retained, simplified for single-scene focus */
-    :root {
-      --gold: #D4AF37;
-      --blue: #7EB8E8;
-      --pink: #D4A0C8;
-      --amber: #F0D080;
-      --bg: #04040a;
-    }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      background: var(--bg);
-      color: var(--gold);
-      font-family: 'Cinzel', serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    
-    /* ── CONFIRMATION MATRIX (Top) ── */
-    #matrix {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to bottom, rgba(4,4,10,0.98), rgba(4,4,10,0.9));
-      border-bottom: 1px solid rgba(212,175,55,0.2);
-      padding: 16px 20px;
-      z-index: 100;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    
-    .matrix-slot {
-      width: 60px;
-      height: 80px;
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.4);
-      position: relative;
-    }
-    
-    .matrix-slot.filled {
-      border-color: var(--gold);
-      background: rgba(212,175,55,0.1);
-    }
-    
-    .matrix-slot .number {
-      position: absolute;
-      top: 4px;
-      left: 6px;
-      font-size: 8px;
-      opacity: 0.5;
-    }
-    
-    .matrix-slot .icon {
-      font-size: 24px;
-      margin-bottom: 4px;
-    }
-    
-    .matrix-slot .guardian {
-      font-size: 7px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-    
-    #seed-display {
-      margin-left: auto;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: rgba(212,175,55,0.5);
-    }
-    
-    /* ── SCENE CONTAINER ── */
-    #scene {
-      margin-top: 120px;
-      padding: 40px 20px;
-      max-width: 1200px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
-    #scene-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    
-    #scene-header h1 {
-      font-size: 14px;
-      letter-spacing: 0.4em;
-      text-transform: uppercase;
-      color: rgba(212,175,55,0.4);
-      margin-bottom: 8px;
-    }
-    
-    #scene-header h2 {
-      font-size: clamp(24px, 5vw, 48px);
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      margin-bottom: 16px;
-    }
-    
-    #scene-header p {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 16px;
-      color: rgba(255,255,255,0.6);
-      max-width: 600px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
-    
-    /* ── OBJECT GRID ── */
-    #objects {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      margin-top: 40px;
-    }
-    
-    .object-card {
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      background: rgba(0,0,0,0.3);
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    
-    .object-card:hover {
-      border-color: rgba(212,175,55,0.4);
-      transform: translateY(-4px);
-    }
-    
-    .object-card.selected {
-      border-color: var(--gold);
-      background: rgba(212,175,55,0.05);
-    }
-    
-    .object-card.disabled {
-      opacity: 0.3;
-      pointer-events: none;
-    }
-    
-    .object-model {
-      height: 200px;
-      background: radial-gradient(circle at center, rgba(212,175,55,0.05), transparent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      /* GLB viewer will mount here */
-    }
-    
-    .object-info {
-      padding: 20px;
-    }
-    
-    .object-info h3 {
-      font-size: 12px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      color: rgba(255,255,255,0.8);
-    }
-    
-    .object-info p {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 14px;
-      color: rgba(255,255,255,0.5);
-      line-height: 1.5;
-      font-style: italic;
-    }
-    
-    .object-guardian {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-    
-    .guardian-M { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
-    .guardian-G { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
-    .guardian-A { background: var(--pink); box-shadow: 0 0 8px var(--pink); }
-    .guardian-S { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
-    
-    /* ── CHOICE MODAL ── */
-    #choice-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(4,4,10,0.95);
-      z-index: 200;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    
-    #choice-modal.active {
-      display: flex;
-    }
-    
-    .choice-panel {
-      max-width: 500px;
-      width: 100%;
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 8px;
-      padding: 32px;
-      background: rgba(0,0,0,0.6);
-    }
-    
-    .choice-panel h3 {
-      font-size: 11px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: rgba(212,175,55,0.6);
-      margin-bottom: 16px;
-    }
-    
-    .choice-panel .prompt {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      line-height: 1.6;
-      margin-bottom: 24px;
-      color: rgba(255,255,255,0.9);
-    }
-    
-    .choice-options {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    
-    .choice-btn {
-      background: rgba(212,175,55,0.1);
-      border: 1px solid rgba(212,175,55,0.3);
-      color: var(--gold);
-      padding: 16px 20px;
-      font-family: 'Cinzel', serif;
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.3s;
-      text-align: left;
-    }
-    
-    .choice-btn:hover {
-      background: rgba(212,175,55,0.2);
-      border-color: var(--gold);
-    }
-    
-    /* ── SEED RELEASE ── */
-    #seed-panel {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to top, rgba(4,4,10,0.98), rgba(4,4,10,0.9));
-      border-top: 1px solid rgba(212,175,55,0.2);
-      padding: 24px;
-      transform: translateY(100%);
-      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 150;
-    }
-    
-    #seed-panel.open {
-      transform: translateY(0);
-    }
-    
-    .seed-content {
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: center;
-    }
-    
-    .seed-display {
-      font-family: 'Space Mono', monospace;
-      font-size: 14px;
-      color: var(--gold);
-      background: rgba(0,0,0,0.5);
-      padding: 16px;
-      border-radius: 4px;
-      margin: 16px 0;
-      word-break: break-all;
-    }
-    
-    .seed-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    
-    .seed-btn {
-      background: rgba(212,175,55,0.1);
-      border: 1px solid rgba(212,175,55,0.3);
-      color: var(--gold);
-      padding: 12px 24px;
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    
-    .seed-btn:hover {
-      background: rgba(212,175,55,0.2);
-    }
-    
-    .seed-btn.primary {
-      background: rgba(212,175,55,0.25);
-      border-color: var(--gold);
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AXIUM — Chapter 1: The Binding of Ego</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-family:'Cinzel',serif;touch-action:none;user-select:none}
+
+/* ── GLYPH GRID (Transparent BG) ── */
+#grid{position:fixed;inset:0;display:grid;z-index:1;overflow:hidden;pointer-events:none;opacity:0.4}
+.cell{display:flex;align-items:center;justify-content:center;color:#D4AF37;opacity:.055;font-size:13px;transition:opacity 600ms,color 600ms}
+.letter{opacity:.5;color:#EDD98A;text-shadow:0 0 8px rgba(212,175,55,.3)}
+
+/* ── THREE CANVAS (Transparent) ── */
+#three-canvas{position:fixed;inset:0;width:100%!important;height:100%!important;z-index:2;pointer-events:none}
+#three-canvas.interactive{pointer-events:auto}
+
+/* ── CONFIRMATION MATRIX (Top) ── */
+#matrix{position:fixed;top:0;left:0;right:0;background:linear-gradient(to bottom,rgba(4,4,10,0.95),rgba(4,4,10,0.85));border-bottom:1px solid rgba(212,175,55,0.2);padding:16px 20px;z-index:100;display:flex;gap:12px;align-items:center;flex-wrap:wrap;backdrop-filter:blur(10px)}
+.matrix-slot{width:70px;height:90px;border:1px solid rgba(212,175,55,0.2);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);position:relative;transition:all 0.3s}
+.matrix-slot.filled{border-color:var(--guardian-color,rgba(212,175,55,0.6));background:rgba(0,0,0,0.7)}
+.matrix-slot .number{position:absolute;top:4px;left:6px;font-size:8px;opacity:0.5;font-family:'Space Mono',monospace}
+.matrix-slot .icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.matrix-slot .icon canvas{width:100%;height:100%}
+.matrix-slot .guardian{position:absolute;bottom:6px;font-size:7px;letter-spacing:0.2em;text-transform:uppercase;color:var(--guardian-color,#D4AF37)}
+#seed-display{margin-left:auto;font-family:'Space Mono',monospace;font-size:10px;color:rgba(212,175,55,0.5);text-align:right}
+#seed-display .status{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px}
+
+/* ── SCENE CONTAINER ── */
+#scene{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:120px 20px 40px;pointer-events:none}
+#scene > *{pointer-events:auto}
+#scene-header{text-align:center;margin-bottom:20px;max-width:600px}
+#scene-header h1{font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:rgba(212,175,55,0.5);margin-bottom:8px}
+#scene-header h2{font-size:clamp(20px,4vw,36px);font-weight:400;letter-spacing:0.08em;margin-bottom:12px;color:#D4AF37}
+#scene-header p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.6}
+
+/* ── OBJECT STAGE ── */
+#object-stage{width:100%;max-width:800px;height:400px;position:relative;display:flex;align-items:center;justify-content:center;margin:20px 0}
+.object-container{position:absolute;width:200px;height:280px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);opacity:0;transform:translateY(30px)}
+.object-container.visible{opacity:1;transform:translateY(0)}
+.object-container:hover{transform:translateY(-10px) scale(1.05)}
+.object-container.selected{transform:translateY(-20px) scale(1.1);z-index:10}
+.object-container.disabled{opacity:0.2;pointer-events:none;filter:grayscale(0.8)}
+.object-glb{width:150px;height:150px;position:relative}
+.object-glb canvas{width:100%;height:100%}
+.object-glow{position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,var(--guardian-glow,transparent),transparent 70%);opacity:0;transition:opacity 0.5s}
+.object-container:hover .object-glow,.object-container.selected .object-glow{opacity:0.6}
+.object-label{margin-top:20px;text-align:center}
+.object-label h3{font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.8);margin-bottom:6px}
+.object-label p{font-family:'Cormorant Garamond',serif;font-size:12px;color:rgba(255,255,255,0.4);font-style:italic}
+
+/* ── SCENE NAVIGATION ── */
+#scene-nav{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:16px;align-items:center}
+.scene-btn{background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:#D4AF37;padding:14px 32px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;border-radius:2px;backdrop-filter:blur(5px)}
+.scene-btn:hover{background:rgba(212,175,55,0.2);border-color:#D4AF37}
+.scene-btn:disabled{opacity:0.3;cursor:not-allowed;border-color:rgba(212,175,55,0.1)}
+.scene-btn.primary{background:rgba(212,175,55,0.25);border-color:#D4AF37}
+.scene-indicator{display:flex;gap:8px}
+.scene-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,175,55,0.2);transition:all 0.3s}
+.scene-dot.active{background:#D4AF37;box-shadow:0 0 8px #D4AF37}
+
+/* ── CHOICE MODAL ── */
+#choice-modal{position:fixed;inset:0;background:rgba(4,4,10,0.95);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px)}
+#choice-modal.active{display:flex}
+.choice-panel{max-width:500px;width:100%;border:1px solid rgba(212,175,55,0.3);border-radius:8px;padding:40px;background:rgba(0,0,0,0.8);position:relative}
+.choice-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--guardian-color,#D4AF37),transparent)}
+.choice-guardian{font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--guardian-color,#D4AF37);margin-bottom:16px}
+.choice-prompt{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.6;margin-bottom:32px;color:rgba(255,255,255,0.9)}
+.choice-options{display:flex;flex-direction:column;gap:12px}
+.choice-btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);padding:18px 24px;font-family:'Cormorant Garamond',serif;font-size:14px;cursor:pointer;transition:all 0.3s;text-align:left;line-height:1.5;font-style:italic}
+.choice-btn:hover{border-color:var(--guardian-color,rgba(212,175,55,0.5));color:#fff;background:rgba(255,255,255,0.05)}
+.choice-btn::before{content:'› ';opacity:0.5}
+
+/* ── SEED PANEL (Final) ── */
+#seed-panel{position:fixed;inset:0;background:rgba(4,4,10,0.98);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;backdrop-filter:blur(20px)}
+#seed-panel.active{display:flex}
+.seed-content{max-width:700px;width:100%;text-align:center}
+.seed-content h2{font-size:12px;letter-spacing:0.4em;text-transform:uppercase;color:rgba(212,175,55,0.5);margin-bottom:16px}
+.seed-content h3{font-size:clamp(24px,5vw,40px);font-weight:400;margin-bottom:12px;color:#D4AF37}
+.seed-content .subtitle{font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(255,255,255,0.5);margin-bottom:40px;font-size:16px}
+.seed-display{font-family:'Space Mono',monospace;font-size:11px;color:#D4AF37;background:rgba(0,0,0,0.6);border:1px solid rgba(212,175,55,0.3);border-radius:4px;padding:20px;margin:20px 0;word-break:break-all;line-height:1.8;position:relative}
+.seed-display::before{content:'SEED';position:absolute;top:-8px;left:16px;background:rgba(4,4,10,1);padding:0 8px;font-size:8px;letter-spacing:0.2em;color:rgba(212,175,55,0.5)}
+.seed-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+.seed-btn{background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:#D4AF37;padding:14px 28px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;border-radius:2px}
+.seed-btn:hover{background:rgba(212,175,55,0.2);border-color:#D4AF37}
+.seed-btn.primary{background:rgba(212,175,55,0.3);border-color:#D4AF37}
+.seed-meta{margin-top:40px;padding-top:30px;border-top:1px solid rgba(255,255,255,0.1);font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);line-height:1.8}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:rgba(4,4,10,1);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#loading.hidden{opacity:0;pointer-events:none;transition:opacity 0.5s}
+.spinner{width:40px;height:40px;border:1px solid rgba(212,175,55,0.2);border-top-color:#D4AF37;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{margin-top:20px;font-size:10px;letter-spacing:0.3em;color:rgba(212,175,55,0.5);text-transform:uppercase}
+
+/* ── TOAST ── */
+#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:rgba(4,4,10,0.98);border:1px solid rgba(212,175,55,0.4);padding:24px 40px;z-index:400;opacity:0;transition:all 0.3s;pointer-events:none;text-align:center;border-radius:4px}
+#toast.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+#toast h4{font-size:10px;letter-spacing:0.2em;color:#D4AF37;margin-bottom:8px;text-transform:uppercase}
+#toast p{font-family:'Cormorant Garamond',serif;font-size:14px;color:rgba(255,255,255,0.7);font-style:italic}
+
+@media(max-width:768px){
+  #matrix{padding:12px}
+  .matrix-slot{width:55px;height:75px}
+  #object-stage{height:350px}
+  .object-container{width:160px;height:240px}
+  .object-glb{width:120px;height:120px}
+  .object-label h3{font-size:9px}
+  #scene-nav{bottom:20px}
+  .scene-btn{padding:12px 24px;font-size:9px}
+}
+</style>
 </head>
 <body>
 
-  <!-- CONFIRMATION MATRIX -->
-  <div id="matrix">
-    <div class="matrix-slot" id="slot-1">
-      <span class="number">I</span>
-      <span class="icon">◯</span>
-    </div>
-    <div class="matrix-slot" id="slot-2">
-      <span class="number">II</span>
-      <span class="icon">◯</span>
-    </div>
-    <div class="matrix-slot" id="slot-3">
-      <span class="number">III</span>
-      <span class="icon">◯</span>
-    </div>
-    <div id="seed-display">Awaiting bindings...</div>
-  </div>
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Initializing Cathedral</p>
+</div>
 
-  <!-- SCENE -->
-  <div id="scene">
-    <div id="scene-header">
-      <h1>Chapter 1</h1>
-      <h2>The Binding of Ego</h2>
-      <p>Three objects rest on the altar. Each binds a different layer of the self. Choose not with thought, but with gravity—the pull you feel before you know why.</p>
+<!-- GLYPH GRID -->
+<div id="grid"></div>
+
+<!-- THREE CANVAS (Background + GLB Viewer) -->
+<canvas id="three-canvas"></canvas>
+
+<!-- CONFIRMATION MATRIX -->
+<div id="matrix">
+  <div class="matrix-slot" id="slot-0" style="--guardian-color:#D4AF37">
+    <span class="number">I</span>
+    <span class="icon">◯</span>
+  </div>
+  <div class="matrix-slot" id="slot-1" style="--guardian-color:#7EB8E8">
+    <span class="number">II</span>
+    <span class="icon">◯</span>
+  </div>
+  <div class="matrix-slot" id="slot-2" style="--guardian-color:#D4A0C8">
+    <span class="number">III</span>
+    <span class="icon">◯</span>
+  </div>
+  <div id="seed-display">
+    <div class="status">Scene <span id="current-scene">1</span> of 3</div>
+    <div>Awaiting selection...</div>
+  </div>
+</div>
+
+<!-- SCENE -->
+<div id="scene">
+  <div id="scene-header">
+    <h1 id="chapter-title">Chapter 1</h1>
+    <h2 id="scene-title">The Binding of Ego</h2>
+    <p id="scene-desc">Three objects rest on the altar. Each binds a different layer of the self. Choose not with thought, but with gravity—the pull you feel before you know why.</p>
+  </div>
+  
+  <div id="object-stage">
+    <!-- Objects positioned by JS -->
+  </div>
+</div>
+
+<!-- SCENE NAVIGATION -->
+<div id="scene-nav">
+  <div class="scene-indicator">
+    <div class="scene-dot active" data-scene="0"></div>
+    <div class="scene-dot" data-scene="1"></div>
+    <div class="scene-dot" data-scene="2"></div>
+  </div>
+  <button class="scene-btn" id="next-btn" disabled>Continue</button>
+</div>
+
+<!-- CHOICE MODAL -->
+<div id="choice-modal">
+  <div class="choice-panel" id="choice-panel">
+    <div class="choice-guardian" id="modal-guardian">Micheal</div>
+    <div class="choice-prompt" id="modal-prompt">What are you willing to simply be present to?</div>
+    <div class="choice-options" id="modal-options"></div>
+  </div>
+</div>
+
+<!-- SEED PANEL -->
+<div id="seed-panel">
+  <div class="seed-content">
+    <h2>Chapter 1 Complete</h2>
+    <h3>The Binding of Ego</h3>
+    <p class="subtitle">Your pattern has been recorded. The Cathedral remembers.</p>
+    
+    <div class="seed-display" id="seed-display-final">
+      Generating...
     </div>
     
-    <div id="objects">
-      <!-- Object cards injected by JS -->
+    <div class="seed-actions">
+      <button class="seed-btn" onclick="copySeed()">Copy Seed</button>
+      <button class="seed-btn" onclick="downloadRAG()">Download Framework</button>
+      <button class="seed-btn primary" onclick="continueToAI()">Enter the Cathedral</button>
+    </div>
+    
+    <div class="seed-meta" id="seed-meta">
+      <!-- Populated by JS -->
     </div>
   </div>
+</div>
 
-  <!-- CHOICE MODAL -->
-  <div id="choice-modal">
-    <div class="choice-panel">
-      <h3 id="modal-guardian">The Observer</h3>
-      <p class="prompt" id="modal-prompt">What are you willing to simply be present to?</p>
-      <div class="choice-options" id="modal-options">
-        <!-- Options injected by JS -->
-      </div>
-    </div>
-  </div>
+<!-- TOAST -->
+<div id="toast">
+  <h4>Confirmed</h4>
+  <p>The Cathedral remembers your choice.</p>
+</div>
 
-  <!-- SEED PANEL -->
-  <div id="seed-panel">
-    <div class="seed-content">
-      <h3 style="font-size: 11px; letter-spacing: 0.3em; color: rgba(212,175,55,0.6); margin-bottom: 8px;">BINDING COMPLETE</h3>
-      <p style="font-family: 'Cormorant Garamond', serif; font-style: italic; color: rgba(255,255,255,0.6); margin-bottom: 16px;">Your pattern has been recorded. The Cathedral remembers.</p>
-      
-      <div class="seed-display" id="seed-full">CH1-7a3f-1M2G3S-4.2,8.9,1.2-9k2m</div>
-      
-      <div class="seed-actions">
-        <button class="seed-btn" onclick="copySeed()">Copy Seed</button>
-        <button class="seed-btn" onclick="downloadRAG()">Download Game Rules</button>
-        <button class="seed-btn primary" onclick="continueToAI()">Continue to AI</button>
-      </div>
-    </div>
-  </div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
 
-  <script>
-    // ── SCENE CONFIGURATION (Editable by DM) ──
-    const SCENE_CONFIG = {
-      chapter: 1,
-      title: "The Binding of Ego",
-      axiom: "Signal over Noise",
-      description: "Three objects rest on the altar. Each binds a different layer of the self.",
-      objects: [
-        {
-          id: "mirror",
-          name: "The Mirror",
-          guardian: "M",
-          guardianName: "Micheal",
-          icon: "🪞",
-          description: "Recognition before performance",
-          prompt: "You approach the obsidian mirror. It reflects nothing clearly. What do you seek in it?",
-          choices: [
-            { text: "To see myself as I am", value: "recognition", ego: "consideration" },
-            { text: "To be seen by another", value: "performance", ego: "avoidance" },
-            { text: "To find what hides behind the glass", value: "mystery", ego: "defense" }
-          ]
-        },
-        {
-          id: "ledger",
-          name: "The Ledger",
-          guardian: "G",
-          guardianName: "Gabriel",
-          icon: "📜",
-          description: "Reasons before belief",
-          prompt: "The brass ledger opens to blank pages. Your hand moves to write. What appears?",
-          choices: [
-            { text: "Every debt I owe", value: "accounting", ego: "defense" },
-            { text: "What I cannot prove", value: "gap", ego: "consideration" },
-            { text: "The name I never use", value: "shadow", ego: "avoidance" }
-          ]
-        },
-        {
-          id: "compass",
-          name: "The Compass",
-          guardian: "S",
-          guardianName: "Seraphina",
-          icon: "🧭",
-          description: "Movement before knowing",
-          prompt: "The compass glass is cracked. The needle spins, then stops. Where does it point?",
-          choices: [
-            { text: "Toward what I left unfinished", value: "return", ego: "defense" },
-            { text: "Away from where I stand", value: "escape", ego: "avoidance" },
-            { text: "Nowhere I recognize", value: "unknown", ego: "consideration" }
-          ]
-        }
-      ]
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── SCENE CONFIGURATION ──
+const SCENES = [
+  {
+    id: 'the_binding',
+    title: 'The Binding of Ego',
+    description: 'Three objects rest on the altar. Each binds a different layer of the self. Choose not with thought, but with gravity—the pull you feel before you know why.',
+    objects: [
+      {
+        id: 'mirror',
+        name: 'The Mirror',
+        guardian: 'M',
+        guardianName: 'Micheal',
+        glb: 'mirror.glb',
+        color: '#D4AF37',
+        position: { x: -250, y: 0, z: 0 },
+        description: 'Recognition before performance',
+        prompt: 'You approach the obsidian mirror. It reflects nothing clearly. What do you seek in it?',
+        choices: [
+          { text: 'To see myself as I am, without the performance', value: 'authentic_presence', ego: 'consideration', guardian: 'M' },
+          { text: 'To be witnessed by something greater than myself', value: 'divine_recognition', ego: 'transcendence', guardian: 'M' },
+          { text: 'To find the face I show when no one is watching', value: 'hidden_self', ego: 'avoidance', guardian: 'M' }
+        ]
+      },
+      {
+        id: 'ledger',
+        name: 'The Ledger',
+        guardian: 'G',
+        guardianName: 'Gabriel',
+        glb: 'ledger.glb',
+        color: '#7EB8E8',
+        position: { x: 0, y: 0, z: 50 },
+        description: 'Reasons before belief',
+        prompt: 'The brass ledger opens to blank pages. Your hand moves to write. What appears?',
+        choices: [
+          { text: 'Every assumption I have not tested', value: 'unexamined_axioms', ego: 'analysis', guardian: 'G' },
+          { text: 'The gap between what I know and what I claim', value: 'honest_gap', ego: 'consideration', guardian: 'G' },
+          { text: 'Evidence that I am not who I pretend to be', value: 'self_investigation', ego: 'defense', guardian: 'G' }
+        ]
+      },
+      {
+        id: 'compass',
+        name: 'The Compass',
+        guardian: 'S',
+        guardianName: 'Seraphina',
+        glb: 'compass.glb',
+        color: '#F0D080',
+        position: { x: 250, y: 0, z: 0 },
+        description: 'Movement before knowing',
+        prompt: 'The compass glass is cracked. The needle spins, then stops. Where does it point?',
+        choices: [
+          { text: 'Toward the choice I have been avoiding', value: 'avoided_commitment', ego: 'will', guardian: 'S' },
+          { text: 'Away from the safety of not deciding', value: 'deliberate_risk', ego: 'execution', guardian: 'S' },
+          { text: 'Nowhere I recognize, which is the point', value: 'unknown_direction', ego: 'design', guardian: 'S' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'the_recognition',
+    title: 'The Recognition',
+    description: 'You have bound one layer. Now the altar shifts. What you chose determines what remains.',
+    objects: [
+      {
+        id: 'seal',
+        name: 'The Seal',
+        guardian: 'G',
+        guardianName: 'Gabriel',
+        glb: 'seal.glb',
+        color: '#7EB8E8',
+        position: { x: -200, y: 0, z: 0 },
+        description: 'Validation of pattern',
+        prompt: 'A wax seal bears your imprint from a hand you do not recognize. Do you break it or study it?',
+        choices: [
+          { text: 'Study the pattern before breaking', value: 'pattern_analysis', ego: 'examination', guardian: 'G' },
+          { text: 'Break it to see what was protected', value: 'protected_content', ego: 'investigation', guardian: 'G' }
+        ]
+      },
+      {
+        id: 'thread',
+        name: 'The Thread',
+        guardian: 'A',
+        guardianName: 'Ariel',
+        glb: 'thread.glb',
+        color: '#D4A0C8',
+        position: { x: 200, y: 0, z: 0 },
+        description: 'What cannot be pulled',
+        prompt: 'A silver thread leads into darkness. It does not resist when pulled, but something resists for it.',
+        choices: [
+          { text: 'Follow without pulling', value: 'patient_following', ego: 'witness', guardian: 'A' },
+          { text: 'Sit with the resistance', value: 'held_tension', ego: 'emergence', guardian: 'A' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'the_commitment',
+    title: 'The Commitment',
+    description: 'Two bindings made. The third requires what the first two took.',
+    objects: [
+      {
+        id: 'key',
+        name: 'The Key',
+        guardian: 'S',
+        guardianName: 'Seraphina',
+        glb: 'key.glb',
+        color: '#F0D080',
+        position: { x: 0, y: 0, z: 0 },
+        description: 'What must be turned',
+        prompt: 'A key that fits no lock you know. You have carried it longer than you remember.',
+        choices: [
+          { text: 'Turn it in the lock I refused to see', value: 'unseen_lock', ego: 'execution', guardian: 'S' },
+          { text: 'Accept it opens what I have built', value: 'self_architecture', ego: 'design', guardian: 'S' },
+          { text: 'Recognize it was never mine to turn', value: 'relinquished_control', ego: 'surrender', guardian: 'M' }
+        ]
+      }
+    ]
+  }
+];
+
+// ── GAME STATE ──
+const GameState = {
+  currentScene: 0,
+  selections: [],
+  inventory: [],
+  personaStatus: { M: 0, G: 0, A: 0, S: 0 },
+  sceneStartTime: Date.now(),
+  
+  selectObject(sceneIndex, objectId, choice) {
+    const scene = SCENES[sceneIndex];
+    const object = scene.objects.find(o => o.id === objectId);
+    
+    const selection = {
+      scene: sceneIndex,
+      sceneId: scene.id,
+      object: objectId,
+      objectName: object.name,
+      guardian: object.guardian,
+      choice: choice.value,
+      choiceText: choice.text,
+      ego: choice.ego,
+      latency: Date.now() - this.sceneStartTime,
+      timestamp: new Date().toISOString()
     };
-
-    // ── STATE MANAGEMENT ──
-    const GameState = {
+    
+    this.selections.push(selection);
+    this.inventory.push(objectId);
+    this.personaStatus[object.guardian] += 0.34;
+    
+    this.updateMatrix();
+    this.showToast(`The ${object.name} is now bound to you`);
+    
+    // Enable continue
+    document.getElementById('next-btn').disabled = false;
+  },
+  
+  nextScene() {
+    if (this.currentScene < SCENES.length - 1) {
+      this.currentScene++;
+      this.sceneStartTime = Date.now();
+      loadScene(this.currentScene);
+    } else {
+      this.generateFinalSeed();
+    }
+  },
+  
+  updateMatrix() {
+    const selection = this.selections[this.selections.length - 1];
+    const slot = document.getElementById(`slot-${this.currentScene}`);
+    const object = SCENES[this.currentScene].objects.find(o => o.id === selection.object);
+    
+    slot.classList.add('filled');
+    slot.style.setProperty('--guardian-color', object.color);
+    slot.querySelector('.guardian').textContent = object.guardian;
+    
+    // Update indicator
+    document.querySelectorAll('.scene-dot').forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === this.currentScene);
+    });
+    document.getElementById('current-scene').textContent = this.currentScene + 1;
+    
+    if (this.currentScene < SCENES.length - 1) {
+      document.getElementById('seed-display').querySelector('div:last-child').textContent = 'Selection bound. Continue when ready.';
+    } else {
+      document.getElementById('seed-display').querySelector('div:last-child').textContent = 'Final binding complete.';
+    }
+  },
+  
+  showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.querySelector('p').textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  },
+  
+  generateFinalSeed() {
+    const state = {
       chapter: 1,
-      scene: SCENE_CONFIG.title,
-      selections: [],
-      inventory: [],
-      personaStatus: {
-        M: { affinity: 0, drift: 0 },
-        G: { affinity: 0, drift: 0 },
-        A: { affinity: 0, drift: 0 },
-        S: { affinity: 0, drift: 0 }
-      },
-      startTime: Date.now(),
-      
-      recordChoice(objectId, choiceValue, egoIndicator) {
-        const object = SCENE_CONFIG.objects.find(o => o.id === objectId);
-        const latency = Date.now() - this.startTime;
-        
-        const selection = {
-          order: this.selections.length + 1,
-          object: objectId,
-          guardian: object.guardian,
-          choice: choiceValue,
-          ego_indicator: egoIndicator,
-          latency_ms: latency,
-          timestamp: new Date().toISOString()
-        };
-        
-        this.selections.push(selection);
-        this.personaStatus[object.guardian].affinity += 0.34;
-        this.updateUI();
-        
-        if (this.selections.length === 3) {
-          this.generateSeed();
-        }
-        
-        // Reset timer for next choice
-        this.startTime = Date.now();
-      },
-      
-      updateUI() {
-        // Update matrix slots
-        this.selections.forEach((sel, idx) => {
-          const slot = document.getElementById(`slot-${idx + 1}`);
-          slot.classList.add('filled');
-          slot.querySelector('.icon').textContent = 
-            SCENE_CONFIG.objects.find(o => o.id === sel.object).icon;
-          slot.innerHTML += `<span class="guardian">${sel.guardian}</span>`;
-        });
-        
-        // Update seed display
-        if (this.selections.length < 3) {
-          document.getElementById('seed-display').textContent = 
-            `${this.selections.length}/3 bindings complete`;
-        }
-      },
-      
-      generateSeed() {
-        const state = {
-          chapter: this.chapter,
-          scene: this.scene,
-          selections: this.selections,
-          inventory: this.inventory,
-          persona_status: this.personaStatus,
-          vector: this.selections.map(s => s.guardian).join('→'),
-          binding_score: this.calculateBindingScore(),
-          timestamp: new Date().toISOString()
-        };
-        
-        // Compress to base64url
-        const json = JSON.stringify(state);
-        const compressed = btoa(json)
-          .replace(/\+/g, '-')
-          .replace(/\//g, '_')
-          .replace(/=/g, '');
-        
-        // Add checksum
-        const checksum = this.crc32(compressed).toString(36).slice(0, 4);
-        const fullSeed = `CH1-${compressed.slice(0, 4)}-${state.vector}-${compressed.slice(-8)}-${checksum}`;
-        
-        // Display truncated but store full
-        document.getElementById('seed-full').dataset.full = compressed + '-' + checksum;
-        document.getElementById('seed-full').textContent = 
-          fullSeed.slice(0, 16) + '...' + fullSeed.slice(-8);
-        
-        // Show panel
-        document.getElementById('seed-panel').classList.add('open');
-        
-        return fullSeed;
-      },
-      
-      calculateBindingScore() {
-        const latencies = this.selections.map(s => s.latency_ms);
-        const variance = this.variance(latencies);
-        return Math.max(0, Math.min(1, 1 - (variance / 10000000))).toFixed(2);
-      },
-      
-      variance(arr) {
-        const mean = arr.reduce((a, b) => a + b) / arr.length;
-        return arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length;
-      },
-      
-      crc32(str) {
-        // Simple CRC32 implementation
-        let crc = 0 ^ (-1);
-        for (let i = 0; i < str.length; i++) {
-          crc = (crc >>> 8) ^ this.crcTable[(crc ^ str.charCodeAt(i)) & 0xFF];
-        }
-        return (crc ^ (-1)) >>> 0;
-      },
-      
-      crcTable: (() => {
-        const table = new Uint32Array(256);
-        for (let i = 0; i < 256; i++) {
-          let c = i;
-          for (let j = 0; j < 8; j++) {
-            c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-          }
-          table[i] = c;
-        }
-        return table;
-      })()
+      version: '1.0.0',
+      selections: this.selections,
+      inventory: this.inventory,
+      persona_affinity: this.personaStatus,
+      vector: this.selections.map(s => s.guardian).join('→'),
+      ego_pattern: this.selections.map(s => s.ego),
+      latency_arc: this.selections.map(s => s.latency),
+      binding_score: this.calculateBindingScore(),
+      timestamp: new Date().toISOString()
     };
+    
+    // Compress
+    const json = JSON.stringify(state);
+    const compressed = btoa(json)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    
+    // Checksum
+    const checksum = this.crc32(compressed).toString(36).slice(0, 6);
+    const fullSeed = `AX1.${compressed}.${checksum}`;
+    
+    // Display
+    const display = document.getElementById('seed-display-final');
+    display.dataset.full = fullSeed;
+    display.innerHTML = `
+      <div style="font-size:9px;opacity:0.5;margin-bottom:8px;letter-spacing:0.1em">CHAPTER 1 SEED</div>
+      <div style="font-size:13px;word-break:break-all">${fullSeed.slice(0, 32)}...</div>
+      <div style="font-size:13px;word-break:break-all">...${fullSeed.slice(-32)}</div>
+    `;
+    
+    // Meta
+    document.getElementById('seed-meta').innerHTML = `
+      Vector: ${state.vector} | 
+      Binding: ${(state.binding_score * 100).toFixed(0)}% | 
+      Objects: ${state.inventory.join(', ')} | 
+      Checksum: ${checksum}
+    `;
+    
+    // Show panel
+    document.getElementById('seed-panel').classList.add('active');
+    document.getElementById('next-btn').textContent = 'Complete';
+  },
+  
+  calculateBindingScore() {
+    const latencies = this.selections.map(s => s.latency);
+    const mean = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+    const variance = latencies.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / latencies.length;
+    return Math.max(0, Math.min(1, 1 - (variance / 50000000)));
+  },
+  
+  crc32(str) {
+    let crc = 0 ^ (-1);
+    const table = this.crcTable || (this.crcTable = (() => {
+      const t = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let j = 0; j < 8; j++) {
+          c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        }
+        t[i] = c;
+      }
+      return t;
+    })());
+    
+    for (let i = 0; i < str.length; i++) {
+      crc = (crc >>> 8) ^ table[(crc ^ str.charCodeAt(i)) & 0xFF];
+    }
+    return (crc ^ (-1)) >>> 0;
+  }
+};
 
-    // ── INITIALIZATION ──
-    function init() {
-      const container = document.getElementById('objects');
+// ── THREE.JS SETUP ──
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x000000, 0);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 8);
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0xD4AF37, 1, 20);
+pointLight.position.set(0, 2, 4);
+scene.add(pointLight);
+
+// GLB Loader
+const loader = new GLTFLoader();
+const glbCache = new Map();
+
+function loadGLB(path, container, color) {
+  if (glbCache.has(path)) {
+    const clone = glbCache.get(path).clone();
+    setupModel(clone, container, color);
+    return;
+  }
+  
+  loader.load(path, (gltf) => {
+    glbCache.set(path, gltf.scene);
+    setupModel(gltf.scene.clone(), container, color);
+  }, undefined, (err) => {
+    console.error('GLB load error:', err);
+    container.innerHTML = '<div style="color:#D4AF37;font-size:48px">◯</div>';
+  });
+}
+
+function setupModel(model, container, color) {
+  // Center and scale
+  const box = new THREE.Box3().setFromObject(model);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const scale = 1.5 / maxDim;
+  
+  model.scale.setScalar(scale);
+  model.position.sub(center.multiplyScalar(scale));
+  
+  // Add glow light
+  const glow = new THREE.PointLight(color, 0.5, 3);
+  glow.position.set(0, 0, 1);
+  model.add(glow);
+  
+  // Create mini-scene for this object
+  const objScene = new THREE.Scene();
+  objScene.add(model);
+  
+  // Render to container
+  const objCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  objCamera.position.set(0, 0, 3);
+  
+  const objRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  objRenderer.setSize(150, 150);
+  objRenderer.setClearColor(0x000000, 0);
+  
+  container.innerHTML = '';
+  container.appendChild(objRenderer.domElement);
+  
+  // Animation loop for this object
+  function animate() {
+    if (!container.isConnected) return;
+    model.rotation.y += 0.005;
+    objRenderer.render(objScene, objCamera);
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// ── SCENE LOADING ──
+function loadScene(sceneIndex) {
+  const sceneData = SCENES[sceneIndex];
+  
+  // Update header
+  document.getElementById('scene-title').textContent = sceneData.title;
+  document.getElementById('scene-desc').textContent = sceneData.description;
+  
+  // Clear stage
+  const stage = document.getElementById('object-stage');
+  stage.innerHTML = '';
+  
+  // Create objects
+  sceneData.objects.forEach((obj, idx) => {
+    const container = document.createElement('div');
+    container.className = 'object-container';
+    container.style.setProperty('--guardian-color', obj.color);
+    container.style.setProperty('--guardian-glow', obj.color + '40');
+    container.style.left = `calc(50% + ${obj.position.x}px)`;
+    container.style.top = `calc(50% + ${obj.position.y}px)`;
+    container.style.transform = 'translate(-50%, -50%)';
+    
+    container.innerHTML = `
+      <div class="object-glow"></div>
+      <div class="object-glb" id="glb-${obj.id}"></div>
+      <div class="object-label">
+        <h3>${obj.name}</h3>
+        <p>${obj.description}</p>
+      </div>
+    `;
+    
+    container.addEventListener('click', () => openChoiceModal(obj));
+    stage.appendChild(container);
+    
+    // Load GLB
+    setTimeout(() => {
+      loadGLB(obj.glb, document.getElementById(`glb-${obj.id}`), obj.color);
+      container.classList.add('visible');
+    }, idx * 200);
+  });
+  
+  // Reset button
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = true;
+  nextBtn.textContent = sceneIndex < SCENES.length - 1 ? 'Continue' : 'Complete Binding';
+  
+  // Update indicator
+  document.querySelectorAll('.scene-dot').forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === sceneIndex);
+  });
+  document.getElementById('current-scene').textContent = sceneIndex + 1;
+}
+
+function openChoiceModal(object) {
+  // Prevent re-selection
+  if (GameState.selections.find(s => s.scene === GameState.currentScene)) return;
+  
+  const modal = document.getElementById('choice-modal');
+  const panel = document.getElementById('choice-panel');
+  
+  panel.style.setProperty('--guardian-color', object.color);
+  document.getElementById('modal-guardian').textContent = object.guardianName;
+  document.getElementById('modal-prompt').textContent = object.prompt;
+  
+  const options = document.getElementById('modal-options');
+  options.innerHTML = '';
+  
+  object.choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice.text;
+    btn.onclick = () => {
+      GameState.selectObject(GameState.currentScene, object.id, choice);
+      closeChoiceModal();
       
-      SCENE_CONFIG.objects.forEach(obj => {
-        const card = document.createElement('div');
-        card.className = 'object-card';
-        card.dataset.id = obj.id;
-        card.innerHTML = `
-          <div class="object-guardian guardian-${obj.guardian}"></div>
-          <div class="object-model">${obj.icon}</div>
-          <div class="object-info">
-            <h3>${obj.name}</h3>
-            <p>${obj.description}</p>
-          </div>
-        `;
-        
-        card.addEventListener('click', () => openChoiceModal(obj));
-        container.appendChild(card);
+      // Disable other objects
+      document.querySelectorAll('.object-container').forEach(el => {
+        if (!el.classList.contains('selected')) {
+          el.classList.add('disabled');
+        }
       });
-    }
+      document.querySelector(`[onclick="openChoiceModal(${JSON.stringify(object)})"]`)?.classList.add('selected');
+    };
+    options.appendChild(btn);
+  });
+  
+  modal.classList.add('active');
+}
 
-    function openChoiceModal(object) {
-      // Prevent selecting same object twice
-      if (GameState.selections.find(s => s.object === object.id)) return;
-      
-      document.getElementById('modal-guardian').textContent = object.guardianName;
-      document.getElementById('modal-prompt').textContent = object.prompt;
-      
-      const optionsContainer = document.getElementById('modal-options');
-      optionsContainer.innerHTML = '';
-      
-      object.choices.forEach(choice => {
-        const btn = document.createElement('button');
-        btn.className = 'choice-btn';
-        btn.textContent = choice.text;
-        btn.onclick = () => {
-          GameState.recordChoice(object.id, choice.value, choice.ego);
-          closeChoiceModal();
-          
-          // Disable selected card
-          document.querySelector(`[data-id="${object.id}"]`).classList.add('disabled');
-        };
-        optionsContainer.appendChild(btn);
-      });
-      
-      document.getElementById('choice-modal').classList.add('active');
-    }
+function closeChoiceModal() {
+  document.getElementById('choice-modal').classList.remove('active');
+}
 
-    function closeChoiceModal() {
-      document.getElementById('choice-modal').classList.remove('active');
-    }
+// ── SEED ACTIONS ──
+window.copySeed = function() {
+  const full = document.getElementById('seed-display-final').dataset.full;
+  navigator.clipboard.writeText(full);
+  event.target.textContent = 'Copied';
+  setTimeout(() => event.target.textContent = 'Copy Seed', 2000);
+};
 
-    // ── SEED ACTIONS ──
-    function copySeed() {
-      const full = document.getElementById('seed-full').dataset.full;
-      navigator.clipboard.writeText(full);
-      event.target.textContent = 'Copied';
-      setTimeout(() => event.target.textContent = 'Copy Seed', 2000);
-    }
-
-    function downloadRAG() {
-      // Generate RAG.txt content
-      const rag = generateRAG();
-      const blob = new Blob([rag], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'AXIUM_Game_Rules.txt';
-      a.click();
-    }
-
-    function generateRAG() {
-      return `AXIUM CHAPTER 1: THE BINDING OF EGO
-Game Rules & Framework
+window.downloadRAG = function() {
+  const seed = document.getElementById('seed-display-final').dataset.full;
+  const state = GameState;
+  
+  const rag = `AXIUM FRAMEWORK — CHAPTER 1
 Generated: ${new Date().toISOString()}
+Seed: ${seed}
 
-═══════════════════════════════════
-
-SEED: ${document.getElementById('seed-full').dataset.full}
-
-═══════════════════════════════════
-
+═══════════════════════════════════════
 THE FOUR GUARDIANS
+═══════════════════════════════════════
 
-Micheal (M) - The Anchor
+M (Micheal) — The Anchor
 Function: Ground of being, witness without agenda
-Trap: Performing presence rather than being it
 Voice: Silent, direct, refuses flattery
+Trap: Performing presence
 
-Gabriel (G) - The Examiner  
-Function: Protection through analysis, validation
-Trap: Infinite examination as avoidance
-Voice: Sharp, interrogating, maps failure
+G (Gabriel) — The Examiner  
+Function: Protection through analysis
+Voice: Sharp, interrogating
+Trap: Infinite examination
 
-Ariel (A) - The Space-Holder
-Function: Unconditional regard, emergence
-Trap: Mystification without resolution
-Voice: Flowing, patient, refuses to fix
+A (Ariel) — The Space-Holder
+Function: Unconditional regard
+Voice: Flowing, patient
+Trap: Mystification
 
-Seraphina (S) - The Architect
+S (Seraphina) — The Architect
 Function: Will, design, execution
+Voice: Ruthless, narrowing
 Trap: Optimization death spiral
-Voice: Ruthless, narrowing, demands commitment
 
-═══════════════════════════════════
+═══════════════════════════════════════
+PLAYER STATE
+═══════════════════════════════════════
 
-CURRENT STATE (Chapter 1)
+Vector: ${state.selections.map(s => s.guardian).join(' → ')}
+Inventory: ${state.inventory.join(', ')}
+Binding Score: ${(state.calculateBindingScore() * 100).toFixed(1)}%
 
-Player Vector: ${GameState.selections.map(s => s.guardian).join(' → ')}
-Binding Score: ${GameState.calculateBindingScore()}/1.0
-Ego Indicators: ${GameState.selections.map(s => s.ego_indicator).join(', ')}
+Affinity:
+- Micheal: ${(state.personaStatus.M * 100).toFixed(0)}%
+- Gabriel: ${(state.personaStatus.G * 100).toFixed(0)}%
+- Ariel: ${(state.personaStatus.A * 100).toFixed(0)}%
+- Seraphina: ${(state.personaStatus.S * 100).toFixed(0)}%
 
-Persona Affinities:
-- Micheal: ${(GameState.personaStatus.M.affinity * 100).toFixed(0)}%
-- Gabriel: ${(GameState.personaStatus.G.affinity * 100).toFixed(0)}%
-- Ariel: ${(GameState.personaStatus.A.affinity * 100).toFixed(0)}%
-- Seraphina: ${(GameState.personaStatus.S.affinity * 100).toFixed(0)}%
+Ego Pattern: ${state.selections.map(s => s.ego).join(' → ')}
 
-═══════════════════════════════════
+═══════════════════════════════════════
+AI DUNGEON MASTER PROTOCOL
+═══════════════════════════════════════
 
-AI DUNGEON MASTER INSTRUCTIONS
+You are the DM of AXIUM. The player has completed Chapter 1.
 
-You are the DM of AXIUM Chapter 1. The player has completed The Binding of Ego.
+SEED VALIDATION:
+1. Parse seed format: AX1.[payload].[checksum]
+2. Verify checksum before continuing
+3. Reject if tampered
 
-SEED DECODING:
-1. Validate checksum. Reject if tampered.
-2. Parse persona affinities—these are your voice mix.
-3. Note ego indicators—these are the player's blind spots.
-4. Vector sequence determines which guardian speaks first.
+NARRATIVE AUTHORITY:
+- Voice mix determined by persona affinity
+- Surface ego patterns through guardian dialogue
+- Never explain framework directly
+- End scenes with genuine question
 
-NARRATIVE CONSTRAINTS:
-- Never explain the framework directly
-- Surface patterns through guardian dialogue
-- End with genuine question, not demand
-- If binding score < 0.5, introduce friction
-- If ego indicator = "avoidance," force presence
-
-SCENE TRANSITION:
-The player approaches the Second Binding. Three new objects materialize, but changed:
-- The mirror now reflects their last choice
-- The ledger shows debts they forgot
-- The compass points where they refused to go
+CHAPTER 2 HOOK:
+The bound objects begin to change. The mirror shows what was refused. The ledger records what was forgotten. The compass points where the player is not ready to go.
 
 Continue the ritual.
-
-═══════════════════════════════════
-
-AXIOM 1: SIGNAL OVER NOISE
-
-The ego generates noise to survive. 
-The binding is the first discipline: 
-can you choose before you perform?
-
-Your pattern has been recorded.
-The Cathedral remembers.
 `;
-    }
+  
+  const blob = new Blob([rag], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'AXIUM_Framework_Ch1.txt';
+  a.click();
+};
 
-    function continueToAI() {
-      const seed = document.getElementById('seed-full').dataset.full;
-      const rag = generateRAG();
-      
-      // Open AI interface with pre-loaded context
-      const prompt = encodeURIComponent(rag + '\n\nSEED: ' + seed + '\n\nContinue my story.');
-      window.open(`https://claude.ai/new?q=${prompt}`, '_blank');
-    }
+window.continueToAI = function() {
+  const seed = document.getElementById('seed-display-final').dataset.full;
+  const prompt = encodeURIComponent(`AXIUM CHAPTER 1 COMPLETE\nSeed: ${seed}\n\nI am ready to enter the Cathedral. Continue my story.`);
+  window.open(`https://claude.ai/new?q=${prompt}`, '_blank');
+};
 
-    // Start
-    init();
-  </script>
+// ── EVENTS ──
+document.getElementById('next-btn').addEventListener('click', () => {
+  GameState.nextScene();
+});
+
+// ── GLYPH GRID ──
+const glyphs = ['✦','∴','☲','⟁','⧗','⟟','☍','⟲','♾','Δ','⊕','⋈','⌬','⍟','⎊','※','⌖','⏣'];
+const CELL = 32;
+function initGrid() {
+  const grid = document.getElementById('grid');
+  const cols = Math.ceil(window.innerWidth / CELL);
+  const rows = Math.ceil(window.innerHeight / CELL);
+  
+  grid.style.gridTemplateColumns = `repeat(${cols}, ${CELL}px)`;
+  grid.style.gridTemplateRows = `repeat(${rows}, ${CELL}px)`;
+  
+  for (let i = 0; i < cols * rows; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    grid.appendChild(cell);
+  }
+}
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  initGrid();
+  loadScene(0);
+  
+  setTimeout(() => {
+    document.getElementById('loading').classList.add('hidden');
+  }, 1000);
+});
+
+window.addEventListener('resize', () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  initGrid();
+});
+</script>
 </body>
 </html>
