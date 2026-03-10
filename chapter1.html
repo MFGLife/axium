@@ -155,7 +155,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
     <h2 id="scene-title">The Binding of Ego</h2>
     <p id="scene-desc">Three objects rest on the altar. Each binds a different layer of the self. Choose not with thought, but with gravity—the pull you feel before you know why.</p>
   </div>
-  
+
   <div id="object-stage">
     <!-- Objects positioned by JS -->
   </div>
@@ -186,17 +186,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
     <h2>Chapter 1 Complete</h2>
     <h3>The Binding of Ego</h3>
     <p class="subtitle">Your pattern has been recorded. The Cathedral remembers.</p>
-    
+
     <div class="seed-display" id="seed-display-final">
       Generating...
     </div>
-    
+
     <div class="seed-actions">
       <button class="seed-btn" onclick="copySeed()">Copy Seed</button>
       <button class="seed-btn" onclick="downloadRAG()">Download Framework</button>
       <button class="seed-btn primary" onclick="continueToAI()">Enter the Cathedral</button>
     </div>
-    
+
     <div class="seed-meta" id="seed-meta">
       <!-- Populated by JS -->
     </div>
@@ -221,6 +221,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ── SCENE CONFIGURATION ──
@@ -349,11 +350,11 @@ const GameState = {
   inventory: [],
   personaStatus: { M: 0, G: 0, A: 0, S: 0 },
   sceneStartTime: Date.now(),
-  
+
   selectObject(sceneIndex, objectId, choice) {
     const scene = SCENES[sceneIndex];
     const object = scene.objects.find(o => o.id === objectId);
-    
+
     const selection = {
       scene: sceneIndex,
       sceneId: scene.id,
@@ -366,18 +367,18 @@ const GameState = {
       latency: Date.now() - this.sceneStartTime,
       timestamp: new Date().toISOString()
     };
-    
+
     this.selections.push(selection);
     this.inventory.push(objectId);
     this.personaStatus[object.guardian] += 0.34;
-    
+
     this.updateMatrix();
     this.showToast(`The ${object.name} is now bound to you`);
-    
+
     // Enable continue
     document.getElementById('next-btn').disabled = false;
   },
-  
+
   nextScene() {
     if (this.currentScene < SCENES.length - 1) {
       this.currentScene++;
@@ -387,36 +388,36 @@ const GameState = {
       this.generateFinalSeed();
     }
   },
-  
+
   updateMatrix() {
     const selection = this.selections[this.selections.length - 1];
     const slot = document.getElementById(`slot-${this.currentScene}`);
     const object = SCENES[this.currentScene].objects.find(o => o.id === selection.object);
-    
+
     slot.classList.add('filled');
     slot.style.setProperty('--guardian-color', object.color);
     slot.querySelector('.guardian').textContent = object.guardian;
-    
+
     // Update indicator
     document.querySelectorAll('.scene-dot').forEach((dot, idx) => {
       dot.classList.toggle('active', idx === this.currentScene);
     });
     document.getElementById('current-scene').textContent = this.currentScene + 1;
-    
+
     if (this.currentScene < SCENES.length - 1) {
       document.getElementById('seed-display').querySelector('div:last-child').textContent = 'Selection bound. Continue when ready.';
     } else {
       document.getElementById('seed-display').querySelector('div:last-child').textContent = 'Final binding complete.';
     }
   },
-  
+
   showToast(message) {
     const toast = document.getElementById('toast');
     toast.querySelector('p').textContent = message;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2000);
   },
-  
+
   generateFinalSeed() {
     const state = {
       chapter: 1,
@@ -430,18 +431,18 @@ const GameState = {
       binding_score: this.calculateBindingScore(),
       timestamp: new Date().toISOString()
     };
-    
+
     // Compress
     const json = JSON.stringify(state);
     const compressed = btoa(json)
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
-    
+
     // Checksum
     const checksum = this.crc32(compressed).toString(36).slice(0, 6);
     const fullSeed = `AX1.${compressed}.${checksum}`;
-    
+
     // Display
     const display = document.getElementById('seed-display-final');
     display.dataset.full = fullSeed;
@@ -450,27 +451,27 @@ const GameState = {
       <div style="font-size:13px;word-break:break-all">${fullSeed.slice(0, 32)}...</div>
       <div style="font-size:13px;word-break:break-all">...${fullSeed.slice(-32)}</div>
     `;
-    
+
     // Meta
     document.getElementById('seed-meta').innerHTML = `
-      Vector: ${state.vector} | 
-      Binding: ${(state.binding_score * 100).toFixed(0)}% | 
-      Objects: ${state.inventory.join(', ')} | 
+      Vector: ${state.vector} |
+      Binding: ${(state.binding_score * 100).toFixed(0)}% |
+      Objects: ${state.inventory.join(', ')} |
       Checksum: ${checksum}
     `;
-    
+
     // Show panel
     document.getElementById('seed-panel').classList.add('active');
     document.getElementById('next-btn').textContent = 'Complete';
   },
-  
+
   calculateBindingScore() {
     const latencies = this.selections.map(s => s.latency);
     const mean = latencies.reduce((a, b) => a + b, 0) / latencies.length;
     const variance = latencies.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / latencies.length;
     return Math.max(0, Math.min(1, 1 - (variance / 50000000)));
   },
-  
+
   crc32(str) {
     let crc = 0 ^ (-1);
     const table = this.crcTable || (this.crcTable = (() => {
@@ -484,7 +485,7 @@ const GameState = {
       }
       return t;
     })());
-    
+
     for (let i = 0; i < str.length; i++) {
       crc = (crc >>> 8) ^ table[(crc ^ str.charCodeAt(i)) & 0xFF];
     }
@@ -511,8 +512,14 @@ const pointLight = new THREE.PointLight(0xD4AF37, 1, 20);
 pointLight.position.set(0, 2, 4);
 scene.add(pointLight);
 
-// GLB Loader
+// ── DRACO LOADER SETUP ──
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+dracoLoader.preload();
+
+// GLB Loader with Draco support
 const loader = new GLTFLoader();
+loader.setDRACOLoader(dracoLoader);
 const glbCache = new Map();
 
 function loadGLB(path, container, color) {
@@ -521,7 +528,7 @@ function loadGLB(path, container, color) {
     setupModel(clone, container, color);
     return;
   }
-  
+
   loader.load(path, (gltf) => {
     glbCache.set(path, gltf.scene);
     setupModel(gltf.scene.clone(), container, color);
@@ -538,30 +545,30 @@ function setupModel(model, container, color) {
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
   const scale = 1.5 / maxDim;
-  
+
   model.scale.setScalar(scale);
   model.position.sub(center.multiplyScalar(scale));
-  
+
   // Add glow light
   const glow = new THREE.PointLight(color, 0.5, 3);
   glow.position.set(0, 0, 1);
   model.add(glow);
-  
+
   // Create mini-scene for this object
   const objScene = new THREE.Scene();
   objScene.add(model);
-  
+
   // Render to container
   const objCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
   objCamera.position.set(0, 0, 3);
-  
+
   const objRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   objRenderer.setSize(150, 150);
   objRenderer.setClearColor(0x000000, 0);
-  
+
   container.innerHTML = '';
   container.appendChild(objRenderer.domElement);
-  
+
   // Animation loop for this object
   function animate() {
     if (!container.isConnected) return;
@@ -575,15 +582,15 @@ function setupModel(model, container, color) {
 // ── SCENE LOADING ──
 function loadScene(sceneIndex) {
   const sceneData = SCENES[sceneIndex];
-  
+
   // Update header
   document.getElementById('scene-title').textContent = sceneData.title;
   document.getElementById('scene-desc').textContent = sceneData.description;
-  
+
   // Clear stage
   const stage = document.getElementById('object-stage');
   stage.innerHTML = '';
-  
+
   // Create objects
   sceneData.objects.forEach((obj, idx) => {
     const container = document.createElement('div');
@@ -593,7 +600,7 @@ function loadScene(sceneIndex) {
     container.style.left = `calc(50% + ${obj.position.x}px)`;
     container.style.top = `calc(50% + ${obj.position.y}px)`;
     container.style.transform = 'translate(-50%, -50%)';
-    
+
     container.innerHTML = `
       <div class="object-glow"></div>
       <div class="object-glb" id="glb-${obj.id}"></div>
@@ -602,22 +609,22 @@ function loadScene(sceneIndex) {
         <p>${obj.description}</p>
       </div>
     `;
-    
+
     container.addEventListener('click', () => openChoiceModal(obj));
     stage.appendChild(container);
-    
+
     // Load GLB
     setTimeout(() => {
       loadGLB(obj.glb, document.getElementById(`glb-${obj.id}`), obj.color);
       container.classList.add('visible');
     }, idx * 200);
   });
-  
+
   // Reset button
   const nextBtn = document.getElementById('next-btn');
   nextBtn.disabled = true;
   nextBtn.textContent = sceneIndex < SCENES.length - 1 ? 'Continue' : 'Complete Binding';
-  
+
   // Update indicator
   document.querySelectorAll('.scene-dot').forEach((dot, idx) => {
     dot.classList.toggle('active', idx === sceneIndex);
@@ -628,17 +635,17 @@ function loadScene(sceneIndex) {
 function openChoiceModal(object) {
   // Prevent re-selection
   if (GameState.selections.find(s => s.scene === GameState.currentScene)) return;
-  
+
   const modal = document.getElementById('choice-modal');
   const panel = document.getElementById('choice-panel');
-  
+
   panel.style.setProperty('--guardian-color', object.color);
   document.getElementById('modal-guardian').textContent = object.guardianName;
   document.getElementById('modal-prompt').textContent = object.prompt;
-  
+
   const options = document.getElementById('modal-options');
   options.innerHTML = '';
-  
+
   object.choices.forEach(choice => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
@@ -646,7 +653,7 @@ function openChoiceModal(object) {
     btn.onclick = () => {
       GameState.selectObject(GameState.currentScene, object.id, choice);
       closeChoiceModal();
-      
+
       // Disable other objects
       document.querySelectorAll('.object-container').forEach(el => {
         if (!el.classList.contains('selected')) {
@@ -657,7 +664,7 @@ function openChoiceModal(object) {
     };
     options.appendChild(btn);
   });
-  
+
   modal.classList.add('active');
 }
 
@@ -676,7 +683,7 @@ window.copySeed = function() {
 window.downloadRAG = function() {
   const seed = document.getElementById('seed-display-final').dataset.full;
   const state = GameState;
-  
+
   const rag = `AXIUM FRAMEWORK — CHAPTER 1
 Generated: ${new Date().toISOString()}
 Seed: ${seed}
@@ -690,7 +697,7 @@ Function: Ground of being, witness without agenda
 Voice: Silent, direct, refuses flattery
 Trap: Performing presence
 
-G (Gabriel) — The Examiner  
+G (Gabriel) — The Examiner
 Function: Protection through analysis
 Voice: Sharp, interrogating
 Trap: Infinite examination
@@ -743,7 +750,7 @@ The bound objects begin to change. The mirror shows what was refused. The ledger
 
 Continue the ritual.
 `;
-  
+
   const blob = new Blob([rag], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -770,10 +777,10 @@ function initGrid() {
   const grid = document.getElementById('grid');
   const cols = Math.ceil(window.innerWidth / CELL);
   const rows = Math.ceil(window.innerHeight / CELL);
-  
+
   grid.style.gridTemplateColumns = `repeat(${cols}, ${CELL}px)`;
   grid.style.gridTemplateRows = `repeat(${rows}, ${CELL}px)`;
-  
+
   for (let i = 0; i < cols * rows; i++) {
     const cell = document.createElement('div');
     cell.className = 'cell';
@@ -786,7 +793,7 @@ function initGrid() {
 window.addEventListener('load', () => {
   initGrid();
   loadScene(0);
-  
+
   setTimeout(() => {
     document.getElementById('loading').classList.add('hidden');
   }, 1000);
