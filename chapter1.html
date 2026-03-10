@@ -455,7 +455,7 @@ const GameState = {
     // Meta
     document.getElementById('seed-meta').innerHTML = `
       Vector: ${state.vector} |
-      Binding: ${(state.binding_score * 100).toFixed(0)}% |
+      Binding: ${(state.calculateBindingScore() * 100).toFixed(0)}% |
       Objects: ${state.inventory.join(', ')} |
       Checksum: ${checksum}
     `;
@@ -595,6 +595,7 @@ function loadScene(sceneIndex) {
   sceneData.objects.forEach((obj, idx) => {
     const container = document.createElement('div');
     container.className = 'object-container';
+    container.dataset.objectId = obj.id; // Store ID for reference
     container.style.setProperty('--guardian-color', obj.color);
     container.style.setProperty('--guardian-glow', obj.color + '40');
     container.style.left = `calc(50% + ${obj.position.x}px)`;
@@ -610,6 +611,7 @@ function loadScene(sceneIndex) {
       </div>
     `;
 
+    // Use closure to capture object reference instead of inline onclick
     container.addEventListener('click', () => openChoiceModal(obj));
     stage.appendChild(container);
 
@@ -632,9 +634,15 @@ function loadScene(sceneIndex) {
   document.getElementById('current-scene').textContent = sceneIndex + 1;
 }
 
+// Store current modal object reference instead of using dataset
+let currentModalObject = null;
+
 function openChoiceModal(object) {
   // Prevent re-selection
   if (GameState.selections.find(s => s.scene === GameState.currentScene)) return;
+
+  // Store reference to current object
+  currentModalObject = object;
 
   const modal = document.getElementById('choice-modal');
   const panel = document.getElementById('choice-panel');
@@ -651,16 +659,25 @@ function openChoiceModal(object) {
     btn.className = 'choice-btn';
     btn.textContent = choice.text;
     btn.onclick = () => {
-      GameState.selectObject(GameState.currentScene, object.id, choice);
-      closeChoiceModal();
+      if (currentModalObject) {
+        GameState.selectObject(GameState.currentScene, currentModalObject.id, choice);
+        closeChoiceModal();
 
-      // Disable other objects
-      document.querySelectorAll('.object-container').forEach(el => {
-        if (!el.classList.contains('selected')) {
-          el.classList.add('disabled');
+        // Disable other objects
+        document.querySelectorAll('.object-container').forEach(el => {
+          if (!el.classList.contains('selected')) {
+            el.classList.add('disabled');
+          }
+        });
+
+        // Mark selected container
+        const selectedContainer = document.querySelector(`[data-object-id="${currentModalObject.id}"]`);
+        if (selectedContainer) {
+          selectedContainer.classList.add('selected');
         }
-      });
-      document.querySelector(`[onclick="openChoiceModal(${JSON.stringify(object)})"]`)?.classList.add('selected');
+
+        currentModalObject = null; // Clear reference
+      }
     };
     options.appendChild(btn);
   });
