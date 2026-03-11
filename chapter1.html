@@ -197,7 +197,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-family:'Cinzel',serif;touch-action:none;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Cinzel',serif;touch-action:none;user-select:none}
 
 /* ── GLYPH GRID (Transparent BG) ── */
 #grid{position:fixed;inset:0;display:grid;z-index:1;overflow:hidden;pointer-events:none;opacity:0.4}
@@ -209,12 +209,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
 #three-canvas.interactive{pointer-events:auto}
 
 /* ── CONFIRMATION MATRIX (Top) ── */
-#matrix{position:fixed;top:0;left:0;right:0;background:linear-gradient(to bottom,rgba(4,4,10,0.95),rgba(4,4,10,0.85));border-bottom:1px solid rgba(212,175,55,0.2);padding:16px 20px;z-index:100;display:flex;gap:12px;align-items:center;flex-wrap:wrap;backdrop-filter:blur(10px)}
-.matrix-slot{width:70px;height:90px;border:1px solid rgba(212,175,55,0.2);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);position:relative;transition:all 0.3s}
-.matrix-slot.filled{border-color:var(--guardian-color,rgba(212,175,55,0.6));background:rgba(0,0,0,0.7)}
+#matrix{position:fixed;top:0;left:0;right:0;background:transparent;border-bottom:1px solid rgba(212,175,55,0.15);padding:16px 20px;z-index:100;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.matrix-slot{width:74px;height:96px;border:1px solid rgba(212,175,55,0.2);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:transparent;position:relative;transition:all 0.3s}
+.matrix-slot.filled{border-color:var(--guardian-color,rgba(212,175,55,0.6));background:transparent}
 .matrix-slot .number{position:absolute;top:4px;left:6px;font-size:8px;opacity:0.5;font-family:'Space Mono',monospace}
-.matrix-slot .icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center}
-.matrix-slot .icon canvas{width:100%;height:100%}
+.matrix-slot .icon{width:60px;height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#D4AF37;font-size:20px}
+.matrix-slot .icon canvas{display:block}
 /* FIX: .guardian now styled properly — was missing from initial slot HTML, caused null crash */
 .matrix-slot .guardian{position:absolute;bottom:6px;font-size:7px;letter-spacing:0.2em;text-transform:uppercase;color:var(--guardian-color,#D4AF37)}
 /* FIX: Renamed from #seed-display to #matrix-status to avoid ID collision with seed panel */
@@ -247,8 +247,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
 
 /* ── SCENE NAVIGATION ── */
 #scene-nav{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:16px;align-items:center}
-.scene-btn{background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:#D4AF37;padding:14px 32px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;border-radius:2px;backdrop-filter:blur(5px)}
-.scene-btn:hover{background:rgba(212,175,55,0.2);border-color:#D4AF37}
+.scene-btn{background:transparent;border:1px solid rgba(212,175,55,0.3);color:#D4AF37;padding:14px 32px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;border-radius:2px}
+.scene-btn:hover{background:rgba(212,175,55,0.08);border-color:#D4AF37}
 .scene-btn:disabled{opacity:0.3;cursor:not-allowed;border-color:rgba(212,175,55,0.1)}
 .scene-btn.primary{background:rgba(212,175,55,0.25);border-color:#D4AF37}
 .scene-indicator{display:flex;gap:8px}
@@ -256,48 +256,58 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
 .scene-dot.active{background:#D4AF37;box-shadow:0 0 8px #D4AF37}
 
 /* ── CHOICE MODAL ── */
-#choice-modal{position:fixed;inset:0;background:rgba(4,4,10,0.95);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px)}
+#choice-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 #choice-modal.active{display:flex}
-.choice-panel{max-width:500px;width:100%;border:1px solid rgba(212,175,55,0.3);border-radius:8px;padding:40px;background:rgba(0,0,0,0.8);position:relative}
+.choice-panel{max-width:500px;width:100%;border:1px solid rgba(212,175,55,0.3);border-radius:8px;padding:40px;background:transparent;position:relative}
 .choice-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--guardian-color,#D4AF37),transparent)}
 .choice-guardian{font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--guardian-color,#D4AF37);margin-bottom:16px}
 .choice-prompt{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.6;margin-bottom:32px;color:rgba(255,255,255,0.9)}
 .choice-options{display:flex;flex-direction:column;gap:12px}
-.choice-btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);padding:18px 24px;font-family:'Cormorant Garamond',serif;font-size:14px;cursor:pointer;transition:all 0.3s;text-align:left;line-height:1.5;font-style:italic}
-.choice-btn:hover{border-color:var(--guardian-color,rgba(212,175,55,0.5));color:#fff;background:rgba(255,255,255,0.05)}
+.choice-btn{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);padding:18px 24px;font-family:'Cormorant Garamond',serif;font-size:14px;cursor:pointer;transition:all 0.3s;text-align:left;line-height:1.5;font-style:italic}
+.choice-btn:hover{border-color:var(--guardian-color,rgba(212,175,55,0.5));color:#fff;background:transparent}
 .choice-btn::before{content:'› ';opacity:0.5}
 /* FIX: Dismiss button for modal escape — prevents users getting trapped */
 .choice-dismiss{position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(255,255,255,0.2);font-size:20px;cursor:pointer;font-family:monospace;transition:color 0.2s;line-height:1}
 .choice-dismiss:hover{color:rgba(255,255,255,0.5)}
 
 /* ── SEED PANEL (Final) ── */
-#seed-panel{position:fixed;inset:0;background:rgba(4,4,10,0.98);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;backdrop-filter:blur(20px)}
+#seed-panel{position:fixed;inset:0;background:transparent;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;overflow-y:auto}
 #seed-panel.active{display:flex}
 .seed-content{max-width:700px;width:100%;text-align:center}
 .seed-content h2{font-size:12px;letter-spacing:0.4em;text-transform:uppercase;color:rgba(212,175,55,0.5);margin-bottom:16px}
 .seed-content h3{font-size:clamp(24px,5vw,40px);font-weight:400;margin-bottom:12px;color:#D4AF37}
 .seed-content .subtitle{font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(255,255,255,0.5);margin-bottom:40px;font-size:16px}
-/* FIX: ID renamed to seed-display-box to fully avoid collision with old #seed-display */
-.seed-display-box{font-family:'Space Mono',monospace;font-size:11px;color:#D4AF37;background:rgba(0,0,0,0.6);border:1px solid rgba(212,175,55,0.3);border-radius:4px;padding:20px;margin:20px 0;word-break:break-all;line-height:1.8;position:relative}
-.seed-display-box::before{content:'SEED';position:absolute;top:-8px;left:16px;background:rgba(4,4,10,1);padding:0 8px;font-size:8px;letter-spacing:0.2em;color:rgba(212,175,55,0.5)}
+.seed-display-box{font-family:'Space Mono',monospace;font-size:11px;color:#D4AF37;background:transparent;border:1px solid rgba(212,175,55,0.3);border-radius:4px;padding:20px;margin:20px 0;word-break:break-all;line-height:1.8;position:relative;text-align:left}
+.seed-display-box::before{content:'SEED';position:absolute;top:-8px;left:16px;background:#000;padding:0 8px;font-size:8px;letter-spacing:0.2em;color:rgba(212,175,55,0.5)}
 .seed-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:32px}
-.seed-btn{background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:#D4AF37;padding:14px 28px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;border-radius:2px}
-.seed-btn:hover{background:rgba(212,175,55,0.2);border-color:#D4AF37}
-.seed-btn.primary{background:rgba(212,175,55,0.3);border-color:#D4AF37}
-.seed-meta{margin-top:40px;padding-top:30px;border-top:1px solid rgba(255,255,255,0.1);font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);line-height:1.8}
+.seed-btn{background:transparent;border:1px solid rgba(212,175,55,0.3);color:#D4AF37;padding:14px 28px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;border-radius:2px}
+.seed-btn:hover{background:rgba(212,175,55,0.08);border-color:#D4AF37}
+.seed-btn.primary{border-color:#D4AF37;color:#D4AF37}
+/* ── LLM INTEGRATION BUTTON ── */
+#llm-launch-wrap{margin-top:40px;padding-top:30px;border-top:1px solid rgba(212,175,55,0.15)}
+#llm-launch-wrap p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:20px;letter-spacing:0.05em}
+#llm-btn{display:inline-flex;align-items:center;gap:12px;background:transparent;border:1px solid #D4AF37;color:#D4AF37;padding:18px 40px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;cursor:pointer;transition:all 0.4s;border-radius:2px;position:relative;overflow:hidden}
+#llm-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.06),transparent);transform:translateX(-100%);transition:transform 0.6s}
+#llm-btn:hover::before{transform:translateX(100%)}
+#llm-btn:hover{box-shadow:0 0 30px rgba(212,175,55,0.2),0 0 60px rgba(212,175,55,0.05);letter-spacing:0.35em}
+#llm-btn .btn-glyph{font-size:16px;opacity:0.6}
+#llm-status{margin-top:12px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(212,175,55,0.3);text-transform:uppercase}
+.seed-meta{margin-top:24px;font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);line-height:1.8}
 
 /* ── LOADING ── */
-#loading{position:fixed;inset:0;background:rgba(4,4,10,1);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#loading{position:fixed;inset:0;background:#000;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center}
 #loading.hidden{opacity:0;pointer-events:none;transition:opacity 0.5s}
 .spinner{width:40px;height:40px;border:1px solid rgba(212,175,55,0.2);border-top-color:#D4AF37;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loading p{margin-top:20px;font-size:10px;letter-spacing:0.3em;color:rgba(212,175,55,0.5);text-transform:uppercase}
 
 /* ── TOAST ── */
-#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:rgba(4,4,10,0.98);border:1px solid rgba(212,175,55,0.4);padding:24px 40px;z-index:400;opacity:0;transition:all 0.3s;pointer-events:none;text-align:center;border-radius:4px}
+#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:transparent;border:1px solid rgba(212,175,55,0.4);padding:24px 40px;z-index:400;opacity:0;transition:all 0.3s;pointer-events:none;text-align:center;border-radius:4px}
 #toast.show{transform:translate(-50%,-50%) scale(1);opacity:1}
 #toast h4{font-size:10px;letter-spacing:0.2em;color:#D4AF37;margin-bottom:8px;text-transform:uppercase}
 #toast p{font-family:'Cormorant Garamond',serif;font-size:14px;color:rgba(255,255,255,0.7);font-style:italic}
+
+@keyframes llmPulse{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 24px rgba(212,175,55,0.25),0 0 48px rgba(212,175,55,0.08)}}
 
 @media(max-width:768px){
   #matrix{padding:12px}
@@ -391,7 +401,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
     <h3>The Binding of Ego</h3>
     <p class="subtitle">Your pattern has been recorded. The Cathedral remembers.</p>
 
-    <!-- FIX: Changed from id="seed-display-final" class to id="seed-display-final" on a div with class seed-display-box -->
     <div class="seed-display-box" id="seed-display-final">
       Generating...
     </div>
@@ -399,12 +408,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
     <div class="seed-actions">
       <button class="seed-btn" onclick="copySeed()">Copy Seed</button>
       <button class="seed-btn" onclick="downloadRAG()">Download Framework</button>
-      <button class="seed-btn primary" onclick="continueToAI()">Enter the Cathedral</button>
     </div>
 
-    <div class="seed-meta" id="seed-meta">
-      <!-- Populated by JS -->
+    <!-- LLM INTEGRATION BUTTON — populated with full seed + context on completion -->
+    <div id="llm-launch-wrap">
+      <p>The seed is bound. Present it to the oracle and the ritual continues.</p>
+      <button id="llm-btn" onclick="launchLLM()">
+        <span class="btn-glyph">⟁</span>
+        Enter the Cathedral
+        <span class="btn-glyph">⟁</span>
+      </button>
+      <div id="llm-status">Seed encoded — ready for transmission</div>
     </div>
+
+    <div class="seed-meta" id="seed-meta"></div>
   </div>
 </div>
 
@@ -417,17 +434,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-fam
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js"
   }
 }
 </script>
 
 <script type="module">
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ── SCENE CONFIGURATION ──
 const SCENES = [
@@ -605,6 +618,9 @@ const GameState = {
     // FIX: .guardian span now exists in HTML — no longer null, crash resolved
     slot.querySelector('.guardian').textContent = object.guardian;
 
+    // Spawn the selected item's 3D object into the matrix slot inventory
+    spawnSlotObject(slot, selection.object, object.color);
+
     // Update indicators
     document.querySelectorAll('.scene-dot').forEach((dot, idx) => {
       dot.classList.toggle('active', idx === this.currentScene);
@@ -637,13 +653,17 @@ const GameState = {
       vector: this.selections.map(s => s.guardian).join('→'),
       ego_pattern: this.selections.map(s => s.ego),
       latency_arc: this.selections.map(s => s.latency),
-      // FIX: binding_score calculated here on plain state object using GameState method
       binding_score: this.calculateBindingScore(),
       timestamp: new Date().toISOString()
     };
 
     const json = JSON.stringify(state);
-    const compressed = btoa(json)
+    // Fix: btoa fails on non-Latin1 chars (unicode in choice text etc.)
+    // Use TextEncoder → Uint8Array → base64 safe path
+    const bytes = new TextEncoder().encode(json);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    const compressed = btoa(binary)
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
@@ -651,24 +671,68 @@ const GameState = {
     const checksum = this.crc32(compressed).toString(36).slice(0, 6);
     const fullSeed = `AX1.${compressed}.${checksum}`;
 
+    // Store seed on element for copy/download access
     const display = document.getElementById('seed-display-final');
     display.dataset.full = fullSeed;
     display.innerHTML = `
       <div style="font-size:9px;opacity:0.5;margin-bottom:8px;letter-spacing:0.1em">CHAPTER 1 SEED</div>
-      <div style="font-size:13px;word-break:break-all">${fullSeed.slice(0, 32)}...</div>
-      <div style="font-size:13px;word-break:break-all">...${fullSeed.slice(-32)}</div>
+      <div style="font-size:13px;word-break:break-all">${fullSeed.slice(0, 32)}…</div>
+      <div style="font-size:13px;word-break:break-all">…${fullSeed.slice(-32)}</div>
     `;
 
-    // FIX: was calling state.calculateBindingScore() — state is plain object, has no methods
-    // Now correctly calls GameState.calculateBindingScore()
-    document.getElementById('seed-meta').innerHTML = `
-      Vector: ${state.vector} |
-      Binding: ${(GameState.calculateBindingScore() * 100).toFixed(0)}% |
-      Objects: ${state.inventory.join(', ')} |
-      Checksum: ${checksum}
-    `;
+    // Build the full LLM context prompt — this is what gets sent to Claude
+    const llmPrompt = [
+      `AXIUM — CHAPTER 1: THE BINDING OF EGO`,
+      `Seed: ${fullSeed}`,
+      ``,
+      `═══ GUARDIAN VECTOR ═══`,
+      `Path: ${state.vector}`,
+      `Ego Arc: ${state.ego_pattern.join(' → ')}`,
+      `Binding Score: ${(GameState.calculateBindingScore() * 100).toFixed(1)}%`,
+      ``,
+      `═══ SELECTIONS ═══`,
+      ...this.selections.map((s, i) =>
+        `${i + 1}. ${s.objectName} [${s.guardian}] — "${s.choiceText}" (${s.ego})`
+      ),
+      ``,
+      `═══ AFFINITY ═══`,
+      `Micheal (M): ${(this.personaStatus.M * 100).toFixed(0)}%`,
+      `Gabriel (G): ${(this.personaStatus.G * 100).toFixed(0)}%`,
+      `Ariel   (A): ${(this.personaStatus.A * 100).toFixed(0)}%`,
+      `Seraphina(S): ${(this.personaStatus.S * 100).toFixed(0)}%`,
+      ``,
+      `═══ INSTRUCTION TO LLM ═══`,
+      `You are the Dungeon Master of AXIUM. The player has completed Chapter 1.`,
+      `The seed above encodes their full binding pattern. Parse it. Honor it.`,
+      `Address the player through the voice of their dominant guardian.`,
+      `Do not explain the framework. Begin Chapter 2 now.`,
+      `The bound objects have begun to change. Continue the ritual.`,
+    ].join('\n');
+
+    // Wire the LLM button with this prompt
+    const llmBtn = document.getElementById('llm-btn');
+    llmBtn.dataset.prompt = llmPrompt;
+
+    // Pulse the button once it's ready
+    llmBtn.style.animation = 'llmPulse 2s ease-in-out infinite';
+
+    document.getElementById('llm-status').textContent =
+      `Vector ${state.vector} · ${(GameState.calculateBindingScore() * 100).toFixed(0)}% bound · Ready`;
+
+    // Meta summary
+    document.getElementById('seed-meta').innerHTML =
+      `Vector: ${state.vector} &nbsp;|&nbsp; ` +
+      `Objects: ${state.inventory.join(', ')} &nbsp;|&nbsp; ` +
+      `Checksum: ${checksum}`;
 
     document.getElementById('seed-panel').classList.add('active');
+
+    // Hide the main scene so the seed panel reads cleanly against black
+    ['#scene','#scene-nav','#matrix','#grid','#three-canvas'].forEach(sel => {
+      const el = document.querySelector(sel);
+      if (el) { el.style.transition = 'opacity 0.6s'; el.style.opacity = '0'; el.style.pointerEvents = 'none'; }
+    });
+
     document.getElementById('next-btn').textContent = 'Complete';
   },
 
@@ -719,65 +783,437 @@ const pointLight = new THREE.PointLight(0xD4AF37, 1, 20);
 pointLight.position.set(0, 2, 4);
 scene.add(pointLight);
 
-// ── DRACO LOADER SETUP ──
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
-dracoLoader.preload();
+// ── PROCEDURAL OBJECT BUILDERS — each returns a THREE.Group ──
 
-const loader = new GLTFLoader();
-loader.setDRACOLoader(dracoLoader);
-const glbCache = new Map();
+function buildMirror(color) {
+  const group = new THREE.Group();
+  const c = new THREE.Color(color);
 
-function loadGLB(path, container, color) {
-  if (glbCache.has(path)) {
-    const clone = glbCache.get(path).clone();
-    setupModel(clone, container, color);
-    return;
-  }
-
-  loader.load(path, (gltf) => {
-    glbCache.set(path, gltf.scene);
-    setupModel(gltf.scene.clone(), container, color);
-  }, undefined, (err) => {
-    console.error('GLB load error:', err);
-    container.innerHTML = '<div style="color:#D4AF37;font-size:48px;display:flex;align-items:center;justify-content:center;height:100%">◯</div>';
+  // Reflective face — tall elegant rectangle, very thin
+  const faceGeo = new THREE.BoxGeometry(1.0, 1.45, 0.04);
+  const faceMat = new THREE.MeshStandardMaterial({
+    color: 0x111111, metalness: 1.0, roughness: 0.05,
+    emissive: c, emissiveIntensity: 0.04,
   });
+  const face = new THREE.Mesh(faceGeo, faceMat);
+  group.add(face);
+
+  // Frame — four thin bars around the face
+  const frameMat = new THREE.MeshStandardMaterial({ color: c, metalness: 0.9, roughness: 0.15 });
+  // top/bottom bars
+  [0.75, -0.75].forEach(y => {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.07, 0.09), frameMat);
+    bar.position.set(0, y, 0);
+    group.add(bar);
+  });
+  // left/right bars
+  [-0.55, 0.55].forEach(x => {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.07, 1.61, 0.09), frameMat);
+    bar.position.set(x, 0, 0);
+    group.add(bar);
+  });
+  // Corner ornaments — small diamond shapes
+  [[0.55,0.75],[-.55,0.75],[0.55,-.75],[-.55,-.75]].forEach(([x,y]) => {
+    const orb = new THREE.Mesh(new THREE.OctahedronGeometry(0.07), frameMat);
+    orb.position.set(x, y, 0.02);
+    group.add(orb);
+  });
+  // Stand base
+  const baseGeo = new THREE.BoxGeometry(0.5, 0.06, 0.3);
+  const base = new THREE.Mesh(baseGeo, frameMat);
+  base.position.set(0, -0.82, 0.12);
+  group.add(base);
+  // Stand neck
+  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.15, 0.07), frameMat);
+  neck.position.set(0, -0.74, 0.12);
+  group.add(neck);
+
+  return group;
 }
 
-function setupModel(model, container, color) {
-  const box = new THREE.Box3().setFromObject(model);
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
-  const maxDim = Math.max(size.x, size.y, size.z);
-  const scale = 1.5 / maxDim;
+function buildLedger(color) {
+  const group = new THREE.Group();
+  const c = new THREE.Color(color);
+  const coverMat = new THREE.MeshStandardMaterial({ color: c, metalness: 0.5, roughness: 0.4, emissive: c, emissiveIntensity: 0.05 });
+  const pageMat = new THREE.MeshStandardMaterial({ color: 0xf0ead6, metalness: 0.0, roughness: 0.9 });
+  const spineMat = new THREE.MeshStandardMaterial({ color: c, metalness: 0.6, roughness: 0.3 });
 
-  model.scale.setScalar(scale);
-  model.position.sub(center.multiplyScalar(scale));
+  // Main book body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.15, 0.22), coverMat);
+  group.add(body);
 
-  const glow = new THREE.PointLight(color, 0.5, 3);
-  glow.position.set(0, 0, 1);
-  model.add(glow);
+  // Page block (slightly inset, ivory)
+  const pages = new THREE.Mesh(new THREE.BoxGeometry(0.78, 1.06, 0.17), pageMat);
+  pages.position.set(0.04, 0, 0.025);
+  group.add(pages);
 
+  // Spine (left edge, thicker strip)
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.15, 0.26), spineMat);
+  spine.position.set(-0.485, 0, 0);
+  group.add(spine);
+
+  // Cover emboss — raised diamond sigil on front
+  const embossMat = new THREE.MeshStandardMaterial({ color: c, metalness: 0.95, roughness: 0.1, emissive: c, emissiveIntensity: 0.2 });
+  const diamond = new THREE.Mesh(new THREE.OctahedronGeometry(0.18, 0), embossMat);
+  diamond.rotation.z = Math.PI / 4;
+  diamond.scale.set(1, 1, 0.2);
+  diamond.position.set(0.1, 0.1, 0.135);
+  group.add(diamond);
+
+  // Page line details — thin horizontal slices suggesting pages on the right edge
+  for (let i = -5; i <= 5; i++) {
+    const line = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.01, 0.18), pageMat);
+    line.position.set(0.445, i * 0.09, 0.02);
+    group.add(line);
+  }
+
+  // Brass corner guards
+  const brassGeo = new THREE.BoxGeometry(0.12, 0.12, 0.28);
+  const brassMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.95, roughness: 0.1 });
+  [[0.37,0.52],[0.37,-0.52],[-0.37,0.52],[-0.37,-0.52]].forEach(([x,y]) => {
+    const g = new THREE.Mesh(brassGeo, brassMat);
+    g.position.set(x, y, 0);
+    group.add(g);
+  });
+
+  return group;
+}
+
+function buildCompass(color) {
+  const group = new THREE.Group();
+  const c = new THREE.Color(color);
+  const brassMat = new THREE.MeshStandardMaterial({ color: c, metalness: 0.9, roughness: 0.12, emissive: c, emissiveIntensity: 0.1 });
+  const darkMat  = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.8, roughness: 0.2 });
+  const glassMat = new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.0, roughness: 0.0, transparent: true, opacity: 0.18 });
+  const needleMat= new THREE.MeshStandardMaterial({ color: 0xff3333, metalness: 0.7, roughness: 0.2, emissive: 0xff1111, emissiveIntensity: 0.3 });
+
+  // Outer brass ring
+  const outerRing = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.07, 16, 64), brassMat);
+  group.add(outerRing);
+
+  // Inner dial face (dark)
+  const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.08, 64), darkMat);
+  group.add(dial);
+
+  // Glass cover (barely visible)
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.02, 64), glassMat);
+  glass.position.y = 0.06;
+  group.add(glass);
+
+  // Cardinal tick marks (N/S/E/W)
+  for (let i = 0; i < 16; i++) {
+    const angle = (i / 16) * Math.PI * 2;
+    const isCardinal = i % 4 === 0;
+    const tickGeo = new THREE.BoxGeometry(isCardinal ? 0.05 : 0.025, 0.02, isCardinal ? 0.16 : 0.09);
+    const tick = new THREE.Mesh(tickGeo, isCardinal ? brassMat : darkMat);
+    tick.position.set(Math.sin(angle) * 0.52, 0.06, Math.cos(angle) * 0.52);
+    tick.rotation.y = angle;
+    group.add(tick);
+  }
+
+  // Compass needle — elongated diamond shape pointing north
+  const needleN = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.52, 4), needleMat);
+  needleN.position.set(0, 0.07, -0.22);
+  needleN.rotation.x = Math.PI; // point toward +z (north)
+  group.add(needleN);
+
+  const needleS = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.42, 4), brassMat);
+  needleS.position.set(0, 0.07, 0.19);
+  group.add(needleS);
+
+  // Cracked glass — 3 thin lines radiating from off-center point
+  const crackMat = new THREE.MeshBasicMaterial({ color: 0xaaddff, transparent: true, opacity: 0.4 });
+  [[0,0.3],[0.4,-0.2],[-0.3,-0.1]].forEach(([dx,dz]) => {
+    const crackGeo = new THREE.BoxGeometry(0.015, 0.01, 0.38);
+    const crack = new THREE.Mesh(crackGeo, crackMat);
+    crack.position.set(dx * 0.5, 0.07, dz * 0.5);
+    crack.rotation.y = Math.atan2(dx, dz);
+    group.add(crack);
+  });
+
+  // Outer hinge detail
+  const hinge = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.1, 8), brassMat);
+  hinge.position.set(0.72, 0, 0);
+  hinge.rotation.z = Math.PI / 2;
+  group.add(hinge);
+
+  return group;
+}
+
+function buildSeal(color) {
+  const group = new THREE.Group();
+  const c = new THREE.Color(color);
+  const waxMat  = new THREE.MeshStandardMaterial({ color: 0x8b1a1a, metalness: 0.0, roughness: 0.85, emissive: 0x3a0a0a, emissiveIntensity: 0.3 });
+  const brassMat = new THREE.MeshStandardMaterial({ color: c, metalness: 0.95, roughness: 0.1, emissive: c, emissiveIntensity: 0.15 });
+
+  // Wax disc — slightly irregular, thick
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.72, 0.22, 7), waxMat);
+  group.add(disc);
+
+  // Wax drip blob below
+  const drip = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 8), waxMat);
+  drip.scale.set(1, 0.5, 0.8);
+  drip.position.set(0.1, -0.28, 0.1);
+  group.add(drip);
+
+  // Embossed sigil — raised star pattern
+  const sigMat = new THREE.MeshStandardMaterial({ color: c, metalness: 0.9, roughness: 0.1, emissive: c, emissiveIntensity: 0.3 });
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const ray = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.04), sigMat);
+    ray.position.set(Math.cos(angle) * 0.28, 0.14, Math.sin(angle) * 0.28);
+    ray.rotation.y = angle;
+    group.add(ray);
+  }
+  // Center orb of sigil
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), sigMat);
+  orb.position.y = 0.14;
+  group.add(orb);
+
+  // Outer rim — brass ring pressed into wax
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.035, 10, 48), brassMat);
+  rim.rotation.x = Math.PI / 2;
+  rim.position.y = 0.09;
+  group.add(rim);
+
+  return group;
+}
+
+function buildThread(color) {
+  const group = new THREE.Group();
+  const c = new THREE.Color(color);
+  const threadMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8, roughness: 0.1, emissive: c, emissiveIntensity: 0.25 });
+  const glowMat   = new THREE.MeshStandardMaterial({ color: c, metalness: 1.0, roughness: 0.0, emissive: c, emissiveIntensity: 0.6, transparent: true, opacity: 0.55 });
+
+  // Main coiled spool — layered torus rings
+  for (let i = 0; i < 6; i++) {
+    const r = 0.38 + i * 0.045;
+    const coil = new THREE.Mesh(new THREE.TorusGeometry(r, 0.022, 10, 80), threadMat);
+    coil.rotation.x = Math.PI / 2;
+    coil.position.y = -0.12 + i * 0.05;
+    group.add(coil);
+  }
+
+  // Luminous thread strand spiraling upward (helix using small spheres)
+  const N = 60;
+  for (let i = 0; i < N; i++) {
+    const t = i / N;
+    const angle = t * Math.PI * 8;
+    const radius = 0.38 + (1 - t) * 0.25;
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.018, 6, 6), glowMat);
+    sphere.position.set(
+      Math.cos(angle) * radius,
+      -0.12 + t * 1.1,
+      Math.sin(angle) * radius
+    );
+    group.add(sphere);
+  }
+
+  // Needle/bobbin at top where thread ends
+  const bobbin = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.22, 12), new THREE.MeshStandardMaterial({ color: c, metalness: 0.9, roughness: 0.15 }));
+  bobbin.position.y = 0.75;
+  group.add(bobbin);
+  const tip1 = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.12, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.0 }));
+  tip1.position.y = 0.92;
+  group.add(tip1);
+
+  return group;
+}
+
+function buildKey(color) {
+  const group = new THREE.Group();
+  const c = new THREE.Color(color);
+  const keyMat  = new THREE.MeshStandardMaterial({ color: c, metalness: 0.95, roughness: 0.1, emissive: c, emissiveIntensity: 0.12 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.3 });
+
+  // Bow (top ring) — decorative oval
+  const bow = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.055, 12, 48), keyMat);
+  bow.position.y = 0.58;
+  group.add(bow);
+
+  // Inner bow cutout hole (dark disc)
+  const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.12, 24), darkMat);
+  hole.rotation.x = Math.PI / 2;
+  hole.position.y = 0.58;
+  group.add(hole);
+
+  // Bow decorative cross
+  const bCross1 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.36, 0.07), keyMat);
+  bCross1.position.y = 0.58;
+  group.add(bCross1);
+  const bCross2 = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.06, 0.07), keyMat);
+  bCross2.position.y = 0.58;
+  group.add(bCross2);
+
+  // Shank (long shaft)
+  const shank = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.05, 10), keyMat);
+  shank.position.y = -0.22;
+  group.add(shank);
+
+  // Shoulder stop (collar at top of shank)
+  const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 12), keyMat);
+  shoulder.position.y = 0.22;
+  group.add(shoulder);
+
+  // Bit teeth — 3 cuts into the blade
+  const bitBase = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.28, 0.11), keyMat);
+  bitBase.position.set(0, -0.7, 0);
+  group.add(bitBase);
+
+  [[0.09, -0.60], [0.08, -0.72], [0.06, -0.82]].forEach(([w, y]) => {
+    const tooth = new THREE.Mesh(new THREE.BoxGeometry(w, 0.06, 0.13), keyMat);
+    tooth.position.set(w / 2, y, 0);
+    group.add(tooth);
+  });
+
+  // Tip taper
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.1, 10), keyMat);
+  tip.rotation.z = Math.PI;
+  tip.position.y = -0.79;
+  group.add(tip);
+
+  // Subtle patina/aging — worn dark layer on teeth
+  const wornMat = new THREE.MeshStandardMaterial({ color: 0x5a4a1a, metalness: 0.4, roughness: 0.7, transparent: true, opacity: 0.3 });
+  const worn = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.3, 0.12), wornMat);
+  worn.position.set(0, -0.70, 0);
+  group.add(worn);
+
+  return group;
+}
+
+const OBJECT_BUILDERS = { mirror: buildMirror, ledger: buildLedger, compass: buildCompass, seal: buildSeal, thread: buildThread, key: buildKey };
+
+function loadGLB(path, container, color, size = 160) {
+  const id = path.replace('.glb', '');
+  const builder = OBJECT_BUILDERS[id] || (() => {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.OctahedronGeometry(0.7), new THREE.MeshStandardMaterial({ color: new THREE.Color(color), metalness: 0.8, roughness: 0.2 })));
+    return g;
+  });
+  const group = builder(color);
+  setupProceduralModel(group, container, color, size);
+}
+
+// ── SHARED DRAG/TOUCH ORBIT — used for both stage objects and matrix slots ──
+function setupProceduralModel(group, container, color, size = 160) {
   const objScene = new THREE.Scene();
-  objScene.add(model);
+  const c = new THREE.Color(color);
 
-  const objCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-  objCamera.position.set(0, 0, 3);
+  objScene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  const key1 = new THREE.DirectionalLight(0xffffff, 1.4);
+  key1.position.set(3, 5, 4);
+  objScene.add(key1);
+  const fill = new THREE.DirectionalLight(c, 0.5);
+  fill.position.set(-3, 1, 2);
+  objScene.add(fill);
+  const rim = new THREE.DirectionalLight(c, 0.8);
+  rim.position.set(0, -3, -4);
+  objScene.add(rim);
+  const glow = new THREE.PointLight(c, 1.2, 8);
+  glow.position.set(0, 0, 2.5);
+  objScene.add(glow);
+
+  // Auto-center and scale
+  const box3 = new THREE.Box3().setFromObject(group);
+  const sz   = box3.getSize(new THREE.Vector3());
+  const ctr  = box3.getCenter(new THREE.Vector3());
+  const maxDim = Math.max(sz.x, sz.y, sz.z);
+  const sc = 1.6 / maxDim;
+  group.scale.setScalar(sc);
+  group.position.sub(ctr.clone().multiplyScalar(sc));
+  objScene.add(group);
+
+  const fov = size <= 70 ? 52 : 42;
+  const objCamera = new THREE.PerspectiveCamera(fov, 1, 0.1, 100);
+  objCamera.position.set(0, 0, 3.8);
 
   const objRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  objRenderer.setSize(150, 150);
+  objRenderer.setSize(size, size);
+  objRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   objRenderer.setClearColor(0x000000, 0);
 
   container.innerHTML = '';
+  container.style.width  = size + 'px';
+  container.style.height = size + 'px';
   container.appendChild(objRenderer.domElement);
 
+  // ── DRAG STATE ──
+  let isDragging  = false;
+  let prevX = 0, prevY = 0;
+  let velX  = 0, velY  = 0;
+  // Start with a nice angled default orientation
+  group.rotation.y = 0.4;
+  group.rotation.x = 0.15;
+
+  const el = objRenderer.domElement;
+
+  // Mouse
+  el.addEventListener('mousedown', e => {
+    isDragging = true; prevX = e.clientX; prevY = e.clientY; velX = 0; velY = 0;
+    el.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - prevX, dy = e.clientY - prevY;
+    velX = dx * 0.012; velY = dy * 0.012;
+    group.rotation.y += velX;
+    group.rotation.x += velY;
+    prevX = e.clientX; prevY = e.clientY;
+  });
+  window.addEventListener('mouseup', () => { isDragging = false; el.style.cursor = 'grab'; });
+  el.style.cursor = 'grab';
+
+  // Touch
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    isDragging = true;
+    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+    velX = 0; velY = 0;
+  }, { passive: false });
+  el.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - prevX, dy = e.touches[0].clientY - prevY;
+    velX = dx * 0.012; velY = dy * 0.012;
+    group.rotation.y += velX;
+    group.rotation.x += velY;
+    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+  }, { passive: false });
+  el.addEventListener('touchend', () => { isDragging = false; });
+
   function animate() {
-    if (!container.isConnected) return;
-    model.rotation.y += 0.005;
+    if (!container.isConnected) { objRenderer.dispose(); return; }
+    // Inertia — keep drifting after release, dampen to stop
+    if (!isDragging) {
+      group.rotation.y += velX;
+      group.rotation.x += velY;
+      velX *= 0.92;
+      velY *= 0.92;
+    }
+    // Clamp X rotation so it doesn't flip upside down
+    group.rotation.x = Math.max(-1.2, Math.min(1.2, group.rotation.x));
+    // Glow pulse
+    glow.intensity = 0.9 + Math.sin(Date.now() * 0.002) * 0.4;
     objRenderer.render(objScene, objCamera);
     requestAnimationFrame(animate);
   }
   animate();
+}
+
+// ── SPAWN MINI OBJECT INTO MATRIX SLOT ──
+function spawnSlotObject(slotEl, objectId, color) {
+  // Clear placeholder icon
+  const iconEl = slotEl.querySelector('.icon');
+  if (iconEl) {
+    iconEl.innerHTML = '';
+    iconEl.style.width  = '60px';
+    iconEl.style.height = '60px';
+    iconEl.style.overflow = 'hidden';
+  }
+  const builder = OBJECT_BUILDERS[objectId];
+  if (!builder) return;
+  const group = builder(color);
+  setupProceduralModel(group, iconEl, color, 60);
 }
 
 // ── SCENE LOADING ──
@@ -856,19 +1292,19 @@ function openChoiceModal(object) {
     btn.textContent = choice.text;
     btn.onclick = () => {
       if (currentModalObject) {
-        GameState.selectObject(GameState.currentScene, currentModalObject.id, choice);
-        closeChoiceModal();
+        // Snapshot BEFORE closeChoiceModal nulls currentModalObject
+        const chosenObject = currentModalObject;
+        GameState.selectObject(GameState.currentScene, chosenObject.id, choice);
+        closeChoiceModal(); // nulls currentModalObject — safe now since we have chosenObject
 
         document.querySelectorAll('.object-container').forEach(el => {
-          if (el.dataset.objectId !== currentModalObject?.id) {
+          if (el.dataset.objectId !== chosenObject.id) {
             el.classList.add('disabled');
           }
         });
 
-        const selectedContainer = document.querySelector(`[data-object-id="${currentModalObject.id}"]`);
+        const selectedContainer = document.querySelector(`[data-object-id="${chosenObject.id}"]`);
         if (selectedContainer) selectedContainer.classList.add('selected');
-
-        currentModalObject = null;
       }
     };
     options.appendChild(btn);
@@ -983,10 +1419,23 @@ Continue the ritual.
   URL.revokeObjectURL(url);
 };
 
-window.continueToAI = function() {
-  const seed = document.getElementById('seed-display-final').dataset.full || '';
-  const prompt = encodeURIComponent(`AXIUM CHAPTER 1 COMPLETE\nSeed: ${seed}\n\nI am ready to enter the Cathedral. Continue my story.`);
-  window.open(`https://claude.ai/new?q=${prompt}`, '_blank');
+window.launchLLM = function() {
+  const btn = document.getElementById('llm-btn');
+  const prompt = btn.dataset.prompt;
+  if (!prompt) return;
+
+  // Update status to show transmission
+  document.getElementById('llm-status').textContent = 'Transmitting to oracle...';
+  btn.style.opacity = '0.6';
+  btn.style.pointerEvents = 'none';
+
+  setTimeout(() => {
+    const encoded = encodeURIComponent(prompt);
+    window.open(`https://claude.ai/new?q=${encoded}`, '_blank');
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+    document.getElementById('llm-status').textContent = 'Transmission complete — the oracle awaits';
+  }, 600);
 };
 
 // ── NAV ──
