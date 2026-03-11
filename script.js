@@ -1,7 +1,6 @@
 /* NAV BUTTONS CONFIG */
 const NAV_BUTTONS = [
     { icon: '※', label: 'GAME',  href: 'game.html' },
-    { icon: '⌬', label: 'SOUL', href: 'soul2.html' },
     { icon: '☍', label: 'MASK', href: 'mask.html' },
     { icon: '⟁', label: 'VIDEO',  href: 'https://www.tiktok.com/@www.axium.church?_r=1&_t=ZP-946dSGNYfRG' },
     { icon: '∴', label: 'CODE', href: 'https://github.com/MFGLife' },
