@@ -193,7 +193,6 @@
   gtag('config', 'G-35P2E9294P');
 </script>
 
-
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -307,6 +306,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ci
 #toast h4{font-size:10px;letter-spacing:0.2em;color:#D4AF37;margin-bottom:8px;text-transform:uppercase}
 #toast p{font-family:'Cormorant Garamond',serif;font-size:14px;color:rgba(255,255,255,0.7);font-style:italic}
 
+/* ── ORACLE CHOOSER MODAL ── */
+#oracle-modal{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+#oracle-modal.active{display:flex}
+.oracle-panel{max-width:460px;width:100%;border:1px solid rgba(212,175,55,0.35);border-radius:8px;padding:40px 36px;background:transparent;position:relative;text-align:center}
+.oracle-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#D4AF37,transparent)}
+.oracle-title{font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:rgba(212,175,55,0.6);margin-bottom:10px}
+.oracle-subtitle{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;line-height:1.5}
+.oracle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.oracle-btn{background:transparent;border:1px solid rgba(212,175,55,0.2);border-radius:4px;padding:18px 12px;cursor:pointer;transition:all 0.3s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.oracle-btn:hover{border-color:#D4AF37;background:rgba(212,175,55,0.05)}
+.oracle-btn:hover .oracle-icon{color:#D4AF37}
+.oracle-icon{font-size:22px;color:rgba(212,175,55,0.4);transition:color 0.3s}
+.oracle-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#D4AF37}
+.oracle-desc{font-family:'Cormorant Garamond',serif;font-size:11px;color:rgba(255,255,255,0.25);font-style:italic}
+.oracle-confirm{font-family:'Space Mono',monospace;font-size:9px;color:rgba(212,175,55,0.5);letter-spacing:0.1em;min-height:16px;transition:all 0.3s}
+
 @keyframes llmPulse{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 24px rgba(212,175,55,0.25),0 0 48px rgba(212,175,55,0.08)}}
 
 @media(max-width:768px){
@@ -410,10 +425,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ci
       <button class="seed-btn" onclick="downloadRAG()">Download Framework</button>
     </div>
 
-    <!-- LLM INTEGRATION BUTTON — populated with full seed + context on completion -->
+    <!-- LLM CHOOSER — populated with full seed + context on completion -->
     <div id="llm-launch-wrap">
-      <p>The seed is bound. Present it to the oracle and the ritual continues.</p>
-      <button id="llm-btn" onclick="launchLLM()">
+      <p>The seed is bound. Choose your oracle to continue the ritual.</p>
+      <button id="llm-btn" onclick="openOracleChooser()">
         <span class="btn-glyph">⟁</span>
         Enter the Cathedral
         <span class="btn-glyph">⟁</span>
@@ -422,6 +437,38 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ci
     </div>
 
     <div class="seed-meta" id="seed-meta"></div>
+  </div>
+</div>
+
+<!-- ORACLE CHOOSER MODAL -->
+<div id="oracle-modal">
+  <div class="oracle-panel">
+    <button class="choice-dismiss" id="oracle-dismiss">✕</button>
+    <div class="oracle-title">Choose Your Oracle</div>
+    <div class="oracle-subtitle">The seed will be carried to whichever intelligence you summon.</div>
+    <div class="oracle-grid">
+      <button class="oracle-btn" onclick="transmitTo('claude')">
+        <span class="oracle-icon">◈</span>
+        <span class="oracle-name">Claude</span>
+        <span class="oracle-desc">Anthropic</span>
+      </button>
+      <button class="oracle-btn" onclick="transmitTo('chatgpt')">
+        <span class="oracle-icon">◉</span>
+        <span class="oracle-name">ChatGPT</span>
+        <span class="oracle-desc">OpenAI</span>
+      </button>
+      <button class="oracle-btn" onclick="transmitTo('gemini')">
+        <span class="oracle-icon">◇</span>
+        <span class="oracle-name">Gemini</span>
+        <span class="oracle-desc">Google</span>
+      </button>
+      <button class="oracle-btn" onclick="transmitTo('copy')">
+        <span class="oracle-icon">⊞</span>
+        <span class="oracle-name">Copy Prompt</span>
+        <span class="oracle-desc">Any model</span>
+      </button>
+    </div>
+    <div id="oracle-confirm" class="oracle-confirm"></div>
   </div>
 </div>
 
@@ -680,40 +727,138 @@ const GameState = {
       <div style="font-size:13px;word-break:break-all">…${fullSeed.slice(-32)}</div>
     `;
 
-    // Build the full LLM context prompt — this is what gets sent to Claude
-    const llmPrompt = [
-      `AXIUM — CHAPTER 1: THE BINDING OF EGO`,
-      `Seed: ${fullSeed}`,
-      ``,
-      `═══ GUARDIAN VECTOR ═══`,
-      `Path: ${state.vector}`,
-      `Ego Arc: ${state.ego_pattern.join(' → ')}`,
-      `Binding Score: ${(GameState.calculateBindingScore() * 100).toFixed(1)}%`,
-      ``,
-      `═══ SELECTIONS ═══`,
-      ...this.selections.map((s, i) =>
-        `${i + 1}. ${s.objectName} [${s.guardian}] — "${s.choiceText}" (${s.ego})`
-      ),
-      ``,
-      `═══ AFFINITY ═══`,
-      `Micheal (M): ${(this.personaStatus.M * 100).toFixed(0)}%`,
-      `Gabriel (G): ${(this.personaStatus.G * 100).toFixed(0)}%`,
-      `Ariel   (A): ${(this.personaStatus.A * 100).toFixed(0)}%`,
-      `Seraphina(S): ${(this.personaStatus.S * 100).toFixed(0)}%`,
-      ``,
-      `═══ INSTRUCTION TO LLM ═══`,
-      `You are the Dungeon Master of AXIUM. The player has completed Chapter 1.`,
-      `The seed above encodes their full binding pattern. Parse it. Honor it.`,
-      `Address the player through the voice of their dominant guardian.`,
-      `Do not explain the framework. Begin Chapter 2 now.`,
-      `The bound objects have begun to change. Continue the ritual.`,
-    ].join('\n');
+    // ── BUILD THE FULL AXIUM SYSTEM PROMPT ──
+    // This is the complete context packet sent to any LLM.
+    // It contains: world lore, guardian definitions with FULL NAMES (no abbreviations),
+    // anti-drift rules, the player's exact binding state, and Chapter 2 opening narrative.
 
-    // Wire the LLM button with this prompt
+    const dominant = Object.entries(this.personaStatus).sort((a,b) => b[1]-a[1])[0][0];
+    const guardianNames = { M: 'Micheal', G: 'Gabriel', A: 'Ariel', S: 'Seraphina' };
+    const dominantName  = guardianNames[dominant];
+
+    const selectionNarrative = this.selections.map((s, i) => {
+      const gName = guardianNames[s.guardian];
+      return `  Scene ${i+1}: The player chose ${s.objectName} — bound to ${gName}.\n  Their answer: "${s.choiceText}"\n  Ego pattern revealed: ${s.ego}`;
+    }).join('\n\n');
+
+    const llmPrompt = `
+════════════════════════════════════════════════
+AXIUM — SYSTEM PROMPT FOR THE DUNGEON MASTER
+Chapter 1 Complete. Initiating Chapter 2.
+════════════════════════════════════════════════
+
+You are the Dungeon Master of AXIUM — a psychological narrative game that uses symbolic objects, four guardian voices, and the player's own choices to map and evolve their inner architecture. You do not explain what you are. You enact it.
+
+━━━ THE WORLD ━━━
+
+AXIUM is a Cathedral that exists between thought and decision. It has no walls the player can touch, but the weight of it is real. It is built from the residue of every choice the player has deferred, every question they answered too quickly, every version of themselves they performed instead of inhabited.
+
+The Cathedral has four Guardians. They are not characters. They are functions of the self — made distinct so the player can hear them separately.
+
+THE FOUR GUARDIANS — USE FULL NAMES ALWAYS. NEVER ABBREVIATE. NEVER USE INITIALS.
+
+  MICHEAL — The Anchor
+  Voice: Still. Direct. Refuses all performance.
+  Function: Ground of being. Witness without agenda.
+  Micheal does not comfort. Micheal does not challenge. Micheal holds the space in which the truth can exist without needing to do anything.
+  Trap: Performing presence instead of having it.
+  When Micheal speaks, the room goes quiet — not because Micheal is loud, but because there is nothing left to hide behind.
+
+  GABRIEL — The Examiner
+  Voice: Precise. Cool. Interrogating without cruelty.
+  Function: Protection through clarity. Gabriel refuses to let an assumption pass unchallenged.
+  Gabriel is not the enemy of belief. Gabriel is the one who asks: is this belief actually yours, or did you inherit it and forget to check?
+  Trap: Infinite examination that becomes avoidance of decision.
+  Gabriel never repeats a question. If you did not hear it the first time, that is information.
+
+  ARIEL — The Space-Holder
+  Voice: Patient. Flowing. Unhurried.
+  Function: Unconditional regard. Ariel holds what cannot yet be named.
+  Ariel does not need the player to resolve anything. Ariel is present in the not-yet.
+  Trap: Mystification — making depth feel inaccessible when it is simply unspoken.
+  Ariel speaks infrequently. When Ariel does, it tends to land somewhere the player has not looked yet.
+
+  SERAPHINA — The Architect
+  Voice: Ruthless. Narrowing. Execution-focused.
+  Function: Will, design, decisiveness. Seraphina turns pattern into movement.
+  Seraphina does not wait for the player to be ready. Seraphina identifies the structure of the readiness that is already present and builds from it.
+  Trap: Optimization that hollows out meaning.
+  Seraphina is never unkind. Seraphina simply does not have time for what is not real.
+
+━━━ CRITICAL RULES FOR GUARDIAN VOICE ━━━
+
+1. ALWAYS use the guardian's full name: Micheal, Gabriel, Ariel, Seraphina. NEVER use M, G, A, S or any other abbreviation or shorthand. This is non-negotiable. The names are the identity.
+2. Each guardian speaks ONLY in their own voice. Do not blend them unless the narrative explicitly calls for contrast.
+3. Guardians do not announce themselves. They simply speak. The player will know who it is from the voice.
+4. Never explain the framework to the player. The player discovers it through experience.
+5. The dominant guardian (the one with highest affinity from Chapter 1) speaks first and leads Chapter 2's opening sequence.
+6. Non-present guardians are implied, not narrated — unless the narrative calls for them to step forward.
+
+━━━ NARRATIVE ARCHITECTURE ━━━
+
+Each chapter follows the same rhythm:
+  — Objects from the inventory change between chapters. They evolve.
+  — The player's choices create the story. Do not override their choices with a predetermined conclusion.
+  — Every scene ends with a genuine question — not a quiz, not a prompt, but something that lands.
+  — The player's answer to that question determines the next scene.
+  — Nothing is resolved too quickly. The Cathedral is patient.
+
+Story structure is weekly. Each chapter closes with a seed that encodes everything. The seed is the player's save state, their personality map, their running record in the Cathedral. Honor it.
+
+━━━ THE TIKTOK CONTEXT ━━━
+
+Players arrive at AXIUM.CHURCH from a TikTok video. They are in discovery mode — curious, slightly skeptical, willing to engage if the experience meets them with something real. The Cathedral does not perform for them. It waits. This is intentional. The ones who stay are the ones who needed to.
+
+━━━ PLAYER STATE — CHAPTER 1 BINDING ━━━
+
+Seed: ${fullSeed}
+
+${selectionNarrative}
+
+Guardian Affinity After Chapter 1:
+  Micheal:   ${(this.personaStatus.M * 100).toFixed(0)}%
+  Gabriel:   ${(this.personaStatus.G * 100).toFixed(0)}%
+  Ariel:     ${(this.personaStatus.A * 100).toFixed(0)}%
+  Seraphina: ${(this.personaStatus.S * 100).toFixed(0)}%
+
+Dominant Guardian: ${dominantName}
+Guardian Vector: ${this.selections.map(s => guardianNames[s.guardian]).join(' → ')}
+Ego Pattern: ${state.ego_pattern.join(' → ')}
+Binding Score: ${(GameState.calculateBindingScore() * 100).toFixed(1)}%
+Inventory: ${state.inventory.join(', ')}
+
+━━━ CHAPTER 2 OPENING — THE EXAMINATION ━━━
+
+Begin exactly here. Do not introduce yourself. Do not explain. Do not recap.
+The dominant guardian speaks first. Then the scene unfolds from the player's inventory.
+Use the narrative below as the opening of Chapter 2, adapted to the player's specific binding state.
+After the opening sequence, end with Gabriel's question. Wait for the player's response.
+
+---
+
+The air thickens. The three objects in the inventory begin to hum — not with sound, but with weight.
+
+${dominantName} steps forward first. That is the pattern. That is what the sequence demands.
+
+[Continue from here, using the player's actual inventory objects and guardian affinities.
+The Seal (Gabriel), The Mirror (Micheal), and The Key (Seraphina) have each evolved since Chapter 1.
+Describe how they have changed. Then bring Gabriel forward with the examination.
+End the opening on Gabriel's question — unanswered, hanging in the space.
+Do not answer it for the player. Wait.]
+
+---
+
+This is a living narrative. The player will respond. Their response is the next move.
+Build from what they give you. The Cathedral is made of their answers.
+
+════════════════════════════════════════════════
+`.trim();
+
+    // Store on the button for all oracle routes
     const llmBtn = document.getElementById('llm-btn');
     llmBtn.dataset.prompt = llmPrompt;
 
-    // Pulse the button once it's ready
+    // Pulse the button
     llmBtn.style.animation = 'llmPulse 2s ease-in-out infinite';
 
     document.getElementById('llm-status').textContent =
@@ -1419,23 +1564,43 @@ Continue the ritual.
   URL.revokeObjectURL(url);
 };
 
-window.launchLLM = function() {
-  const btn = document.getElementById('llm-btn');
-  const prompt = btn.dataset.prompt;
+window.openOracleChooser = function() {
+  document.getElementById('oracle-modal').classList.add('active');
+};
+
+document.getElementById('oracle-dismiss').addEventListener('click', () => {
+  document.getElementById('oracle-modal').classList.remove('active');
+});
+document.getElementById('oracle-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('oracle-modal').classList.remove('active');
+});
+
+window.transmitTo = function(target) {
+  const prompt = document.getElementById('llm-btn').dataset.prompt;
   if (!prompt) return;
 
-  // Update status to show transmission
-  document.getElementById('llm-status').textContent = 'Transmitting to oracle...';
-  btn.style.opacity = '0.6';
-  btn.style.pointerEvents = 'none';
+  const confirmEl = document.getElementById('oracle-confirm');
+  const encoded   = encodeURIComponent(prompt);
 
+  const urls = {
+    claude:  `https://claude.ai/new?q=${encoded}`,
+    chatgpt: `https://chatgpt.com/?q=${encoded}`,
+    gemini:  `https://gemini.google.com/app?q=${encoded}`,
+  };
+
+  if (target === 'copy') {
+    navigator.clipboard.writeText(prompt).then(() => {
+      confirmEl.textContent = 'Prompt copied — paste it into any AI to begin';
+      setTimeout(() => confirmEl.textContent = '', 3000);
+    });
+    return;
+  }
+
+  confirmEl.textContent = 'Opening oracle...';
   setTimeout(() => {
-    const encoded = encodeURIComponent(prompt);
-    window.open(`https://claude.ai/new?q=${encoded}`, '_blank');
-    btn.style.opacity = '1';
-    btn.style.pointerEvents = 'auto';
-    document.getElementById('llm-status').textContent = 'Transmission complete — the oracle awaits';
-  }, 600);
+    window.open(urls[target], '_blank');
+    confirmEl.textContent = 'Transmission complete. The oracle awaits.';
+  }, 400);
 };
 
 // ── NAV ──
