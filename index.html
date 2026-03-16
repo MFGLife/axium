@@ -1015,6 +1015,8 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
 
 
     /* ── THREE SETUP ── */
+    window._SOULS_DATA_REF = SOULS_DATA;
+    window._AXIUM_DIMS_REF = AXIUM_DIMS;
     const canvas = document.getElementById('soul-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
@@ -1081,149 +1083,134 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
     const clock = new THREE.Clock();
 
 
-    /* ── BUILD SOUL GEOMETRY ── */
+    /* AXIUM SOUL VIEWER v3 - three rings, score arcs, rich drawer */
+    const RING_CONFIGS = [
+        { r: 0.85,  tube: 0.006, rx: Math.PI/2.8,  ry: Math.PI/5,   rz: 0,         speed:  0.22, opacity: 0.30 },
+        { r: 1.60,  tube: 0.009, rx:-Math.PI/7,    ry: Math.PI/4,   rz: Math.PI/9, speed: -0.09, opacity: 0.18 },
+        { r: 2.35,  tube: 0.006, rx: Math.PI/3.5,  ry:-Math.PI/6,   rz: Math.PI/4, speed:  0.14, opacity: 0.13 }
+    ];
+    let ringMeshes = [];
+
     function buildSoulGroup(soulKey) {
         const data = SOULS_DATA[soulKey];
-        const col = data.color;
-        const hex = data.hexStr;
+        const col  = data.color;
         const group = new THREE.Group();
+        ringMeshes = [];
 
-        // ── PARTICLE CORE (replaces solid shape) ──
-        // Inner dense particle cloud that breathes — density reflects soul's power count
-        const powerCount = data.powers.length; // 4 per soul
-        const particleCount = 180 + powerCount * 30; // more powers = denser core
-        const corePositions = new Float32Array(particleCount * 3);
-        for (let i = 0; i < particleCount; i++) {
-            // Shell distribution — cluster near center, sparse at edges
-            const r = 0.08 + Math.pow(Math.random(), 2.5) * 0.55;
+        const pCount = 220 + data.powers.length * 40;
+        const pPos   = new Float32Array(pCount * 3);
+        const yStretch = { micheal: 1.0, gabriel: 0.65, ariel: 1.3, seraphina: 0.5 }[soulKey] || 1.0;
+        for (let i = 0; i < pCount; i++) {
+            const r = 0.05 + Math.pow(Math.random(), 3.0) * 0.62;
             const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            corePositions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-            corePositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-            corePositions[i*3+2] = r * Math.cos(phi);
+            const phi   = Math.acos(2 * Math.random() - 1);
+            pPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+            pPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta) * yStretch;
+            pPos[i*3+2] = r * Math.cos(phi);
         }
-        const coreGeo = new THREE.BufferGeometry();
-        coreGeo.setAttribute('position', new THREE.BufferAttribute(corePositions, 3));
-        const coreMat = new THREE.PointsMaterial({
-            color: col, size: 0.028, transparent: true, opacity: 0.75,
+        const cGeo = new THREE.BufferGeometry();
+        cGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        const cMat = new THREE.PointsMaterial({
+            color: col, size: 0.032, transparent: true, opacity: 0.82,
             sizeAttenuation: true, blending: THREE.AdditiveBlending, depthWrite: false
         });
-        group.add(new THREE.Points(coreGeo, coreMat));
+        const corePoints = new THREE.Points(cGeo, cMat);
+        corePoints.userData.isCore = true;
+        group.add(corePoints);
 
-        // Outer sparse halo particles — reflects refusals (boundary/resistance energy)
-        const refusalCount = data.refuses.length;
-        const haloCount = 60 + refusalCount * 12;
-        const haloPositions = new Float32Array(haloCount * 3);
-        for (let i = 0; i < haloCount; i++) {
-            const r = 0.65 + Math.random() * 0.35;
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            haloPositions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-            haloPositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-            haloPositions[i*3+2] = r * Math.cos(phi);
-        }
-        const haloGeo = new THREE.BufferGeometry();
-        haloGeo.setAttribute('position', new THREE.BufferAttribute(haloPositions, 3));
-        const haloMat = new THREE.PointsMaterial({
-            color: col, size: 0.014, transparent: true, opacity: 0.2,
-            sizeAttenuation: true, blending: THREE.AdditiveBlending, depthWrite: false
-        });
-        group.add(new THREE.Points(haloGeo, haloMat));
-
-        // Orbit rings (2) — dimensional markers
-        [0.9, 1.28].forEach((r, ri) => {
-            const torusGeo = new THREE.TorusGeometry(r, 0.008, 8, 80);
-            const torusMat = new THREE.MeshBasicMaterial({ color: col, transparent:true, opacity: ri===0 ? 0.22 : 0.1 });
-            const torus = new THREE.Mesh(torusGeo, torusMat);
-            torus.rotation.x = ri === 0 ? Math.PI/4 : -Math.PI/6;
-            torus.rotation.y = ri === 0 ? Math.PI/6 : Math.PI/3;
-            group.add(torus);
+        RING_CONFIGS.forEach((cfg) => {
+            const geo  = new THREE.TorusGeometry(cfg.r, cfg.tube, 8, 120);
+            const mat  = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: cfg.opacity });
+            const ring = new THREE.Mesh(geo, mat);
+            ring.rotation.set(cfg.rx, cfg.ry, cfg.rz);
+            ring.userData.ringSpeed = cfg.speed;
+            group.add(ring);
+            ringMeshes.push(ring);
         });
 
+        AXIUM_DIMS.forEach((dim, i) => {
+            const score  = data.scores[i] / 100;
+            const isEm   = data.emphasized.includes(i);
+            const arcLen = score * (Math.PI * 2 / 10) * 0.78;
+            const offset = (Math.PI * 2 / 10) * i;
+            const pts = [];
+            for (let s = 0; s <= 32; s++) {
+                const a = offset + (s / 32) * arcLen;
+                pts.push(new THREE.Vector3(Math.cos(a) * 1.60, 0, Math.sin(a) * 1.60));
+            }
+            const arcGeo = new THREE.BufferGeometry().setFromPoints(pts);
+            const arcMat = new THREE.LineBasicMaterial({
+                color: col, transparent: true,
+                opacity: isEm ? 0.85 : 0.22 + score * 0.35,
+                depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            const arcLine = new THREE.Line(arcGeo, arcMat);
+            arcLine.rotation.set(-Math.PI/7, Math.PI/4, Math.PI/9);
+            group.add(arcLine);
+        });
 
-        // 10 axium nodes orbiting
         nodeObjects = [];
         labelObjects = [];
-        const dimCount = AXIUM_DIMS.length;
         AXIUM_DIMS.forEach((dim, i) => {
-            const isEm = data.emphasized.includes(i);
+            const isEm  = data.emphasized.includes(i);
             const score = data.scores[i] / 100;
-            const angle = (Math.PI * 2 * i) / dimCount;
-            // Score-driven orbit radius — higher score = slightly farther
-            const orbitR = 1.55 + score * 0.3 + (isEm ? 0.12 : 0);
+            const angle = (Math.PI * 2 / 10) * i;
+            const x =  Math.cos(angle) * 1.60;
+            const y = (Math.sin(angle) * 1.60) * Math.sin(-Math.PI/7);
+            const z =  Math.sin(angle) * 1.60 * Math.cos(-Math.PI/7);
 
-            const x = Math.cos(angle) * orbitR;
-            const y = Math.sin(angle * 0.7) * 0.65;
-            const z = Math.sin(angle) * orbitR;
-
-            // Visible node — size scales with score
-            const nodeSize = isEm ? 0.11 : 0.065 + score * 0.03;
-            const nodeGeo = new THREE.SphereGeometry(nodeSize, 10, 10);
-            const nodeMat = new THREE.MeshStandardMaterial({
-                color: col,
-                emissive: col,
-                emissiveIntensity: isEm ? 0.95 : 0.35,
-                transparent: true,
-                opacity: isEm ? 1 : 0.5 + score * 0.25
+            const ns  = isEm ? 0.10 + score * 0.04 : 0.055 + score * 0.035;
+            const nGeo = new THREE.SphereGeometry(ns, 12, 12);
+            const nMat = new THREE.MeshStandardMaterial({
+                color: col, emissive: col,
+                emissiveIntensity: isEm ? 1.0 : 0.30 + score * 0.4,
+                transparent: true, opacity: isEm ? 1.0 : 0.45 + score * 0.35
             });
-            const node = new THREE.Mesh(nodeGeo, nodeMat);
+            const node = new THREE.Mesh(nGeo, nMat);
             node.position.set(x, y, z);
             node.userData = { dimIndex: i, dimId: dim.id, isEm, soulKey };
             group.add(node);
             nodeObjects.push(node);
 
-            // Invisible tap hitbox — larger sphere for reliable mobile touch
-            const hitGeo = new THREE.SphereGeometry(0.28, 6, 6);
-            const hitMat = new THREE.MeshBasicMaterial({ visible: false });
-            const hitbox = new THREE.Mesh(hitGeo, hitMat);
+            const hGeo = new THREE.SphereGeometry(0.26, 6, 6);
+            const hitbox = new THREE.Mesh(hGeo, new THREE.MeshBasicMaterial({ visible: false }));
             hitbox.position.set(x, y, z);
             hitbox.userData = { dimIndex: i, dimId: dim.id, isEm, soulKey, isHitbox: true };
             group.add(hitbox);
             nodeObjects.push(hitbox);
 
-            // CSS2D label at node position
             const labelDiv = document.createElement('div');
             labelDiv.className = 'axium-node-label' + (isEm ? ' em' : '');
             labelDiv.textContent = dim.short;
             const labelObj = new CSS2DObject(labelDiv);
-            labelObj.position.set(x, y + nodeSize + 0.12, z);
+            const lS = 1.0 + ns + 0.22;
+            labelObj.position.set(x * lS / 1.60, y * lS / 1.60, z * lS / 1.60);
             group.add(labelObj);
             labelObjects.push(labelObj);
 
-
-            // Line from center to node
-            const lineGeo = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0,0,0),
-                new THREE.Vector3(x,y,z)
+            const sGeo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0,0,0), new THREE.Vector3(x,y,z)
             ]);
-            const lineMat = new THREE.LineBasicMaterial({
-                color: col, transparent:true,
-                opacity: isEm ? 0.35 : 0.08,
+            group.add(new THREE.Line(sGeo, new THREE.LineBasicMaterial({
+                color: col, transparent: true, opacity: isEm ? 0.30 : 0.07,
                 depthWrite: false, blending: THREE.AdditiveBlending
-            });
-            group.add(new THREE.Line(lineGeo, lineMat));
+            })));
         });
 
-        // ── CONNECTING LINES between emphasized nodes ──
-        const emNodes = nodeObjects.filter(n => n.userData.isEm);
-        for (let a = 0; a < emNodes.length; a++) {
-            for (let b = a + 1; b < emNodes.length; b++) {
-                const connGeo = new THREE.BufferGeometry().setFromPoints([
-                    emNodes[a].position.clone(),
-                    emNodes[b].position.clone()
+        const emN = nodeObjects.filter(n => n.userData.isEm && !n.userData.isHitbox);
+        for (let a = 0; a < emN.length; a++) {
+            for (let b = a + 1; b < emN.length; b++) {
+                const wGeo = new THREE.BufferGeometry().setFromPoints([
+                    emN[a].position.clone(), emN[b].position.clone()
                 ]);
-                const connMat = new THREE.LineBasicMaterial({
-                    color: col, transparent: true, opacity: 0.12,
+                group.add(new THREE.Line(wGeo, new THREE.LineBasicMaterial({
+                    color: col, transparent: true, opacity: 0.10,
                     depthWrite: false, blending: THREE.AdditiveBlending
-                });
-                group.add(new THREE.Line(connGeo, connMat));
+                })));
             }
         }
-
-
         return group;
     }
-
 
     function transitionToSoul(soulKey) {
         if (currentGroup) {
@@ -1232,8 +1219,8 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
             const shrink = () => {
                 const t = Math.min((clock.getElapsedTime()-t0)/0.35, 1);
                 old.scale.setScalar(1 - t);
-                if(t<1) requestAnimationFrame(shrink);
-                else { scene.remove(old); old.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();}); }
+                if (t < 1) requestAnimationFrame(shrink);
+                else { scene.remove(old); old.traverse(o => { if(o.geometry) o.geometry.dispose(); if(o.material) o.material.dispose(); }); }
             };
             shrink();
         }
@@ -1243,17 +1230,14 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
         currentGroup = group;
         const t0 = clock.getElapsedTime();
         const grow = () => {
-            const t = Math.min((clock.getElapsedTime()-t0)/0.4, 1);
+            const t = Math.min((clock.getElapsedTime()-t0)/0.45, 1);
             group.scale.setScalar(1 - Math.pow(1-t, 3));
-            if(t<1) requestAnimationFrame(grow);
+            if (t < 1) requestAnimationFrame(grow);
         };
         grow();
-        // update label
         document.getElementById('soul-3d-label').textContent = SOULS_DATA[soulKey].name.toUpperCase();
     }
 
-
-    /* ── RESIZE ── */
     function resizeRenderer() {
         const wrap = canvas.parentElement;
         const w = wrap.clientWidth, h = wrap.clientHeight;
@@ -1263,96 +1247,114 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
         camera.updateProjectionMatrix();
     }
 
-
-    /* ── CLICK / HOVER on nodes ── */
-    const tooltip = document.getElementById('dim-tooltip');
-
-
-    /* ── NODE DRAWER ── */
-    const drawer = document.getElementById('node-drawer');
+    const tooltip     = document.getElementById('dim-tooltip');
+    const drawer      = document.getElementById('node-drawer');
     const drawerInner = document.getElementById('node-drawer-inner');
     const drawerClose = document.getElementById('node-drawer-close');
-
-
-    // liturgy mapping per dim index
     const DIM_LITURGY = ['Spiritual','Spiritual','Scientific','Spiritual','Personal','Spiritual','Scientific','Personal','Spiritual','Scientific'];
-    const DIM_NUM = ['01','02','03','04','05','06','07','08','09','10'];
-
+    const DIM_NUM     = ['01','02','03','04','05','06','07','08','09','10'];
+    const ALL_SOUL_KEYS = ['micheal','gabriel','ariel','seraphina'];
 
     function openNodeDrawer(dimIndex, soulKey) {
-        const dim = AXIUM_DIMS[dimIndex];
-        const data = SOULS_DATA[soulKey];
-        const score = data.scores[dimIndex];
-        const isEm = data.emphasized.includes(dimIndex);
-        const col = data.hexStr;
+        const dim     = AXIUM_DIMS[dimIndex];
+        const data    = SOULS_DATA[soulKey];
+        const score   = data.scores[dimIndex];
+        const isEm    = data.emphasized.includes(dimIndex);
+        const col     = data.hexStr;
+        const liturgy = DIM_LITURGY[dimIndex];
+        const num     = DIM_NUM[dimIndex];
 
+        const R = 22, cx2 = 30, cy2 = 30;
+        const circ = 2 * Math.PI * R;
+        const dash  = (score / 100) * circ;
+        const arcSvg = '<svg width="60" height="60" style="flex-shrink:0;">'
+            + '<circle cx="'+cx2+'" cy="'+cy2+'" r="'+R+'" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="5"/>'
+            + '<circle cx="'+cx2+'" cy="'+cy2+'" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="5"'
+            + ' stroke-dasharray="'+dash.toFixed(1)+' '+circ.toFixed(1)+'"'
+            + ' stroke-dashoffset="'+(circ/4).toFixed(1)+'"'
+            + ' stroke-linecap="round" style="filter:drop-shadow(0 0 5px '+col+')"/>'
+            + '<text x="'+cx2+'" y="'+(cy2+4)+'" text-anchor="middle"'
+            + ' font-family="Cinzel,serif" font-size="11" font-weight="800" fill="'+col+'">'+score+'</text>'
+            + '</svg>';
 
-        drawerInner.innerHTML = `
-            <div class="nd-num">Axium ${DIM_NUM[dimIndex]} · <span class="nd-liturgy">${DIM_LITURGY[dimIndex]} Liturgy</span></div>
-            <div class="nd-name">${dim.name}</div>
-            <p class="nd-principle">${dim.desc}</p>
-            <p class="nd-soul-context" style="border-left-color:${col}40;">
-                ${isEm
-                    ? `<strong style="font-family:'Space Mono',monospace;font-size:0.48rem;letter-spacing:0.2em;text-transform:uppercase;color:${col};font-style:normal;">Primary Dimension — ${data.name}</strong><br>`
-                    : `<strong style="font-family:'Space Mono',monospace;font-size:0.48rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(212,175,55,0.3);font-style:normal;">Supporting Dimension — ${data.name}</strong><br>`
-                }
-                ${isEm ? `This is a core trait of ${data.name}. Every response is filtered through this dimension first.` : `${data.name} holds this dimension as part of their shared ethical spine — present in every interaction, though not their primary lens.`}
-            </p>
-            <div class="nd-score-row">
-                <div class="nd-score-item">
-                    <div class="nd-score-label">${data.name}'s Score</div>
-                    <div class="nd-score-val" style="background:linear-gradient(135deg,${col},#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${score}</div>
-                </div>
-                <div class="nd-score-item">
-                    <div class="nd-score-label">Priority Rank</div>
-                    <div class="nd-score-val">${isEm ? 'Primary' : 'Support'}</div>
-                </div>
-            </div>
-        `;
+        const compBars = ALL_SOUL_KEYS.map(function(sk) {
+            const sd  = SOULS_DATA[sk];
+            const sc  = sd.scores[dimIndex];
+            const isA = sk === soulKey;
+            const isE = sd.emphasized.includes(dimIndex);
+            return '<div style="display:flex;align-items:center;gap:0.55rem;margin-bottom:0.3rem;">'
+                + '<div style="font-family:\'Space Mono\',monospace;font-size:0.4rem;letter-spacing:0.1em;text-transform:uppercase;'
+                + 'color:'+(isA ? sd.hexStr : 'rgba(255,255,255,0.2)')+';width:5rem;flex-shrink:0;'+(isA ? 'font-weight:700;' : '')+'">'+sd.name+(isE ? ' ◈' : '')+'</div>'
+                + '<div style="flex:1;height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;">'
+                + '<div class="cbar-fill" data-w="'+sc+'" style="height:100%;width:0%;'
+                + 'background:'+(isA ? 'linear-gradient(90deg,'+sd.hexStr+'88,'+sd.hexStr+')' : 'rgba(255,255,255,0.12)')+';'
+                + 'border-radius:2px;transition:width 0.75s cubic-bezier(0.22,1,0.36,1);"></div></div>'
+                + '<div style="font-family:\'Cinzel\',serif;font-size:0.52rem;font-weight:800;'
+                + 'color:'+(isA ? sd.hexStr : 'rgba(255,255,255,0.18)')+';width:1.8rem;text-align:right;">'+sc+'</div>'
+                + '</div>';
+        }).join('');
 
+        drawerInner.innerHTML =
+            '<div style="display:flex;gap:0.9rem;align-items:flex-start;margin-bottom:0.85rem;flex-wrap:wrap;">'
+            + arcSvg
+            + '<div style="flex:1;min-width:0;">'
+            + '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;flex-wrap:wrap;">'
+            + '<span style="font-family:\'Space Mono\',monospace;font-size:0.4rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(212,175,55,0.35);">Axium '+num+'</span>'
+            + '<span style="font-family:\'Space Mono\',monospace;font-size:0.38rem;letter-spacing:0.12em;text-transform:uppercase;color:'+col+';background:'+col+'14;padding:0.1rem 0.45rem;border:1px solid '+col+'28;">'+liturgy+'</span>'
+            + (isEm ? '<span style="font-family:\'Space Mono\',monospace;font-size:0.38rem;letter-spacing:0.12em;text-transform:uppercase;color:'+col+';background:'+col+'20;padding:0.1rem 0.45rem;border:1px solid '+col+'40;">● Primary</span>' : '')
+            + '</div>'
+            + '<div style="font-family:\'Cinzel\',serif;font-size:clamp(0.85rem,2vw,1.05rem);font-weight:800;letter-spacing:0.07em;color:#f3f4f6;margin-bottom:0.35rem;">'+dim.name+'</div>'
+            + '<p style="font-family:\'Cormorant Garamond\',serif;font-size:0.86rem;color:#9ca3af;line-height:1.65;margin:0;">'+dim.desc+'</p>'
+            + '</div></div>'
+            + '<div style="padding:0.65rem 0.85rem;background:'+col+'0c;border:1px solid '+col+'1e;margin-bottom:0.85rem;border-left:3px solid '+col+'50;">'
+            + '<div style="font-family:\'Space Mono\',monospace;font-size:0.38rem;letter-spacing:0.18em;text-transform:uppercase;color:'+col+';margin-bottom:0.28rem;">'+data.name+' · '+(isEm ? 'Core Dimension' : 'Supporting Dimension')+'</div>'
+            + '<p style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:0.8rem;color:#6b7280;line-height:1.6;margin:0;">'
+            + (isEm ? 'Every response filtered through this first. Not a setting — an identity.' : data.name+' holds this as part of the shared ethical spine — active in every interaction, not the primary lens.')
+            + '</p></div>'
+            + '<div><div style="font-family:\'Space Mono\',monospace;font-size:0.38rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(212,175,55,0.28);margin-bottom:0.5rem;">All Souls · '+dim.short+' Affinity</div>'
+            + compBars + '</div>';
 
         drawer.classList.add('open');
         drawer.setAttribute('aria-hidden', 'false');
-        setTimeout(() => drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
+        requestAnimationFrame(function() {
+            drawer.querySelectorAll('.cbar-fill').forEach(function(el) { el.style.width = el.dataset.w + '%'; });
+            drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
     }
 
-
-    drawerClose.addEventListener('click', () => {
+    drawerClose.addEventListener('click', function() {
         drawer.classList.remove('open');
         drawer.setAttribute('aria-hidden', 'true');
     });
 
-
     raycaster.params.Mesh = { threshold: 0.05 };
 
-    canvas.addEventListener('click', e => {
-        const rect = canvas.getBoundingClientRect();
+    function handleNodeHit(dimIndex, sKey) {
+        openNodeDrawer(dimIndex, sKey);
+        const node = nodeObjects.find(function(n) { return !n.userData.isHitbox && n.userData.dimIndex === dimIndex; });
+        if (node && node.material) {
+            node.material.emissiveIntensity = 3.5;
+            setTimeout(function() { if (node.material) node.material.emissiveIntensity = node.userData.isEm ? 1.0 : 0.35; }, 800);
+        }
+    }
+
+    canvas.addEventListener('click', function(e) {
+        var rect = canvas.getBoundingClientRect();
         mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const hits = raycaster.intersectObjects(nodeObjects);
-        if (hits.length) {
-            const {dimIndex, soulKey} = hits[0].object.userData;
-            openNodeDrawer(dimIndex, soulKey);
-            // pulse the visible node (not hitbox)
-            const node = nodeObjects.find(n => !n.userData.isHitbox && n.userData.dimIndex === dimIndex);
-            if (node?.material) {
-                node.material.emissiveIntensity = 3;
-                setTimeout(() => { if(node.material) node.material.emissiveIntensity = node.userData.isEm ? 0.9 : 0.3; }, 700);
-            }
-        }
+        var hits = raycaster.intersectObjects(nodeObjects);
+        if (hits.length) handleNodeHit(hits[0].object.userData.dimIndex, hits[0].object.userData.soulKey);
     });
 
-
-    canvas.addEventListener('mousemove', e => {
-        const rect = canvas.getBoundingClientRect();
+    canvas.addEventListener('mousemove', function(e) {
+        var rect = canvas.getBoundingClientRect();
         mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const hits = raycaster.intersectObjects(nodeObjects);
+        var hits = raycaster.intersectObjects(nodeObjects);
         if (hits.length) {
-            const {dimIndex} = hits[0].object.userData;
-            const dim = AXIUM_DIMS[dimIndex];
+            var dim = AXIUM_DIMS[hits[0].object.userData.dimIndex];
             tooltip.textContent = dim.short;
             tooltip.style.left = (e.clientX + 14) + 'px';
             tooltip.style.top  = (e.clientY - 10) + 'px';
@@ -1363,28 +1365,39 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
             canvas.style.cursor = 'grab';
         }
     });
+    canvas.addEventListener('mouseleave', function() { tooltip.classList.remove('visible'); });
 
+    var touchStartX = 0, touchStartY = 0;
+    canvas.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    canvas.addEventListener('touchend', function(e) {
+        var dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+        var dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+        if (dx < 10 && dy < 10) {
+            var rect = canvas.getBoundingClientRect();
+            mouse.x = ((e.changedTouches[0].clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.changedTouches[0].clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            var hits = raycaster.intersectObjects(nodeObjects);
+            if (hits.length) handleNodeHit(hits[0].object.userData.dimIndex, hits[0].object.userData.soulKey);
+        }
+    }, { passive: true });
 
-    canvas.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
-
-
-    /* ── ANIMATE ── */
     function animate() {
         requestAnimationFrame(animate);
-        const t = clock.getElapsedTime();
+        var t = clock.getElapsedTime();
         if (currentGroup) {
-            currentGroup.position.y = Math.sin(t * 0.55) * 0.06;
-            // Pulse particle opacity for breathing effect
-            currentGroup.traverse(obj => {
-                if (obj.isPoints && obj.material) {
-                    const base = obj.material.size > 0.02 ? 0.75 : 0.2;
-                    obj.material.opacity = base + Math.sin(t * 1.2) * 0.12;
+            currentGroup.position.y = Math.sin(t * 0.5) * 0.055;
+            ringMeshes.forEach(function(ring) { ring.rotation.y += ring.userData.ringSpeed * 0.008; });
+            currentGroup.traverse(function(obj) {
+                if (obj.isPoints && obj.userData.isCore && obj.material) {
+                    obj.material.opacity = 0.72 + Math.sin(t * 1.1) * 0.18;
                 }
             });
-            // Pulsing emissive on emphasized nodes (skip hitboxes)
-            nodeObjects.forEach((n, i) => {
+            nodeObjects.forEach(function(n) {
                 if (!n.userData.isHitbox && n.userData.isEm && n.material) {
-                    n.material.emissiveIntensity = 0.7 + Math.sin(t * 1.6 + i) * 0.3;
+                    n.material.emissiveIntensity = 0.78 + Math.sin(t * 1.8 + n.userData.dimIndex * 0.7) * 0.28;
                 }
             });
         }
@@ -1393,35 +1406,8 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
         labelRenderer.render(scene, camera);
     }
 
-    /* ── TOUCH SUPPORT for mobile node taps ── */
-    let touchStartX = 0, touchStartY = 0;
-    canvas.addEventListener('touchstart', e => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-    canvas.addEventListener('touchend', e => {
-        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        if (dx < 8 && dy < 8) {
-            const rect = canvas.getBoundingClientRect();
-            mouse.x = ((e.changedTouches[0].clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((e.changedTouches[0].clientY - rect.top) / rect.height) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const hits = raycaster.intersectObjects(nodeObjects);
-            if (hits.length) {
-                const {dimIndex, soulKey} = hits[0].object.userData;
-                openNodeDrawer(dimIndex, soulKey);
-                const node = nodeObjects.find(n => !n.userData.isHitbox && n.userData.dimIndex === dimIndex);
-                if (node?.material) {
-                    node.material.emissiveIntensity = 3;
-                    setTimeout(() => { if(node.material) node.material.emissiveIntensity = node.userData.isEm ? 0.9 : 0.3; }, 700);
-                }
-            }
-        }
-    }, { passive: true });
 
-
-    /* ── CHARACTER SHEET BUILDER ── */
+        /* ── CHARACTER SHEET BUILDER ── */
     function buildStatPanel(soulKey) {
         const data = SOULS_DATA[soulKey];
         const panel = document.getElementById('soul-stat-panel');
@@ -1500,42 +1486,55 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
     }
 
 
-    /* ── SOUL PARTICLE CANVAS 2D OVERLAY ── */
-    const pc = document.getElementById('soul-particle-canvas');
+    /* ══ SOUL PARTICLE CANVAS 2D — edge stats, outward particle flow ══ */
+    const pc   = document.getElementById('soul-particle-canvas');
     const pctx = pc ? pc.getContext('2d') : null;
 
-    const SOUL_GLYPHS = {
-        micheal:   { symbol: '◈', words: ['witness','ground','presence','silence','anchor'], color: '#D4AF37' },
-        gabriel:   { symbol: '⟁', words: ['examine','source','evidence','clarity','map'],   color: '#7EB8E8' },
-        ariel:     { symbol: '∴', words: ['hold','emerge','mystery','witness','space'],      color: '#D4A0C8' },
-        seraphina: { symbol: '⧗', words: ['execute','strip','build','commit','design'],      color: '#F0D080' }
+    /* 10 Axium short labels positioned at clock positions around the edge */
+    const CLOCK_ANGLES = [0,36,72,108,144,180,216,252,288,324].map(d => d * Math.PI / 180);
+
+    const SOUL_COLORS = {
+        micheal: '#D4AF37', gabriel: '#7EB8E8', ariel: '#D4A0C8', seraphina: '#F0D080'
     };
 
-    let pcParticles = [];
+    let pcParticles  = [];
     let pcCurrentSoul = 'micheal';
+    let pcAnimId     = null;
 
     function initPCParticles(soulKey) {
         if (!pc) return;
         pcCurrentSoul = soulKey;
-        const g = SOUL_GLYPHS[soulKey];
+        const col   = SOUL_COLORS[soulKey];
+        const data  = window._SOULS_DATA_REF ? window._SOULS_DATA_REF[soulKey] : null;
         pcParticles = [];
-        const count = 28;
-        for (let i = 0; i < count; i++) {
-            const word = g.words[i % g.words.length];
-            const angle = Math.random() * Math.PI * 2;
-            const r = 30 + Math.random() * 70;
-            pcParticles.push({
-                x: pc.width/2 + Math.cos(angle) * r,
-                y: pc.height/2 + Math.sin(angle) * r,
-                vx: (Math.random() - 0.5) * 0.18,
-                vy: (Math.random() - 0.5) * 0.18,
-                text: i % 4 === 0 ? g.symbol : word,
-                alpha: 0.08 + Math.random() * 0.18,
-                size: i % 4 === 0 ? 10 + Math.random()*8 : 7 + Math.random()*4,
-                drift: Math.random() * Math.PI * 2,
-                driftSpeed: 0.004 + Math.random() * 0.006,
-                color: g.color
-            });
+        const cx = pc.width / 2, cy = pc.height / 2;
+        const edgeR = Math.min(cx, cy) * 0.84;
+
+        /* 60 stream particles per label = 600 total */
+        for (let i = 0; i < 10; i++) {
+            const score = data ? data.scores[i] / 100 : 0.7;
+            const isEm  = data ? data.emphasized.includes(i) : false;
+            const targetAngle = CLOCK_ANGLES[i];
+            const tx = cx + Math.cos(targetAngle) * edgeR;
+            const ty = cy + Math.sin(targetAngle) * edgeR;
+            const count = isEm ? 8 : 4 + Math.round(score * 3);
+            for (let j = 0; j < count; j++) {
+                const spawnR = 8 + Math.random() * 35;
+                const spawnA = Math.random() * Math.PI * 2;
+                pcParticles.push({
+                    x:  cx + Math.cos(spawnA) * spawnR,
+                    y:  cy + Math.sin(spawnA) * spawnR,
+                    tx, ty,
+                    speed: 0.3 + score * 0.5 + Math.random() * 0.4,
+                    alpha: 0,
+                    maxAlpha: isEm ? 0.55 + score * 0.25 : 0.18 + score * 0.22,
+                    size:  isEm ? 1.8 + Math.random() * 1.2 : 1.0 + Math.random() * 0.8,
+                    life:  Math.random(), // 0-1 phase offset
+                    lifeSpeed: 0.004 + Math.random() * 0.005,
+                    dimIdx: i,
+                    col
+                });
+            }
         }
     }
 
@@ -1543,30 +1542,72 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
         if (!pc || !pctx) return;
         pctx.clearRect(0, 0, pc.width, pc.height);
         const cx = pc.width / 2, cy = pc.height / 2;
-        pcParticles.forEach(p => {
-            p.drift += p.driftSpeed;
-            p.x += p.vx + Math.cos(p.drift) * 0.08;
-            p.y += p.vy + Math.sin(p.drift) * 0.08;
-            // Soft boundary — drift back toward center
-            const dx = p.x - cx, dy = p.y - cy;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist > 90) { p.vx -= dx * 0.0004; p.vy -= dy * 0.0004; }
+        const edgeR = Math.min(cx, cy) * 0.84;
+        const data  = window._SOULS_DATA_REF ? window._SOULS_DATA_REF[pcCurrentSoul] : null;
+        const col   = SOUL_COLORS[pcCurrentSoul];
+
+        /* Draw edge labels first */
+        var DIMS = window._AXIUM_DIMS_REF || [];
+        DIMS.forEach(function(dim, i) {
+            const score = data ? data.scores[i] / 100 : 0.7;
+            const isEm  = data ? data.emphasized.includes(i) : false;
+            const angle = CLOCK_ANGLES[i];
+            const lx = cx + Math.cos(angle) * edgeR;
+            const ly = cy + Math.sin(angle) * edgeR;
             pctx.save();
-            pctx.globalAlpha = p.alpha;
-            pctx.font = `${p.size}px 'Space Mono', monospace`;
-            pctx.fillStyle = p.color;
-            pctx.letterSpacing = '0.1em';
+            pctx.globalAlpha = isEm ? 0.85 : 0.35 + score * 0.35;
+            pctx.font = (isEm ? 'bold ' : '') + (isEm ? '8.5' : '7') + 'px "Space Mono",monospace';
+            pctx.fillStyle = col;
             pctx.textAlign = 'center';
-            pctx.fillText(p.text, p.x, p.y);
+            pctx.textBaseline = 'middle';
+            /* score arc under label */
+            pctx.beginPath();
+            pctx.arc(lx, ly, isEm ? 9 : 7, 0, Math.PI * 2 * score);
+            pctx.strokeStyle = col;
+            pctx.globalAlpha = isEm ? 0.35 : 0.15;
+            pctx.lineWidth = isEm ? 2 : 1.2;
+            pctx.stroke();
+            pctx.globalAlpha = isEm ? 0.85 : 0.35 + score * 0.35;
+            pctx.fillText(dim.short, lx, ly);
             pctx.restore();
         });
-        requestAnimationFrame(tickPC);
+
+        /* Stream particles toward their target label */
+        pcParticles.forEach(function(p) {
+            p.life += p.lifeSpeed;
+            if (p.life >= 1) {
+                /* respawn near center */
+                const spawnR = 8 + Math.random() * 30;
+                const spawnA = Math.random() * Math.PI * 2;
+                p.x = cx + Math.cos(spawnA) * spawnR;
+                p.y = cy + Math.sin(spawnA) * spawnR;
+                p.life = 0;
+            }
+            /* lerp toward target */
+            const dx = p.tx - p.x, dy = p.ty - p.y;
+            p.x += dx * p.speed * 0.012;
+            p.y += dy * p.speed * 0.012;
+            /* alpha arc: fade in 0-30%, full 30-70%, fade out 70-100% */
+            const lt = p.life;
+            p.alpha = lt < 0.3 ? (lt/0.3) * p.maxAlpha
+                    : lt > 0.7 ? ((1-lt)/0.3) * p.maxAlpha
+                    : p.maxAlpha;
+            pctx.save();
+            pctx.globalAlpha = p.alpha;
+            pctx.fillStyle = p.col;
+            pctx.beginPath();
+            pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            pctx.fill();
+            pctx.restore();
+        });
+
+        pcAnimId = requestAnimationFrame(tickPC);
     }
 
     function resizePC() {
         if (!pc) return;
         const wrap = pc.parentElement;
-        pc.width = wrap.clientWidth;
+        pc.width  = wrap.clientWidth;
         pc.height = wrap.clientHeight;
         initPCParticles(pcCurrentSoul);
     }
