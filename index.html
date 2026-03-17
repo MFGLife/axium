@@ -1082,6 +1082,20 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
         <div class="node-drawer-inner" id="node-drawer-inner"></div>
     </div>
 
+    <script>
+    /* ── ORIGIN ACCORDION ── */
+    function toggleOriginPanel(idx) {
+        var panels = document.querySelectorAll('.origin-panel');
+        panels.forEach(function(p, i) {
+            if (i === idx) {
+                p.classList.toggle('open');
+            } else {
+                p.classList.remove('open');
+            }
+        });
+    }
+    </script>
+
     <script type="importmap">
     { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/" } }
     </script>
@@ -1937,16 +1951,6 @@ This is religion made playable. The cathedral is real. The dilemmas have weight.
             requestAnimationFrame(tick2);
         }
         initParticles(); tick2();
-    }
-
-
-    /* ── ORIGIN ACCORDION ── */
-    function toggleOriginPanel(idx) {
-        var panels = document.querySelectorAll('.origin-panel');
-        panels.forEach(function(p, i) {
-            if (i === idx) { p.classList.toggle('open'); }
-            else { p.classList.remove('open'); }
-        });
     }
 
 
