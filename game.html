@@ -122,42 +122,55 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 
 /* Three card frames */
 #three-cards{
-  display:flex;gap:clamp(8px,2vw,20px);align-items:flex-start;
-  justify-content:center;flex-wrap:wrap;max-width:680px;width:100%;
+  display:flex;gap:clamp(10px,2.5vw,24px);align-items:stretch;
+  justify-content:center;flex-wrap:wrap;max-width:780px;width:100%;
 }
 .spread-card{
-  flex:0 0 auto;width:clamp(140px,26vw,195px);
-  background:linear-gradient(155deg,rgba(14,10,26,.98),rgba(4,3,12,.99));
-  border:1px solid rgba(212,175,55,.25);border-radius:10px;
-  padding:clamp(10px,2vw,16px);
-  display:flex;flex-direction:column;align-items:center;gap:7px;
-  box-shadow:0 0 50px rgba(0,0,0,.85),0 0 20px rgba(212,175,55,.07);
+  flex:0 0 auto;width:clamp(180px,28vw,220px);
+  background:linear-gradient(175deg,rgba(14,10,26,.99),rgba(4,3,12,1));
+  border:1px solid rgba(212,175,55,.22);border-radius:12px;
+  padding:20px 16px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  box-shadow:0 0 50px rgba(0,0,0,.85),0 0 20px rgba(212,175,55,.06);
   opacity:0;transform:translateY(22px) scale(.96);
   transition:opacity .6s,transform .6s,box-shadow .4s;
 }
 .spread-card.reveal{opacity:1;transform:translateY(0) scale(1);}
-.spread-card.reveal:hover{box-shadow:0 0 50px rgba(0,0,0,.85),0 0 30px rgba(212,175,55,.18);}
+.spread-card.reveal:hover{box-shadow:0 0 50px rgba(0,0,0,.85),0 0 28px rgba(212,175,55,.16);}
 .sc-group{
-  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;
-  text-transform:uppercase;
-}
-.sc-canvas{
-  border-radius:50%;border:1px solid rgba(212,175,55,.2);
-  background:radial-gradient(circle at center,rgba(7,5,16,.97),rgba(2,2,8,1));
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.35em;
+  text-transform:uppercase;margin-bottom:10px;
 }
 .sc-name{
-  font-family:'Cinzel',serif;font-size:clamp(10px,1.5vw,13px);font-weight:600;
+  font-family:'Cinzel',serif;font-size:clamp(11px,1.6vw,14px);font-weight:600;
   letter-spacing:.1em;color:#D4AF37;text-align:center;
   text-shadow:0 0 14px rgba(212,175,55,.28);line-height:1.35;
+  margin-bottom:6px;
 }
 .sc-keywords{
   font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.12em;
-  color:rgba(255,255,255,.2);text-align:center;
+  color:rgba(255,255,255,.22);text-align:center;
+  margin-bottom:12px;
+}
+.sc-rule{
+  width:60px;height:1px;margin:0 auto 12px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);
 }
 .sc-meaning{
   font-family:'Cormorant Garamond',serif;font-style:italic;
-  font-size:clamp(9px,1.3vw,11px);letter-spacing:.04em;
-  color:rgba(255,255,255,.6);text-align:center;line-height:1.68;
+  font-size:clamp(10px,1.35vw,12px);letter-spacing:.03em;
+  color:rgba(255,255,255,.65);text-align:center;line-height:1.75;
+  margin-bottom:16px;flex:1;
+}
+.sc-canvas-wrap{
+  width:100%;display:flex;justify-content:center;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.05);
+}
+.sc-canvas{
+  border-radius:50%;border:1px solid rgba(212,175,55,.15);
+  background:radial-gradient(circle at center,rgba(7,5,16,.97),rgba(2,2,8,1));
+  opacity:.85;
 }
 
 /* Synthesis */
@@ -322,82 +335,82 @@ const CARDS = {
 
   // ── ID: Minor Pip cards ─────────────────────────────────────────────────
   id: [
-    { id:'c1',  name:'Ace of Cups',        suit:'cups',      pts:[[.5,.2],[.3,.7],[.7,.7]],                                                                         keywords:'love · awakening · grace',      meaning:'The cup overflows. Something new floods in uninvited and wanted.' },
-    { id:'c3',  name:'Three of Cups',      suit:'cups',      pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85]],                                                     keywords:'celebration · reunion · warmth', meaning:'The body remembers joy. Let it. Gather your people.' },
-    { id:'c5',  name:'Five of Cups',       suit:'cups',      pts:[[.5,.15],[.2,.4],[.8,.4],[.35,.75],[.65,.75],[.5,.95]],                                            keywords:'grief · loss · what remains',   meaning:'Two cups still stand. The spilled ones are already teaching you.' },
-    { id:'c7',  name:'Seven of Cups',      suit:'cups',      pts:[[.5,.12],[.25,.34],[.75,.34],[.2,.58],[.8,.58],[.35,.84],[.65,.84]],                                keywords:'desire · illusion · hunger',    meaning:'The ID projects. Every door looks golden. Choose one before they all close.' },
-    { id:'c9',  name:'Nine of Cups',       suit:'cups',      pts:[[.5,.1],[.72,.28],[.9,.5],[.72,.72],[.5,.9],[.28,.72],[.1,.5],[.28,.28],[.5,.5]],                   keywords:'wish · satisfaction · pleasure',meaning:'This is the wish card. The body got what it wanted. Enjoy it without guilt.' },
-    { id:'c10', name:'Ten of Cups',        suit:'cups',      pts:[[.5,.1],[.65,.25],[.82,.42],[.82,.62],[.65,.78],[.5,.9],[.35,.78],[.18,.62],[.18,.42],[.35,.25]],   keywords:'bliss · family · home',         meaning:'Deep contentment. The nervous system finally rests.' },
-    { id:'s1',  name:'Ace of Swords',      suit:'swords',    pts:[[.5,.1],[.5,.72],[.28,.5],[.72,.5]],                                                               keywords:'clarity · cut · breakthrough',  meaning:'The ID sharpens into a single point. What needs severing? Do it now.' },
-    { id:'s3',  name:'Three of Swords',    suit:'swords',    pts:[[.5,.15],[.2,.42],[.8,.42],[.35,.86],[.65,.86]],                                                   keywords:'heartbreak · grief · pain',     meaning:'The wound is real. Do not explain it away. Feel it and move.' },
-    { id:'s7',  name:'Seven of Swords',    suit:'swords',    pts:[[.5,.1],[.3,.34],[.7,.34],[.14,.6],[.86,.6],[.34,.9],[.66,.9]],                                    keywords:'strategy · shadow · cunning',   meaning:'Something moves unseen. The ID knows — check what you have been avoiding.' },
-    { id:'s8',  name:'Eight of Swords',    suit:'swords',    pts:[[.2,.2],[.5,.14],[.8,.2],[.14,.5],[.86,.5],[.2,.8],[.5,.86],[.8,.8]],                              keywords:'paralysis · fear · trapped',    meaning:'The cage is partly imagined. One step forward reveals the exit.' },
-    { id:'s10', name:'Ten of Swords',      suit:'swords',    pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'endings · collapse · new dawn', meaning:'Rock bottom is a foundation. What rises now is real.' },
-    { id:'w1',  name:'Ace of Wands',       suit:'wands',     pts:[[.5,.1],[.5,.72],[.34,.42],[.66,.42]],                                                             keywords:'spark · fire · impulse',        meaning:'The drive ignites before thought arrives. Follow the spark.' },
-    { id:'w3',  name:'Three of Wands',     suit:'wands',     pts:[[.5,.2],[.24,.5],[.76,.5],[.24,.86],[.76,.86]],                                                    keywords:'ambition · horizon · momentum', meaning:'Ships on the horizon. The fire planned ahead. Trust what was set in motion.' },
-    { id:'w6',  name:'Six of Wands',       suit:'wands',     pts:[[.5,.1],[.2,.42],[.8,.42],[.14,.66],[.86,.66],[.34,.9],[.66,.9]],                                  keywords:'victory · recognition · pride', meaning:'The crowd validates what the ID already knew. Accept it fully.' },
-    { id:'w8',  name:'Eight of Wands',     suit:'wands',     pts:[[.1,.2],[.3,.14],[.5,.1],[.7,.14],[.9,.2],[.7,.86],[.5,.9],[.3,.86]],                              keywords:'speed · acceleration · urgency',meaning:'Everything arrives at once. The body is already moving. Do not overthink.' },
-    { id:'w10', name:'Ten of Wands',       suit:'wands',     pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'burden · weight · overextension',meaning:'The fire carries too much. What can be put down without betrayal?' },
-    { id:'p1',  name:'Ace of Pentacles',   suit:'pentacles', pts:[[.5,.14],[.86,.5],[.5,.86],[.14,.5]],                                                              keywords:'seed · resource · ground',      meaning:'Something material begins. The body recognizes the right soil.' },
-    { id:'p3',  name:'Three of Pentacles', suit:'pentacles', pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.86],[.65,.86],[.5,.5]],                                              keywords:'craft · skill · recognition',   meaning:'The hands produce something real. Mastery is being noticed.' },
-    { id:'p5',  name:'Five of Pentacles',  suit:'pentacles', pts:[[.5,.14],[.2,.5],[.5,.86],[.8,.5],[.5,.5]],                                                        keywords:'lack · cold · faith',           meaning:'The body knows scarcity. The warmth inside is still real and reachable.' },
-    { id:'p9',  name:'Nine of Pentacles',  suit:'pentacles', pts:[[.5,.1],[.76,.24],[.86,.5],[.76,.76],[.5,.9],[.24,.76],[.14,.5],[.24,.24]],                         keywords:'abundance · earned · solitude', meaning:'What was built is now enjoyed. The ID rests in real security.' },
+    { id:'c1',  name:'Ace of Cups',        suit:'cups',      pts:[[.5,.2],[.3,.7],[.7,.7]],                                                                         keywords:'love · awakening · grace',      meaning:'The cup overflows before you even raise it. Something new has flooded in — emotional, uninvited, and wanted at the same time. The ID does not ask permission to feel; it simply opens. What is arriving in your body right now is real and worth naming. Do not manage it into something smaller. Let it fill the vessel before you decide what to do with it.' },
+    { id:'c3',  name:'Three of Cups',      suit:'cups',      pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85]],                                                     keywords:'celebration · reunion · warmth', meaning:'The body remembers joy in a way the mind never quite can. There is a reunion happening — of people, or of parts of yourself that were separated. The ID does not celebrate alone; it reaches for the others who have shared the road. Something deserves to be marked. Do not let the moment pass without acknowledging it. Gather your people and let them witness what has become true.' },
+    { id:'c5',  name:'Five of Cups',       suit:'cups',      pts:[[.5,.15],[.2,.4],[.8,.4],[.35,.75],[.65,.75],[.5,.95]],                                            keywords:'grief · loss · what remains',   meaning:'Three cups have spilled. The ID stands over them and the grief is real, not metaphorical. But two cups remain standing behind you, and they are full. Something has been genuinely lost and needs to be mourned without explanation or apology. The mistake is in making the spilled cups the whole story. What still stands is also asking to be seen. The body knows the difference between loss and ruin.' },
+    { id:'c7',  name:'Seven of Cups',      suit:'cups',      pts:[[.5,.12],[.25,.34],[.75,.34],[.2,.58],[.8,.58],[.35,.84],[.65,.84]],                                keywords:'desire · illusion · hunger',    meaning:'The ID is projecting. Every option looks luminous right now, because the wanting itself has become the pleasure. Seven doors glow and the mind cannot choose because choice would end the fantasy. This is not indecision — it is the ID\'s way of staying in the sweetest part of possibility. But doors close. The dream has to become a decision before the clouds take it. Choose one cup and drink from it, even if it turns out to be different than imagined.' },
+    { id:'c9',  name:'Nine of Cups',       suit:'cups',      pts:[[.5,.1],[.72,.28],[.9,.5],[.72,.72],[.5,.9],[.28,.72],[.1,.5],[.28,.28],[.5,.5]],                   keywords:'wish · satisfaction · pleasure',meaning:'This is the wish card, and the wish was granted. The ID got what it wanted — really wanted, not just wanted in a polite way. There is a particular quality to satisfaction that the body recognizes before the mind catches up: a settling, a quiet that isn\'t empty. You are allowed to feel this without immediately asking what comes next. The nine cups are full and they are yours. Enjoy this without guilt. The body earned the right to rest in its own contentment.' },
+    { id:'c10', name:'Ten of Cups',        suit:'cups',      pts:[[.5,.1],[.65,.25],[.82,.42],[.82,.62],[.65,.78],[.5,.9],[.35,.78],[.18,.62],[.18,.42],[.35,.25]],   keywords:'bliss · family · home',         meaning:'The nervous system finally rests. This is not happiness as performance — it is the deep contentment that comes when the people and places around you are genuinely aligned with who you are. The ID does not hunger or reach when the ten cups are full; it simply exists inside something that works. Home is not always a place. Sometimes it is a relationship, a season, a version of yourself you finally stopped fighting. This is it. Be in it completely.' },
+    { id:'s1',  name:'Ace of Swords',      suit:'swords',    pts:[[.5,.1],[.5,.72],[.28,.5],[.72,.5]],                                                               keywords:'clarity · cut · breakthrough',  meaning:'The ID sharpens into a single clean point and the fog breaks. Something that was obscured becomes blindingly obvious — not comfortable, but true. The Ace of Swords does not ask how you feel about the truth; it simply reveals it. What needs to be cut away has been making you carry extra weight for longer than you realize. The blade is already in your hand. The only question is whether you will use it with intention or keep carrying it pointed at yourself.' },
+    { id:'s3',  name:'Three of Swords',    suit:'swords',    pts:[[.5,.15],[.2,.42],[.8,.42],[.35,.86],[.65,.86]],                                                   keywords:'heartbreak · grief · pain',     meaning:'The wound is real and it does not need to be rationalized into something more manageable. Three swords through the heart is not a metaphor for inconvenience. The ID knows this and it is not lying to you — something genuinely hurt, and the pain is proportionate to how much you cared. Do not explain it away or make it smaller to make others comfortable. Feel it and move through it, not around it. The rain passes. The swords eventually come out. What heals is what was willing to bleed.' },
+    { id:'s7',  name:'Seven of Swords',    suit:'swords',    pts:[[.5,.1],[.3,.34],[.7,.34],[.14,.6],[.86,.6],[.34,.9],[.66,.9]],                                    keywords:'strategy · shadow · cunning',   meaning:'Something moves unseen and the ID has already sensed it. There is a strategy at work — possibly yours, possibly directed at you — that has not been stated plainly. The body reads the room before the mind builds its explanation, and right now the body is sending a signal worth trusting. What have you been avoiding looking at directly? The Seven of Swords does not condemn cleverness, but it asks whether the cleverness is serving something honest. Check your blind spots. Check who else might have them.' },
+    { id:'s8',  name:'Eight of Swords',    suit:'swords',    pts:[[.2,.2],[.5,.14],[.8,.2],[.14,.5],[.86,.5],[.2,.8],[.5,.86],[.8,.8]],                              keywords:'paralysis · fear · trapped',    meaning:'The cage is partly imagined and partly built by choices made in fear. The ID recognizes the feeling of paralysis — the body won\'t move, the options seem gone, the blindfold stays on even though you could remove it. But the swords around you are not touching you. They are standing in a ring, waiting. One step in any direction and the pattern breaks. The fear that has been keeping you still is real, but it has been working with outdated information. What was dangerous then may not be dangerous now.' },
+    { id:'s10', name:'Ten of Swords',      suit:'swords',    pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'endings · collapse · new dawn', meaning:'This is the lowest point, and the lowest point is also a foundation. The ten swords in the back means it is finished — the suffering, the situation, the version of things that had to end. The ID does not pretend this doesn\'t hurt. But the sky in the distance is already lightening. Rock bottom has a particular quality: there is no further to fall, which means the next movement is only upward. What rises from here will be built from what actually survived. That is the only material worth building with.' },
+    { id:'w1',  name:'Ace of Wands',       suit:'wands',     pts:[[.5,.1],[.5,.72],[.34,.42],[.66,.42]],                                                             keywords:'spark · fire · impulse',        meaning:'The drive ignites before thought arrives, which is exactly correct. The Ace of Wands is pure creative impulse in the moment before it gets organized into a plan or talked into something reasonable. The ID is lit. Something wants to begin — a project, a direction, a way of being — and it wants to begin now. Do not wait for permission or perfect conditions. The spark does not stay at full brightness forever. Act on it while it is still this hot, and let the refinement come after.' },
+    { id:'w3',  name:'Three of Wands',     suit:'wands',     pts:[[.5,.2],[.24,.5],[.76,.5],[.24,.86],[.76,.86]],                                                    keywords:'ambition · horizon · momentum', meaning:'The ships are on the horizon and they are yours. The ID made a plan — boldly, early, with more confidence than the circumstances warranted — and the plan worked. What was set in motion is now in motion without your constant supervision. There is a particular sensation to this: the waiting that is also confirmation. The fire planned ahead and the evidence is coming in. Trust what was set in motion. Your work right now is to hold the horizon with both eyes open and be ready to receive what comes in.' },
+    { id:'w6',  name:'Six of Wands',       suit:'wands',     pts:[[.5,.1],[.2,.42],[.8,.42],[.14,.66],[.86,.66],[.34,.9],[.66,.9]],                                  keywords:'victory · recognition · pride', meaning:'The crowd is cheering and you earned it — not as a performance, but as the real result of real effort. The ID already knew this was coming because it was paying attention. Now the external world is confirming what the body has felt for some time: that what you have been building is worth something. Accept the recognition without immediately deflecting it or making it smaller. Victory lap is not arrogance. It is acknowledgment of the cost of getting here, and the people who witnessed it deserve to see you receive it fully.' },
+    { id:'w8',  name:'Eight of Wands',     suit:'wands',     pts:[[.1,.2],[.3,.14],[.5,.1],[.7,.14],[.9,.2],[.7,.86],[.5,.9],[.3,.86]],                              keywords:'speed · acceleration · urgency',meaning:'Everything is arriving at once and the velocity is real. The ID is already moving — the decision has been made in the body before the conscious mind caught up. Eight wands in flight means events have outpaced the usual pace of things, and the correct response is not to slow down but to be fully present inside the speed. Do not overthink this. The acceleration is not a warning; it is the universe matching your energy. Stay in your body, stay responsive, and trust that what is coming toward you was aimed in your direction for a reason.' },
+    { id:'w10', name:'Ten of Wands',       suit:'wands',     pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'burden · weight · overextension',meaning:'The fire is carrying too much and the body knows it, even if the mind keeps insisting on one more thing. Ten wands is not a discipline problem — it is often the result of caring too much about too many things that genuinely matter. But the weight is slowing you down and the destination is still ahead. What can be put down without betrayal? Not what should be abandoned — but what has already been completed, or what belongs to someone else\'s hands now. The wands were meant to build something, not to be carried indefinitely.' },
+    { id:'p1',  name:'Ace of Pentacles',   suit:'pentacles', pts:[[.5,.14],[.86,.5],[.5,.86],[.14,.5]],                                                              keywords:'seed · resource · ground',      meaning:'Something material is beginning and the body recognizes the right soil before the mind has time to calculate the odds. The Ace of Pentacles is a real opportunity — not a concept, not a fantasy, but something tangible that can be planted and cultivated. The ID senses the ground is fertile. This is a moment that rewards careful beginning, not reckless haste. Plant the seed with intention. Water it with patience. The return on what is started here will compound in ways that are not yet visible but are already in motion.' },
+    { id:'p3',  name:'Three of Pentacles', suit:'pentacles', pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.86],[.65,.86],[.5,.5]],                                              keywords:'craft · skill · recognition',   meaning:'The hands are producing something real and the work is being seen. The Three of Pentacles is the card of mastery in progress — not finished mastery, but the moment when skill becomes visible to others and earns the room\'s attention. Something you have practiced quietly is now producing a result that others recognize as genuine. The ID is satisfied in a specific way: the satisfaction of doing something well and knowing it. This is not the end of learning — it is the first confirmation that the investment of time and effort was made in the right direction.' },
+    { id:'p5',  name:'Five of Pentacles',  suit:'pentacles', pts:[[.5,.14],[.2,.5],[.5,.86],[.8,.5],[.5,.5]],                                                        keywords:'lack · cold · faith',           meaning:'The body knows scarcity in a way that is not metaphorical. Something material is missing — money, security, warmth, the sense of being provided for — and the cold is real. The two figures pass by the lit window and the ID registers the distance between where you are and where safety seems to be. But the window is lit. The door is not locked. What is making you pass by it rather than going in? The Five of Pentacles asks whether the poverty is also a belief that has outlasted the circumstances that created it.' },
+    { id:'p9',  name:'Nine of Pentacles',  suit:'pentacles', pts:[[.5,.1],[.76,.24],[.86,.5],[.76,.76],[.5,.9],[.24,.76],[.14,.5],[.24,.24]],                         keywords:'abundance · earned · solitude', meaning:'What was built through discipline is now being enjoyed, and the enjoyment is clean because it was earned. The ID rests inside real security — not borrowed security, not performed security, but the kind that comes from having built the infrastructure of your own life with your own hands. The Nine of Pentacles is about beautiful solitude: the pleasure of your own company in surroundings you created. You do not need to share this to validate it. The garden is yours. Walk through it slowly.' },
   ],
 
   // ── EGO: Court cards ─────────────────────────────────────────────────────
   ego: [
-    { id:'cp',  name:'Page of Cups',       suit:'cups',   pts:[[.5,.2],[.3,.42],[.7,.42],[.4,.8],[.6,.8]],                                                          keywords:'wonder · openness · feeling',   meaning:'The self wanders with beginner\'s mind. Let impressions arrive unfiltered.' },
-    { id:'ckn', name:'Knight of Cups',     suit:'cups',   pts:[[.2,.3],[.5,.14],[.8,.3],[.7,.62],[.5,.9],[.3,.62]],                                                  keywords:'romance · pursuit · idealism',  meaning:'The self rides toward beauty. Poetic and earnest — do not let strategy kill it.' },
-    { id:'cq',  name:'Queen of Cups',      suit:'cups',   pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'empathy · intuition · depth',   meaning:'The self holds space. Emotional intelligence navigates where logic stumbles.' },
-    { id:'ck',  name:'King of Cups',       suit:'cups',   pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'mastery · balance · diplomacy', meaning:'The self governs feeling without suppressing it. This is emotional authority.' },
-    { id:'sp',  name:'Page of Swords',     suit:'swords', pts:[[.5,.15],[.3,.4],[.7,.4],[.4,.8],[.6,.8]],                                                            keywords:'curiosity · ideas · restless',  meaning:'The self questions everything. Let the sharp mind ask before it concludes.' },
-    { id:'skn', name:'Knight of Swords',   suit:'swords', pts:[[.2,.3],[.5,.1],[.8,.3],[.7,.62],[.5,.9],[.3,.62]],                                                   keywords:'speed · ambition · reckless',   meaning:'The self charges. Think once before the blade lands.' },
-    { id:'sq',  name:'Queen of Swords',    suit:'swords', pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'clarity · boundary · discernment',meaning:'The self sees without softening. This is not cruelty — it is precision.' },
-    { id:'sk',  name:'King of Swords',     suit:'swords', pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'authority · logic · judgment',  meaning:'The self applies intellect with discipline. The verdict is just.' },
-    { id:'wp',  name:'Page of Wands',      suit:'wands',  pts:[[.5,.15],[.3,.42],[.7,.42],[.4,.8],[.6,.8]],                                                          keywords:'adventure · enthusiasm · spark',meaning:'The self discovers its first fire. Follow the excitement before reason dims it.' },
-    { id:'wkn', name:'Knight of Wands',    suit:'wands',  pts:[[.2,.3],[.5,.1],[.8,.3],[.7,.65],[.5,.9],[.3,.65]],                                                   keywords:'passion · courage · momentum',  meaning:'The self rides full speed. Channel the fire or it consumes the rider.' },
-    { id:'wq',  name:'Queen of Wands',     suit:'wands',  pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'charisma · will · presence',    meaning:'The self commands a room without trying. This is natural authority.' },
-    { id:'wk',  name:'King of Wands',      suit:'wands',  pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'vision · leadership · legacy',  meaning:'The self builds something larger than itself. Carry the fire forward.' },
-    { id:'pp',  name:'Page of Pentacles',  suit:'pentacles',pts:[[.5,.15],[.26,.4],[.74,.4],[.4,.8],[.6,.8]],                                                        keywords:'study · diligence · beginning', meaning:'The self takes the long view. Start carefully. Everything compounds.' },
-    { id:'pkn', name:'Knight of Pentacles',suit:'pentacles',pts:[[.2,.26],[.5,.14],[.8,.26],[.8,.65],[.5,.86],[.2,.65]],                                             keywords:'routine · reliability · patience',meaning:'The self moves slowly and wins. Trust the unglamorous progress.' },
-    { id:'pq',  name:'Queen of Pentacles', suit:'pentacles',pts:[[.5,.1],[.2,.35],[.8,.35],[.14,.62],[.86,.62],[.35,.9],[.65,.9]],                                   keywords:'nurturing · security · care',   meaning:'The self sustains others through practical love. Abundance flows outward.' },
-    { id:'pk',  name:'King of Pentacles',  suit:'pentacles',pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                             keywords:'mastery · wealth · discipline', meaning:'The self has built the empire. Now govern it with wisdom.' },
+    { id:'cp',  name:'Page of Cups',       suit:'cups',   pts:[[.5,.2],[.3,.42],[.7,.42],[.4,.8],[.6,.8]],                                                          keywords:'wonder · openness · feeling',   meaning:'The self is wandering with beginner\'s mind and this is not a deficit — it is a superpower. The Page of Cups arrives when the Ego has not yet calcified around a fixed identity, when impressions can still come in unfiltered. Something is being felt before it is understood, and that is exactly the right order. Let the feelings arrive before you name them or manage them into strategy. The self in this moment is permeable in the best sense — it is learning from everything it touches.' },
+    { id:'ckn', name:'Knight of Cups',     suit:'cups',   pts:[[.2,.3],[.5,.14],[.8,.3],[.7,.62],[.5,.9],[.3,.62]],                                                  keywords:'romance · pursuit · idealism',  meaning:'The self is riding toward something beautiful and the pursuit itself is the point. The Knight of Cups arrives when the Ego is animated by an ideal — a person, a vision, a way of being — that may be partly projection but is also genuinely reaching for something real. The danger is letting strategy kill the earnestness. Whatever you are riding toward, stay poetic and honest about it. Do not trade your passion for practicality before you have at least tried the passionate approach.' },
+    { id:'cq',  name:'Queen of Cups',      suit:'cups',   pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'empathy · intuition · depth',   meaning:'The self holds space — for others and for the full range of its own feeling. The Queen of Cups navigates through emotional intelligence, reading the room not as a survival strategy but as a natural expression of attentiveness. This is a self that can be moved without being swept away, that can feel deeply without drowning. Right now, your greatest strength is not logic or force but the ability to stay present with what is actually happening emotionally, in yourself and in the people around you.' },
+    { id:'ck',  name:'King of Cups',       suit:'cups',   pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'mastery · balance · diplomacy', meaning:'The self governs feeling without suppressing it, which is the hardest thing a person can learn. The King of Cups has been through enough emotional weather to know that the feelings are not the problem — the relationship to the feelings is the problem. You are navigating from a place of genuine authority right now, not because the waters are calm, but because you have learned to sit still in rough water. Lead from this place. The people around you are steadied by your steadiness.' },
+    { id:'sp',  name:'Page of Swords',     suit:'swords', pts:[[.5,.15],[.3,.4],[.7,.4],[.4,.8],[.6,.8]],                                                            keywords:'curiosity · ideas · restless',  meaning:'The self is asking everything at once, which is exactly the right approach for this stage. The Page of Swords arrives when the Ego has sharpened its focus to a fine point and wants to interrogate everything — ideas, assumptions, other people\'s certainties. This is not rudeness; it is intellectual appetite. But the sword is still new in the hand. Let the sharp mind ask before it concludes, and be willing to be wrong on the first several passes. The questioning itself is the growth.' },
+    { id:'skn', name:'Knight of Swords',   suit:'swords', pts:[[.2,.3],[.5,.1],[.8,.3],[.7,.62],[.5,.9],[.3,.62]],                                                   keywords:'speed · ambition · reckless',   meaning:'The self is charging and the speed is real. The Knight of Swords does not wait for consensus or ideal conditions — it moves because the moment demands movement. There is genuine courage in this and also genuine danger: the blade can land before the target is properly identified. Think once — not twice, not ten times, but at least once — before the blade falls. The ambition is correct. The velocity is an asset. Just make sure the direction was aimed before the charge began.' },
+    { id:'sq',  name:'Queen of Swords',    suit:'swords', pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'clarity · boundary · discernment',meaning:'The self sees without softening and this is not cruelty — it is precision in service of truth. The Queen of Swords has processed enough loss and enough complexity to have earned her clear eyes. She does not flinch from what is real, and she does not offer comfort that is not honest. If you are in this energy, your clarity is a gift to the people around you, even if they do not immediately experience it that way. Hold the line. The truth you can see and speak right now is more valuable than false reassurance.' },
+    { id:'sk',  name:'King of Swords',     suit:'swords', pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'authority · logic · judgment',  meaning:'The self is applying intellectual discipline with authority and the result is genuine clarity. The King of Swords is not cold — he is precise. There is a verdict being reached right now, a conclusion being drawn from evidence that was carefully assembled. Trust the analysis. You have been thinking about this long enough and with enough rigor to trust the conclusion your mind is arriving at. The judgment is just because it was built on actual examination, not assumption.' },
+    { id:'wp',  name:'Page of Wands',      suit:'wands',  pts:[[.5,.15],[.3,.42],[.7,.42],[.4,.8],[.6,.8]],                                                          keywords:'adventure · enthusiasm · spark',meaning:'The self has found its first real fire and it has no idea yet how bright it will eventually burn. The Page of Wands arrives when the Ego is just discovering what it loves, just learning what makes it come fully alive. The excitement is not naive — it is the accurate signal of genuine alignment. Follow the pull before reason arrives to complicate it. The adventure is real. The discovery is real. Let this version of yourself run toward the thing that is calling before the more cautious self has a chance to talk you into waiting.' },
+    { id:'wkn', name:'Knight of Wands',    suit:'wands',  pts:[[.2,.3],[.5,.1],[.8,.3],[.7,.65],[.5,.9],[.3,.65]],                                                   keywords:'passion · courage · momentum',  meaning:'The self is riding full speed and the fire is doing the steering. The Knight of Wands is in love with the movement itself — the acceleration, the courage it takes to keep going when ordinary caution says slow down. This is a magnificent energy and also a consuming one if it isn\'t directed. Channel the fire rather than just burning in it. You have the momentum. Use it to go somewhere specific. The passion is the asset; the destination is what needs your attention right now.' },
+    { id:'wq',  name:'Queen of Wands',     suit:'wands',  pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'charisma · will · presence',    meaning:'The self commands a room without trying to, which is the signature of natural authority. The Queen of Wands is not performing confidence — she is simply herself, fully and without apology. There is a way you carry yourself right now that other people feel before you speak a word. Lead from this. The charisma you have is not separate from your substance; it is the visible form of the work you have put in. Do not shrink it to make others more comfortable. Your presence is a gift, not an imposition.' },
+    { id:'wk',  name:'King of Wands',      suit:'wands',  pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'vision · leadership · legacy',  meaning:'The self is building something larger than itself and the vision is the engine. The King of Wands leads not by managing but by pointing toward a horizon that others can see and choose to move toward. The fire you carry right now is not just for you — it is for the people who will stand in the warmth of what you create. Carry it forward with intention. The legacy question is not what you will accomplish but what will remain when you are no longer in the room. Build accordingly.' },
+    { id:'pp',  name:'Page of Pentacles',  suit:'pentacles',pts:[[.5,.15],[.26,.4],[.74,.4],[.4,.8],[.6,.8]],                                                        keywords:'study · diligence · beginning', meaning:'The self is taking the long view and the long view is correct. The Page of Pentacles holds the coin up to the light with genuine fascination — not impatience, not performance, but the real pleasure of learning something worth knowing. You are at the beginning of a mastery arc. Everything compounds from here: the habits you build now, the skills you practice, the knowledge you accumulate. Start carefully and completely. The foundation determines everything above it. What you are studying right now will matter more than it currently appears to.' },
+    { id:'pkn', name:'Knight of Pentacles',suit:'pentacles',pts:[[.2,.26],[.5,.14],[.8,.26],[.8,.65],[.5,.86],[.2,.65]],                                             keywords:'routine · reliability · patience',meaning:'The self moves slowly and wins by a wide margin. The Knight of Pentacles is the only knight who is not in a hurry, and that deliberateness is the entire point. What you are doing right now may not look spectacular from the outside, but the unglamorous progress is real and compounding. Show up again tomorrow. Trust the routine. The discipline of returning to the same work again and again is not boring — it is the evidence of commitment, and commitment is what separates those who arrive from those who almost arrived.' },
+    { id:'pq',  name:'Queen of Pentacles', suit:'pentacles',pts:[[.5,.1],[.2,.35],[.8,.35],[.14,.62],[.86,.62],[.35,.9],[.65,.9]],                                   keywords:'nurturing · security · care',   meaning:'The self sustains others through the practical expression of love, which is the most underrated form of love there is. The Queen of Pentacles does not declare devotion — she builds the conditions in which others can grow. The warmth of a fire kept burning, the food on the table, the infrastructure that allows other people\'s dreams to exist: this is the work. Abundance flows through your hands because you have learned to receive it without hoarding and give it without depleting yourself. This is genuine stewardship.' },
+    { id:'pk',  name:'King of Pentacles',  suit:'pentacles',pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                             keywords:'mastery · wealth · discipline', meaning:'The self has built the empire and now must govern it with the same wisdom that built it. The King of Pentacles knows that material mastery is not just accumulation — it is the art of using resources in proportion to their purpose. You have arrived at a place of genuine influence over material reality. The question now is not whether you can build more, but what deserves to be built with what you already hold. Govern wisely. The wealth you carry — in resources, skills, relationships, knowledge — is a responsibility as much as an achievement.' },
   ],
 
   // ── SUPEREGO: Major Arcana ────────────────────────────────────────────────
   superego: [
-    { id:'m0',  name:'The Fool',           pts:[[.5,.15],[.35,.35],[.65,.35],[.25,.55],[.75,.55],[.4,.8],[.6,.8]],          keywords:'leap · pure potential · trust',     meaning:'The higher law is: begin. The abyss beneath is also the sky.' },
-    { id:'m1',  name:'The Magician',       pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.5],[.7,.5],[.3,.7],[.7,.7],[.5,.9]],          keywords:'will · manifestation · alignment',  meaning:'Above and below are connected. What you hold, you can transform.' },
-    { id:'m2',  name:'The High Priestess', pts:[[.5,.1],[.2,.4],[.8,.4],[.2,.7],[.8,.7],[.5,.9]],                          keywords:'mystery · veil · knowing',          meaning:'Some truths arrive only in silence. Do not force them into language yet.' },
-    { id:'m3',  name:'The Empress',        pts:[[.5,.1],[.3,.25],[.7,.25],[.15,.45],[.85,.45],[.3,.65],[.7,.65],[.4,.9],[.6,.9]], keywords:'abundance · creation · nature',  meaning:'The earth does not hurry. Growth is the law. Let it work.' },
-    { id:'m4',  name:'The Emperor',        pts:[[.2,.15],[.8,.15],[.2,.4],[.8,.4],[.2,.65],[.8,.65],[.2,.9],[.8,.9]],      keywords:'structure · authority · law',       meaning:'Order is also a form of love. Build the container before filling it.' },
-    { id:'m5',  name:'The Hierophant',     pts:[[.5,.1],[.2,.3],[.8,.3],[.5,.5],[.2,.7],[.8,.7],[.5,.9]],                  keywords:'tradition · initiation · lineage',  meaning:'The teaching has been here longer than you. Receive before you revise.' },
-    { id:'m6',  name:'The Lovers',         pts:[[.25,.2],[.75,.2],[.5,.4],[.25,.6],[.75,.6],[.5,.85]],                     keywords:'union · sacred choice · alignment', meaning:'The highest law asks: what do you truly choose? Everything follows from that.' },
-    { id:'m7',  name:'The Chariot',        pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.5],[.85,.5],[.3,.7],[.7,.7],[.5,.9]],        keywords:'will · victory · discipline',       meaning:'Opposing forces harnessed become the vehicle. You are already moving.' },
-    { id:'m8',  name:'Strength',           pts:[[.5,.15],[.25,.35],[.75,.35],[.5,.5],[.25,.65],[.75,.65],[.5,.85]],        keywords:'courage · gentleness · mastery',    meaning:'The lion is not subdued by force. It is held by love. This is the true power.' },
-    { id:'m9',  name:'The Hermit',         pts:[[.5,.1],[.5,.35],[.3,.6],[.7,.6],[.5,.9]],                                 keywords:'solitude · lantern · inner light',  meaning:'The answer is in the dark at the end of your own corridor. Go alone.' },
-    { id:'m10', name:'Wheel of Fortune',   pts:[[.5,.1],[.8,.3],[.8,.6],[.5,.9],[.2,.6],[.2,.3],[.5,.35],[.5,.65]],        keywords:'fate · cycles · turning',           meaning:'The wheel turns without permission. Ride it rather than resist.' },
-    { id:'m11', name:'Justice',            pts:[[.5,.1],[.25,.3],[.75,.3],[.5,.5],[.25,.7],[.75,.7],[.5,.9]],              keywords:'truth · law · consequence',         meaning:'The higher law is exacting. What was sent returns. Align with what is true.' },
-    { id:'m12', name:'The Hanged Man',     pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.62],[.7,.62],[.5,.9]],                        keywords:'surrender · suspension · vision',   meaning:'The view from upside down reveals what standing upright could not.' },
-    { id:'m13', name:'Death',              pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.6],[.85,.6],[.35,.9],[.65,.9]],            keywords:'transformation · ending · crossing',meaning:'Nothing that is meant to continue will end here. Only what has finished.' },
-    { id:'m14', name:'Temperance',         pts:[[.2,.3],[.5,.1],[.8,.3],[.85,.6],[.6,.86],[.4,.86],[.15,.6],[.5,.5]],      keywords:'alchemy · patience · blending',     meaning:'The higher law is gradual. Pour between cups until the two become one.' },
-    { id:'m15', name:'The Devil',          pts:[[.5,.1],[.25,.3],[.75,.3],[.1,.55],[.9,.55],[.25,.75],[.75,.75],[.5,.95]], keywords:'shadow · bondage · liberation',     meaning:'The chains are real and they are yours to remove. The Devil bows when named.' },
-    { id:'m16', name:'The Tower',          pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.55],[.85,.55],[.35,.8],[.65,.8]],            keywords:'revelation · collapse · liberation',meaning:'The lightning strikes what was never true. Rubble is a cleaner foundation.' },
-    { id:'m17', name:'The Star',           pts:[[.5,.05],[.62,.34],[.9,.34],[.66,.55],[.76,.9],[.5,.7],[.24,.9],[.34,.55],[.1,.34],[.38,.34]], keywords:'hope · renewal · guidance', meaning:'The wound becomes the opening. Light enters from the direction of the scar.' },
-    { id:'m18', name:'The Moon',           pts:[[.7,.15],[.86,.35],[.86,.66],[.7,.86],[.4,.76],[.24,.5],[.4,.24]],         keywords:'illusion · mystery · cycles',       meaning:'Not everything in the dark is threat. The moon asks you to feel without naming.' },
-    { id:'m19', name:'The Sun',            pts:[[.5,.5],[.5,.1],[.76,.24],[.9,.5],[.76,.76],[.5,.9],[.24,.76],[.1,.5],[.24,.24]], keywords:'joy · consciousness · radiance', meaning:'This is not earned. It simply is. You are allowed to shine without apology.' },
-    { id:'m20', name:'Judgement',          pts:[[.5,.1],[.3,.3],[.7,.3],[.2,.55],[.8,.55],[.3,.8],[.7,.8],[.5,.9]],        keywords:'calling · awakening · rebirth',    meaning:'The trumpet has already sounded. The question is whether you have heard it yet.' },
-    { id:'m21', name:'The World',          pts:[[.5,.1],[.8,.3],[.8,.7],[.5,.9],[.2,.7],[.2,.3],[.5,.3],[.5,.7]],          keywords:'completion · wholeness · arrival', meaning:'The journey arrives where it began and the beginning is transformed. You are whole.' },
+    { id:'m0',  name:'The Fool',           pts:[[.5,.15],[.35,.35],[.65,.35],[.25,.55],[.75,.55],[.4,.8],[.6,.8]],          keywords:'leap · pure potential · trust',     meaning:'The higher law here is simple: begin. The Fool steps off the cliff not from ignorance but from trust — trust that the universe will meet the leap. The abyss beneath is also the sky above, depending on which way you face. Every great journey starts with a step that cannot be justified by the information currently available. The Superego is not asking you to be reckless. It is asking whether you are confusing caution with fear, and whether the fear has been calling itself wisdom for too long.' },
+    { id:'m1',  name:'The Magician',       pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.5],[.7,.5],[.3,.7],[.7,.7],[.5,.9]],          keywords:'will · manifestation · alignment',  meaning:'Above and below are connected, and the Magician is the conduit. The tools on the table — sword, cup, wand, pentacle — are not random. They are the full range of what is available to you: mind, emotion, will, and material reality. The Superego says: you have everything required. The only thing missing is the alignment of intention with action. What you hold with focused will can be transformed. The universe is responsive to genuine commitment in a way it is not responsive to wishing.' },
+    { id:'m2',  name:'The High Priestess', pts:[[.5,.1],[.2,.4],[.8,.4],[.2,.7],[.8,.7],[.5,.9]],                          keywords:'mystery · veil · knowing',          meaning:'Some truths arrive only in silence, and the High Priestess guards the threshold between what can be spoken and what can only be known. The Superego is asking you to stop trying to force the answer into language before it is ready. Something is forming in the deep water beneath conscious thought. The more you reach for it, the more it recedes. Sit at the edge of the veil. What you are waiting to understand will surface when the inner conditions are right, not on your impatient schedule.' },
+    { id:'m3',  name:'The Empress',        pts:[[.5,.1],[.3,.25],[.7,.25],[.15,.45],[.85,.45],[.3,.65],[.7,.65],[.4,.9],[.6,.9]], keywords:'abundance · creation · nature',  meaning:'The earth does not hurry, and neither should you. The Empress embodies a higher law that the modern world constantly argues with: that growth has its own timing and cannot be forced without diminishing what is being grown. Something is in the process of becoming — in your work, your relationships, your body, your inner life. The Superego asks that you tend it rather than rush it. Provide the conditions: warmth, attention, patience, nourishment. Let the abundance arrive in its season.' },
+    { id:'m4',  name:'The Emperor',        pts:[[.2,.15],[.8,.15],[.2,.4],[.8,.4],[.2,.65],[.8,.65],[.2,.9],[.8,.9]],      keywords:'structure · authority · law',       meaning:'Order is also a form of love. The Emperor does not build walls out of fear — he builds them to define the space inside where life can happen safely. The Superego is pointing to the places where structure is missing and chaos is the result, or where structure has calcified into rigidity and needs to breathe. Real authority does not need to be enforced; it is simply present. Build the container before you pour the contents. The foundation always determines the ceiling.' },
+    { id:'m5',  name:'The Hierophant',     pts:[[.5,.1],[.2,.3],[.8,.3],[.5,.5],[.2,.7],[.8,.7],[.5,.9]],                  keywords:'tradition · initiation · lineage',  meaning:'The teaching has been here longer than you, and something in the lineage is worth receiving before it is revised. The Hierophant does not demand blind obedience — it asks for honest reception. Something is being transmitted through the traditions, the teachers, the practices that preceded you. The Superego invites you to enter the stream before you decide to redirect it. What has been preserved through generations often carries wisdom that was hard-won. Receive first. Innovate from knowledge, not ignorance.' },
+    { id:'m6',  name:'The Lovers',         pts:[[.25,.2],[.75,.2],[.5,.4],[.25,.6],[.75,.6],[.5,.85]],                     keywords:'union · sacred choice · alignment', meaning:'The highest law here is the question: what do you truly choose? Not what you should choose, not what is expected, not what makes sense to everyone else — but what is the deepest yes available to you right now. The Lovers is not primarily a card about romance. It is about alignment — the sacred act of bringing your external choices into coherence with your internal truth. Everything follows from this. The choice you make at this junction sends ripples forward. Choose from the center of what you actually are.' },
+    { id:'m7',  name:'The Chariot',        pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.5],[.85,.5],[.3,.7],[.7,.7],[.5,.9]],        keywords:'will · victory · discipline',       meaning:'Opposing forces harnessed become the vehicle. The Chariot moves not because the two horses agree, but because the charioteer has learned to hold both reins with equal steadiness. The Superego is pointing to a tension inside you that has been a source of paralysis — two impulses pulling in opposite directions. What if they are not contradictions but complements? Discipline them both. You are already moving. The victory comes to those who can hold complexity without letting it become conflict.' },
+    { id:'m8',  name:'Strength',           pts:[[.5,.15],[.25,.35],[.75,.35],[.5,.5],[.25,.65],[.75,.65],[.5,.85]],        keywords:'courage · gentleness · mastery',    meaning:'The lion is not subdued by force — it is held by love, which is the harder and more permanent solution. Strength as a Superego card asks whether you have been trying to overpower something in yourself or in your situation that would yield to a gentler approach. The figure opens the lion\'s mouth with her bare hands and the lion complies. This is the true power: not dominance but communion. What wildness in your life is waiting to be approached with patience instead of control?' },
+    { id:'m9',  name:'The Hermit',         pts:[[.5,.1],[.5,.35],[.3,.6],[.7,.6],[.5,.9]],                                 keywords:'solitude · lantern · inner light',  meaning:'The answer is in the dark at the end of your own corridor, and you have to go there alone. The Hermit does not withdraw from the world out of failure — he withdraws because the next stage of understanding cannot be reached in the noise. The lamp he carries lights only one step ahead, which is enough. The Superego is asking whether you have given yourself the quality of solitude that allows the deep self to speak. The inner voice is always broadcasting. The question is whether the outer conditions are quiet enough to receive it.' },
+    { id:'m10', name:'Wheel of Fortune',   pts:[[.5,.1],[.8,.3],[.8,.6],[.5,.9],[.2,.6],[.2,.3],[.5,.35],[.5,.65]],        keywords:'fate · cycles · turning',           meaning:'The wheel turns without your permission and the higher law embedded in this is not cruelty but pattern. Every rise contains the seed of the next descent; every low point is already turning upward. The Superego asks you to widen your lens from the current moment to the cycle it belongs to. Where are you in the turn? What has been falling away that needed to fall? What is being built on the way up? Resistance to the wheel costs energy that could be used to ride it. Let the turning be the teacher.' },
+    { id:'m11', name:'Justice',            pts:[[.5,.1],[.25,.3],[.75,.3],[.5,.5],[.25,.7],[.75,.7],[.5,.9]],              keywords:'truth · law · consequence',         meaning:'The higher law is exacting, and what was sent returns with precision. Justice is not punitive in the cosmic sense — it is simply accurate. Every action creates a field of consequence that eventually reaches back. The Superego asks you to examine what you have set in motion. What seeds were planted that are now bearing fruit, for better or worse? The scales do not lie. Alignment with what is actually true — not what is comfortable or convenient — is the only reliable navigation system in the long run.' },
+    { id:'m12', name:'The Hanged Man',     pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.62],[.7,.62],[.5,.9]],                        keywords:'surrender · suspension · vision',   meaning:'The view from upside down reveals what standing upright could not. The Hanged Man is suspended by choice — this is not imprisonment but voluntary pause in service of a different kind of seeing. The Superego asks: what would become clear if you stopped trying to resolve the situation and simply let yourself hang in the question for a while? The surrender is not defeat. It is the condition under which the deeper answer can arrive. Something is being processed at a level below strategy. Let it finish.' },
+    { id:'m13', name:'Death',              pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.6],[.85,.6],[.35,.9],[.65,.9]],            keywords:'transformation · ending · crossing',meaning:'Nothing that is meant to continue will end here. Only what has already finished is being released. Death as a Superego force is the great clarifier — it reveals what was real and what was merely arrangement. The old form is dissolving to make room for the new one, and the new one cannot fully arrive until the old one has completely cleared. Grieve what is ending. Then turn toward what is beginning to emerge from the cleared ground. This is not destruction. It is the most faithful form of continuity available.' },
+    { id:'m14', name:'Temperance',         pts:[[.2,.3],[.5,.1],[.8,.3],[.85,.6],[.6,.86],[.4,.86],[.15,.6],[.5,.5]],      keywords:'alchemy · patience · blending',     meaning:'The higher law is gradual, and the angel pours between cups without spilling because she has learned that precision requires patience. Temperance asks you to stop treating your contradictions as problems to be solved and start treating them as ingredients to be blended. The opposing forces you are holding — action and rest, fire and water, certainty and doubt — are not obstacles. They are the raw material of the alchemical transformation underway. Pour slowly. The gold appears in the combination, not the purity.' },
+    { id:'m15', name:'The Devil',          pts:[[.5,.1],[.25,.3],[.75,.3],[.1,.55],[.9,.55],[.25,.75],[.75,.75],[.5,.95]], keywords:'shadow · bondage · liberation',     meaning:'The chains are real and they are yours to remove. The two figures at the Devil\'s feet are not locked — look at the rings around their necks, loose enough to lift off. What binds you has your consent, even if that consent was given in a moment of fear or exhaustion. The Superego does not judge the binding. It asks you to name it clearly, because the Devil bows when he is named. What belief, addiction, or agreement are you maintaining that no longer serves anything except its own continuation? Name it. The chain loosens when you do.' },
+    { id:'m16', name:'The Tower',          pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.55],[.85,.55],[.35,.8],[.65,.8]],            keywords:'revelation · collapse · liberation',meaning:'The lightning strikes what was never true, which is the only thing worth knowing about the Tower. The structure that falls was built on false foundation — on assumption, on denial, on the story you told yourself to avoid looking at what was actually there. The Superego does not apologize for the lightning. The rubble is a cleaner foundation than the hollow building it replaced. What is being stripped away right now? Look at it without flinching. What remains after the clearing is what was real all along, and you can build from that.' },
+    { id:'m17', name:'The Star',           pts:[[.5,.05],[.62,.34],[.9,.34],[.66,.55],[.76,.9],[.5,.7],[.24,.9],[.34,.55],[.1,.34],[.38,.34]], keywords:'hope · renewal · guidance', meaning:'The wound becomes the opening, and the light enters from the direction of the scar. The Star follows the Tower because hope is not naive — it is the thing that survives the collapse and begins the rebuilding. The figure at the water\'s edge pours endlessly without the vessel running dry. The Superego is telling you that the source you are drawing from is not finite. What you have been given to offer has not run out, even if it feels that way. The star in the sky is your star. Trust its light. Your wishes are heard by something that is listening.' },
+    { id:'m18', name:'The Moon',           pts:[[.7,.15],[.86,.35],[.86,.66],[.7,.86],[.4,.76],[.24,.5],[.4,.24]],         keywords:'illusion · mystery · cycles',       meaning:'Not everything in the dark is threat, and the Moon asks you to feel your way forward without demanding that the feeling become a map. The subconscious is working on something that the conscious mind cannot yet access, and the attempt to force it into clarity will only drive it deeper. The two towers in the distance do not have to be passed through today. The path winds. The howling is both dog and wolf — both the tame and the wild — and they are both yours. Navigate by feeling. The Moon lights enough for the next step.' },
+    { id:'m19', name:'The Sun',            pts:[[.5,.5],[.5,.1],[.76,.24],[.9,.5],[.76,.76],[.5,.9],[.24,.76],[.1,.5],[.24,.24]], keywords:'joy · consciousness · radiance', meaning:'This is not earned, it simply is, and you are allowed to be in it without justification. The Sun is not asking you to achieve anything. It is telling you that the light available to you right now is full and warm and unearned, which is the most generous kind. The child on the white horse is dancing, not marching. The Superego in this moment dissolves into pure affirmation: you belong here, in this brightness, in this life. Shine without apology. The world does not need you dimmed for the comfort of those who have not yet found their own light.' },
+    { id:'m20', name:'Judgement',          pts:[[.5,.1],[.3,.3],[.7,.3],[.2,.55],[.8,.55],[.3,.8],[.7,.8],[.5,.9]],        keywords:'calling · awakening · rebirth',    meaning:'The trumpet has already sounded and the question is whether you have been willing to hear it yet. Judgement is the moment of absolute reckoning — not punishment, but clarity so complete that the old version of yourself is simply no longer operative. The dead are rising from their coffins not to be judged but to be called. Something is calling you right now by your true name, not the name you were assigned or the one you built as protection. Are you willing to answer? The Superego says: the call is real, the caller is patient, and the cost of not answering is a particular kind of slow grief.' },
+    { id:'m21', name:'The World',          pts:[[.5,.1],[.8,.3],[.8,.7],[.5,.9],[.2,.7],[.2,.3],[.5,.3],[.5,.7]],          keywords:'completion · wholeness · arrival', meaning:'The journey arrives where it began and the beginning has been completely transformed by the arriving. The dancer at the center of the laurel wreath is not celebrating a destination — she is celebrating the wholeness of the path, the way everything that seemed like detour turned out to be essential. The four creatures at the corners hold the full range of human experience in their gaze. Nothing was wasted. The Superego closes here with the deepest truth it knows: you are whole. Not almost whole, not whole-if-you-fix-the-remaining-things — whole, now, as you are.' },
   ]
 };
 
-// Reading oracle voices
+// Reading oracle voices — full paragraph synthesis
 const ORACLES = [
-  (id,ego,sg) => `The ${id.name} speaks first from the body — ${id.meaning.split('.')[0].toLowerCase()}. The Ego answers: ${ego.name} navigates this. The Superego watches from above and names it ${sg.name}: ${sg.meaning.split('.')[0].toLowerCase()}.`,
-  (id,ego,sg) => `Below the surface: ${id.name}. In the present motion of the self: ${ego.name}. From the higher law: ${sg.name}. Read them as one sentence — instinct, navigation, and the cathedral's verdict.`,
-  (id,ego,sg) => `Your constellation revealed three layers. The ID carries ${id.name} — ${id.meaning.split('.')[0].toLowerCase()}. The Ego wears the face of ${ego.name}. The Superego closes with ${sg.name}: ${sg.meaning.split('.').slice(0,2).join('. ').toLowerCase()}.`,
-  (id,ego,sg) => `${id.name} lives in the body before thought. ${ego.name} is who you are right now in the world. ${sg.name} is the higher law watching this moment. Three truths. One path.`,
-  (id,ego,sg) => `The shape you traced through the dark sky was received. The cathedral returned three names: ${id.name}, ${ego.name}, ${sg.name}. These are not predictions. They are the architecture of now.`,
+  (id,ego,sg) => `The ID speaks first, as it always does — from the body, before the mind has time to argue. ${id.name} is what the instinct carries right now: the raw material of this moment, unprocessed and honest. Below the performance of the day, this is what is actually happening in the nervous system. The Ego mediates, as always, trying to make the instinct navigable. ${ego.name} is the face the self is wearing in the world — the strategy, the persona, the way of moving through external reality. Watch how the ID and Ego negotiate: one wants what it wants, the other manages the wanting. Above both, the Superego watches with something larger than either. ${sg.name} holds the higher law — the archetype, the pattern, the moral force that gives direction when both instinct and strategy run out of answers. Together, these three are not a contradiction but a chord. The reading is the space where all three are true at once.`,
+  (id,ego,sg) => `Your constellation traced through the sky was received by the cathedral and three names came back. ${id.name} arrived first — this is what lives underneath the surface, the hunger or grief or fire that the body holds without announcement. It does not require explanation; it simply is. Then ${ego.name} — this is who you are in motion right now, the self as it navigates relationships, responsibilities, and the ordinary weight of being a person in the world. The Ego is the actor. And finally, presiding over both: ${sg.name}, the higher force that this whole arrangement is answering to. The Superego does not manage the day — it sets the direction. When the ID and Ego fall into confusion, this is the card that can orient them. Three layers of a single life. Read them together and the picture becomes more specific than any single card could offer.`,
+  (id,ego,sg) => `Below the floor of daily life, ${id.name} is working. This is not a card to be analyzed from a distance — it is what the body is doing right now without asking permission. The instinct has its own intelligence, and this reading suggests it deserves to be heard rather than managed. The Ego — ${ego.name} — is the self in relationship to the world. This is the current costume, the current strategy, the current way of being seen and of seeing. There is real information here about how the self is presenting and navigating. And the Superego speaks last and loudest: ${sg.name}. This is the principle, the archetype, the cosmic voice that is orienting everything whether you are aware of it or not. The three together form the architecture of your current moment — not fate, but the honest shape of the forces at work in you and through you right now.`,
+  (id,ego,sg) => `${id.name} in the ID position means the most animal, immediate, pre-verbal part of you is engaged with something real. This is not small. The body does not lie in the ways the mind does, and whatever this card names in your instinctive life is worth sitting with before moving to interpretation. The Ego carries ${ego.name} — this is the self you bring into rooms, the one that has a strategy, a persona, a way of handling things. Right now this face of the self is the active one, doing the work of existing inside ordinary time. The Superego completes the reading with ${sg.name}: the highest operating principle at work in this season of your life. This is what you are accountable to beyond the personal — the archetype, the law, the larger pattern your individual choices are serving or resisting. All three levels of self are speaking. The reading is the conversation between them.`,
+  (id,ego,sg) => `The shape you drew across the cathedral sky was not random. Your hand moved as it moved because something in you directed it — some combination of instinct, habit, intention, and chance that is exactly the mix a tarot reading is designed to meet. The three faces that emerged are these: ${id.name} at the level of the ID, where the drives live. ${ego.name} at the level of the Ego, where the self navigates the world. ${sg.name} at the level of the Superego, where the higher law speaks. Each is real. Each is operating simultaneously. The cathedral does not choose which one is most important — they are a system, and the system as a whole is what requires reading. Notice which of the three feels most charged when you hear it. That is usually where the work is.`,
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -422,24 +435,55 @@ function resamplePath(pts,n) {
     const l=Math.sqrt(dx*dx+dy*dy);
     segs.push(l);total+=l;
   }
+  if(total===0) return pts;
   const step=total/(n-1);
   const res=[[...pts[0]]];
   let cov=0,si=0;
   for(let i=1;i<n-1;i++){
     const target=i*step;
     while(si<segs.length-1&&cov+segs[si]<target){cov+=segs[si];si++;}
-    const t=(target-cov)/segs[si];
-    const p0=pts[si],p1=pts[si+1];
+    const t=segs[si]>0?(target-cov)/segs[si]:0;
+    const p0=pts[si],p1=pts[si+1]||pts[si];
     res.push([p0[0]+(p1[0]-p0[0])*t,p0[1]+(p1[1]-p0[1])*t]);
   }
   res.push([...pts[pts.length-1]]);
   return res;
 }
 
+// Structural fingerprint — captures features shape-matching alone misses:
+// point count, aspect ratio, spread (avg dist from centroid), vertical bias
+function fingerprint(pts) {
+  const n=pts.length;
+  let cx=0,cy=0;
+  pts.forEach(([x,y])=>{cx+=x;cy+=y;});
+  cx/=n;cy/=n;
+  let spread=0,topWeight=0,bottomWeight=0;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{
+    spread+=Math.sqrt((x-cx)**2+(y-cy)**2);
+    if(y<cy)topWeight+=Math.abs(y-cy);
+    else bottomWeight+=Math.abs(y-cy);
+    if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;
+  });
+  const aspect=(maxX-minX+.001)/(maxY-minY+.001);
+  const vertBias=(topWeight-bottomWeight)/(topWeight+bottomWeight+.001);
+  return { n, spread:spread/n, aspect, vertBias };
+}
+
+function fingerprintDist(fa,fb) {
+  // Point count difference matters a lot — fewer points = simpler shape
+  const nDiff=Math.abs(fa.n-fb.n)/Math.max(fa.n,fb.n);
+  const spreadDiff=Math.abs(fa.spread-fb.spread);
+  const aspectDiff=Math.abs(fa.aspect-fb.aspect);
+  const vertDiff=Math.abs(fa.vertBias-fb.vertBias);
+  return nDiff*1.2 + spreadDiff*0.8 + aspectDiff*0.5 + vertDiff*0.4;
+}
+
 function shapeDistance(ptsA,ptsB) {
-  const N=14;
-  const a=resamplePath(normalizePts(ptsA),N);
-  // Test 8 geometric variants
+  const N=16;
+  const normA=normalizePts(ptsA);
+  const normBbase=normalizePts(ptsB);
+  const a=resamplePath(normA,N);
   const transforms=[
     b=>b,
     b=>b.map(([x,y])=>[-x,y]),
@@ -450,24 +494,42 @@ function shapeDistance(ptsA,ptsB) {
     b=>b.map(([x,y])=>[y,-x]),
     b=>b.map(([x,y])=>[-y,-x]),
   ];
-  const normB=normalizePts(ptsB);
-  let best=Infinity;
+  let bestGeo=Infinity;
   transforms.forEach(tf=>{
-    const v=resamplePath(normalizePts(tf(normB)),N);
+    const v=resamplePath(normalizePts(tf(normBbase)),N);
     let d=0;
     a.forEach((p,i)=>{ const dx=p[0]-v[i][0],dy=p[1]-v[i][1];d+=dx*dx+dy*dy; });
-    if(d<best)best=d;
+    if(d<bestGeo)bestGeo=d;
   });
-  return best/N;
+  // Blend geometric score with structural fingerprint distance
+  const fpA=fingerprint(ptsA);
+  const fpB=fingerprint(ptsB);
+  const fpDist=fingerprintDist(fpA,fpB);
+  return (bestGeo/N)*0.6 + fpDist*0.4;
 }
 
 function findBestInGroup(userPts,groupKey) {
-  let best=null,bestScore=Infinity;
-  CARDS[groupKey].forEach(card=>{
-    const s=shapeDistance(userPts,card.pts);
-    if(s<bestScore){bestScore=s;best=card;}
-  });
-  return {card:best,score:bestScore};
+  // Score all cards in group, then pick from weighted-random top candidates
+  // to avoid always snapping to the same card
+  const scored=CARDS[groupKey].map(card=>({
+    card,
+    score:shapeDistance(userPts,card.pts)
+  })).sort((a,b)=>a.score-b.score);
+
+  // Weight top candidates — best has highest probability but not 100%
+  // Use softmax-style weighting over top 5
+  const topN=Math.min(5,scored.length);
+  const top=scored.slice(0,topN);
+  const minScore=top[0].score;
+  // Convert scores to weights: closer = higher weight
+  const weights=top.map(t=>Math.exp(-(t.score-minScore)*4));
+  const totalW=weights.reduce((a,b)=>a+b,0);
+  let r=Math.random()*totalW;
+  for(let i=0;i<top.length;i++){
+    r-=weights[i];
+    if(r<=0) return {card:top[i].card,score:top[i].score};
+  }
+  return {card:top[0].card,score:top[0].score};
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -877,17 +939,19 @@ function showSpread(){
 
   cards.forEach(({card,group,posLabel,color},i)=>{
     const [R,G,B]=color;
-    const hexColor=`rgb(${R},${G},${B})`;
-    const sz=clamp(90,Math.floor(window.innerWidth*.16),130);
+    const sz=clamp(70,Math.floor(window.innerWidth*.1),100);
     const el=document.createElement('div');
     el.className='spread-card';
-    el.style.borderColor=`rgba(${R},${G},${B},.3)`;
+    el.style.borderColor=`rgba(${R},${G},${B},.28)`;
     el.innerHTML=`
-      <div class="sc-group" style="color:rgba(${R},${G},${B},.55)">${posLabel}</div>
-      <canvas class="sc-canvas" width="${sz}" height="${sz}" style="width:${sz}px;height:${sz}px;border-color:rgba(${R},${G},${B},.2)" id="scc${i}"></canvas>
+      <div class="sc-group" style="color:rgba(${R},${G},${B},.5)">${posLabel}</div>
       <div class="sc-name">${card.name}</div>
-      <div class="sc-keywords" style="color:rgba(${R},${G},${B},.4)">${card.keywords}</div>
+      <div class="sc-keywords" style="color:rgba(${R},${G},${B},.38)">${card.keywords}</div>
+      <div class="sc-rule" style="background:linear-gradient(90deg,transparent,rgba(${R},${G},${B},.3),transparent)"></div>
       <div class="sc-meaning">${card.meaning}</div>
+      <div class="sc-canvas-wrap">
+        <canvas class="sc-canvas" width="${sz}" height="${sz}" style="width:${sz}px;height:${sz}px;border-color:rgba(${R},${G},${B},.18)" id="scc${i}"></canvas>
+      </div>
     `;
     container.appendChild(el);
     setTimeout(()=>{
