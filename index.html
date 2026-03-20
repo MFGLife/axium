@@ -965,8 +965,13 @@
             transition: opacity 0.2s, transform 0.2s;
         }
         .uni-card:hover .uni-arrow { opacity: 1; transform: translate(2px, -2px); }
-        .uni-card.full-width { grid-column: span 2; flex-direction: row; align-items: center; gap: 14px; }
-        .uni-card.full-width .uni-icon { font-size: 1.5rem; }
+        .uni-card.full-width { grid-column: span 2; flex-direction: row; align-items: center; gap: 14px; background: linear-gradient(135deg, #AA8C2C 0%, #D4AF37 50%, #AA8C2C 100%); border-color: #D4AF37; }
+        .uni-card.full-width .uni-icon { font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(0,0,0,0.4)); }
+        .uni-card.full-width .uni-name { color: #0A0A0A; font-weight: 800; }
+        .uni-card.full-width .uni-desc { color: rgba(0,0,0,0.6); }
+        .uni-card.full-width .uni-arrow { color: rgba(0,0,0,0.5); }
+        .uni-card.full-width:hover { box-shadow: 0 6px 28px rgba(212,175,55,0.55); transform: translateY(-2px); }
+        .uni-card.full-width:hover::before { opacity: 0; }
 
         /* ─── LOADING ─── */
         .loading-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
@@ -1753,7 +1758,7 @@ window.toggleDimPanel = function() {
 // ─── INFO PANEL ───
 window.openInfoPanel = function openInfoPanel(startTab) {
     const UNIVERSE_DESTINATIONS = [
-        { icon:'※', name:'Game',       desc:'Enter Chapter 1 — narrative RPG',     href:'game.html',          color:'#D4AF37', external:false },
+        { icon:'※', name:'Tarot',       desc:'Future Telling - through science',     href:'game.html',          color:'#D4AF37', external:false },
         { icon:'⬡', name:'Micheal',    desc:'The Anchor — ground dimension',        href:'micheal.html',       color:'#D4AF37', external:false },
         { icon:'⬡', name:'Gabriel',    desc:'The Examiner — assumption hunter',     href:'gabriel.html',       color:'#7EB8E8', external:false },
         { icon:'⬡', name:'Ariel',      desc:'The Space-Holder — grief-literate',    href:'ariel.html',         color:'#D4A0C8', external:false },
@@ -1765,7 +1770,7 @@ window.openInfoPanel = function openInfoPanel(startTab) {
     ];
 
     const uniHTML = `<div class="universe-grid">${UNIVERSE_DESTINATIONS.map(d =>
-        `<a class="uni-card${d.name==='Game'?' full-width':''}" href="${d.href}"${d.external?' target="_blank" rel="noopener"':''} style="--uc:${d.color}">
+        `<a class="uni-card${d.name==='Tarot'?' full-width':''}" href="${d.href}"${d.external?' target="_blank" rel="noopener"':''} style="--uc:${d.color}">
             <span class="uni-icon">${d.icon}</span>
             <div>
                 <div class="uni-name">${d.name}</div>
