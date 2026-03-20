@@ -10,477 +10,224 @@
 html,body{width:100%;height:100%;overflow:hidden;background:#02020a;font-family:'Cinzel',serif;touch-action:none;user-select:none}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 
-/* ── READING POSITIONS HUD ── */
-#positions-hud {
-  position:fixed;
-  top:0; left:0; right:0;
-  z-index:100;
-  padding:18px 24px 0;
-  display:flex;
-  justify-content:center;
-  gap:16px;
-  pointer-events:none;
+/* ── NODE COUNT ── */
+#node-count{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%);
+  z-index:100;pointer-events:none;
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.28em;
+  color:rgba(255,255,255,.15);text-transform:uppercase;
+  transition:color .5s;white-space:nowrap;
 }
-.pos-slot {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-  opacity:.4;
-  transition:opacity .6s, transform .4s;
-}
-.pos-slot.active { opacity:1; }
-.pos-slot.complete { opacity:.85; }
-.pos-slot-number {
-  font-family:'Space Mono',monospace;
-  font-size:7px;
-  letter-spacing:.3em;
-  color:#D4AF37;
-  text-transform:uppercase;
-}
-.pos-slot-label {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;
-  font-size:11px;
-  letter-spacing:.12em;
-  color:rgba(255,255,255,.5);
-}
-.pos-slot-card {
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.1em;
-  color:#D4AF37;
-  text-align:center;
-  max-width:100px;
-  min-height:14px;
-  text-shadow:0 0 12px rgba(212,175,55,.4);
-}
-.pos-dot {
-  width:32px;
-  height:2px;
-  background:rgba(212,175,55,.18);
-  border-radius:1px;
-  overflow:hidden;
-}
-.pos-dot-fill {
-  height:100%;
-  width:0%;
-  background:#D4AF37;
-  transition:width .8s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 0 6px rgba(212,175,55,.5);
-}
-.pos-slot.complete .pos-dot-fill { width:100%; }
+#node-count.active{color:rgba(212,175,55,.5);}
+#node-count span{color:#D4AF37;}
 
-/* ── BOTTOM HUD ── */
-#hud {
-  position:fixed;
-  bottom:0; left:0; right:0;
-  z-index:100;
-  padding:0 0 26px;
-  pointer-events:none;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-}
-#unlock-flash {
-  font-family:'Cinzel',serif;
-  font-size:12px;
-  letter-spacing:.2em;
-  color:rgba(212,175,55,0);
-  text-shadow:none;
-  transition:color .7s, text-shadow .7s;
-  text-transform:uppercase;
-}
-#unlock-flash.show {
-  color:#D4AF37;
-  text-shadow:0 0 22px rgba(212,175,55,.6);
-}
-#info-row {
-  display:flex;
-  align-items:center;
-  gap:14px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-#persona-lbl {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;
-  font-size:13px;
-  letter-spacing:.1em;
-}
-#shape-lbl {
-  font-family:'Space Mono',monospace;
-  font-size:7px;
-  letter-spacing:.18em;
-  color:rgba(255,255,255,.22);
-  text-transform:uppercase;
-}
-#progress-dots { display:flex; gap:5px; align-items:center; }
-.pdot {
-  width:6px; height:6px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.18);
-  background:rgba(255,255,255,.04);
-  transition:all .35s;
-}
-.pdot.hit {
-  border-color:var(--c);
-  background:var(--c);
-  box-shadow:0 0 7px var(--c);
-}
-
-/* ── REFERENCE CANVAS ── */
-#ref-box {
-  position:fixed;
-  bottom:120px;
-  right:18px;
-  z-index:120;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-  padding:12px;
-  width:180px;
-  background:linear-gradient(180deg, rgba(12,10,22,.9), rgba(4,3,12,.95));
-  border:1px solid rgba(212,175,55,.28);
-  border-radius:8px;
-  box-shadow:0 0 28px rgba(0,0,0,.7), 0 0 18px rgba(212,175,55,.08) inset;
-}
-#ref-lbl {
-  font-family:'Space Mono',monospace;
-  font-size:6px;
-  letter-spacing:.25em;
-  color:rgba(255,255,255,.18);
-  text-transform:uppercase;
-}
-#ref-canvas {
-  width:154px;
-  height:154px;
-  border-radius:6px;
-  border:1px solid rgba(212,175,55,.28);
-  background:radial-gradient(circle at center, rgba(8,6,18,.97), rgba(2,2,8,1));
-  box-shadow:0 0 16px rgba(212,175,55,.1), inset 0 0 14px rgba(0,0,0,.8);
-}
-#ref-pos-lbl {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;
-  font-size:10px;
-  letter-spacing:.1em;
-  color:rgba(212,175,55,.5);
-  text-align:center;
-}
-
-/* ── CARD SPREAD DISPLAY ── */
-#spread-display {
-  position:fixed;
-  inset:0;
-  z-index:250;
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:rgba(2,2,10,.92);
-  backdrop-filter:blur(8px);
-  pointer-events:none;
-  opacity:0;
-  transition:opacity .8s;
-}
-#spread-display.show {
-  display:flex;
-  pointer-events:auto;
-}
-#spread-display.visible { opacity:1; }
-
-#spread-header {
-  font-family:'Cinzel Decorative',serif;
-  font-size:clamp(13px,2vw,18px);
-  letter-spacing:.22em;
-  color:#D4AF37;
-  text-align:center;
-  text-transform:uppercase;
-  text-shadow:0 0 40px rgba(212,175,55,.35);
-  margin-bottom:6px;
-}
-#spread-divider {
-  width:200px;
-  height:1px;
-  background:linear-gradient(90deg, transparent, rgba(212,175,55,.5), transparent);
-  margin-bottom:20px;
-}
-
-#three-cards {
-  display:flex;
-  gap:clamp(8px,2vw,20px);
-  align-items:flex-start;
-  justify-content:center;
-  padding:0 16px;
-}
-
-.spread-card {
-  width:clamp(130px,20vw,200px);
-  background:linear-gradient(160deg, rgba(18,14,32,.97), rgba(6,5,16,.99));
-  border:1px solid rgba(212,175,55,.35);
-  border-radius:10px;
-  padding:clamp(10px,2vw,18px);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:8px;
-  box-shadow:0 0 40px rgba(0,0,0,.8), 0 0 20px rgba(212,175,55,.12);
-  opacity:0;
-  transform:translateY(24px);
-  transition:opacity .6s, transform .6s;
-}
-.spread-card.reveal {
-  opacity:1;
-  transform:translateY(0);
-}
-.spread-card-pos {
-  font-family:'Space Mono',monospace;
-  font-size:6px;
-  letter-spacing:.3em;
-  color:rgba(212,175,55,.45);
-  text-transform:uppercase;
-}
-.spread-card-canvas {
-  border-radius:50%;
-  border:1px solid rgba(212,175,55,.25);
-  background:radial-gradient(circle at center, rgba(8,6,18,.95), rgba(2,2,8,1));
-}
-.spread-card-name {
-  font-family:'Cinzel',serif;
-  font-size:clamp(9px,1.4vw,13px);
-  font-weight:600;
-  letter-spacing:.12em;
-  color:#D4AF37;
-  text-align:center;
-  text-shadow:0 0 14px rgba(212,175,55,.3);
-  line-height:1.4;
-}
-.spread-card-suit {
-  font-family:'Space Mono',monospace;
-  font-size:6px;
-  letter-spacing:.2em;
-  color:rgba(255,255,255,.28);
-  text-transform:uppercase;
-}
-.spread-card-meaning {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;
-  font-size:clamp(9px,1.2vw,11px);
-  letter-spacing:.04em;
-  color:rgba(255,255,255,.65);
-  text-align:center;
-  line-height:1.6;
-}
-
-/* ── SYNTHESIS ── */
-#synthesis-section {
-  margin-top:16px;
-  max-width:520px;
-  padding:0 20px;
-  opacity:0;
-  transition:opacity .8s;
-}
-#synthesis-section.show { opacity:1; }
-#synthesis-title {
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.28em;
-  color:rgba(212,175,55,.5);
-  text-align:center;
-  text-transform:uppercase;
-  margin-bottom:8px;
-}
-#synthesis-text {
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(12px,2vw,15px);
-  font-style:italic;
-  color:rgba(255,255,255,.75);
-  text-align:center;
-  line-height:1.8;
-  letter-spacing:.04em;
-}
-
-/* ── NEW READING BUTTON ── */
-#new-reading-btn {
-  margin-top:20px;
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.26em;
-  text-transform:uppercase;
-  color:#D4AF37;
-  background:rgba(212,175,55,.07);
-  border:1px solid rgba(212,175,55,.4);
-  padding:12px 32px;
-  border-radius:2px;
-  cursor:pointer;
-  transition:all .3s;
-  opacity:0;
-  transition:opacity .8s, background .3s, border-color .3s;
-}
-#new-reading-btn.show { opacity:1; }
-#new-reading-btn:hover {
-  background:rgba(212,175,55,.16);
-  border-color:#D4AF37;
-  box-shadow:0 0 26px rgba(212,175,55,.2);
-}
-
-/* ── OVERLAYS ── */
-#wrong-flash {
-  position:fixed;
-  inset:0;
-  z-index:150;
-  pointer-events:none;
-  opacity:0;
-  background:radial-gradient(ellipse at center, rgba(160,40,40,.2) 0%, transparent 60%);
-  transition:opacity .2s;
-}
-#complete-flash {
-  position:fixed;
-  inset:0;
-  z-index:150;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity .7s;
-}
-
-/* ── HELP BUTTON ── */
-#help-btn {
-  position:fixed;
-  bottom:22px;
-  right:22px;
+/* ── READ BUTTON ── */
+#read-btn{
+  position:fixed;bottom:30px;left:50%;
+  transform:translateX(-50%) translateY(10px);
   z-index:200;
-  font-family:'Space Mono',monospace;
-  font-size:8px;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  color:#D4AF37;
-  background:rgba(212,175,55,.07);
-  border:1px solid rgba(212,175,55,.3);
-  padding:10px 14px;
-  border-radius:2px;
-  cursor:pointer;
-  transition:all .25s;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:#D4AF37;
+  background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.38);
+  padding:14px 48px;border-radius:2px;cursor:pointer;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s,transform .5s,background .3s,border-color .3s,box-shadow .3s;
 }
-#help-btn:hover {
-  background:rgba(212,175,55,.16);
-  border-color:#D4AF37;
-  box-shadow:0 0 18px rgba(212,175,55,.2);
-}
-#help-btn.cooldown { opacity:.35; cursor:not-allowed; border-color:rgba(212,175,55,.12); }
+#read-btn.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+#read-btn:hover{background:rgba(212,175,55,.15);border-color:#D4AF37;box-shadow:0 0 32px rgba(212,175,55,.22);}
 
-/* ── STARS REMAINING ── */
-#stars-counter {
-  position:fixed;
-  top:90px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:100;
-  font-family:'Space Mono',monospace;
-  font-size:7px;
-  letter-spacing:.2em;
-  color:rgba(255,255,255,.18);
-  text-transform:uppercase;
-  pointer-events:none;
+/* ── CLEAR BUTTON ── */
+#clear-btn{
+  position:fixed;bottom:30px;right:22px;z-index:200;
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.28);
+  background:transparent;border:1px solid rgba(255,255,255,.1);
+  padding:9px 13px;border-radius:2px;cursor:pointer;
+  opacity:0;pointer-events:none;transition:all .35s;
+}
+#clear-btn.show{opacity:1;pointer-events:auto;}
+#clear-btn:hover{color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.22);}
+
+/* ── GUIDE TEXT ── */
+#guide-text{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+  z-index:100;pointer-events:none;text-align:center;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:13px;letter-spacing:.1em;color:rgba(255,255,255,.2);
+  white-space:nowrap;transition:opacity .6s;
+}
+#guide-text.hidden{opacity:0;}
+
+/* ── READING STAGE OVERLAY (pulsing reveal phase) ── */
+#stage-overlay{
+  position:fixed;inset:0;z-index:200;
+  pointer-events:none;opacity:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   transition:opacity .5s;
 }
-#stars-counter span { color:rgba(212,175,55,.5); }
+#stage-overlay.show{opacity:1;}
+#stage-label{
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.35em;
+  color:rgba(212,175,55,.55);text-transform:uppercase;
+}
+#stage-card-name{
+  font-family:'Cinzel',serif;font-size:clamp(22px,4vw,38px);font-weight:600;
+  letter-spacing:.18em;color:#D4AF37;text-align:center;
+  text-shadow:0 0 60px rgba(212,175,55,.5),0 0 120px rgba(212,175,55,.2);
+  opacity:0;transform:translateY(8px);
+  transition:opacity .7s,transform .7s;
+}
+#stage-card-name.show{opacity:1;transform:translateY(0);}
+#stage-card-keywords{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(13px,2vw,16px);letter-spacing:.1em;
+  color:rgba(255,255,255,.35);text-align:center;
+  opacity:0;transition:opacity .6s .3s;
+}
+#stage-card-keywords.show{opacity:1;}
+
+/* ── SPREAD OVERLAY (full-screen final reveal) ── */
+#spread-display{
+  position:fixed;inset:0;z-index:300;
+  display:none;flex-direction:column;align-items:center;justify-content:flex-start;
+  background:rgba(2,2,10,.0);
+  overflow-y:auto;padding:clamp(20px,4vh,40px) 16px 40px;
+  transition:background .9s;
+}
+#spread-display.show{display:flex;}
+#spread-display.visible{background:rgba(2,2,10,.95);}
+
+#spread-eyebrow{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.42em;
+  color:rgba(212,175,55,.3);text-transform:uppercase;margin-bottom:10px;
+  opacity:0;transform:translateY(-6px);transition:opacity .6s .1s,transform .6s .1s;
+}
+#spread-display.visible #spread-eyebrow{opacity:1;transform:translateY(0);}
+
+#spread-header{
+  font-family:'Cinzel Decorative',serif;font-size:clamp(18px,3.5vw,32px);
+  font-weight:900;letter-spacing:.18em;color:#D4AF37;text-align:center;
+  text-shadow:0 0 60px rgba(212,175,55,.3);margin-bottom:8px;
+  opacity:0;transform:translateY(-6px);transition:opacity .7s .2s,transform .7s .2s;
+}
+#spread-display.visible #spread-header{opacity:1;transform:translateY(0);}
+
+#spread-rule{
+  width:200px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.4),transparent);
+  margin-bottom:clamp(18px,3vh,30px);
+  opacity:0;transition:opacity .6s .35s;
+}
+#spread-display.visible #spread-rule{opacity:1;}
+
+/* Three card frames */
+#three-cards{
+  display:flex;gap:clamp(8px,2vw,20px);align-items:flex-start;
+  justify-content:center;flex-wrap:wrap;max-width:680px;width:100%;
+}
+.spread-card{
+  flex:0 0 auto;width:clamp(140px,26vw,195px);
+  background:linear-gradient(155deg,rgba(14,10,26,.98),rgba(4,3,12,.99));
+  border:1px solid rgba(212,175,55,.25);border-radius:10px;
+  padding:clamp(10px,2vw,16px);
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  box-shadow:0 0 50px rgba(0,0,0,.85),0 0 20px rgba(212,175,55,.07);
+  opacity:0;transform:translateY(22px) scale(.96);
+  transition:opacity .6s,transform .6s,box-shadow .4s;
+}
+.spread-card.reveal{opacity:1;transform:translateY(0) scale(1);}
+.spread-card.reveal:hover{box-shadow:0 0 50px rgba(0,0,0,.85),0 0 30px rgba(212,175,55,.18);}
+.sc-group{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;
+  text-transform:uppercase;
+}
+.sc-canvas{
+  border-radius:50%;border:1px solid rgba(212,175,55,.2);
+  background:radial-gradient(circle at center,rgba(7,5,16,.97),rgba(2,2,8,1));
+}
+.sc-name{
+  font-family:'Cinzel',serif;font-size:clamp(10px,1.5vw,13px);font-weight:600;
+  letter-spacing:.1em;color:#D4AF37;text-align:center;
+  text-shadow:0 0 14px rgba(212,175,55,.28);line-height:1.35;
+}
+.sc-keywords{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.12em;
+  color:rgba(255,255,255,.2);text-align:center;
+}
+.sc-meaning{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(9px,1.3vw,11px);letter-spacing:.04em;
+  color:rgba(255,255,255,.6);text-align:center;line-height:1.68;
+}
+
+/* Synthesis */
+#synthesis-wrap{
+  margin-top:clamp(16px,3vh,24px);max-width:500px;width:100%;padding:0 10px;
+  opacity:0;transform:translateY(8px);transition:opacity .8s,transform .8s;
+}
+#synthesis-wrap.show{opacity:1;transform:translateY(0);}
+#synthesis-divider{
+  width:100px;height:1px;margin:0 auto 14px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);
+}
+#synthesis-label{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;
+  color:rgba(212,175,55,.3);text-transform:uppercase;text-align:center;margin-bottom:12px;
+}
+#synthesis-text{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(13px,2vw,16px);
+  font-style:italic;color:rgba(255,255,255,.7);text-align:center;
+  line-height:1.95;letter-spacing:.04em;
+}
+
+/* New reading button */
+#new-reading-btn{
+  margin-top:clamp(18px,3vh,26px);
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;
+  text-transform:uppercase;color:#D4AF37;
+  background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.35);
+  padding:13px 38px;border-radius:2px;cursor:pointer;
+  opacity:0;pointer-events:none;
+  transition:opacity .8s,background .3s,border-color .3s,box-shadow .3s;
+}
+#new-reading-btn.show{opacity:1;pointer-events:auto;}
+#new-reading-btn:hover{background:rgba(212,175,55,.15);border-color:#D4AF37;box-shadow:0 0 28px rgba(212,175,55,.2);}
+
+/* Flash overlays */
+#wrong-flash{position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(140,30,30,.16) 0%,transparent 60%);transition:opacity .2s;}
+#complete-flash{position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;transition:opacity .7s;}
 
 /* ── START SCREEN ── */
-#start {
-  position:fixed;
-  inset:0;
-  z-index:300;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:18px;
+#start{
+  position:fixed;inset:0;z-index:400;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
   background:rgba(2,2,10,.98);
 }
-/* Cathedral arch decoration */
-#start::before {
-  content:'';
-  position:absolute;
-  top:0; left:50%;
-  transform:translateX(-50%);
-  width:min(400px, 80vw);
-  height:300px;
-  background:radial-gradient(ellipse at top, rgba(212,175,55,.06) 0%, transparent 70%);
+#start::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:min(500px,90vw);height:340px;
+  background:radial-gradient(ellipse at top,rgba(212,175,55,.055) 0%,transparent 68%);
   pointer-events:none;
 }
-.s-eyebrow {
+.s-eyebrow{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.42em;color:rgba(212,175,55,.32);text-transform:uppercase;}
+.s-title{font-family:'Cinzel Decorative',serif;font-size:clamp(26px,6vw,56px);font-weight:900;letter-spacing:.12em;color:#D4AF37;text-shadow:0 0 80px rgba(212,175,55,.15);text-align:center;line-height:1.2;}
+.s-rule{width:150px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.32),transparent);}
+.s-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(13px,2vw,16px);color:rgba(255,255,255,.25);letter-spacing:.08em;text-align:center;max-width:380px;line-height:1.95;}
+.s-groups{
+  display:flex;gap:20px;align-items:flex-start;justify-content:center;flex-wrap:wrap;
+  margin:4px 0;
+}
+.s-group-pill{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
   font-family:'Space Mono',monospace;
-  font-size:8px;
-  letter-spacing:.4em;
-  color:rgba(212,175,55,.4);
-  text-transform:uppercase;
 }
-.s-title {
-  font-family:'Cinzel Decorative',serif;
-  font-size:clamp(22px,5vw,44px);
-  font-weight:900;
-  letter-spacing:.12em;
-  color:#D4AF37;
-  text-shadow:0 0 60px rgba(212,175,55,.2), 0 0 120px rgba(212,175,55,.1);
-  text-align:center;
-  line-height:1.25;
-}
-.s-divider {
-  width:180px;
-  height:1px;
-  background:linear-gradient(90deg, transparent, rgba(212,175,55,.4), transparent);
-}
-.s-sub {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;
-  font-size:clamp(13px,2vw,16px);
-  color:rgba(255,255,255,.3);
-  letter-spacing:.08em;
-  text-align:center;
-  max-width:360px;
-  line-height:1.9;
-}
-.s-instruction {
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(11px,1.6vw,13px);
-  color:rgba(255,255,255,.2);
-  text-align:center;
-  letter-spacing:.06em;
-  line-height:1.8;
-  max-width:300px;
-}
-.s-instruction strong {
-  color:rgba(212,175,55,.45);
-  font-style:italic;
-  font-weight:400;
-}
-.s-btn {
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.3em;
-  text-transform:uppercase;
-  color:#D4AF37;
-  background:rgba(212,175,55,.06);
-  border:1px solid rgba(212,175,55,.4);
-  padding:14px 42px;
-  cursor:pointer;
-  transition:all .35s;
-  border-radius:2px;
-}
-.s-btn:hover {
-  background:rgba(212,175,55,.14);
-  border-color:#D4AF37;
-  box-shadow:0 0 35px rgba(212,175,55,.18);
-}
-.s-tag {
-  font-family:'Space Mono',monospace;
-  font-size:7px;
-  letter-spacing:.25em;
-  color:rgba(212,175,55,.15);
-}
+.s-group-name{font-size:8px;letter-spacing:.2em;color:rgba(212,175,55,.5);text-transform:uppercase;}
+.s-group-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.18);}
+.s-how{font-family:'Cormorant Garamond',serif;font-size:clamp(11px,1.6vw,13px);color:rgba(255,255,255,.17);text-align:center;line-height:1.9;max-width:340px;letter-spacing:.05em;}
+.s-how em{color:rgba(212,175,55,.38);font-style:italic;}
+.s-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#D4AF37;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.38);padding:14px 44px;cursor:pointer;transition:all .35s;border-radius:2px;}
+.s-btn:hover{background:rgba(212,175,55,.14);border-color:#D4AF37;box-shadow:0 0 36px rgba(212,175,55,.18);}
+.s-tag{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.25em;color:rgba(212,175,55,.1);}
 </style>
 </head>
 <body>
@@ -488,735 +235,753 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 <div id="wrong-flash"></div>
 <div id="complete-flash"></div>
 
-<!-- Top positions -->
-<div id="positions-hud">
-  <div class="pos-slot" id="pos-0">
-    <div class="pos-slot-number">I · Past</div>
-    <div class="pos-dot"><div class="pos-dot-fill" id="pdot-0"></div></div>
-    <div class="pos-slot-card" id="pos-card-0"></div>
-  </div>
-  <div style="width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(212,175,55,.2),transparent);align-self:center;"></div>
-  <div class="pos-slot" id="pos-1">
-    <div class="pos-slot-number">II · Present</div>
-    <div class="pos-dot"><div class="pos-dot-fill" id="pdot-1"></div></div>
-    <div class="pos-slot-card" id="pos-card-1"></div>
-  </div>
-  <div style="width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(212,175,55,.2),transparent);align-self:center;"></div>
-  <div class="pos-slot" id="pos-2">
-    <div class="pos-slot-number">III · Path</div>
-    <div class="pos-dot"><div class="pos-dot-fill" id="pdot-2"></div></div>
-    <div class="pos-slot-card" id="pos-card-2"></div>
-  </div>
+<div id="node-count">Nodes: <span id="nc">0</span></div>
+<div id="guide-text">Trace your constellation through the stars</div>
+
+<button id="read-btn" onclick="initiateReading()">Reveal the Reading</button>
+<button id="clear-btn" onclick="clearPath()">Clear</button>
+
+<!-- Pulsing card reveal stage (plays before spread) -->
+<div id="stage-overlay">
+  <div id="stage-label"></div>
+  <div id="stage-card-name"></div>
+  <div id="stage-card-keywords"></div>
 </div>
 
-<!-- Bottom HUD -->
-<div id="hud">
-  <div id="unlock-flash"></div>
-  <div id="info-row">
-    <div id="persona-lbl"></div>
-    <div id="shape-lbl"></div>
-    <div id="progress-dots"></div>
-  </div>
-</div>
-
-<div id="stars-counter">Seeking: <span id="stars-remain"></span> nodes</div>
-
-<button id="help-btn" onclick="showHint()">Hint</button>
-
-<!-- Reference canvas -->
-<div id="ref-box">
-  <div id="ref-lbl">Current Constellation</div>
-  <canvas id="ref-canvas" width="154" height="154"></canvas>
-  <div id="ref-pos-lbl"></div>
-</div>
-
-<!-- Three-card spread display -->
+<!-- Full spread -->
 <div id="spread-display">
-  <div id="spread-header">The Reading</div>
-  <div id="spread-divider"></div>
+  <div id="spread-eyebrow">Axium · Cathedral Reading</div>
+  <div id="spread-header">The Three Faces</div>
+  <div id="spread-rule"></div>
   <div id="three-cards"></div>
-  <div id="synthesis-section">
-    <div id="synthesis-title">The Cathedral Speaks</div>
+  <div id="synthesis-wrap">
+    <div id="synthesis-divider"></div>
+    <div id="synthesis-label">The Cathedral Speaks</div>
     <div id="synthesis-text"></div>
   </div>
-  <button id="new-reading-btn" onclick="newReading()">Begin New Reading</button>
+  <button id="new-reading-btn" onclick="newReading()">Draw Again</button>
 </div>
 
-<!-- Start screen -->
+<!-- Start -->
 <div id="start">
   <div class="s-eyebrow">Axium · Cathedral of Stars</div>
   <div class="s-title">The Reading</div>
-  <div class="s-divider"></div>
-  <div class="s-sub">Three constellations.<br>Three positions in time.</div>
-  <div class="s-instruction">
-    Connect the hidden star patterns across the sky.<br>
-    <strong>Past · Present · Path</strong><br>
-    Three cards. One reading.
+  <div class="s-rule"></div>
+  <div class="s-sub">Three layers. One constellation.<br>Drawn from the stars by your hand.</div>
+  <div class="s-groups">
+    <div class="s-group-pill">
+      <div class="s-group-name">ID</div>
+      <div class="s-group-sub">The raw drive</div>
+    </div>
+    <div class="s-group-pill">
+      <div class="s-group-name">Ego</div>
+      <div class="s-group-sub">The self in motion</div>
+    </div>
+    <div class="s-group-pill">
+      <div class="s-group-name">Superego</div>
+      <div class="s-group-sub">The higher law</div>
+    </div>
   </div>
-  <button class="s-btn" onclick="beginGame()">Open the Cathedral</button>
+  <div class="s-how">
+    Connect the stars in any order.<br>
+    <em>Your shape</em> finds the matching cards.<br>
+    Every path is singular.
+  </div>
+  <button class="s-btn" onclick="beginGame()">Enter the Cathedral</button>
   <div class="s-tag">AN AXIUM EXPERIENCE</div>
 </div>
 
 <script>
-// ── TAROT DECK (full 78 cards) ──────────────────────────────────────────────
-const TAROT_DECK = {
-  major: [
-    { id:0, name:"The Fool", roman:"0", constellation:{ n:7, pts:[[.5,.15],[.35,.35],[.65,.35],[.25,.55],[.75,.55],[.4,.8],[.6,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]], name:"The Wanderer" }, keywords:["beginnings","innocence","leap of faith"], meaning:"The start of a journey. Unlimited potential. Trust the unknown.", element:"Air", planet:"Uranus" },
-    { id:1, name:"The Magician", roman:"I", constellation:{ n:8, pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.5],[.7,.5],[.3,.7],[.7,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Manifestor" }, keywords:["manifestation","power","action"], meaning:"You have all tools needed. Focus will to create reality.", element:"Air", planet:"Mercury" },
-    { id:2, name:"The High Priestess", roman:"II", constellation:{ n:6, pts:[[.5,.1],[.2,.4],[.8,.4],[.2,.7],[.8,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5],[1,2],[3,4]], name:"The Veil" }, keywords:["intuition","mystery","inner voice"], meaning:"Listen to what is unsaid. Trust your inner knowing.", element:"Water", planet:"Moon" },
-    { id:3, name:"The Empress", roman:"III", constellation:{ n:9, pts:[[.5,.1],[.3,.25],[.7,.25],[.15,.45],[.85,.45],[.3,.65],[.7,.65],[.4,.9],[.6,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,8],[7,8],[1,2],[3,4],[5,6]], name:"The Garden" }, keywords:["fertility","abundance","creativity"], meaning:"Growth and flourishing. Reap what you have sown.", element:"Earth", planet:"Venus" },
-    { id:4, name:"The Emperor", roman:"IV", constellation:{ n:8, pts:[[.2,.15],[.8,.15],[.2,.4],[.8,.4],[.2,.65],[.8,.65],[.2,.9],[.8,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[2,3],[4,5]], name:"The Throne" }, keywords:["authority","structure","control"], meaning:"Establish order. Take charge. Build foundations that last.", element:"Fire", planet:"Mars" },
-    { id:5, name:"The Hierophant", roman:"V", constellation:{ n:7, pts:[[.5,.1],[.2,.3],[.8,.3],[.5,.5],[.2,.7],[.8,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,6],[1,2],[4,5]], name:"The Temple" }, keywords:["tradition","guidance","education"], meaning:"Honor wisdom passed down. Respect sacred knowledge.", element:"Earth", planet:"Jupiter" },
-    { id:6, name:"The Lovers", roman:"VI", constellation:{ n:6, pts:[[.25,.2],[.75,.2],[.5,.4],[.25,.6],[.75,.6],[.5,.85]], edges:[[0,2],[1,2],[0,3],[1,4],[3,5],[4,5],[2,5],[3,4]], name:"The Union" }, keywords:["love","harmony","alignment"], meaning:"Union of opposites. Heart-centered choice.", element:"Air", planet:"Mercury" },
-    { id:7, name:"The Chariot", roman:"VII", constellation:{ n:8, pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.5],[.85,.5],[.3,.7],[.7,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[5,6]], name:"The Vehicle" }, keywords:["willpower","victory","control"], meaning:"Focus your energies. Drive forward with confidence.", element:"Water", planet:"Moon" },
-    { id:8, name:"Strength", roman:"VIII", constellation:{ n:7, pts:[[.5,.15],[.25,.35],[.75,.35],[.5,.5],[.25,.65],[.75,.65],[.5,.85]], edges:[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,6],[1,2]], name:"The Lion" }, keywords:["courage","patience","inner strength"], meaning:"Gentle power tames the beast. Inner mastery.", element:"Fire", planet:"Sun" },
-    { id:9, name:"The Hermit", roman:"IX", constellation:{ n:5, pts:[[.5,.1],[.5,.35],[.3,.6],[.7,.6],[.5,.9]], edges:[[0,1],[1,2],[1,3],[2,4],[3,4]], name:"The Lantern" }, keywords:["solitude","wisdom","introspection"], meaning:"Seek within. The light you need is already inside.", element:"Earth", planet:"Mercury" },
-    { id:10, name:"Wheel of Fortune", roman:"X", constellation:{ n:8, pts:[[.5,.1],[.8,.3],[.8,.6],[.5,.9],[.2,.6],[.2,.3],[.5,.35],[.5,.65]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[6,7],[0,6],[6,1],[2,7],[7,3],[4,6],[6,5]], name:"The Cycle" }, keywords:["change","fate","turning point"], meaning:"What goes around comes around. Embrace change.", element:"Fire", planet:"Jupiter" },
-    { id:11, name:"Justice", roman:"XI", constellation:{ n:7, pts:[[.5,.1],[.25,.3],[.75,.3],[.5,.5],[.25,.7],[.75,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,6],[1,2],[4,5]], name:"The Scales" }, keywords:["fairness","truth","law"], meaning:"Truth demands balance. Cause and effect made manifest.", element:"Air", planet:"Venus" },
-    { id:12, name:"The Hanged Man", roman:"XII", constellation:{ n:6, pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.6],[.7,.6],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5],[3,4]], name:"The Surrender" }, keywords:["suspension","sacrifice","new perspective"], meaning:"Surrender leads to revelation. Pause before proceeding.", element:"Water", planet:"Neptune" },
-    { id:13, name:"Death", roman:"XIII", constellation:{ n:7, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.6],[.85,.6],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Threshold" }, keywords:["transformation","endings","transition"], meaning:"Endings make space. Transformation is already happening.", element:"Water", planet:"Pluto" },
-    { id:14, name:"Temperance", roman:"XIV", constellation:{ n:8, pts:[[.2,.3],[.5,.1],[.8,.3],[.85,.6],[.6,.85],[.4,.85],[.15,.6],[.5,.5]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0],[7,1],[7,3],[7,5],[7,0],[7,2],[7,4],[7,6]], name:"The Alchemist" }, keywords:["balance","patience","moderation"], meaning:"Blend opposites into gold. Patience creates miracles.", element:"Fire", planet:"Jupiter" },
-    { id:15, name:"The Devil", roman:"XV", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.1,.55],[.9,.55],[.25,.75],[.75,.75],[.5,.95]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Chain" }, keywords:["bondage","addiction","materialism"], meaning:"What binds you can be released. You hold the key.", element:"Earth", planet:"Saturn" },
-    { id:16, name:"The Tower", roman:"XVI", constellation:{ n:7, pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.55],[.85,.55],[.35,.8],[.65,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Lightning" }, keywords:["upheaval","revelation","sudden change"], meaning:"The false structure falls. What remains is real.", element:"Fire", planet:"Mars" },
-    { id:17, name:"The Star", roman:"XVII", constellation:{ n:10, pts:[[.5,.05],[.6,.35],[.9,.35],[.65,.55],[.75,.9],[.5,.7],[.25,.9],[.35,.55],[.1,.35],[.4,.35]], edges:[[0,1],[0,9],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[5,7],[5,3],[5,1],[5,9]], name:"The Guiding Light" }, keywords:["hope","renewal","inspiration"], meaning:"Light in darkness. Trust the universe. You are heard.", element:"Air", planet:"Aquarius" },
-    { id:18, name:"The Moon", roman:"XVIII", constellation:{ n:7, pts:[[.7,.15],[.85,.35],[.85,.65],[.7,.85],[.4,.75],[.25,.5],[.4,.25]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0]], name:"The Crescent" }, keywords:["illusion","fear","intuition"], meaning:"Navigate the unknown by feel. Dreams carry truth.", element:"Water", planet:"Moon" },
-    { id:19, name:"The Sun", roman:"XIX", constellation:{ n:9, pts:[[.5,.5],[.5,.1],[.75,.25],[.9,.5],[.75,.75],[.5,.9],[.25,.75],[.1,.5],[.25,.25]], edges:[[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,1]], name:"The Radiance" }, keywords:["joy","success","vitality"], meaning:"Clarity and warmth. Success shines. Be fully yourself.", element:"Fire", planet:"Sun" },
-    { id:20, name:"Judgement", roman:"XX", constellation:{ n:8, pts:[[.5,.1],[.3,.3],[.7,.3],[.2,.55],[.8,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6],[0,7]], name:"The Trumpet" }, keywords:["rebirth","awakening","calling"], meaning:"Hear the call. Rise to your higher self. Renewal.", element:"Fire", planet:"Pluto" },
-    { id:21, name:"The World", roman:"XXI", constellation:{ n:8, pts:[[.5,.1],[.8,.3],[.8,.7],[.5,.9],[.2,.7],[.2,.3],[.5,.3],[.5,.7]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[6,7],[0,6],[6,1],[2,7],[7,3],[4,7],[7,5]], name:"The Completion" }, keywords:["completion","wholeness","accomplishment"], meaning:"The journey comes full circle. You are whole.", element:"Earth", planet:"Saturn" }
+// ═══════════════════════════════════════════════════════════════════════════
+// CARD DATA  —  Three psychological groups
+//   ID        = Minor Pip cards  (instinct, desire, raw experience)
+//   EGO       = Court cards      (persona, navigation, the self at work)
+//   SUPEREGO  = Major Arcana     (archetype, higher law, cosmic force)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const GROUPS = {
+  id: {
+    label:'ID', sublabel:'The Raw Drive',
+    color:[200,100,90], hex:'#c86458',
+    desc:'What the body wants before the mind speaks.'
+  },
+  ego: {
+    label:'EGO', sublabel:'The Self in Motion',
+    color:[126,184,232], hex:'#7eb8e8',
+    desc:'How you navigate the world as it is.'
+  },
+  superego: {
+    label:'SUPEREGO', sublabel:'The Higher Law',
+    color:[212,175,55], hex:'#D4AF37',
+    desc:'The archetype watching from above.'
+  }
+};
+
+// pts: normalized [x,y] 0..1 constellation points
+const CARDS = {
+
+  // ── ID: Minor Pip cards ─────────────────────────────────────────────────
+  id: [
+    { id:'c1',  name:'Ace of Cups',        suit:'cups',      pts:[[.5,.2],[.3,.7],[.7,.7]],                                                                         keywords:'love · awakening · grace',      meaning:'The cup overflows. Something new floods in uninvited and wanted.' },
+    { id:'c3',  name:'Three of Cups',      suit:'cups',      pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85]],                                                     keywords:'celebration · reunion · warmth', meaning:'The body remembers joy. Let it. Gather your people.' },
+    { id:'c5',  name:'Five of Cups',       suit:'cups',      pts:[[.5,.15],[.2,.4],[.8,.4],[.35,.75],[.65,.75],[.5,.95]],                                            keywords:'grief · loss · what remains',   meaning:'Two cups still stand. The spilled ones are already teaching you.' },
+    { id:'c7',  name:'Seven of Cups',      suit:'cups',      pts:[[.5,.12],[.25,.34],[.75,.34],[.2,.58],[.8,.58],[.35,.84],[.65,.84]],                                keywords:'desire · illusion · hunger',    meaning:'The ID projects. Every door looks golden. Choose one before they all close.' },
+    { id:'c9',  name:'Nine of Cups',       suit:'cups',      pts:[[.5,.1],[.72,.28],[.9,.5],[.72,.72],[.5,.9],[.28,.72],[.1,.5],[.28,.28],[.5,.5]],                   keywords:'wish · satisfaction · pleasure',meaning:'This is the wish card. The body got what it wanted. Enjoy it without guilt.' },
+    { id:'c10', name:'Ten of Cups',        suit:'cups',      pts:[[.5,.1],[.65,.25],[.82,.42],[.82,.62],[.65,.78],[.5,.9],[.35,.78],[.18,.62],[.18,.42],[.35,.25]],   keywords:'bliss · family · home',         meaning:'Deep contentment. The nervous system finally rests.' },
+    { id:'s1',  name:'Ace of Swords',      suit:'swords',    pts:[[.5,.1],[.5,.72],[.28,.5],[.72,.5]],                                                               keywords:'clarity · cut · breakthrough',  meaning:'The ID sharpens into a single point. What needs severing? Do it now.' },
+    { id:'s3',  name:'Three of Swords',    suit:'swords',    pts:[[.5,.15],[.2,.42],[.8,.42],[.35,.86],[.65,.86]],                                                   keywords:'heartbreak · grief · pain',     meaning:'The wound is real. Do not explain it away. Feel it and move.' },
+    { id:'s7',  name:'Seven of Swords',    suit:'swords',    pts:[[.5,.1],[.3,.34],[.7,.34],[.14,.6],[.86,.6],[.34,.9],[.66,.9]],                                    keywords:'strategy · shadow · cunning',   meaning:'Something moves unseen. The ID knows — check what you have been avoiding.' },
+    { id:'s8',  name:'Eight of Swords',    suit:'swords',    pts:[[.2,.2],[.5,.14],[.8,.2],[.14,.5],[.86,.5],[.2,.8],[.5,.86],[.8,.8]],                              keywords:'paralysis · fear · trapped',    meaning:'The cage is partly imagined. One step forward reveals the exit.' },
+    { id:'s10', name:'Ten of Swords',      suit:'swords',    pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'endings · collapse · new dawn', meaning:'Rock bottom is a foundation. What rises now is real.' },
+    { id:'w1',  name:'Ace of Wands',       suit:'wands',     pts:[[.5,.1],[.5,.72],[.34,.42],[.66,.42]],                                                             keywords:'spark · fire · impulse',        meaning:'The drive ignites before thought arrives. Follow the spark.' },
+    { id:'w3',  name:'Three of Wands',     suit:'wands',     pts:[[.5,.2],[.24,.5],[.76,.5],[.24,.86],[.76,.86]],                                                    keywords:'ambition · horizon · momentum', meaning:'Ships on the horizon. The fire planned ahead. Trust what was set in motion.' },
+    { id:'w6',  name:'Six of Wands',       suit:'wands',     pts:[[.5,.1],[.2,.42],[.8,.42],[.14,.66],[.86,.66],[.34,.9],[.66,.9]],                                  keywords:'victory · recognition · pride', meaning:'The crowd validates what the ID already knew. Accept it fully.' },
+    { id:'w8',  name:'Eight of Wands',     suit:'wands',     pts:[[.1,.2],[.3,.14],[.5,.1],[.7,.14],[.9,.2],[.7,.86],[.5,.9],[.3,.86]],                              keywords:'speed · acceleration · urgency',meaning:'Everything arrives at once. The body is already moving. Do not overthink.' },
+    { id:'w10', name:'Ten of Wands',       suit:'wands',     pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'burden · weight · overextension',meaning:'The fire carries too much. What can be put down without betrayal?' },
+    { id:'p1',  name:'Ace of Pentacles',   suit:'pentacles', pts:[[.5,.14],[.86,.5],[.5,.86],[.14,.5]],                                                              keywords:'seed · resource · ground',      meaning:'Something material begins. The body recognizes the right soil.' },
+    { id:'p3',  name:'Three of Pentacles', suit:'pentacles', pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.86],[.65,.86],[.5,.5]],                                              keywords:'craft · skill · recognition',   meaning:'The hands produce something real. Mastery is being noticed.' },
+    { id:'p5',  name:'Five of Pentacles',  suit:'pentacles', pts:[[.5,.14],[.2,.5],[.5,.86],[.8,.5],[.5,.5]],                                                        keywords:'lack · cold · faith',           meaning:'The body knows scarcity. The warmth inside is still real and reachable.' },
+    { id:'p9',  name:'Nine of Pentacles',  suit:'pentacles', pts:[[.5,.1],[.76,.24],[.86,.5],[.76,.76],[.5,.9],[.24,.76],[.14,.5],[.24,.24]],                         keywords:'abundance · earned · solitude', meaning:'What was built is now enjoyed. The ID rests in real security.' },
   ],
-  cups: {
-    element:"Water", planet:"Venus/Neptune", color:[126,184,232],
-    cards:[
-      { rank:"Ace", name:"Ace of Cups", constellation:{ n:3, pts:[[.5,.2],[.3,.7],[.7,.7]], edges:[[0,1],[1,2],[2,0]], name:"The Vessel" }, meaning:"New love, emotional awakening, spiritual overflowing" },
-      { rank:"2", name:"Two of Cups", constellation:{ n:4, pts:[[.3,.3],[.7,.3],[.3,.7],[.7,.7]], edges:[[0,1],[2,3],[0,3],[1,2]], name:"The Union" }, meaning:"Partnership, mutual attraction, harmonious bond" },
-      { rank:"3", name:"Three of Cups", constellation:{ n:5, pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85]], edges:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,4]], name:"The Celebration" }, meaning:"Joyful reunion, friendship, communal happiness" },
-      { rank:"4", name:"Four of Cups", constellation:{ n:5, pts:[[.5,.15],[.2,.4],[.8,.4],[.2,.8],[.8,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,4],[1,2]], name:"The Contemplation" }, meaning:"Apathy, reevaluation, missed opportunities" },
-      { rank:"7", name:"Seven of Cups", constellation:{ n:7, pts:[[.5,.15],[.25,.35],[.75,.35],[.25,.6],[.75,.6],[.35,.85],[.65,.85]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]], name:"The Dreams" }, meaning:"Choices, illusions, wishful thinking" },
-      { rank:"9", name:"Nine of Cups", constellation:{ n:9, pts:[[.5,.1],[.7,.3],[.9,.5],[.7,.7],[.5,.9],[.3,.7],[.1,.5],[.3,.3],[.5,.5]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[8,0],[8,2],[8,4],[8,6]], name:"The Wish" }, meaning:"Contentment, satisfaction, emotional fulfillment" },
-      { rank:"Queen", name:"Queen of Cups", constellation:{ n:7, pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Empath" }, meaning:"Emotional mastery, intuition, compassion" },
-      { rank:"King", name:"King of Cups", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Diplomat" }, meaning:"Emotional balance, wisdom, compassionate leadership" }
-    ]
-  },
-  pentacles: {
-    element:"Earth", planet:"Mercury/Venus", color:[212,175,55],
-    cards:[
-      { rank:"Ace", name:"Ace of Pentacles", constellation:{ n:4, pts:[[.5,.15],[.85,.5],[.5,.85],[.15,.5]], edges:[[0,1],[1,2],[2,3],[3,0],[0,2]], name:"The Seed" }, meaning:"New financial opportunity, prosperity potential" },
-      { rank:"3", name:"Three of Pentacles", constellation:{ n:6, pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85],[.5,.5]], edges:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,4],[0,5],[1,5],[2,5]], name:"The Collaboration" }, meaning:"Teamwork, skill, craftsmanship, recognition" },
-      { rank:"8", name:"Eight of Pentacles", constellation:{ n:8, pts:[[.15,.2],[.5,.1],[.85,.2],[.85,.5],[.5,.6],[.15,.5],[.3,.85],[.7,.85]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6],[4,7],[6,7]], name:"The Apprentice" }, meaning:"Diligence, skill development, mastery through practice" },
-      { rank:"9", name:"Nine of Pentacles", constellation:{ n:8, pts:[[.5,.1],[.75,.25],[.85,.5],[.75,.75],[.5,.9],[.25,.75],[.15,.5],[.25,.25]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[0,4],[2,6]], name:"The Harvest" }, meaning:"Luxury, self-sufficiency, enjoying fruits of labor" },
-      { rank:"King", name:"King of Pentacles", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Provider" }, meaning:"Business acumen, discipline, material success" }
-    ]
-  },
-  swords: {
-    element:"Air", planet:"Mars/Uranus", color:[200,200,220],
-    cards:[
-      { rank:"Ace", name:"Ace of Swords", constellation:{ n:4, pts:[[.5,.1],[.5,.7],[.3,.5],[.7,.5]], edges:[[0,1],[2,3]], name:"The Blade" }, meaning:"Clarity, breakthrough, new idea, mental focus" },
-      { rank:"2", name:"Two of Swords", constellation:{ n:5, pts:[[.5,.2],[.2,.5],[.8,.5],[.35,.8],[.65,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,4]], name:"The Stalemate" }, meaning:"Difficult choices, indecision, blocked emotions" },
-      { rank:"7", name:"Seven of Swords", constellation:{ n:7, pts:[[.5,.1],[.3,.35],[.7,.35],[.15,.6],[.85,.6],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]], name:"The Deception" }, meaning:"Deception, strategy, getting away with something" },
-      { rank:"Queen", name:"Queen of Swords", constellation:{ n:7, pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Truthseeker" }, meaning:"Independent judgment, clear boundaries, discernment" },
-      { rank:"King", name:"King of Swords", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Judge" }, meaning:"Mental clarity, intellectual power, authority" }
-    ]
-  },
-  wands: {
-    element:"Fire", planet:"Sun/Jupiter", color:[240,128,60],
-    cards:[
-      { rank:"Ace", name:"Ace of Wands", constellation:{ n:4, pts:[[.5,.1],[.5,.7],[.35,.4],[.65,.4]], edges:[[0,1],[2,3]], name:"The Spark" }, meaning:"Inspiration, creative spark, new initiative" },
-      { rank:"3", name:"Three of Wands", constellation:{ n:5, pts:[[.5,.2],[.25,.5],[.75,.5],[.25,.85],[.75,.85]], edges:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,4]], name:"The Vision" }, meaning:"Expansion, foresight, looking ahead, leadership" },
-      { rank:"6", name:"Six of Wands", constellation:{ n:7, pts:[[.5,.1],[.2,.4],[.8,.4],[.15,.65],[.85,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Victory" }, meaning:"Success, recognition, progress, self-confidence" },
-      { rank:"Queen", name:"Queen of Wands", constellation:{ n:7, pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Radiant" }, meaning:"Courage, determination, joy, magnetic presence" },
-      { rank:"King", name:"King of Wands", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Visionary" }, meaning:"Leadership, vision, entrepreneurship, honor" }
-    ]
-  }
+
+  // ── EGO: Court cards ─────────────────────────────────────────────────────
+  ego: [
+    { id:'cp',  name:'Page of Cups',       suit:'cups',   pts:[[.5,.2],[.3,.42],[.7,.42],[.4,.8],[.6,.8]],                                                          keywords:'wonder · openness · feeling',   meaning:'The self wanders with beginner\'s mind. Let impressions arrive unfiltered.' },
+    { id:'ckn', name:'Knight of Cups',     suit:'cups',   pts:[[.2,.3],[.5,.14],[.8,.3],[.7,.62],[.5,.9],[.3,.62]],                                                  keywords:'romance · pursuit · idealism',  meaning:'The self rides toward beauty. Poetic and earnest — do not let strategy kill it.' },
+    { id:'cq',  name:'Queen of Cups',      suit:'cups',   pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'empathy · intuition · depth',   meaning:'The self holds space. Emotional intelligence navigates where logic stumbles.' },
+    { id:'ck',  name:'King of Cups',       suit:'cups',   pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'mastery · balance · diplomacy', meaning:'The self governs feeling without suppressing it. This is emotional authority.' },
+    { id:'sp',  name:'Page of Swords',     suit:'swords', pts:[[.5,.15],[.3,.4],[.7,.4],[.4,.8],[.6,.8]],                                                            keywords:'curiosity · ideas · restless',  meaning:'The self questions everything. Let the sharp mind ask before it concludes.' },
+    { id:'skn', name:'Knight of Swords',   suit:'swords', pts:[[.2,.3],[.5,.1],[.8,.3],[.7,.62],[.5,.9],[.3,.62]],                                                   keywords:'speed · ambition · reckless',   meaning:'The self charges. Think once before the blade lands.' },
+    { id:'sq',  name:'Queen of Swords',    suit:'swords', pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'clarity · boundary · discernment',meaning:'The self sees without softening. This is not cruelty — it is precision.' },
+    { id:'sk',  name:'King of Swords',     suit:'swords', pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'authority · logic · judgment',  meaning:'The self applies intellect with discipline. The verdict is just.' },
+    { id:'wp',  name:'Page of Wands',      suit:'wands',  pts:[[.5,.15],[.3,.42],[.7,.42],[.4,.8],[.6,.8]],                                                          keywords:'adventure · enthusiasm · spark',meaning:'The self discovers its first fire. Follow the excitement before reason dims it.' },
+    { id:'wkn', name:'Knight of Wands',    suit:'wands',  pts:[[.2,.3],[.5,.1],[.8,.3],[.7,.65],[.5,.9],[.3,.65]],                                                   keywords:'passion · courage · momentum',  meaning:'The self rides full speed. Channel the fire or it consumes the rider.' },
+    { id:'wq',  name:'Queen of Wands',     suit:'wands',  pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]],                                       keywords:'charisma · will · presence',    meaning:'The self commands a room without trying. This is natural authority.' },
+    { id:'wk',  name:'King of Wands',      suit:'wands',  pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                               keywords:'vision · leadership · legacy',  meaning:'The self builds something larger than itself. Carry the fire forward.' },
+    { id:'pp',  name:'Page of Pentacles',  suit:'pentacles',pts:[[.5,.15],[.26,.4],[.74,.4],[.4,.8],[.6,.8]],                                                        keywords:'study · diligence · beginning', meaning:'The self takes the long view. Start carefully. Everything compounds.' },
+    { id:'pkn', name:'Knight of Pentacles',suit:'pentacles',pts:[[.2,.26],[.5,.14],[.8,.26],[.8,.65],[.5,.86],[.2,.65]],                                             keywords:'routine · reliability · patience',meaning:'The self moves slowly and wins. Trust the unglamorous progress.' },
+    { id:'pq',  name:'Queen of Pentacles', suit:'pentacles',pts:[[.5,.1],[.2,.35],[.8,.35],[.14,.62],[.86,.62],[.35,.9],[.65,.9]],                                   keywords:'nurturing · security · care',   meaning:'The self sustains others through practical love. Abundance flows outward.' },
+    { id:'pk',  name:'King of Pentacles',  suit:'pentacles',pts:[[.5,.1],[.25,.3],[.75,.3],[.14,.55],[.86,.55],[.3,.8],[.7,.8],[.5,.9]],                             keywords:'mastery · wealth · discipline', meaning:'The self has built the empire. Now govern it with wisdom.' },
+  ],
+
+  // ── SUPEREGO: Major Arcana ────────────────────────────────────────────────
+  superego: [
+    { id:'m0',  name:'The Fool',           pts:[[.5,.15],[.35,.35],[.65,.35],[.25,.55],[.75,.55],[.4,.8],[.6,.8]],          keywords:'leap · pure potential · trust',     meaning:'The higher law is: begin. The abyss beneath is also the sky.' },
+    { id:'m1',  name:'The Magician',       pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.5],[.7,.5],[.3,.7],[.7,.7],[.5,.9]],          keywords:'will · manifestation · alignment',  meaning:'Above and below are connected. What you hold, you can transform.' },
+    { id:'m2',  name:'The High Priestess', pts:[[.5,.1],[.2,.4],[.8,.4],[.2,.7],[.8,.7],[.5,.9]],                          keywords:'mystery · veil · knowing',          meaning:'Some truths arrive only in silence. Do not force them into language yet.' },
+    { id:'m3',  name:'The Empress',        pts:[[.5,.1],[.3,.25],[.7,.25],[.15,.45],[.85,.45],[.3,.65],[.7,.65],[.4,.9],[.6,.9]], keywords:'abundance · creation · nature',  meaning:'The earth does not hurry. Growth is the law. Let it work.' },
+    { id:'m4',  name:'The Emperor',        pts:[[.2,.15],[.8,.15],[.2,.4],[.8,.4],[.2,.65],[.8,.65],[.2,.9],[.8,.9]],      keywords:'structure · authority · law',       meaning:'Order is also a form of love. Build the container before filling it.' },
+    { id:'m5',  name:'The Hierophant',     pts:[[.5,.1],[.2,.3],[.8,.3],[.5,.5],[.2,.7],[.8,.7],[.5,.9]],                  keywords:'tradition · initiation · lineage',  meaning:'The teaching has been here longer than you. Receive before you revise.' },
+    { id:'m6',  name:'The Lovers',         pts:[[.25,.2],[.75,.2],[.5,.4],[.25,.6],[.75,.6],[.5,.85]],                     keywords:'union · sacred choice · alignment', meaning:'The highest law asks: what do you truly choose? Everything follows from that.' },
+    { id:'m7',  name:'The Chariot',        pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.5],[.85,.5],[.3,.7],[.7,.7],[.5,.9]],        keywords:'will · victory · discipline',       meaning:'Opposing forces harnessed become the vehicle. You are already moving.' },
+    { id:'m8',  name:'Strength',           pts:[[.5,.15],[.25,.35],[.75,.35],[.5,.5],[.25,.65],[.75,.65],[.5,.85]],        keywords:'courage · gentleness · mastery',    meaning:'The lion is not subdued by force. It is held by love. This is the true power.' },
+    { id:'m9',  name:'The Hermit',         pts:[[.5,.1],[.5,.35],[.3,.6],[.7,.6],[.5,.9]],                                 keywords:'solitude · lantern · inner light',  meaning:'The answer is in the dark at the end of your own corridor. Go alone.' },
+    { id:'m10', name:'Wheel of Fortune',   pts:[[.5,.1],[.8,.3],[.8,.6],[.5,.9],[.2,.6],[.2,.3],[.5,.35],[.5,.65]],        keywords:'fate · cycles · turning',           meaning:'The wheel turns without permission. Ride it rather than resist.' },
+    { id:'m11', name:'Justice',            pts:[[.5,.1],[.25,.3],[.75,.3],[.5,.5],[.25,.7],[.75,.7],[.5,.9]],              keywords:'truth · law · consequence',         meaning:'The higher law is exacting. What was sent returns. Align with what is true.' },
+    { id:'m12', name:'The Hanged Man',     pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.62],[.7,.62],[.5,.9]],                        keywords:'surrender · suspension · vision',   meaning:'The view from upside down reveals what standing upright could not.' },
+    { id:'m13', name:'Death',              pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.6],[.85,.6],[.35,.9],[.65,.9]],            keywords:'transformation · ending · crossing',meaning:'Nothing that is meant to continue will end here. Only what has finished.' },
+    { id:'m14', name:'Temperance',         pts:[[.2,.3],[.5,.1],[.8,.3],[.85,.6],[.6,.86],[.4,.86],[.15,.6],[.5,.5]],      keywords:'alchemy · patience · blending',     meaning:'The higher law is gradual. Pour between cups until the two become one.' },
+    { id:'m15', name:'The Devil',          pts:[[.5,.1],[.25,.3],[.75,.3],[.1,.55],[.9,.55],[.25,.75],[.75,.75],[.5,.95]], keywords:'shadow · bondage · liberation',     meaning:'The chains are real and they are yours to remove. The Devil bows when named.' },
+    { id:'m16', name:'The Tower',          pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.55],[.85,.55],[.35,.8],[.65,.8]],            keywords:'revelation · collapse · liberation',meaning:'The lightning strikes what was never true. Rubble is a cleaner foundation.' },
+    { id:'m17', name:'The Star',           pts:[[.5,.05],[.62,.34],[.9,.34],[.66,.55],[.76,.9],[.5,.7],[.24,.9],[.34,.55],[.1,.34],[.38,.34]], keywords:'hope · renewal · guidance', meaning:'The wound becomes the opening. Light enters from the direction of the scar.' },
+    { id:'m18', name:'The Moon',           pts:[[.7,.15],[.86,.35],[.86,.66],[.7,.86],[.4,.76],[.24,.5],[.4,.24]],         keywords:'illusion · mystery · cycles',       meaning:'Not everything in the dark is threat. The moon asks you to feel without naming.' },
+    { id:'m19', name:'The Sun',            pts:[[.5,.5],[.5,.1],[.76,.24],[.9,.5],[.76,.76],[.5,.9],[.24,.76],[.1,.5],[.24,.24]], keywords:'joy · consciousness · radiance', meaning:'This is not earned. It simply is. You are allowed to shine without apology.' },
+    { id:'m20', name:'Judgement',          pts:[[.5,.1],[.3,.3],[.7,.3],[.2,.55],[.8,.55],[.3,.8],[.7,.8],[.5,.9]],        keywords:'calling · awakening · rebirth',    meaning:'The trumpet has already sounded. The question is whether you have heard it yet.' },
+    { id:'m21', name:'The World',          pts:[[.5,.1],[.8,.3],[.8,.7],[.5,.9],[.2,.7],[.2,.3],[.5,.3],[.5,.7]],          keywords:'completion · wholeness · arrival', meaning:'The journey arrives where it began and the beginning is transformed. You are whole.' },
+  ]
 };
 
-// Flatten deck
-const ALL_CARDS = [];
-TAROT_DECK.major.forEach(c => ALL_CARDS.push({...c, type:'major', suit:null, color:[212,175,55]}));
-['cups','pentacles','swords','wands'].forEach(suit => {
-  const sd = TAROT_DECK[suit];
-  sd.cards.forEach(c => ALL_CARDS.push({...c, type:'minor', suit:suit, element:sd.element, planet:sd.planet, color:sd.color}));
-});
-
-// Reading positions
-const POSITIONS = [
-  { label:"I · Past", sub:"What brought you here", color:[126,184,232] },
-  { label:"II · Present", sub:"Where you stand now", color:[212,175,55] },
-  { label:"III · Path", sub:"Where you are called", color:[240,128,60] }
+// Reading oracle voices
+const ORACLES = [
+  (id,ego,sg) => `The ${id.name} speaks first from the body — ${id.meaning.split('.')[0].toLowerCase()}. The Ego answers: ${ego.name} navigates this. The Superego watches from above and names it ${sg.name}: ${sg.meaning.split('.')[0].toLowerCase()}.`,
+  (id,ego,sg) => `Below the surface: ${id.name}. In the present motion of the self: ${ego.name}. From the higher law: ${sg.name}. Read them as one sentence — instinct, navigation, and the cathedral's verdict.`,
+  (id,ego,sg) => `Your constellation revealed three layers. The ID carries ${id.name} — ${id.meaning.split('.')[0].toLowerCase()}. The Ego wears the face of ${ego.name}. The Superego closes with ${sg.name}: ${sg.meaning.split('.').slice(0,2).join('. ').toLowerCase()}.`,
+  (id,ego,sg) => `${id.name} lives in the body before thought. ${ego.name} is who you are right now in the world. ${sg.name} is the higher law watching this moment. Three truths. One path.`,
+  (id,ego,sg) => `The shape you traced through the dark sky was received. The cathedral returned three names: ${id.name}, ${ego.name}, ${sg.name}. These are not predictions. They are the architecture of now.`,
 ];
 
-// Soul system (for visual flavor)
-const PKEYS = ['micheal','gabriel','ariel','seraphina'];
-const PS = {
-  micheal: { name:'Micheal', role:'The Anchor', rgb:[212,175,55], hex:'#D4AF37' },
-  gabriel: { name:'Gabriel', role:'The Examiner', rgb:[126,184,232], hex:'#7eb8e8' },
-  ariel: { name:'Ariel', role:'The Space-Holder', rgb:[212,160,200], hex:'#d4a0c8' },
-  seraphina: { name:'Seraphina', role:'The Architect', rgb:[240,208,128], hex:'#f0d080' }
-};
+// ═══════════════════════════════════════════════════════════════════════════
+// SHAPE MATCHING ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Synthesis templates
-const SYNTHESES = [
-  (p,pr,pa) => `The ${p.name} carries a wound still speaking — ${p.meaning.split('.')[0].toLowerCase()}. In this moment, ${pr.name} asks you to hold what is true. The path forward is ${pa.name}: ${pa.meaning.split('.')[0].toLowerCase()}.`,
-  (p,pr,pa) => `From ${p.name}, something was learned that cannot be unlearned. Now, ${pr.name} holds the center of the reading — a threshold. The cathedral says your path is ${pa.name}.`,
-  (p,pr,pa) => `${p.name} in the past position speaks of the root. What is present — ${pr.name} — reveals the shape of now. Follow the stars toward ${pa.name}: the way has always been forward.`,
-  (p,pr,pa) => `The sky remembers ${p.name}. You stand inside ${pr.name}. What comes is ${pa.name} — not as destination, but as invitation.`,
-  (p,pr,pa) => `${p.name} shaped the seeker. ${pr.name} is the crucible. ${pa.name} is the flame that does not consume — it illuminates.`,
-];
+function normalizePts(pts) {
+  if(!pts||pts.length<2) return pts;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{ if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y; });
+  const sx=maxX-minX||1,sy=maxY-minY||1,sc=Math.max(sx,sy);
+  const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+  return pts.map(([x,y])=>[(x-cx)/sc,(y-cy)/sc]);
+}
 
-// ── CANVAS / STATE ──────────────────────────────────────────────────────────
-const cv = document.getElementById('sky');
-const ctx = cv.getContext('2d');
-const rcv = document.getElementById('ref-canvas');
-const rctx = rcv.getContext('2d');
+function resamplePath(pts,n) {
+  if(pts.length<2) return pts;
+  let total=0;
+  const segs=[];
+  for(let i=1;i<pts.length;i++){
+    const dx=pts[i][0]-pts[i-1][0],dy=pts[i][1]-pts[i-1][1];
+    const l=Math.sqrt(dx*dx+dy*dy);
+    segs.push(l);total+=l;
+  }
+  const step=total/(n-1);
+  const res=[[...pts[0]]];
+  let cov=0,si=0;
+  for(let i=1;i<n-1;i++){
+    const target=i*step;
+    while(si<segs.length-1&&cov+segs[si]<target){cov+=segs[si];si++;}
+    const t=(target-cov)/segs[si];
+    const p0=pts[si],p1=pts[si+1];
+    res.push([p0[0]+(p1[0]-p0[0])*t,p0[1]+(p1[1]-p0[1])*t]);
+  }
+  res.push([...pts[pts.length-1]]);
+  return res;
+}
 
-let W, H, T = 0;
-let bgStars = [], shoots = [], particles = [], milkyWayParticles = [];
-let field = [], targetIdxs = [], tapped = [];
-let curPKey, curSoul, curCard, curAngle, curMirror;
-let roundActive = false, roundDone = false, gameStarted = false;
-let hintTimer = 0, hintCooldown = 0, hintParticles = [];
+function shapeDistance(ptsA,ptsB) {
+  const N=14;
+  const a=resamplePath(normalizePts(ptsA),N);
+  // Test 8 geometric variants
+  const transforms=[
+    b=>b,
+    b=>b.map(([x,y])=>[-x,y]),
+    b=>b.map(([x,y])=>[x,-y]),
+    b=>b.map(([x,y])=>[-x,-y]),
+    b=>b.map(([x,y])=>[y,x]),
+    b=>b.map(([x,y])=>[-y,x]),
+    b=>b.map(([x,y])=>[y,-x]),
+    b=>b.map(([x,y])=>[-y,-x]),
+  ];
+  const normB=normalizePts(ptsB);
+  let best=Infinity;
+  transforms.forEach(tf=>{
+    const v=resamplePath(normalizePts(tf(normB)),N);
+    let d=0;
+    a.forEach((p,i)=>{ const dx=p[0]-v[i][0],dy=p[1]-v[i][1];d+=dx*dx+dy*dy; });
+    if(d<best)best=d;
+  });
+  return best/N;
+}
 
-// Reading state
-let readingCards = []; // 3 cards for this reading
-let currentPosition = 0; // 0, 1, or 2
-let readingComplete = false;
-let shuffledDeck = [];
-let deckIndex = 0;
+function findBestInGroup(userPts,groupKey) {
+  let best=null,bestScore=Infinity;
+  CARDS[groupKey].forEach(card=>{
+    const s=shapeDistance(userPts,card.pts);
+    if(s<bestScore){bestScore=s;best=card;}
+  });
+  return {card:best,score:bestScore};
+}
 
-function shuffleDeck() {
-  shuffledDeck = [...ALL_CARDS];
-  for (let i = shuffledDeck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
+// ═══════════════════════════════════════════════════════════════════════════
+// VISUAL ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+
+const cv=document.getElementById('sky');
+const ctx=cv.getContext('2d');
+let W,H,T=0;
+let bgStars=[],shoots=[],particles=[],milkyWayPts=[];
+let gameStarted=false;
+
+let nodes=[];
+const NODE_COUNT=58;
+let pathIndices=[];
+let lastTouchPos=null;
+let matchedCards=null; // {id, ego, superego}
+let readingActive=false;
+
+// ── Star colors ───────────────────────────────────────────────────────────
+function rndStarColor(){
+  const t=Math.random();
+  if(t<.3)return [200+Math.random()*55,210+Math.random()*45,255];
+  if(t<.7)return [240+Math.random()*14,240+Math.random()*14,255];
+  return [255,238+Math.random()*17,196+Math.random()*59];
+}
+function lcg(s){let v=s;return()=>{v=(v*1664525+1013904223)&0xffffffff;return(v>>>0)/0xffffffff;};}
+
+// ── Milky Way ─────────────────────────────────────────────────────────────
+function initMW(){
+  milkyWayPts=[];
+  for(let i=0;i<360;i++){
+    const a=Math.random()*Math.PI*2,r=Math.random()*Math.max(W,H)*.8;
+    milkyWayPts.push({x:W*.5+Math.cos(a)*r*1.5,y:H*.6+Math.sin(a)*r*.42,a,r,sz:.4+Math.random()*1.3,al:.07+Math.random()*.18,ts:.3+Math.random()*.7,tp:Math.random()*Math.PI*2,col:rndStarColor()});
   }
 }
-
-function getNextCard() {
-  if (deckIndex >= shuffledDeck.length) { deckIndex = 0; shuffleDeck(); }
-  return shuffledDeck[deckIndex++];
-}
-
-// ── COLOR HELPERS ─────────────────────────────────────────────────────────
-function generateStarColor(baseRgb, variation = 0.15) {
-  const ts = (Math.random() - 0.5) * variation;
-  return [Math.min(255,Math.max(0,baseRgb[0]+baseRgb[0]*ts)),Math.min(255,Math.max(0,baseRgb[1]+baseRgb[1]*ts*0.8)),Math.min(255,Math.max(0,baseRgb[2]+baseRgb[2]*ts*1.2))].map(Math.floor);
-}
-function generateBackgroundStarColor() {
-  const t = Math.random();
-  if (t < 0.3) return [200+Math.random()*55, 210+Math.random()*45, 255];
-  if (t < 0.7) return [240+Math.random()*15, 240+Math.random()*15, 255];
-  return [255, 240+Math.random()*15, 200+Math.random()*55];
-}
-
-// ── MILKY WAY ─────────────────────────────────────────────────────────────
-function initMilkyWay() {
-  milkyWayParticles = [];
-  for (let i = 0; i < 400; i++) {
-    const angle = Math.random() * Math.PI * 2, r = Math.random() * Math.max(W,H) * 0.8;
-    milkyWayParticles.push({ x:W*.5+Math.cos(angle)*r*1.5, y:H*.6+Math.sin(angle)*r*.4, angle, radius:r, size:.5+Math.random()*1.5, alpha:.1+Math.random()*.25, twinkleSpeed:.3+Math.random()*.7, twinklePhase:Math.random()*Math.PI*2, color:generateBackgroundStarColor() });
-  }
-}
-function drawMilkyWay() {
-  milkyWayParticles.forEach(p => {
-    p.angle += 0.0001;
-    p.x = W*.5+Math.cos(p.angle)*p.radius*1.5;
-    p.y = H*.6+Math.sin(p.angle)*p.radius*.4;
-    const tw = .5+.5*Math.sin(T*p.twinkleSpeed+p.twinklePhase);
-    const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*3);
-    g.addColorStop(0,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.alpha*tw})`);
-    g.addColorStop(.5,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.alpha*tw*.4})`);
-    g.addColorStop(1,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0)`);
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2); ctx.fill();
+function drawMW(){
+  milkyWayPts.forEach(p=>{
+    p.a+=.00007;p.x=W*.5+Math.cos(p.a)*p.r*1.5;p.y=H*.6+Math.sin(p.a)*p.r*.42;
+    const tw=.5+.5*Math.sin(T*p.ts+p.tp);
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.sz*3);
+    g.addColorStop(0,`rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.al*tw})`);
+    g.addColorStop(1,`rgba(${p.col[0]},${p.col[1]},${p.col[2]},0)`);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.sz*3,0,Math.PI*2);ctx.fill();
   });
 }
 
-// ── BACKGROUND STARS ──────────────────────────────────────────────────────
-function lcg(s){ let v=s; return ()=>{ v=(v*1664525+1013904223)&0xffffffff; return (v>>>0)/0xffffffff; }; }
-function makeBg() {
-  const r=lcg(42);
-  return Array.from({length:280},()=>({ x:r()*W, y:r()*H, rad:.4+r()*1.4, mag:r(), ph:r()*Math.PI*2, spd:.2+r()*.45, color:generateBackgroundStarColor(), twinkleSpeed:.5+r()*.8 }));
+// ── Background stars ──────────────────────────────────────────────────────
+function makeBg(){
+  const r=lcg(31);
+  return Array.from({length:250},()=>({x:r()*W,y:r()*H,rad:.4+r()*1.2,ph:r()*Math.PI*2,spd:.2+r()*.5,col:rndStarColor()}));
 }
-function drawBg() {
-  bgStars.forEach(s => {
-    const tw=.3+.7*Math.abs(Math.sin(s.ph+T*s.twinkleSpeed));
-    const b=s.rad, gR=b*(2.5+tw*1.6);
-    const h1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2.2);
-    h1.addColorStop(0,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(.07*tw).toFixed(3)})`);
-    h1.addColorStop(1,'rgba(200,215,255,0)');
-    ctx.fillStyle=h1; ctx.beginPath(); ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2); ctx.fill();
-    const h2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR);
-    h2.addColorStop(0,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(.9*tw).toFixed(2)})`);
-    h2.addColorStop(1,'rgba(200,215,255,0)');
-    ctx.fillStyle=h2; ctx.beginPath(); ctx.arc(s.x,s.y,gR,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(s.x,s.y,b,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${(.94*tw).toFixed(2)})`; ctx.fill();
+function drawBg(){
+  bgStars.forEach(s=>{
+    const tw=.3+.7*Math.abs(Math.sin(s.ph+T*s.spd));
+    const b=s.rad,gR=b*(2.3+tw*1.4);
+    const h1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2);
+    h1.addColorStop(0,`rgba(${s.col[0]},${s.col[1]},${s.col[2]},${(.06*tw).toFixed(3)})`);
+    h1.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=h1;ctx.beginPath();ctx.arc(s.x,s.y,gR*2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(s.x,s.y,b,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(.88*tw).toFixed(2)})`;ctx.fill();
   });
 }
 
-// ── SHOOTING STARS ────────────────────────────────────────────────────────
-let shootList = [];
-function spawnShoot() {
-  const rgb = curSoul ? curSoul.rgb : [212,175,55];
-  const ang = Math.random()*Math.PI*2, spd = 4+Math.random()*6;
-  let x = Math.random()>.5 ? (Math.random()<.5 ? -50 : W+50) : Math.random()*W;
-  let y = Math.random()>.5 ? (Math.random()<.5 ? -50 : H+50) : Math.random()*H;
-  shootList.push({ x, y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, len:60+Math.random()*90, a:.7+Math.random()*.2, rgb, width:1+Math.random()*1.5 });
+// ── Shooting stars ────────────────────────────────────────────────────────
+function spawnShoot(){
+  const ang=Math.random()*Math.PI*2,spd=4+Math.random()*5;
+  let x=Math.random()>.5?(Math.random()<.5?-50:W+50):Math.random()*W;
+  let y=Math.random()>.5?(Math.random()<.5?-50:H+50):Math.random()*H;
+  shoots.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,len:50+Math.random()*75,a:.6+Math.random()*.2,w:.7+Math.random()*1.1});
 }
 spawnShoot();
-setInterval(()=>{ if(Math.random()<.35) spawnShoot(); }, 4500);
-function drawShoots() {
-  const keep=[];
-  shootList.forEach(ss => {
-    if(ss.a<=.02) return;
-    const tailX=ss.x-ss.vx*(ss.len/10), tailY=ss.y-ss.vy*(ss.len/10);
-    const gd=ctx.createLinearGradient(ss.x,ss.y,tailX,tailY);
-    gd.addColorStop(0,`rgba(${ss.rgb.join(',')},${ss.a.toFixed(2)})`);
-    gd.addColorStop(1,`rgba(${ss.rgb.join(',')},0)`);
-    ctx.beginPath(); ctx.strokeStyle=gd; ctx.lineWidth=ss.width; ctx.moveTo(ss.x,ss.y); ctx.lineTo(tailX,tailY); ctx.stroke();
-    ss.x+=ss.vx; ss.y+=ss.vy; ss.a-=.008; keep.push(ss);
+setInterval(()=>{if(Math.random()<.28)spawnShoot();},5500);
+function drawShoots(){
+  const k=[];
+  shoots.forEach(s=>{
+    if(s.a<=.02)return;
+    const tx=s.x-s.vx*(s.len/10),ty=s.y-s.vy*(s.len/10);
+    const gd=ctx.createLinearGradient(s.x,s.y,tx,ty);
+    gd.addColorStop(0,`rgba(212,175,55,${s.a.toFixed(2)})`);
+    gd.addColorStop(1,'rgba(212,175,55,0)');
+    ctx.beginPath();ctx.strokeStyle=gd;ctx.lineWidth=s.w;ctx.moveTo(s.x,s.y);ctx.lineTo(tx,ty);ctx.stroke();
+    s.x+=s.vx;s.y+=s.vy;s.a-=.009;k.push(s);
   });
-  shootList.splice(0,shootList.length,...keep);
+  shoots.splice(0,shoots.length,...k);
 }
 
-// ── ROUND GENERATION ──────────────────────────────────────────────────────
-function generateRound() {
-  tapped=[]; roundDone=false; roundActive=false; hintParticles=[];
-  curPKey = PKEYS[Math.floor(Math.random()*4)];
-  curSoul = PS[curPKey];
-  curCard = readingCards[currentPosition];
-  curAngle = Math.random()*Math.PI*2;
-  curMirror = Math.random()>.5;
-  buildField(); drawRef(); buildDots(); updateHUD();
-  roundActive = true;
-
-  // Update positions HUD
-  document.querySelectorAll('.pos-slot').forEach((el,i)=>{
-    el.classList.remove('active','complete');
-    if(i < currentPosition) el.classList.add('complete');
-    if(i === currentPosition) el.classList.add('active');
-  });
-
-  // Update ref label
-  document.getElementById('ref-pos-lbl').textContent = POSITIONS[currentPosition].label;
-
-  // Update stars counter
-  document.getElementById('stars-remain').textContent = curCard.constellation.n;
-}
-
-function buildField() {
-  const mg=65, topY=85, botY=H-140;
-  const pW=W-mg*2, pH=botY-topY;
-  const sp=Math.min(pW,pH)*(.26+Math.random()*.18);
-  const cx=mg+sp*.5+Math.random()*Math.max(0,pW-sp);
-  const cy=topY+sp*.5+Math.random()*Math.max(0,pH-sp);
-  const cos=Math.cos(curAngle), sin=Math.sin(curAngle);
-  const posColor = POSITIONS[currentPosition].color;
-
-  const tgts = curCard.constellation.pts.map(([px,py],i)=>{
-    let nx=px-.5, ny=py-.5;
-    if(curMirror) nx=-nx;
-    const color = generateStarColor(posColor, .2);
-    return { x:cx+(nx*cos-ny*sin)*sp, y:cy+(nx*sin+ny*cos)*sp, isT:true, seq:i, mag:.5+Math.random()*.5, ph:Math.random()*Math.PI*2, spd:.5+Math.random()*.8, tapped:false, wp:0, cp:0, color, orbitParticles:[], hasOrbit:i===0 };
-  });
-
-  const nd=20+Math.floor(currentPosition*5), md=Math.min(pW,pH)*.05;
-  const dec=[]; let att=0;
-  while(dec.length<nd && att<5000) {
-    att++;
-    const dx=mg+Math.random()*pW, dy=topY+Math.random()*pH;
-    if(tgts.every(t=>Math.hypot(t.x-dx,t.y-dy)>md) && dec.every(d=>Math.hypot(d.x-dx,d.y-dy)>md*.6)) {
-      dec.push({ x:dx, y:dy, isT:false, seq:-1, mag:.1+Math.random()*.4, ph:Math.random()*Math.PI*2, spd:.3+Math.random()*.7, tapped:false, wp:0, cp:0, color:generateBackgroundStarColor() });
-    }
-  }
-
-  field=[...tgts,...dec].sort(()=>Math.random()-.5);
-  targetIdxs=field.reduce((a,s,i)=>{ if(s.isT) a.push(i); return a; },[]).sort((a,b)=>field[a].seq-field[b].seq);
-  if(field[targetIdxs[0]]) initOrbitParticles(field[targetIdxs[0]]);
-}
-
-function initOrbitParticles(star) {
-  star.orbitParticles=[];
-  const posColor = POSITIONS[currentPosition].color;
-  for(let i=0;i<3;i++) {
-    star.orbitParticles.push({ angle:(Math.PI*2/3)*i, radius:18+Math.random()*8, speed:.03+Math.random()*.02, size:1.5+Math.random()*1.5, color:generateStarColor(posColor,.1) });
-  }
-  star.hasOrbit=true;
-}
-
-// ── REFERENCE CANVAS ──────────────────────────────────────────────────────
-function drawRef() {
-  const tw=rcv.width, th=rcv.height;
-  rctx.clearRect(0,0,tw,th);
-  const cx=tw/2, cy=th/2, sc=Math.min(tw,th)*.36;
-  const cos=Math.cos(curAngle), sin=Math.sin(curAngle);
-  const posColor = POSITIONS[currentPosition].color;
-  const [R,G,B]=posColor;
-  const con = curCard.constellation;
-  const pts=con.pts.map(([px,py])=>{
-    let nx=px-.5, ny=py-.5;
-    if(curMirror) nx=-nx;
-    return { x:cx+(nx*cos-ny*sin)*sc, y:cy+(nx*sin+ny*cos)*sc };
-  });
-  rctx.strokeStyle=`rgba(${R},${G},${B},.5)`; rctx.lineWidth=1.2;
-  con.edges.forEach(([a,b])=>{ rctx.beginPath(); rctx.moveTo(pts[a].x,pts[a].y); rctx.lineTo(pts[b].x,pts[b].y); rctx.stroke(); });
-  pts.forEach((p,i)=>{
-    const g=rctx.createRadialGradient(p.x,p.y,0,p.x,p.y,8);
-    g.addColorStop(0,`rgba(${R},${G},${B},.6)`); g.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    rctx.fillStyle=g; rctx.beginPath(); rctx.arc(p.x,p.y,8,0,Math.PI*2); rctx.fill();
-    rctx.beginPath(); rctx.arc(p.x,p.y,2.6,0,Math.PI*2);
-    rctx.fillStyle=`rgba(${R},${G},${B},1)`; rctx.fill();
-    rctx.font='bold 7px Space Mono'; rctx.textAlign='center';
-    rctx.fillStyle='rgba(255,255,255,.65)'; rctx.fillText(i+1,p.x,p.y-5.5);
-  });
-}
-
-function buildDots() {
-  const row=document.getElementById('progress-dots'); row.innerHTML='';
-  const posColor=POSITIONS[currentPosition].color;
-  const hexColor='#'+posColor.map(x=>x.toString(16).padStart(2,'0')).join('');
-  for(let i=0;i<curCard.constellation.n;i++){
-    const d=document.createElement('div'); d.className='pdot'; d.id='pd'+i;
-    d.style.setProperty('--c',hexColor);
-    row.appendChild(d);
-  }
-}
-
-function updateHUD() {
-  const pl=document.getElementById('persona-lbl');
-  pl.textContent=curCard.name;
-  const posColor=POSITIONS[currentPosition].color;
-  pl.style.color='#'+posColor.map(x=>x.toString(16).padStart(2,'0')).join('')+'aa';
-  document.getElementById('shape-lbl').textContent=curCard.type==='major' ? 'Major Arcana' : (curCard.suit||'').toUpperCase();
-}
-
-// ── HINT SYSTEM ───────────────────────────────────────────────────────────
-function showHint() {
-  if(!roundActive||roundDone) return;
-  if(hintCooldown>0) return;
-  hintTimer=180; hintCooldown=600;
-  hintParticles=[];
-  const posColor=POSITIONS[currentPosition].color;
-  targetIdxs.forEach(idx=>{
-    const star=field[idx];
-    if(!star.tapped) {
-      for(let i=0;i<3+Math.floor(Math.random()*2);i++) {
-        hintParticles.push({ starIndex:idx, angle:(Math.PI*2/4)*i+Math.random()*.5, radius:25+Math.random()*15, speed:.02+Math.random()*.02, size:2+Math.random()*2, alpha:.6+Math.random()*.3, color:posColor });
-      }
-    }
-  });
-  document.getElementById('help-btn').classList.add('cooldown');
-  setTimeout(()=>document.getElementById('help-btn').classList.remove('cooldown'), 10000);
-}
-
-// ── PARTICLES ─────────────────────────────────────────────────────────────
-function burstAt(x,y,rgb,n) {
+// ── Particles ─────────────────────────────────────────────────────────────
+function burst(x,y,rgb,n){
   for(let i=0;i<n;i++){
-    const a=Math.random()*Math.PI*2, sp=.8+Math.random()*4;
-    particles.push({ x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:.018+Math.random()*.025,r:.5+Math.random()*2,rgb });
+    const a=Math.random()*Math.PI*2,sp=.8+Math.random()*3.5;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:.02+Math.random()*.022,r:.5+Math.random()*2,rgb});
   }
 }
-function tickP() {
+function tickP(){
   particles=particles.filter(p=>p.life>.02);
   particles.forEach(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.vx*=.92; p.vy*=.92; p.life-=p.dec;
+    p.x+=p.vx;p.y+=p.vy;p.vx*=.91;p.vy*=.91;p.life-=p.dec;
     const [R,G,B]=p.rgb;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
-    ctx.fillStyle=`rgba(${R},${G},${B},${p.life.toFixed(2)})`; ctx.fill();
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${R},${G},${B},${p.life.toFixed(2)})`;ctx.fill();
   });
 }
 
-function drawOrbitParticles(star) {
-  if(!star.hasOrbit||!star.orbitParticles) return;
-  star.orbitParticles.forEach(p=>{
-    p.angle+=p.speed;
-    const px=star.x+Math.cos(p.angle)*p.radius, py=star.y+Math.sin(p.angle)*p.radius;
-    const g=ctx.createRadialGradient(px,py,0,px,py,p.size*3);
-    g.addColorStop(0,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0.8)`);
-    g.addColorStop(.5,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0.4)`);
-    g.addColorStop(1,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0)`);
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,p.size*3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(px,py,p.size*.6,0,Math.PI*2); ctx.fill();
-  });
-}
-
-function drawHintParticles() {
-  if(!hintParticles.length) return;
-  hintParticles.forEach(p=>{
-    const star=field[p.starIndex];
-    if(!star||star.tapped) return;
-    p.angle+=p.speed;
-    const px=star.x+Math.cos(p.angle)*p.radius, py=star.y+Math.sin(p.angle)*p.radius;
-    const [R,G,B]=p.color||[212,175,55];
-    const g=ctx.createRadialGradient(px,py,0,px,py,p.size*4);
-    g.addColorStop(0,`rgba(${R},${G},${B},${p.alpha})`);
-    g.addColorStop(.4,`rgba(${R},${G},${B},${p.alpha*.5})`);
-    g.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,p.size*4,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=`rgba(255,255,255,${p.alpha})`; ctx.beginPath(); ctx.arc(px,py,p.size,0,Math.PI*2); ctx.fill();
-  });
-}
-
-function drawConnectionLines() {
-  if(tapped.length<2) return;
-  const posColor=POSITIONS[currentPosition].color;
-  const [R,G,B]=posColor;
-  for(let i=0;i<tapped.length-1;i++){
-    const s1=field[tapped[i]], s2=field[tapped[i+1]];
-    const progress=(T*2)%1;
-    const eg=ctx.createLinearGradient(s1.x,s1.y,s2.x,s2.y);
-    eg.addColorStop(0,`rgba(${R},${G},${B},0.3)`); eg.addColorStop(.5,`rgba(${R},${G},${B},0.6)`); eg.addColorStop(1,`rgba(${R},${G},${B},0.3)`);
-    ctx.beginPath(); ctx.strokeStyle=eg; ctx.lineWidth=2; ctx.moveTo(s1.x,s1.y); ctx.lineTo(s2.x,s2.y); ctx.stroke();
-    const lx=s1.x+(s2.x-s1.x)*progress, ly=s1.y+(s2.y-s1.y)*progress;
-    const lg=ctx.createRadialGradient(lx,ly,0,lx,ly,8);
-    lg.addColorStop(0,'rgba(255,255,255,0.9)'); lg.addColorStop(.5,`rgba(${R},${G},${B},0.6)`); lg.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(lx,ly,8,0,Math.PI*2); ctx.fill();
+// ── Nodes ─────────────────────────────────────────────────────────────────
+function generateNodes(){
+  nodes=[];
+  const mg=60,topY=65,botY=H-85;
+  const pW=W-mg*2,pH=botY-topY;
+  const minD=Math.min(pW,pH)/(Math.sqrt(NODE_COUNT)*1.08);
+  let att=0;
+  while(nodes.length<NODE_COUNT&&att<10000){
+    att++;
+    const x=mg+Math.random()*pW,y=topY+Math.random()*pH;
+    if(nodes.every(n=>Math.hypot(n.x-x,n.y-y)>minD)){
+      nodes.push({x,y,r:.6+Math.random()*1.1,mag:.2+Math.random()*.8,ph:Math.random()*Math.PI*2,spd:.4+Math.random()*.7,col:rndStarColor(),inPath:false,pathIdx:-1,orbits:[],pulsePhase:Math.random()*Math.PI*2,pulseSpeed:.5+Math.random()*.5,pulseAmt:0});
+    }
   }
 }
 
-// ── FIELD DRAW ────────────────────────────────────────────────────────────
-function drawField() {
-  const posColor=POSITIONS[currentPosition].color;
-  const [R,G,B]=posColor;
-  const expI=roundDone ? -1 : targetIdxs[tapped.length];
-  if(targetIdxs.length){
-    const cx=targetIdxs.reduce((a,i)=>a+field[i].x,0)/targetIdxs.length;
-    const cy=targetIdxs.reduce((a,i)=>a+field[i].y,0)/targetIdxs.length;
-    const ng=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.22);
-    ng.addColorStop(0,`rgba(${R},${G},${B},.05)`); ng.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    ctx.fillStyle=ng; ctx.fillRect(0,0,W,H);
+function initOrbits(node){
+  node.orbits=[];
+  for(let i=0;i<3;i++){
+    node.orbits.push({angle:(Math.PI*2/3)*i,radius:13+Math.random()*5,speed:.04+Math.random()*.025,size:1.1+Math.random()*.9,col:[212,175,55]});
   }
-  drawConnectionLines();
-  const con=curCard.constellation;
-  con.edges.forEach(([a,b])=>{
-    const ia=targetIdxs[a], ib=targetIdxs[b];
-    if(ia===undefined||ib===undefined) return;
-    const sa=field[ia], sb=field[ib];
-    if(!sa||!sb) return;
-    const both=sa.tapped&&sb.tapped, either=sa.tapped||sb.tapped;
-    if(!either) return;
-    const al=both?.6:.2, lw=both?1.6:.8;
-    const eg=ctx.createLinearGradient(sa.x,sa.y,sb.x,sb.y);
-    eg.addColorStop(0,`rgba(${R},${G},${B},${al})`); eg.addColorStop(.5,`rgba(255,255,255,${al*.4})`); eg.addColorStop(1,`rgba(${R},${G},${B},${al})`);
-    ctx.beginPath(); ctx.strokeStyle=eg; ctx.lineWidth=lw; ctx.moveTo(sa.x,sa.y); ctx.lineTo(sb.x,sb.y); ctx.stroke();
+}
+
+// ── Draw nodes & path ─────────────────────────────────────────────────────
+function drawScene(){
+  // Ambient soft glow near path centroid
+  if(pathIndices.length>2){
+    let cx=0,cy=0;
+    pathIndices.forEach(i=>{cx+=nodes[i].x;cy+=nodes[i].y;});
+    cx/=pathIndices.length;cy/=pathIndices.length;
+    const ng=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.28);
+    ng.addColorStop(0,'rgba(212,175,55,.04)');
+    ng.addColorStop(1,'rgba(212,175,55,0)');
+    ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+  }
+
+  // Path edges
+  for(let i=1;i<pathIndices.length;i++){
+    const na=nodes[pathIndices[i-1]],nb=nodes[pathIndices[i]];
+    const prog=(T*1.8)%1;
+    const eg=ctx.createLinearGradient(na.x,na.y,nb.x,nb.y);
+    eg.addColorStop(0,'rgba(212,175,55,.2)');
+    eg.addColorStop(.5,'rgba(212,175,55,.5)');
+    eg.addColorStop(1,'rgba(212,175,55,.2)');
+    ctx.beginPath();ctx.strokeStyle=eg;ctx.lineWidth=1.6;ctx.moveTo(na.x,na.y);ctx.lineTo(nb.x,nb.y);ctx.stroke();
+    // traveling mote
+    const lx=na.x+(nb.x-na.x)*prog,ly=na.y+(nb.y-na.y)*prog;
+    const lg=ctx.createRadialGradient(lx,ly,0,lx,ly,6);
+    lg.addColorStop(0,'rgba(255,255,255,.9)');lg.addColorStop(.5,'rgba(212,175,55,.6)');lg.addColorStop(1,'rgba(212,175,55,0)');
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,6,0,Math.PI*2);ctx.fill();
+  }
+
+  // Dashed live line
+  if(pathIndices.length>0&&lastTouchPos){
+    const last=nodes[pathIndices[pathIndices.length-1]];
+    const dl=ctx.createLinearGradient(last.x,last.y,lastTouchPos.x,lastTouchPos.y);
+    dl.addColorStop(0,'rgba(212,175,55,.3)');dl.addColorStop(1,'rgba(212,175,55,.06)');
+    ctx.beginPath();ctx.strokeStyle=dl;ctx.lineWidth=1;
+    ctx.setLineDash([4,7]);ctx.moveTo(last.x,last.y);ctx.lineTo(lastTouchPos.x,lastTouchPos.y);
+    ctx.stroke();ctx.setLineDash([]);
+  }
+
+  // Orbits
+  nodes.forEach(n=>{
+    if(!n.inPath||!n.orbits.length)return;
+    n.orbits.forEach(o=>{
+      o.angle+=o.speed;
+      const ox=n.x+Math.cos(o.angle)*o.radius,oy=n.y+Math.sin(o.angle)*o.radius;
+      const g=ctx.createRadialGradient(ox,oy,0,ox,oy,o.size*2.5);
+      g.addColorStop(0,'rgba(212,175,55,.85)');g.addColorStop(.6,'rgba(212,175,55,.3)');g.addColorStop(1,'rgba(212,175,55,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,o.size*2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(ox,oy,o.size*.45,0,Math.PI*2);ctx.fill();
+    });
   });
-  drawHintParticles();
-  field.forEach((s,i)=>{
-    const isT=s.isT, isN=i===expI&&!s.tapped;
-    const hintGlow=hintTimer>0&&isT&&!s.tapped;
-    const [SR,SG,SB]=isT ? s.color : [200,205,220];
-    const tw=.45+.55*Math.sin(T*1.1*s.spd+s.ph);
-    const bR=s.tapped ? 2.8+s.mag*3.2 : hintGlow ? 3.6+s.mag*3.4 : isT ? 1.6+s.mag*2.4 : .7+s.mag*1.4;
-    const gR=bR*(s.tapped?4.5:isN?4:isT?2.8:2.2);
-    if(s.wp>0){ s.wp--; ctx.beginPath(); ctx.arc(s.x,s.y,gR*2.5,0,Math.PI*2); ctx.fillStyle=`rgba(200,55,55,${(.3*s.wp/14).toFixed(2)})`; ctx.fill(); }
-    if(s.cp>0){ s.cp=Math.max(0,s.cp-.022); ctx.beginPath(); ctx.arc(s.x,s.y,gR*(1.5+s.cp*4.5),0,Math.PI*2); ctx.fillStyle=`rgba(${SR},${SG},${SB},${(.2*s.cp).toFixed(2)})`; ctx.fill(); }
-    if(isN){ const p=.2+.18*Math.sin(T*3.2); ctx.beginPath(); ctx.arc(s.x,s.y,gR*2,0,Math.PI*2); ctx.strokeStyle=`rgba(${R},${G},${B},${p})`; ctx.lineWidth=1; ctx.stroke(); }
-    const oA=s.tapped?.28:isT?.07:.028;
-    const g1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2.2);
-    g1.addColorStop(0,`rgba(${SR},${SG},${SB},${oA*(.7+.3*tw)})`); g1.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
-    ctx.fillStyle=g1; ctx.beginPath(); ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2); ctx.fill();
-    const iA=s.tapped?.9:isT?tw*.42:tw*.22;
-    const g2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR);
-    g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`); g2.addColorStop(.25,`rgba(${SR},${SG},${SB},${(iA*.75).toFixed(2)})`); g2.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
-    ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(s.x,s.y,gR,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(s.x,s.y,bR,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${(s.tapped?1:isT?.72+.28*tw:.22+.16*tw).toFixed(2)})`; ctx.fill();
-    if(s.tapped||(isT&&s.mag>.5)){
+
+  // Nodes
+  nodes.forEach(n=>{
+    const inP=n.inPath;
+    const tw=.45+.55*Math.sin(T*1.1*n.spd+n.ph);
+    // Pulse effect for matched nodes (after reading)
+    const pulse=n.pulseAmt>0 ? n.pulseAmt*Math.sin(T*8+n.pulsePhase)*.5+.5 : 0;
+    const [R,G,B]=inP?[212,175,55]:n.col;
+    const bR=(inP?2.6+n.mag*2.6:.65+n.mag*1.1)*(1+pulse*.8);
+    const gR=bR*(inP?4.2:2.3);
+
+    if(pulse>0){
+      // Pulsing ring
+      const pr=gR*(2+pulse*3);
+      ctx.beginPath();ctx.arc(n.x,n.y,pr,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(${R},${G},${B},${(.4*pulse).toFixed(2)})`;ctx.lineWidth=1.5;ctx.stroke();
+    }
+
+    const g1=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,gR*2.1);
+    g1.addColorStop(0,`rgba(${R},${G},${B},${((inP?.22:.04)*(1+pulse*.5)*(.7+.3*tw)).toFixed(3)})`);
+    g1.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    ctx.fillStyle=g1;ctx.beginPath();ctx.arc(n.x,n.y,gR*2.1,0,Math.PI*2);ctx.fill();
+
+    const iA=inP?.86:tw*.2;
+    const g2=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,gR);
+    g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`);
+    g2.addColorStop(.28,`rgba(${R},${G},${B},${(iA*.65).toFixed(2)})`);
+    g2.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    ctx.fillStyle=g2;ctx.beginPath();ctx.arc(n.x,n.y,gR,0,Math.PI*2);ctx.fill();
+
+    ctx.beginPath();ctx.arc(n.x,n.y,bR,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(inP?1:tw*.24+.14).toFixed(2)})`;ctx.fill();
+
+    if(inP){
       [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
-        const sl=gR*(s.tapped?2.2:1.4);
-        const sg=ctx.createLinearGradient(s.x,s.y,s.x+dx*sl,s.y+dy*sl);
-        sg.addColorStop(0,`rgba(${SR},${SG},${SB},${(.15*tw).toFixed(2)})`); sg.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
-        ctx.beginPath(); ctx.strokeStyle=sg; ctx.lineWidth=.7; ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+dx*sl,s.y+dy*sl); ctx.stroke();
+        const sl=gR*2.1;
+        const sg=ctx.createLinearGradient(n.x,n.y,n.x+dx*sl,n.y+dy*sl);
+        sg.addColorStop(0,`rgba(212,175,55,${(.16*tw).toFixed(2)})`);sg.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=.6;ctx.moveTo(n.x,n.y);ctx.lineTo(n.x+dx*sl,n.y+dy*sl);ctx.stroke();
       });
-    }
-    if(s.hasOrbit) drawOrbitParticles(s);
-    if(isT&&!s.tapped&&!roundDone){
-      const fs=Math.max(9,Math.min(12,W*.015));
-      ctx.font=`${isN?'700':'400'} ${fs}px Space Mono`; ctx.textAlign='center';
-      ctx.fillStyle=`rgba(${R},${G},${B},${isN?.6+.25*Math.sin(T*3):.22})`;
-      ctx.fillText(s.seq+1,s.x,s.y-bR-8);
+      const fs=Math.max(8,Math.min(10,W*.013));
+      ctx.font=`700 ${fs}px Space Mono`;ctx.textAlign='center';
+      ctx.fillStyle='rgba(212,175,55,.6)';
+      ctx.fillText(n.pathIdx+1,n.x,n.y-bR-6);
     }
   });
 }
 
-// ── MAIN LOOP ─────────────────────────────────────────────────────────────
-function draw() {
-  requestAnimationFrame(draw); T+=.016;
-  if(hintTimer>0) hintTimer--;
-  ctx.fillStyle='#02020a'; ctx.fillRect(0,0,W,H);
-  drawMilkyWay(); drawBg(); drawShoots();
-  if(gameStarted&&field.length) drawField();
+// ── Main loop ─────────────────────────────────────────────────────────────
+function draw(){
+  requestAnimationFrame(draw);T+=.016;
+  ctx.fillStyle='#02020a';ctx.fillRect(0,0,W,H);
+  drawMW();drawBg();drawShoots();
+  if(gameStarted)drawScene();
   tickP();
 }
 
-function resize() {
-  W=cv.width=window.innerWidth; H=cv.height=window.innerHeight;
-  bgStars=makeBg(); initMilkyWay();
-  if(gameStarted&&roundActive) buildField();
+function resize(){
+  W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;
+  bgStars=makeBg();initMW();
+  if(gameStarted)generateNodes();
 }
 
-// ── TAP HANDLING ──────────────────────────────────────────────────────────
-function handleTap(e) {
-  if(!gameStarted||!roundActive||roundDone) return;
+// ── Input ─────────────────────────────────────────────────────────────────
+function getPos(e){
   const rect=cv.getBoundingClientRect();
-  const tx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
-  const ty=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
-  const tapR=Math.max(44,Math.min(W,H)*.06);
-  let best=-1, bestD=Infinity;
-  field.forEach((s,i)=>{
-    if(s.tapped) return;
-    const d=Math.hypot(s.x-tx,s.y-ty);
-    if(d<tapR&&d<bestD){ best=i; bestD=d; }
-  });
-  if(best===-1) return;
-  const exp=targetIdxs[tapped.length];
-  if(best===exp){
-    const s=field[best]; s.tapped=true; s.cp=1; tapped.push(best);
-    initOrbitParticles(s); burstAt(s.x,s.y,s.color,24);
-    const pd=document.getElementById('pd'+(tapped.length-1));
-    if(pd) pd.classList.add('hit');
-    // Update stars counter
-    document.getElementById('stars-remain').textContent=curCard.constellation.n-tapped.length;
-    if(tapped.length===curCard.constellation.n) onConstellationComplete();
-  } else {
-    field[best].wp=14;
-    const wf=document.getElementById('wrong-flash'); wf.style.opacity='1';
-    setTimeout(()=>wf.style.opacity='0',230);
-  }
+  if(e.touches)return{x:e.touches[0].clientX-rect.left,y:e.touches[0].clientY-rect.top};
+  return{x:e.clientX-rect.left,y:e.clientY-rect.top};
+}
+function nearestNode(x,y){
+  const tapR=Math.max(40,Math.min(W,H)*.065);
+  let best=-1,bd=Infinity;
+  nodes.forEach((n,i)=>{const d=Math.hypot(n.x-x,n.y-y);if(d<tapR&&d<bd){best=i;bd=d;}});
+  return best;
 }
 
-// ── CONSTELLATION COMPLETE ────────────────────────────────────────────────
-function onConstellationComplete() {
-  roundDone=true; roundActive=false;
+function handleTap(e){
+  if(!gameStarted||readingActive)return;
+  if(document.getElementById('spread-display').classList.contains('show'))return;
+  const pos=getPos(e);
+  const idx=nearestNode(pos.x,pos.y);
+  if(idx===-1){lastTouchPos=null;return;}
+  lastTouchPos={x:nodes[idx].x,y:nodes[idx].y};
+  if(pathIndices.length>0&&pathIndices[pathIndices.length-1]===idx)return;
+  if(nodes[idx].inPath)return;
+  nodes[idx].inPath=true;
+  nodes[idx].pathIdx=pathIndices.length;
+  pathIndices.push(idx);
+  initOrbits(nodes[idx]);
+  burst(nodes[idx].x,nodes[idx].y,[212,175,55],14);
+  updateUI();
+}
 
-  // Flash
-  const posColor=POSITIONS[currentPosition].color;
-  const [R,G,B]=posColor;
-  targetIdxs.forEach(i=>burstAt(field[i].x,field[i].y,posColor,36));
+function handleMove(e){
+  if(!gameStarted||readingActive)return;
+  if(document.getElementById('spread-display').classList.contains('show'))return;
+  lastTouchPos=getPos(e);
+}
+
+function handleUp(){
+  setTimeout(()=>{if(pathIndices.length>0)lastTouchPos=null;},600);
+}
+
+function updateUI(){
+  const n=pathIndices.length;
+  document.getElementById('nc').textContent=n;
+  document.getElementById('node-count').classList.toggle('active',n>0);
+  document.getElementById('guide-text').classList.toggle('hidden',n>=3);
+  const show=n>=4;
+  document.getElementById('read-btn').classList.toggle('show',show);
+  document.getElementById('clear-btn').classList.toggle('show',show);
+}
+
+function clearPath(){
+  nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;});
+  pathIndices=[];lastTouchPos=null;
+  document.getElementById('nc').textContent='0';
+  document.getElementById('node-count').classList.remove('active');
+  document.getElementById('read-btn').classList.remove('show');
+  document.getElementById('clear-btn').classList.remove('show');
+  document.getElementById('guide-text').classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// READING SEQUENCE
+// Three phases:
+//   1. Pulsing node reveal — matched nodes light up by group one at a time
+//   2. Stage overlay — card name animates in with group label
+//   3. Full spread — all three cards + synthesis
+// ═══════════════════════════════════════════════════════════════════════════
+
+function initiateReading(){
+  if(pathIndices.length<4||readingActive)return;
+  readingActive=true;
+
+  document.getElementById('read-btn').classList.remove('show');
+  document.getElementById('clear-btn').classList.remove('show');
+  document.getElementById('guide-text').classList.add('hidden');
+
+  // Get user's shape
+  const userPts=pathIndices.map(i=>[nodes[i].x/W,nodes[i].y/H]);
+
+  // Match each group
+  const idMatch=findBestInGroup(userPts,'id');
+  const egoMatch=findBestInGroup(userPts,'ego');
+  const sgMatch=findBestInGroup(userPts,'superego');
+
+  matchedCards={id:idMatch.card,ego:egoMatch.card,superego:sgMatch.card};
+
+  // Global flash
   const cf=document.getElementById('complete-flash');
-  cf.style.background=`radial-gradient(ellipse at center,rgba(${R},${G},${B},.25) 0%,transparent 65%)`;
-  cf.style.opacity='1'; setTimeout(()=>cf.style.opacity='0',1200);
+  cf.style.background='radial-gradient(ellipse at center,rgba(212,175,55,.2) 0%,transparent 65%)';
+  cf.style.opacity='1';setTimeout(()=>cf.style.opacity='0',1000);
 
-  // Mark slot complete
-  const slot=document.getElementById('pos-'+currentPosition);
-  slot.classList.remove('active'); slot.classList.add('complete');
-  document.getElementById('pos-card-'+currentPosition).textContent=curCard.name;
+  // Burst on all path nodes
+  pathIndices.forEach(i=>burst(nodes[i].x,nodes[i].y,[212,175,55],18));
 
-  // Flash unlock text
-  const uf=document.getElementById('unlock-flash');
-  uf.textContent=POSITIONS[currentPosition].label+' — '+curCard.name;
-  uf.classList.add('show');
-  setTimeout(()=>uf.classList.remove('show'),2200);
+  // Start the three-phase reveal sequence
+  const sequence=[
+    {group:'id',   color:[200,100,90],  label:'ID · The Raw Drive',      card:idMatch.card},
+    {group:'ego',  color:[126,184,232], label:'EGO · The Self in Motion', card:egoMatch.card},
+    {group:'superego',color:[212,175,55],label:'SUPEREGO · The Higher Law',card:sgMatch.card},
+  ];
 
-  currentPosition++;
-
-  if(currentPosition<3){
-    // Brief pause then next constellation
-    setTimeout(()=>generateRound(), 1600);
-  } else {
-    // All three done — show reading
-    setTimeout(()=>showReading(), 1400);
-  }
+  runRevealSequence(sequence,0);
 }
 
-// ── SHOW READING ──────────────────────────────────────────────────────────
-function showReading() {
+function runRevealSequence(seq,idx){
+  if(idx>=seq.length){
+    // All three revealed — show full spread after brief pause
+    setTimeout(()=>showSpread(),700);
+    return;
+  }
+
+  const step=seq[idx];
+  const [R,G,B]=step.color;
+
+  // Pulse ALL path nodes with this group's color temporarily
+  nodes.forEach(n=>{
+    if(n.inPath){
+      n.col=[R,G,B];
+      n.pulseAmt=1;
+    }
+  });
+
+  // Show stage overlay
+  const overlay=document.getElementById('stage-overlay');
+  const labelEl=document.getElementById('stage-label');
+  const nameEl=document.getElementById('stage-card-name');
+  const kwEl=document.getElementById('stage-card-keywords');
+
+  labelEl.textContent=step.label;
+  labelEl.style.color=`rgba(${R},${G},${B},.55)`;
+  nameEl.textContent=step.card.name;
+  nameEl.style.color=`rgb(${R},${G},${B})`;
+  nameEl.style.textShadow=`0 0 60px rgba(${R},${G},${B},.6),0 0 120px rgba(${R},${G},${B},.25)`;
+  kwEl.textContent=step.card.keywords;
+
+  overlay.classList.add('show');
+  setTimeout(()=>{nameEl.classList.add('show');kwEl.classList.add('show');},100);
+
+  // Hold then fade out and proceed
+  setTimeout(()=>{
+    nameEl.classList.remove('show');kwEl.classList.remove('show');
+    setTimeout(()=>{
+      overlay.classList.remove('show');
+      // Fade node pulse
+      nodes.forEach(n=>{ if(n.inPath) n.pulseAmt=0; });
+      setTimeout(()=>runRevealSequence(seq,idx+1),400);
+    },500);
+  },1900);
+}
+
+// ── Full spread reveal ────────────────────────────────────────────────────
+function showSpread(){
   const spread=document.getElementById('spread-display');
   spread.classList.add('show');
-  setTimeout(()=>spread.classList.add('visible'),50);
+  setTimeout(()=>spread.classList.add('visible'),40);
 
   const container=document.getElementById('three-cards');
   container.innerHTML='';
 
-  const posLabels=['Past','Present','Path'];
-  readingCards.forEach((card,i)=>{
+  const cards=[
+    {card:matchedCards.id,      group:'id',        posLabel:'ID',       color:GROUPS.id.color},
+    {card:matchedCards.ego,     group:'ego',       posLabel:'EGO',      color:GROUPS.ego.color},
+    {card:matchedCards.superego,group:'superego',  posLabel:'SUPEREGO', color:GROUPS.superego.color},
+  ];
+
+  cards.forEach(({card,group,posLabel,color},i)=>{
+    const [R,G,B]=color;
+    const hexColor=`rgb(${R},${G},${B})`;
+    const sz=clamp(90,Math.floor(window.innerWidth*.16),130);
     const el=document.createElement('div');
     el.className='spread-card';
-    const cSize=clamp(80,window.innerWidth*.14,140);
-
+    el.style.borderColor=`rgba(${R},${G},${B},.3)`;
     el.innerHTML=`
-      <div class="spread-card-pos">${posLabels[i]}</div>
-      <canvas class="spread-card-canvas" width="${cSize}" height="${cSize}" style="width:${cSize}px;height:${cSize}px;" id="scc-${i}"></canvas>
-      <div class="spread-card-name">${card.name}</div>
-      <div class="spread-card-suit">${card.type==='major' ? 'Major Arcana' : (card.suit||'').toUpperCase()}</div>
-      <div class="spread-card-meaning">${card.meaning}</div>
+      <div class="sc-group" style="color:rgba(${R},${G},${B},.55)">${posLabel}</div>
+      <canvas class="sc-canvas" width="${sz}" height="${sz}" style="width:${sz}px;height:${sz}px;border-color:rgba(${R},${G},${B},.2)" id="scc${i}"></canvas>
+      <div class="sc-name">${card.name}</div>
+      <div class="sc-keywords" style="color:rgba(${R},${G},${B},.4)">${card.keywords}</div>
+      <div class="sc-meaning">${card.meaning}</div>
     `;
     container.appendChild(el);
     setTimeout(()=>{
       el.classList.add('reveal');
-      drawSpreadConstellation(i, cSize);
-    }, 200+i*350);
+      drawCardCv(i,sz,color,card);
+    },200+i*380);
   });
 
   // Synthesis
   setTimeout(()=>{
-    const synthFn=SYNTHESES[Math.floor(Math.random()*SYNTHESES.length)];
-    document.getElementById('synthesis-text').textContent=synthFn(readingCards[0],readingCards[1],readingCards[2]);
-    document.getElementById('synthesis-section').classList.add('show');
-  }, 1500);
+    const fn=ORACLES[Math.floor(Math.random()*ORACLES.length)];
+    document.getElementById('synthesis-text').textContent=fn(matchedCards.id,matchedCards.ego,matchedCards.superego);
+    document.getElementById('synthesis-wrap').classList.add('show');
+  },1600);
 
-  setTimeout(()=>{
-    document.getElementById('new-reading-btn').classList.add('show');
-  }, 2200);
+  setTimeout(()=>document.getElementById('new-reading-btn').classList.add('show'),2400);
 }
 
-function clamp(min,val,max){ return Math.max(min,Math.min(max,val)); }
-
-function drawSpreadConstellation(idx, size) {
-  const cv2=document.getElementById('scc-'+idx);
-  if(!cv2) return;
-  const c=cv2.getContext('2d');
-  const card=readingCards[idx];
-  const con=card.constellation;
-  const posColor=POSITIONS[idx].color;
-  const [R,G,B]=posColor;
-  const w=cv2.width, h=cv2.height;
+function drawCardCv(idx,sz,color,card){
+  const el=document.getElementById('scc'+idx);
+  if(!el)return;
+  const c=el.getContext('2d');
+  const [R,G,B]=color;
+  const w=el.width,h=el.height;
   c.clearRect(0,0,w,h);
-  const cx=w/2, cy=h/2, sc=Math.min(w,h)*.36;
-  const pts=con.pts.map(([px,py])=>({ x:cx+(px-.5)*sc*2, y:cy+(py-.5)*sc*2 }));
-  c.strokeStyle=`rgba(${R},${G},${B},0.6)`; c.lineWidth=1.5;
-  con.edges.forEach(([a,b])=>{ c.beginPath(); c.moveTo(pts[a].x,pts[a].y); c.lineTo(pts[b].x,pts[b].y); c.stroke(); });
-  pts.forEach(p=>{
+
+  const pts=card.pts;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;});
+  const pad=.15;
+  const aw=w*(1-pad*2),ah=h*(1-pad*2);
+  const sx=aw/(maxX-minX||1),sy=ah/(maxY-minY||1),sc=Math.min(sx,sy);
+  const cx=w/2,cy=h/2;
+  const offX=cx-(minX+maxX)/2*sc,offY=cy-(minY+maxY)/2*sc;
+  const mapped=pts.map(([x,y])=>({x:x*sc+offX,y:y*sc+offY}));
+
+  // Radial glow
+  const bg=c.createRadialGradient(cx,cy,0,cx,cy,sz*.5);
+  bg.addColorStop(0,`rgba(${R},${G},${B},.08)`);bg.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle=bg;c.fillRect(0,0,w,h);
+
+  // Draw constellation lines (connect each pair of points with a faint web)
+  // Use Delaunay-lite: connect each point to its 2 nearest neighbors
+  mapped.forEach((p,i)=>{
+    const dists=mapped.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
+    dists.slice(0,2).forEach(({j})=>{
+      c.beginPath();
+      c.strokeStyle=`rgba(${R},${G},${B},0.38)`;c.lineWidth=1.1;
+      c.moveTo(p.x,p.y);c.lineTo(mapped[j].x,mapped[j].y);c.stroke();
+    });
+  });
+
+  // Stars
+  mapped.forEach(p=>{
     const g=c.createRadialGradient(p.x,p.y,0,p.x,p.y,8);
-    g.addColorStop(0,`rgba(${R},${G},${B},0.8)`); g.addColorStop(.5,`rgba(${R},${G},${B},0.4)`); g.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    c.fillStyle=g; c.beginPath(); c.arc(p.x,p.y,8,0,Math.PI*2); c.fill();
-    c.beginPath(); c.arc(p.x,p.y,3,0,Math.PI*2);
-    c.fillStyle='rgba(255,255,255,0.95)'; c.fill();
+    g.addColorStop(0,`rgba(${R},${G},${B},.9)`);g.addColorStop(.5,`rgba(${R},${G},${B},.35)`);g.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle=g;c.beginPath();c.arc(p.x,p.y,8,0,Math.PI*2);c.fill();
+    c.fillStyle='rgba(255,255,255,.95)';c.beginPath();c.arc(p.x,p.y,2.2,0,Math.PI*2);c.fill();
   });
 }
 
-// ── GAME INIT ─────────────────────────────────────────────────────────────
-function newReading() {
+function clamp(a,v,b){return Math.max(a,Math.min(b,v));}
+
+// ── New reading ───────────────────────────────────────────────────────────
+function newReading(){
   const spread=document.getElementById('spread-display');
   spread.classList.remove('visible');
   setTimeout(()=>{
     spread.classList.remove('show');
-    document.querySelectorAll('.pos-slot').forEach((el,i)=>{
-      el.classList.remove('active','complete');
-      document.getElementById('pos-card-'+i).textContent='';
-    });
-    document.getElementById('synthesis-section').classList.remove('show');
+    document.getElementById('synthesis-wrap').classList.remove('show');
     document.getElementById('new-reading-btn').classList.remove('show');
-    startReading();
-  }, 800);
+    nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;n.col=rndStarColor();});
+    pathIndices=[];lastTouchPos=null;readingActive=false;
+    document.getElementById('nc').textContent='0';
+    document.getElementById('node-count').classList.remove('active');
+    document.getElementById('guide-text').classList.remove('hidden');
+    generateNodes();
+  },700);
 }
 
-function startReading() {
-  readingCards=[];
-  for(let i=0;i<3;i++) readingCards.push(getNextCard());
-  currentPosition=0;
-  readingComplete=false;
-  generateRound();
-}
-
-function beginGame() {
+// ── Init ──────────────────────────────────────────────────────────────────
+function beginGame(){
   document.getElementById('start').style.display='none';
-  shuffleDeck(); gameStarted=true;
-  startReading();
+  gameStarted=true;generateNodes();
 }
 
 cv.addEventListener('mousedown',handleTap);
-cv.addEventListener('touchstart',e=>{ e.preventDefault(); handleTap(e); },{passive:false});
+cv.addEventListener('mousemove',handleMove);
+cv.addEventListener('mouseup',handleUp);
+cv.addEventListener('touchstart',e=>{e.preventDefault();handleTap(e);},{passive:false});
+cv.addEventListener('touchmove',e=>{e.preventDefault();handleMove(e);},{passive:false});
+cv.addEventListener('touchend',e=>{e.preventDefault();handleUp(e);},{passive:false});
 window.addEventListener('resize',resize);
-resize(); draw();
+resize();draw();
 </script>
 </body>
 </html>
