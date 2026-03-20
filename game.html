@@ -3,152 +3,483 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>AXIUM — Constellation Drift</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<title>AXIUM — The Cathedral Reading</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:#04040a;font-family:'Cinzel',serif;touch-action:none;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#02020a;font-family:'Cinzel',serif;touch-action:none;user-select:none}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 
-/* ── Bottom HUD ── */
-#hud{
-  position:fixed;bottom:0;left:0;right:0;z-index:100;
-  padding:0 0 22px;
+/* ── READING POSITIONS HUD ── */
+#positions-hud {
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:100;
+  padding:18px 24px 0;
+  display:flex;
+  justify-content:center;
+  gap:16px;
   pointer-events:none;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.pos-slot {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  opacity:.4;
+  transition:opacity .6s, transform .4s;
+}
+.pos-slot.active { opacity:1; }
+.pos-slot.complete { opacity:.85; }
+.pos-slot-number {
+  font-family:'Space Mono',monospace;
+  font-size:7px;
+  letter-spacing:.3em;
+  color:#D4AF37;
+  text-transform:uppercase;
+}
+.pos-slot-label {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:11px;
+  letter-spacing:.12em;
+  color:rgba(255,255,255,.5);
+}
+.pos-slot-card {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  letter-spacing:.1em;
+  color:#D4AF37;
+  text-align:center;
+  max-width:100px;
+  min-height:14px;
+  text-shadow:0 0 12px rgba(212,175,55,.4);
+}
+.pos-dot {
+  width:32px;
+  height:2px;
+  background:rgba(212,175,55,.18);
+  border-radius:1px;
+  overflow:hidden;
+}
+.pos-dot-fill {
+  height:100%;
+  width:0%;
+  background:#D4AF37;
+  transition:width .8s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 6px rgba(212,175,55,.5);
+}
+.pos-slot.complete .pos-dot-fill { width:100%; }
+
+/* ── BOTTOM HUD ── */
+#hud {
+  position:fixed;
+  bottom:0; left:0; right:0;
+  z-index:100;
+  padding:0 0 26px;
+  pointer-events:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+#unlock-flash {
+  font-family:'Cinzel',serif;
+  font-size:12px;
+  letter-spacing:.2em;
+  color:rgba(212,175,55,0);
+  text-shadow:none;
+  transition:color .7s, text-shadow .7s;
+  text-transform:uppercase;
+}
+#unlock-flash.show {
+  color:#D4AF37;
+  text-shadow:0 0 22px rgba(212,175,55,.6);
+}
+#info-row {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+#persona-lbl {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:13px;
+  letter-spacing:.1em;
+}
+#shape-lbl {
+  font-family:'Space Mono',monospace;
+  font-size:7px;
+  letter-spacing:.18em;
+  color:rgba(255,255,255,.22);
+  text-transform:uppercase;
+}
+#progress-dots { display:flex; gap:5px; align-items:center; }
+.pdot {
+  width:6px; height:6px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.04);
+  transition:all .35s;
+}
+.pdot.hit {
+  border-color:var(--c);
+  background:var(--c);
+  box-shadow:0 0 7px var(--c);
 }
 
-/* unlock word floats above ref box */
-#unlock-flash{
-  font-family:'Cinzel',serif;font-size:14px;letter-spacing:.12em;
-  color:rgba(212,175,55,0);text-shadow:none;
-  transition:color .7s,text-shadow .7s;
-}
-#unlock-flash.show{color:#D4AF37;text-shadow:0 0 22px rgba(212,175,55,.6)}
-
-/* Compact reference box */
-/* Reference panel (separate from game space) */
-#ref-box{
+/* ── REFERENCE CANVAS ── */
+#ref-box {
   position:fixed;
   bottom:120px;
   right:18px;
   z-index:120;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:12px;
+  width:180px;
+  background:linear-gradient(180deg, rgba(12,10,22,.9), rgba(4,3,12,.95));
+  border:1px solid rgba(212,175,55,.28);
+  border-radius:8px;
+  box-shadow:0 0 28px rgba(0,0,0,.7), 0 0 18px rgba(212,175,55,.08) inset;
+}
+#ref-lbl {
+  font-family:'Space Mono',monospace;
+  font-size:6px;
+  letter-spacing:.25em;
+  color:rgba(255,255,255,.18);
+  text-transform:uppercase;
+}
+#ref-canvas {
+  width:154px;
+  height:154px;
+  border-radius:6px;
+  border:1px solid rgba(212,175,55,.28);
+  background:radial-gradient(circle at center, rgba(8,6,18,.97), rgba(2,2,8,1));
+  box-shadow:0 0 16px rgba(212,175,55,.1), inset 0 0 14px rgba(0,0,0,.8);
+}
+#ref-pos-lbl {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:10px;
+  letter-spacing:.1em;
+  color:rgba(212,175,55,.5);
+  text-align:center;
+}
 
+/* ── CARD SPREAD DISPLAY ── */
+#spread-display {
+  position:fixed;
+  inset:0;
+  z-index:250;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:rgba(2,2,10,.92);
+  backdrop-filter:blur(8px);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .8s;
+}
+#spread-display.show {
+  display:flex;
+  pointer-events:auto;
+}
+#spread-display.visible { opacity:1; }
+
+#spread-header {
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(13px,2vw,18px);
+  letter-spacing:.22em;
+  color:#D4AF37;
+  text-align:center;
+  text-transform:uppercase;
+  text-shadow:0 0 40px rgba(212,175,55,.35);
+  margin-bottom:6px;
+}
+#spread-divider {
+  width:200px;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(212,175,55,.5), transparent);
+  margin-bottom:20px;
+}
+
+#three-cards {
+  display:flex;
+  gap:clamp(8px,2vw,20px);
+  align-items:flex-start;
+  justify-content:center;
+  padding:0 16px;
+}
+
+.spread-card {
+  width:clamp(130px,20vw,200px);
+  background:linear-gradient(160deg, rgba(18,14,32,.97), rgba(6,5,16,.99));
+  border:1px solid rgba(212,175,55,.35);
+  border-radius:10px;
+  padding:clamp(10px,2vw,18px);
   display:flex;
   flex-direction:column;
   align-items:center;
   gap:8px;
-
-  padding:14px;
-  width:190px;
-
-  background:linear-gradient(
-    180deg,
-    rgba(18,18,28,.85),
-    rgba(6,6,12,.92)
-  );
-
-  border:1px solid rgba(212,175,55,.35);
-  border-radius:10px;
-
-  box-shadow:
-    0 0 28px rgba(0,0,0,.6),
-    0 0 18px rgba(212,175,55,.15) inset;
+  box-shadow:0 0 40px rgba(0,0,0,.8), 0 0 20px rgba(212,175,55,.12);
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity .6s, transform .6s;
 }
-#ref-lbl{
-  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.22em;
-  color:rgba(255,255,255,.2);text-transform:uppercase;
+.spread-card.reveal {
+  opacity:1;
+  transform:translateY(0);
 }
-#ref-canvas{
-  width:160px;
-  height:160px;
-
-  border-radius:8px;
-  border:1px solid rgba(212,175,55,.35);
-
-  background:radial-gradient(
-    circle at center,
-    rgba(12,12,24,.95),
-    rgba(2,2,6,1)
-  );
-
-  box-shadow:
-    0 0 20px rgba(212,175,55,.15),
-    inset 0 0 18px rgba(0,0,0,.8);
+.spread-card-pos {
+  font-family:'Space Mono',monospace;
+  font-size:6px;
+  letter-spacing:.3em;
+  color:rgba(212,175,55,.45);
+  text-transform:uppercase;
+}
+.spread-card-canvas {
+  border-radius:50%;
+  border:1px solid rgba(212,175,55,.25);
+  background:radial-gradient(circle at center, rgba(8,6,18,.95), rgba(2,2,8,1));
+}
+.spread-card-name {
+  font-family:'Cinzel',serif;
+  font-size:clamp(9px,1.4vw,13px);
+  font-weight:600;
+  letter-spacing:.12em;
+  color:#D4AF37;
+  text-align:center;
+  text-shadow:0 0 14px rgba(212,175,55,.3);
+  line-height:1.4;
+}
+.spread-card-suit {
+  font-family:'Space Mono',monospace;
+  font-size:6px;
+  letter-spacing:.2em;
+  color:rgba(255,255,255,.28);
+  text-transform:uppercase;
+}
+.spread-card-meaning {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:clamp(9px,1.2vw,11px);
+  letter-spacing:.04em;
+  color:rgba(255,255,255,.65);
+  text-align:center;
+  line-height:1.6;
 }
 
-/* Info row */
-#info-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
-#persona-lbl{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;letter-spacing:.1em}
-#shape-lbl{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.18em;color:rgba(255,255,255,.22);text-transform:uppercase}
-#progress-dots{display:flex;gap:5px;align-items:center}
-.pdot{width:6px;height:6px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);transition:all .35s}
-.pdot.hit{border-color:var(--c);background:var(--c);box-shadow:0 0 7px var(--c)}
-#found-count{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.12em;color:rgba(255,255,255,.16)}
-
-/* Overlays */
-#wrong-flash{position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,rgba(180,50,50,.18) 0%,transparent 60%);transition:opacity .2s}
-#complete-flash{position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;transition:opacity .7s}
-
-/* Next button */
-#next-btn{
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  z-index:200;display:none;flex-direction:column;align-items:center;gap:12px;
-  cursor:pointer;pointer-events:auto;
+/* ── SYNTHESIS ── */
+#synthesis-section {
+  margin-top:16px;
+  max-width:520px;
+  padding:0 20px;
+  opacity:0;
+  transition:opacity .8s;
 }
-#next-unlock-word{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;letter-spacing:.1em;color:rgba(255,255,255,.5);text-align:center}
-#next-btn-inner{
-  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.26em;text-transform:uppercase;
-  color:#D4AF37;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.4);
-  padding:12px 32px;border-radius:2px;transition:all .35s;
+#synthesis-section.show { opacity:1; }
+#synthesis-title {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  letter-spacing:.28em;
+  color:rgba(212,175,55,.5);
+  text-align:center;
+  text-transform:uppercase;
+  margin-bottom:8px;
 }
-#next-btn-inner:hover{background:rgba(212,175,55,.15);border-color:#D4AF37;box-shadow:0 0 26px rgba(212,175,55,.2)}
-
-/* Start screen */
-#start{
-  position:fixed;inset:0;z-index:300;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
-  background:rgba(4,4,10,.97);
+#synthesis-text {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(12px,2vw,15px);
+  font-style:italic;
+  color:rgba(255,255,255,.75);
+  text-align:center;
+  line-height:1.8;
+  letter-spacing:.04em;
 }
-.s-title{font-family:'Cinzel',serif;font-size:clamp(30px,6vw,58px);font-weight:800;letter-spacing:.15em;color:#D4AF37;text-shadow:0 0 50px rgba(212,175,55,.25);text-align:center}
-.s-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(14px,2.4vw,18px);color:rgba(255,255,255,.36);letter-spacing:.1em;text-align:center;max-width:380px;line-height:1.8}
-.s-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#D4AF37;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.42);padding:13px 36px;cursor:pointer;transition:all .3s;border-radius:2px}
-.s-btn:hover{background:rgba(212,175,55,.16);border-color:#D4AF37;box-shadow:0 0 30px rgba(212,175,55,.2)}
-.s-tag{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:rgba(212,175,55,.18)}
 
-#help-btn{
+/* ── NEW READING BUTTON ── */
+#new-reading-btn {
+  margin-top:20px;
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:#D4AF37;
+  background:rgba(212,175,55,.07);
+  border:1px solid rgba(212,175,55,.4);
+  padding:12px 32px;
+  border-radius:2px;
+  cursor:pointer;
+  transition:all .3s;
+  opacity:0;
+  transition:opacity .8s, background .3s, border-color .3s;
+}
+#new-reading-btn.show { opacity:1; }
+#new-reading-btn:hover {
+  background:rgba(212,175,55,.16);
+  border-color:#D4AF37;
+  box-shadow:0 0 26px rgba(212,175,55,.2);
+}
+
+/* ── OVERLAYS ── */
+#wrong-flash {
+  position:fixed;
+  inset:0;
+  z-index:150;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(ellipse at center, rgba(160,40,40,.2) 0%, transparent 60%);
+  transition:opacity .2s;
+}
+#complete-flash {
+  position:fixed;
+  inset:0;
+  z-index:150;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .7s;
+}
+
+/* ── HELP BUTTON ── */
+#help-btn {
   position:fixed;
   bottom:22px;
   right:22px;
   z-index:200;
-
   font-family:'Space Mono',monospace;
-  font-size:9px;
+  font-size:8px;
   letter-spacing:.22em;
   text-transform:uppercase;
-
   color:#D4AF37;
-  background:rgba(212,175,55,.08);
-  border:1px solid rgba(212,175,55,.35);
-
-  padding:10px 16px;
-  border-radius:3px;
+  background:rgba(212,175,55,.07);
+  border:1px solid rgba(212,175,55,.3);
+  padding:10px 14px;
+  border-radius:2px;
   cursor:pointer;
-
   transition:all .25s;
 }
-
-#help-btn:hover{
-  background:rgba(212,175,55,.18);
+#help-btn:hover {
+  background:rgba(212,175,55,.16);
   border-color:#D4AF37;
-  box-shadow:0 0 18px rgba(212,175,55,.25);
+  box-shadow:0 0 18px rgba(212,175,55,.2);
 }
+#help-btn.cooldown { opacity:.35; cursor:not-allowed; border-color:rgba(212,175,55,.12); }
 
-#help-btn.cooldown{
-  opacity:0.4;
-  cursor:not-allowed;
-  border-color:rgba(212,175,55,.15);
+/* ── STARS REMAINING ── */
+#stars-counter {
+  position:fixed;
+  top:90px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:100;
+  font-family:'Space Mono',monospace;
+  font-size:7px;
+  letter-spacing:.2em;
+  color:rgba(255,255,255,.18);
+  text-transform:uppercase;
+  pointer-events:none;
+  transition:opacity .5s;
+}
+#stars-counter span { color:rgba(212,175,55,.5); }
+
+/* ── START SCREEN ── */
+#start {
+  position:fixed;
+  inset:0;
+  z-index:300;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  background:rgba(2,2,10,.98);
+}
+/* Cathedral arch decoration */
+#start::before {
+  content:'';
+  position:absolute;
+  top:0; left:50%;
+  transform:translateX(-50%);
+  width:min(400px, 80vw);
+  height:300px;
+  background:radial-gradient(ellipse at top, rgba(212,175,55,.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+.s-eyebrow {
+  font-family:'Space Mono',monospace;
+  font-size:8px;
+  letter-spacing:.4em;
+  color:rgba(212,175,55,.4);
+  text-transform:uppercase;
+}
+.s-title {
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(22px,5vw,44px);
+  font-weight:900;
+  letter-spacing:.12em;
+  color:#D4AF37;
+  text-shadow:0 0 60px rgba(212,175,55,.2), 0 0 120px rgba(212,175,55,.1);
+  text-align:center;
+  line-height:1.25;
+}
+.s-divider {
+  width:180px;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(212,175,55,.4), transparent);
+}
+.s-sub {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:clamp(13px,2vw,16px);
+  color:rgba(255,255,255,.3);
+  letter-spacing:.08em;
+  text-align:center;
+  max-width:360px;
+  line-height:1.9;
+}
+.s-instruction {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(11px,1.6vw,13px);
+  color:rgba(255,255,255,.2);
+  text-align:center;
+  letter-spacing:.06em;
+  line-height:1.8;
+  max-width:300px;
+}
+.s-instruction strong {
+  color:rgba(212,175,55,.45);
+  font-style:italic;
+  font-weight:400;
+}
+.s-btn {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:#D4AF37;
+  background:rgba(212,175,55,.06);
+  border:1px solid rgba(212,175,55,.4);
+  padding:14px 42px;
+  cursor:pointer;
+  transition:all .35s;
+  border-radius:2px;
+}
+.s-btn:hover {
+  background:rgba(212,175,55,.14);
+  border-color:#D4AF37;
+  box-shadow:0 0 35px rgba(212,175,55,.18);
+}
+.s-tag {
+  font-family:'Space Mono',monospace;
+  font-size:7px;
+  letter-spacing:.25em;
+  color:rgba(212,175,55,.15);
 }
 </style>
 </head>
@@ -157,1091 +488,735 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 <div id="wrong-flash"></div>
 <div id="complete-flash"></div>
 
+<!-- Top positions -->
+<div id="positions-hud">
+  <div class="pos-slot" id="pos-0">
+    <div class="pos-slot-number">I · Past</div>
+    <div class="pos-dot"><div class="pos-dot-fill" id="pdot-0"></div></div>
+    <div class="pos-slot-card" id="pos-card-0"></div>
+  </div>
+  <div style="width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(212,175,55,.2),transparent);align-self:center;"></div>
+  <div class="pos-slot" id="pos-1">
+    <div class="pos-slot-number">II · Present</div>
+    <div class="pos-dot"><div class="pos-dot-fill" id="pdot-1"></div></div>
+    <div class="pos-slot-card" id="pos-card-1"></div>
+  </div>
+  <div style="width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(212,175,55,.2),transparent);align-self:center;"></div>
+  <div class="pos-slot" id="pos-2">
+    <div class="pos-slot-number">III · Path</div>
+    <div class="pos-dot"><div class="pos-dot-fill" id="pdot-2"></div></div>
+    <div class="pos-slot-card" id="pos-card-2"></div>
+  </div>
+</div>
+
+<!-- Bottom HUD -->
 <div id="hud">
   <div id="unlock-flash"></div>
   <div id="info-row">
     <div id="persona-lbl"></div>
     <div id="shape-lbl"></div>
     <div id="progress-dots"></div>
-    <div id="found-count"></div>
   </div>
 </div>
 
+<div id="stars-counter">Seeking: <span id="stars-remain"></span> nodes</div>
+
 <button id="help-btn" onclick="showHint()">Hint</button>
 
-  <canvas id="ref-canvas" width="160" height="160" style="opacity: .7"></canvas>
-
-<div id="next-btn" onclick="nextRound()">
-  <div id="next-unlock-word"></div>
-  <div id="next-btn-inner">Next Constellation</div>
+<!-- Reference canvas -->
+<div id="ref-box">
+  <div id="ref-lbl">Current Constellation</div>
+  <canvas id="ref-canvas" width="154" height="154"></canvas>
+  <div id="ref-pos-lbl"></div>
 </div>
 
+<!-- Three-card spread display -->
+<div id="spread-display">
+  <div id="spread-header">The Reading</div>
+  <div id="spread-divider"></div>
+  <div id="three-cards"></div>
+  <div id="synthesis-section">
+    <div id="synthesis-title">The Cathedral Speaks</div>
+    <div id="synthesis-text"></div>
+  </div>
+  <button id="new-reading-btn" onclick="newReading()">Begin New Reading</button>
+</div>
+
+<!-- Start screen -->
 <div id="start">
-  <div class="s-title">CONSTELLATION<br>DRIFT</div>
-  <div class="s-sub">Find the hidden pattern among the stars.<br>The longer you drift, the more words are revealed.</div>
-  <button class="s-btn" onclick="beginGame()">Enter</button>
+  <div class="s-eyebrow">Axium · Cathedral of Stars</div>
+  <div class="s-title">The Reading</div>
+  <div class="s-divider"></div>
+  <div class="s-sub">Three constellations.<br>Three positions in time.</div>
+  <div class="s-instruction">
+    Connect the hidden star patterns across the sky.<br>
+    <strong>Past · Present · Path</strong><br>
+    Three cards. One reading.
+  </div>
+  <button class="s-btn" onclick="beginGame()">Open the Cathedral</button>
   <div class="s-tag">AN AXIUM EXPERIENCE</div>
 </div>
 
 <script>
-// ── Word Matrix ───────────────────────────────────────────────────────────────
-const WM={
-  micheal:{
-    tier1:['Anchor','Ground','Truth','Hold','Presence','Center','Balance','Still','Rooted','Here','Weight','Base','Reality','Contact','Stand','Being','Steadying','Bearing','Now','Form'],
-    tier2:['Steady','Root','Core','Foundation','Gravitas','Centerline','Axis','Footing','Poise','Stillness','Gravity','Grounded','Equilibrium','Resolve','Stability','Posture','Support'],
-    tier3:['Firm','Solid','Depth','Silence','Stone','Bedrock','Mass','Density','Quiet','Continuum','Endurance','Calm','Anchorpoint','Substance','Continuity'],
-    tier4:['Declare','Bold','Direct','Clear','Steadfast','Name','State','Affirm','Reveal','Speak','Assert','Clarify','Stabilize','Proclaim','Confirm','Establish'],
-    rare:['Covenant','Witness','Stillpoint','Sanctuary','Keystone','Groundtruth','Anchorstone','Sanctum','Rootlaw','Deepcenter','Firststone']
+// ── TAROT DECK (full 78 cards) ──────────────────────────────────────────────
+const TAROT_DECK = {
+  major: [
+    { id:0, name:"The Fool", roman:"0", constellation:{ n:7, pts:[[.5,.15],[.35,.35],[.65,.35],[.25,.55],[.75,.55],[.4,.8],[.6,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]], name:"The Wanderer" }, keywords:["beginnings","innocence","leap of faith"], meaning:"The start of a journey. Unlimited potential. Trust the unknown.", element:"Air", planet:"Uranus" },
+    { id:1, name:"The Magician", roman:"I", constellation:{ n:8, pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.5],[.7,.5],[.3,.7],[.7,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Manifestor" }, keywords:["manifestation","power","action"], meaning:"You have all tools needed. Focus will to create reality.", element:"Air", planet:"Mercury" },
+    { id:2, name:"The High Priestess", roman:"II", constellation:{ n:6, pts:[[.5,.1],[.2,.4],[.8,.4],[.2,.7],[.8,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5],[1,2],[3,4]], name:"The Veil" }, keywords:["intuition","mystery","inner voice"], meaning:"Listen to what is unsaid. Trust your inner knowing.", element:"Water", planet:"Moon" },
+    { id:3, name:"The Empress", roman:"III", constellation:{ n:9, pts:[[.5,.1],[.3,.25],[.7,.25],[.15,.45],[.85,.45],[.3,.65],[.7,.65],[.4,.9],[.6,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,8],[7,8],[1,2],[3,4],[5,6]], name:"The Garden" }, keywords:["fertility","abundance","creativity"], meaning:"Growth and flourishing. Reap what you have sown.", element:"Earth", planet:"Venus" },
+    { id:4, name:"The Emperor", roman:"IV", constellation:{ n:8, pts:[[.2,.15],[.8,.15],[.2,.4],[.8,.4],[.2,.65],[.8,.65],[.2,.9],[.8,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[2,3],[4,5]], name:"The Throne" }, keywords:["authority","structure","control"], meaning:"Establish order. Take charge. Build foundations that last.", element:"Fire", planet:"Mars" },
+    { id:5, name:"The Hierophant", roman:"V", constellation:{ n:7, pts:[[.5,.1],[.2,.3],[.8,.3],[.5,.5],[.2,.7],[.8,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,6],[1,2],[4,5]], name:"The Temple" }, keywords:["tradition","guidance","education"], meaning:"Honor wisdom passed down. Respect sacred knowledge.", element:"Earth", planet:"Jupiter" },
+    { id:6, name:"The Lovers", roman:"VI", constellation:{ n:6, pts:[[.25,.2],[.75,.2],[.5,.4],[.25,.6],[.75,.6],[.5,.85]], edges:[[0,2],[1,2],[0,3],[1,4],[3,5],[4,5],[2,5],[3,4]], name:"The Union" }, keywords:["love","harmony","alignment"], meaning:"Union of opposites. Heart-centered choice.", element:"Air", planet:"Mercury" },
+    { id:7, name:"The Chariot", roman:"VII", constellation:{ n:8, pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.5],[.85,.5],[.3,.7],[.7,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[5,6]], name:"The Vehicle" }, keywords:["willpower","victory","control"], meaning:"Focus your energies. Drive forward with confidence.", element:"Water", planet:"Moon" },
+    { id:8, name:"Strength", roman:"VIII", constellation:{ n:7, pts:[[.5,.15],[.25,.35],[.75,.35],[.5,.5],[.25,.65],[.75,.65],[.5,.85]], edges:[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,6],[1,2]], name:"The Lion" }, keywords:["courage","patience","inner strength"], meaning:"Gentle power tames the beast. Inner mastery.", element:"Fire", planet:"Sun" },
+    { id:9, name:"The Hermit", roman:"IX", constellation:{ n:5, pts:[[.5,.1],[.5,.35],[.3,.6],[.7,.6],[.5,.9]], edges:[[0,1],[1,2],[1,3],[2,4],[3,4]], name:"The Lantern" }, keywords:["solitude","wisdom","introspection"], meaning:"Seek within. The light you need is already inside.", element:"Earth", planet:"Mercury" },
+    { id:10, name:"Wheel of Fortune", roman:"X", constellation:{ n:8, pts:[[.5,.1],[.8,.3],[.8,.6],[.5,.9],[.2,.6],[.2,.3],[.5,.35],[.5,.65]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[6,7],[0,6],[6,1],[2,7],[7,3],[4,6],[6,5]], name:"The Cycle" }, keywords:["change","fate","turning point"], meaning:"What goes around comes around. Embrace change.", element:"Fire", planet:"Jupiter" },
+    { id:11, name:"Justice", roman:"XI", constellation:{ n:7, pts:[[.5,.1],[.25,.3],[.75,.3],[.5,.5],[.25,.7],[.75,.7],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,6],[5,6],[1,2],[4,5]], name:"The Scales" }, keywords:["fairness","truth","law"], meaning:"Truth demands balance. Cause and effect made manifest.", element:"Air", planet:"Venus" },
+    { id:12, name:"The Hanged Man", roman:"XII", constellation:{ n:6, pts:[[.5,.1],[.3,.3],[.7,.3],[.3,.6],[.7,.6],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5],[3,4]], name:"The Surrender" }, keywords:["suspension","sacrifice","new perspective"], meaning:"Surrender leads to revelation. Pause before proceeding.", element:"Water", planet:"Neptune" },
+    { id:13, name:"Death", roman:"XIII", constellation:{ n:7, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.6],[.85,.6],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Threshold" }, keywords:["transformation","endings","transition"], meaning:"Endings make space. Transformation is already happening.", element:"Water", planet:"Pluto" },
+    { id:14, name:"Temperance", roman:"XIV", constellation:{ n:8, pts:[[.2,.3],[.5,.1],[.8,.3],[.85,.6],[.6,.85],[.4,.85],[.15,.6],[.5,.5]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0],[7,1],[7,3],[7,5],[7,0],[7,2],[7,4],[7,6]], name:"The Alchemist" }, keywords:["balance","patience","moderation"], meaning:"Blend opposites into gold. Patience creates miracles.", element:"Fire", planet:"Jupiter" },
+    { id:15, name:"The Devil", roman:"XV", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.1,.55],[.9,.55],[.25,.75],[.75,.75],[.5,.95]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Chain" }, keywords:["bondage","addiction","materialism"], meaning:"What binds you can be released. You hold the key.", element:"Earth", planet:"Saturn" },
+    { id:16, name:"The Tower", roman:"XVI", constellation:{ n:7, pts:[[.5,.1],[.3,.3],[.7,.3],[.15,.55],[.85,.55],[.35,.8],[.65,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Lightning" }, keywords:["upheaval","revelation","sudden change"], meaning:"The false structure falls. What remains is real.", element:"Fire", planet:"Mars" },
+    { id:17, name:"The Star", roman:"XVII", constellation:{ n:10, pts:[[.5,.05],[.6,.35],[.9,.35],[.65,.55],[.75,.9],[.5,.7],[.25,.9],[.35,.55],[.1,.35],[.4,.35]], edges:[[0,1],[0,9],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[5,7],[5,3],[5,1],[5,9]], name:"The Guiding Light" }, keywords:["hope","renewal","inspiration"], meaning:"Light in darkness. Trust the universe. You are heard.", element:"Air", planet:"Aquarius" },
+    { id:18, name:"The Moon", roman:"XVIII", constellation:{ n:7, pts:[[.7,.15],[.85,.35],[.85,.65],[.7,.85],[.4,.75],[.25,.5],[.4,.25]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0]], name:"The Crescent" }, keywords:["illusion","fear","intuition"], meaning:"Navigate the unknown by feel. Dreams carry truth.", element:"Water", planet:"Moon" },
+    { id:19, name:"The Sun", roman:"XIX", constellation:{ n:9, pts:[[.5,.5],[.5,.1],[.75,.25],[.9,.5],[.75,.75],[.5,.9],[.25,.75],[.1,.5],[.25,.25]], edges:[[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,1]], name:"The Radiance" }, keywords:["joy","success","vitality"], meaning:"Clarity and warmth. Success shines. Be fully yourself.", element:"Fire", planet:"Sun" },
+    { id:20, name:"Judgement", roman:"XX", constellation:{ n:8, pts:[[.5,.1],[.3,.3],[.7,.3],[.2,.55],[.8,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6],[0,7]], name:"The Trumpet" }, keywords:["rebirth","awakening","calling"], meaning:"Hear the call. Rise to your higher self. Renewal.", element:"Fire", planet:"Pluto" },
+    { id:21, name:"The World", roman:"XXI", constellation:{ n:8, pts:[[.5,.1],[.8,.3],[.8,.7],[.5,.9],[.2,.7],[.2,.3],[.5,.3],[.5,.7]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[6,7],[0,6],[6,1],[2,7],[7,3],[4,7],[7,5]], name:"The Completion" }, keywords:["completion","wholeness","accomplishment"], meaning:"The journey comes full circle. You are whole.", element:"Earth", planet:"Saturn" }
+  ],
+  cups: {
+    element:"Water", planet:"Venus/Neptune", color:[126,184,232],
+    cards:[
+      { rank:"Ace", name:"Ace of Cups", constellation:{ n:3, pts:[[.5,.2],[.3,.7],[.7,.7]], edges:[[0,1],[1,2],[2,0]], name:"The Vessel" }, meaning:"New love, emotional awakening, spiritual overflowing" },
+      { rank:"2", name:"Two of Cups", constellation:{ n:4, pts:[[.3,.3],[.7,.3],[.3,.7],[.7,.7]], edges:[[0,1],[2,3],[0,3],[1,2]], name:"The Union" }, meaning:"Partnership, mutual attraction, harmonious bond" },
+      { rank:"3", name:"Three of Cups", constellation:{ n:5, pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85]], edges:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,4]], name:"The Celebration" }, meaning:"Joyful reunion, friendship, communal happiness" },
+      { rank:"4", name:"Four of Cups", constellation:{ n:5, pts:[[.5,.15],[.2,.4],[.8,.4],[.2,.8],[.8,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,4],[1,2]], name:"The Contemplation" }, meaning:"Apathy, reevaluation, missed opportunities" },
+      { rank:"7", name:"Seven of Cups", constellation:{ n:7, pts:[[.5,.15],[.25,.35],[.75,.35],[.25,.6],[.75,.6],[.35,.85],[.65,.85]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]], name:"The Dreams" }, meaning:"Choices, illusions, wishful thinking" },
+      { rank:"9", name:"Nine of Cups", constellation:{ n:9, pts:[[.5,.1],[.7,.3],[.9,.5],[.7,.7],[.5,.9],[.3,.7],[.1,.5],[.3,.3],[.5,.5]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[8,0],[8,2],[8,4],[8,6]], name:"The Wish" }, meaning:"Contentment, satisfaction, emotional fulfillment" },
+      { rank:"Queen", name:"Queen of Cups", constellation:{ n:7, pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Empath" }, meaning:"Emotional mastery, intuition, compassion" },
+      { rank:"King", name:"King of Cups", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Diplomat" }, meaning:"Emotional balance, wisdom, compassionate leadership" }
+    ]
   },
-  gabriel:{
-    tier1:['Probe','Test','Verify','Logic','Proof','Query','Check','Assess','Inspect','Audit','Examine','Trace','Confirm','Scan','Evaluate','Seek','Observe','Parse','Review','Detect'],
-    tier2:['Map','Find','Survey','Index','Chart','Track','Locate','Profile','Compare','Crosscheck','Catalog','Deconstruct','Outline','Flag','Isolate'],
-    tier3:['Question','Doubt','Filter','Sort','Challenge','Screen','Dissect','Refine','Separate','Contrast','Triangulate','Interrogate','Analyze','Diagnose','Scrutinize','Validate'],
-    tier4:['Rank','Judge','Weigh','Measure','Cut','Prioritize','Score','Grade','Quantify','Benchmark','Select','Cull','Distill','Decide','Eliminate','Threshold'],
-    rare:['Falsify','Control','Blindspot','Assumption','Variance','Constraint','Failuremode','Signal','Noise','Edgecase','Integrity','Verification','Outlier','Traceability']
+  pentacles: {
+    element:"Earth", planet:"Mercury/Venus", color:[212,175,55],
+    cards:[
+      { rank:"Ace", name:"Ace of Pentacles", constellation:{ n:4, pts:[[.5,.15],[.85,.5],[.5,.85],[.15,.5]], edges:[[0,1],[1,2],[2,3],[3,0],[0,2]], name:"The Seed" }, meaning:"New financial opportunity, prosperity potential" },
+      { rank:"3", name:"Three of Pentacles", constellation:{ n:6, pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85],[.5,.5]], edges:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,4],[0,5],[1,5],[2,5]], name:"The Collaboration" }, meaning:"Teamwork, skill, craftsmanship, recognition" },
+      { rank:"8", name:"Eight of Pentacles", constellation:{ n:8, pts:[[.15,.2],[.5,.1],[.85,.2],[.85,.5],[.5,.6],[.15,.5],[.3,.85],[.7,.85]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6],[4,7],[6,7]], name:"The Apprentice" }, meaning:"Diligence, skill development, mastery through practice" },
+      { rank:"9", name:"Nine of Pentacles", constellation:{ n:8, pts:[[.5,.1],[.75,.25],[.85,.5],[.75,.75],[.5,.9],[.25,.75],[.15,.5],[.25,.25]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[0,4],[2,6]], name:"The Harvest" }, meaning:"Luxury, self-sufficiency, enjoying fruits of labor" },
+      { rank:"King", name:"King of Pentacles", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Provider" }, meaning:"Business acumen, discipline, material success" }
+    ]
   },
-  ariel:{
-    tier1:['Hold','Space','Breathe','Witness','Stay','Listen','Pause','Soft','Present','Here','Attend','Receive','Allow','Rest','Notice','Sit','Be','Remain','Observe','Calm'],
-    tier2:['Grief','Gentle','Patience','Warmth','Kind','Tenderness','Ease','Quiet','Slow','Care','Compassion','Mercy','Kindness','Restfulness','Acceptance','Peace'],
-    tier3:['Tender','Nurture','Support','Comfort','Cradle','Holdspace','Reassure','Sustain','Encourage','Protect','Guide','Accompany','Soothe','Affirm','Embrace','Shelter'],
-    tier4:['Heal','Accept','Console','Holdclose','Welcome','Honor','Witnessdeeply','Staynear','Tend','Encircle'],
-    rare:['Sanctuary','Harbor','Refuge','Haven','Quietus','Grace','Solace','Compassionfield','Heartspace','Gentlekeeping','Stillhaven','Warmthwell','Soulrest','Kindharbor']
+  swords: {
+    element:"Air", planet:"Mars/Uranus", color:[200,200,220],
+    cards:[
+      { rank:"Ace", name:"Ace of Swords", constellation:{ n:4, pts:[[.5,.1],[.5,.7],[.3,.5],[.7,.5]], edges:[[0,1],[2,3]], name:"The Blade" }, meaning:"Clarity, breakthrough, new idea, mental focus" },
+      { rank:"2", name:"Two of Swords", constellation:{ n:5, pts:[[.5,.2],[.2,.5],[.8,.5],[.35,.8],[.65,.8]], edges:[[0,1],[0,2],[1,3],[2,4],[3,4]], name:"The Stalemate" }, meaning:"Difficult choices, indecision, blocked emotions" },
+      { rank:"7", name:"Seven of Swords", constellation:{ n:7, pts:[[.5,.1],[.3,.35],[.7,.35],[.15,.6],[.85,.6],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]], name:"The Deception" }, meaning:"Deception, strategy, getting away with something" },
+      { rank:"Queen", name:"Queen of Swords", constellation:{ n:7, pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Truthseeker" }, meaning:"Independent judgment, clear boundaries, discernment" },
+      { rank:"King", name:"King of Swords", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Judge" }, meaning:"Mental clarity, intellectual power, authority" }
+    ]
   },
-  seraphina:{
-    tier1:['Build','Plan','Make','Form','Shape','Start','Begin','Lay','Set','Create','Draft','Prepare','Outline','Frame','Construct','Assemble','Initiate','Organize','Arrange','Launch'],
-    tier2:['Design','Craft','Forge','Structure','Blueprint','Model','Engineer','Systemize','Architect','Develop','Compose','Pattern','Layout','Refine','Integrate','Configure'],
-    tier3:['System','Order','Path','Step','Move','Sequence','Process','Workflow','Method','Pipeline','Track','Route','Chain','Flow','Cycle','Stage','Layer','Mechanism','Channel'],
-    tier4:['Act','Do','Execute','Drive','Focus','Implement','Advance','Deliver','Push','Complete','Deploy','Operate','Commit','Engage','Finalize','Produce','Achieve','Perform'],
-    rare:['Ship','Milestone','Throughput','Execution','Fulfillment','Iteration','Integration','Scale','Production','Outcome','Momentum','Realization','Completion','Impact']
+  wands: {
+    element:"Fire", planet:"Sun/Jupiter", color:[240,128,60],
+    cards:[
+      { rank:"Ace", name:"Ace of Wands", constellation:{ n:4, pts:[[.5,.1],[.5,.7],[.35,.4],[.65,.4]], edges:[[0,1],[2,3]], name:"The Spark" }, meaning:"Inspiration, creative spark, new initiative" },
+      { rank:"3", name:"Three of Wands", constellation:{ n:5, pts:[[.5,.2],[.25,.5],[.75,.5],[.25,.85],[.75,.85]], edges:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,4]], name:"The Vision" }, meaning:"Expansion, foresight, looking ahead, leadership" },
+      { rank:"6", name:"Six of Wands", constellation:{ n:7, pts:[[.5,.1],[.2,.4],[.8,.4],[.15,.65],[.85,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Victory" }, meaning:"Success, recognition, progress, self-confidence" },
+      { rank:"Queen", name:"Queen of Wands", constellation:{ n:7, pts:[[.5,.1],[.2,.35],[.8,.35],[.2,.65],[.8,.65],[.35,.9],[.65,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,2],[3,4]], name:"The Radiant" }, meaning:"Courage, determination, joy, magnetic presence" },
+      { rank:"King", name:"King of Wands", constellation:{ n:8, pts:[[.5,.1],[.25,.3],[.75,.3],[.15,.55],[.85,.55],[.3,.8],[.7,.8],[.5,.9]], edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4],[5,6]], name:"The Visionary" }, meaning:"Leadership, vision, entrepreneurship, honor" }
+    ]
   }
 };
 
-const PKEYS=['micheal','gabriel','ariel','seraphina'];
-const PS={
-  micheal:   {name:'Micheal',   role:'The Anchor',       rgb:[212,175,55],  hex:'#D4AF37'},
-  gabriel:   {name:'Gabriel',   role:'The Examiner',     rgb:[126,184,232], hex:'#7eb8e8'},
-  ariel:     {name:'Ariel',     role:'The Space-Holder', rgb:[212,160,200], hex:'#d4a0c8'},
-  seraphina: {name:'Seraphina', role:'The Architect',    rgb:[240,208,128], hex:'#f0d080'}
-};
+// Flatten deck
+const ALL_CARDS = [];
+TAROT_DECK.major.forEach(c => ALL_CARDS.push({...c, type:'major', suit:null, color:[212,175,55]}));
+['cups','pentacles','swords','wands'].forEach(suit => {
+  const sd = TAROT_DECK[suit];
+  sd.cards.forEach(c => ALL_CARDS.push({...c, type:'minor', suit:suit, element:sd.element, planet:sd.planet, color:sd.color}));
+});
 
-// ── Procedural Constellation Generator ───────────────────────────────────────
-const ConstellationGenerator = {
-  seed: 1,
-  rng() {
-    this.seed = (this.seed * 1664525 + 1013904223) & 0xffffffff;
-    return (this.seed >>> 0) / 0xffffffff;
-  },
-
-  setSeed(s) {
-    this.seed = s;
-  },
-
-  randomPointInCircle(radius, centerX = 0, centerY = 0) {
-    const r = radius * Math.sqrt(this.rng());
-    const theta = this.rng() * Math.PI * 2;
-    return {
-      x: centerX + r * Math.cos(theta),
-      y: centerY + r * Math.sin(theta)
-    };
-  },
-
-  poissonDiscPoints(count, radius, centerX = 0, centerY = 0) {
-    const points = [];
-    const minDist = (radius * 2) / Math.sqrt(count);
-    let attempts = 0;
-    const maxAttempts = count * 50;
-
-    while (points.length < count && attempts < maxAttempts) {
-      const candidate = this.randomPointInCircle(radius * 0.9, centerX, centerY);
-      let tooClose = false;
-
-      for (const p of points) {
-        const dx = candidate.x - p.x;
-        const dy = candidate.y - p.y;
-        if (Math.sqrt(dx * dx + dy * dy) < minDist) {
-          tooClose = true;
-          break;
-        }
-      }
-
-      if (!tooClose) {
-        points.push(candidate);
-      }
-      attempts++;
-    }
-
-    while (points.length < count) {
-      points.push(this.randomPointInCircle(radius * 0.9, centerX, centerY));
-    }
-
-    return points;
-  },
-
-  generateName(pointCount, edgeCount, symmetry, spread) {
-    const prefixes = ['Crown', 'Crest', 'Veil', 'Crown', 'Arc', 'Web', 'Net', 'Drift', 'Spire', 'Ring', 'Path', 'Gate'];
-    const middles = ['of', 'the', 'in', 'above', 'beneath', 'within'];
-    const suffixes = ['Stars', 'Light', 'Void', 'Dust', 'Flame', 'Shade', 'Echo', 'Tide', 'Sorrow', 'Hope', 'Dream', 'Shadow'];
-
-    const complexity = edgeCount / pointCount;
-    let name = '';
-
-    if (complexity > 1.5) {
-      name = 'Web';
-    } else if (complexity < 1.0) {
-      name = 'Scatter';
-    } else if (symmetry > 0.8) {
-      name = 'Crown';
-    } else if (spread > 0.7) {
-      name = 'Drift';
-    } else {
-      name = prefixes[Math.floor(this.rng() * prefixes.length)];
-    }
-
-    if (this.rng() > 0.5) {
-      name += ' ' + middles[Math.floor(this.rng() * middles.length)] + ' ' + suffixes[Math.floor(this.rng() * suffixes.length)];
-    } else {
-      name += ' ' + suffixes[Math.floor(this.rng() * suffixes.length)];
-    }
-
-    return name;
-  },
-
-  calculateSymmetry(points) {
-    if (points.length < 3) return 0;
-    let symmetryScore = 0;
-    const checks = 10;
-    for (let i = 0; i < checks; i++) {
-      const angle = (i / checks) * Math.PI;
-      let matches = 0;
-      for (const p1 of points) {
-        const reflectedX = p1.x * Math.cos(2 * angle) + p1.y * Math.sin(2 * angle);
-        const reflectedY = p1.x * Math.sin(2 * angle) - p1.y * Math.cos(2 * angle);
-        for (const p2 of points) {
-          const dist = Math.sqrt((reflectedX - p2.x) ** 2 + (reflectedY - p2.y) ** 2);
-          if (dist < 0.1) matches++;
-        }
-      }
-      symmetryScore = Math.max(symmetryScore, matches / points.length);
-    }
-    return symmetryScore;
-  },
-
-  generateEdges(points, strategy) {
-    const edges = [];
-    const n = points.length;
-
-    switch(strategy) {
-      case 'mst':
-        const connected = new Set([0]);
-        while (connected.size < n) {
-          let bestDist = Infinity;
-          let bestEdge = null;
-          for (const i of connected) {
-            for (let j = 0; j < n; j++) {
-              if (connected.has(j)) continue;
-              const dx = points[i].x - points[j].x;
-              const dy = points[i].y - points[j].y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < bestDist) {
-                bestDist = dist;
-                bestEdge = [i, j];
-              }
-            }
-          }
-          if (bestEdge) {
-            edges.push(bestEdge);
-            connected.add(bestEdge[1]);
-          }
-        }
-        break;
-
-      case 'nearest':
-        for (let i = 0; i < n; i++) {
-          const distances = points.map((p, j) => {
-            if (i === j) return { j, dist: Infinity };
-            const dx = points[i].x - p.x;
-            const dy = points[i].y - p.y;
-            return { j, dist: Math.sqrt(dx * dx + dy * dy) };
-          }).sort((a, b) => a.dist - b.dist);
-
-          const connections = 2 + Math.floor(this.rng() * 2);
-          for (let k = 0; k < Math.min(connections, n - 1); k++) {
-            const edge = [i, distances[k].j].sort((a, b) => a - b);
-            if (!edges.some(e => e[0] === edge[0] && e[1] === edge[1])) {
-              edges.push(edge);
-            }
-          }
-        }
-        break;
-
-      case 'triangulation':
-        const sorted = points.map((p, i) => ({ ...p, idx: i })).sort((a, b) => a.x - b.x);
-        for (let i = 0; i < sorted.length - 1; i++) {
-          edges.push([sorted[i].idx, sorted[i + 1].idx]);
-          if (i < sorted.length - 2 && this.rng() > 0.3) {
-            edges.push([sorted[i].idx, sorted[i + 2].idx]);
-          }
-        }
-        const byY = points.map((p, i) => ({ ...p, idx: i })).sort((a, b) => a.y - b.y);
-        for (let i = 0; i < byY.length - 1; i++) {
-          if (this.rng() > 0.6) {
-            const edge = [byY[i].idx, byY[i + 1].idx].sort((a, b) => a - b);
-            if (!edges.some(e => e[0] === edge[0] && e[1] === edge[1])) {
-              edges.push(edge);
-            }
-          }
-        }
-        break;
-
-      case 'chain':
-        const order = Array.from({ length: n }, (_, i) => i);
-        for (let i = n - 1; i > 0; i--) {
-          const j = Math.floor(this.rng() * (i + 1));
-          [order[i], order[j]] = [order[j], order[i]];
-        }
-        for (let i = 0; i < n - 1; i++) {
-          edges.push([order[i], order[i + 1]]);
-        }
-        const branches = 1 + Math.floor(this.rng() * 2);
-        for (let b = 0; b < branches; b++) {
-          const i = Math.floor(this.rng() * (n - 2)) + 1;
-          const j = Math.floor(this.rng() * n);
-          if (Math.abs(i - j) > 1) {
-            const edge = [order[i], order[j]].sort((a, b) => a - b);
-            if (!edges.some(e => e[0] === edge[0] && e[1] === edge[1])) {
-              edges.push(edge);
-            }
-          }
-        }
-        break;
-    }
-
-    return edges;
-  },
-
-  generate(seed = null) {
-    if (seed !== null) this.setSeed(seed);
-    else this.setSeed(Date.now() % 1000000 + Math.random() * 1000000);
-
-    const minPoints = 3;
-    const maxPoints = 8;
-    const pointCount = minPoints + Math.floor(this.rng() * (maxPoints - minPoints + 1));
-
-    const rawPoints = this.poissonDiscPoints(pointCount, 0.4);
-
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for (const p of rawPoints) {
-      minX = Math.min(minX, p.x);
-      maxX = Math.max(maxX, p.x);
-      minY = Math.min(minY, p.y);
-      maxY = Math.max(maxY, p.y);
-    }
-
-    const rangeX = maxX - minX;
-    const rangeY = maxY - minY;
-    const range = Math.max(rangeX, rangeY);
-
-    const normalizedPoints = rawPoints.map(p => ({
-      x: (p.x - minX) / range * 0.7 + 0.15,
-      y: (p.y - minY) / range * 0.7 + 0.15
-    }));
-
-    const symmetry = this.calculateSymmetry(normalizedPoints);
-    const spread = Math.max(rangeX, rangeY) / Math.min(rangeX, rangeY);
-
-    const strategies = ['mst', 'nearest', 'triangulation', 'chain'];
-    const strategy = strategies[Math.floor(this.rng() * strategies.length)];
-
-    const edges = this.generateEdges(normalizedPoints, strategy);
-
-    const connected = new Set();
-    const adj = Array.from({ length: pointCount }, () => []);
-    for (const [a, b] of edges) {
-      adj[a].push(b);
-      adj[b].push(a);
-    }
-
-    const queue = [0];
-    connected.add(0);
-    while (queue.length > 0) {
-      const curr = queue.shift();
-      for (const neighbor of adj[curr]) {
-        if (!connected.has(neighbor)) {
-          connected.add(neighbor);
-          queue.push(neighbor);
-        }
-      }
-    }
-
-    if (connected.size < pointCount) {
-      const mstEdges = this.generateEdges(normalizedPoints, 'mst');
-      for (const edge of mstEdges) {
-        const exists = edges.some(e => e[0] === edge[0] && e[1] === edge[1]);
-        if (!exists) edges.push(edge);
-      }
-    }
-
-    const name = this.generateName(pointCount, edges.length, symmetry, spread);
-
-    return {
-      n: pointCount,
-      pts: normalizedPoints.map(p => [p.x, p.y]),
-      edges: edges,
-      name: name,
-      seed: this.seed
-    };
-  }
-};
-
-const CLASSIC_SHAPES=[
-  {n:3,pts:[[.5,.12],[.16,.84],[.84,.84]],                              edges:[[0,1],[1,2],[2,0]],            name:'Triangle'},
-  {n:4,pts:[[.1,.5],[.37,.5],[.63,.5],[.9,.5]],                        edges:[[0,1],[1,2],[2,3]],             name:'Line'},
-  {n:4,pts:[[.22,.18],[.22,.5],[.22,.82],[.65,.82]],                    edges:[[0,1],[1,2],[2,3]],             name:'Gamma'},
-  {n:4,pts:[[.5,.08],[.88,.5],[.5,.92],[.12,.5]],                       edges:[[0,1],[1,2],[2,3],[3,0]],       name:'Diamond'},
-  {n:5,pts:[[.5,.1],[.5,.48],[.18,.48],[.82,.48],[.5,.9]],              edges:[[0,1],[2,1],[1,3],[1,4]],       name:'Cross'},
-  {n:6,pts:[[.1,.8],[.28,.57],[.46,.62],[.64,.47],[.72,.27],[.9,.1]],   edges:[[0,1],[1,2],[2,3],[3,4],[4,5]], name:'Dipper'},
-  {n:5,pts:[[.1,.78],[.28,.36],[.5,.16],[.72,.36],[.9,.78]],            edges:[[0,1],[1,2],[2,3],[3,4]],       name:'Arc'},
-  {n:4,pts:[[.18,.18],[.82,.18],[.82,.82],[.18,.82]],                   edges:[[0,1],[1,2],[2,3],[3,0]],       name:'Square'},
-  {n:4,pts:[[.5,.84],[.5,.5],[.22,.2],[.78,.2]],                        edges:[[0,1],[1,2],[1,3]],             name:'Y'},
-  {n:5,pts:[[.5,.08],[.84,.34],[.7,.76],[.3,.76],[.16,.34]],            edges:[[0,1],[1,2],[2,3],[3,4],[4,0]], name:'Pentagon'},
-  {n:6,pts:[[.5,.06],[.86,.28],[.86,.72],[.5,.94],[.14,.72],[.14,.28]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]],name:'Hexagon'},
-  {n:4,pts:[[.15,.18],[.85,.18],[.15,.82],[.85,.82]],                   edges:[[0,1],[1,2],[2,3]],             name:'Z'},
-  {n:6,pts:[[.5,.1],[.82,.32],[.72,.72],[.28,.72],[.18,.32],[.5,.52]],  edges:[[0,1],[1,2],[2,3],[3,4],[4,0],[0,5]],name:'Crown'},
+// Reading positions
+const POSITIONS = [
+  { label:"I · Past", sub:"What brought you here", color:[126,184,232] },
+  { label:"II · Present", sub:"Where you stand now", color:[212,175,55] },
+  { label:"III · Path", sub:"Where you are called", color:[240,128,60] }
 ];
 
-// ── Canvas / state ────────────────────────────────────────────────────────────
-const cv  =document.getElementById('sky');
-const ctx =cv.getContext('2d');
-const rcv =document.getElementById('ref-canvas');
-const rctx=rcv.getContext('2d');
-let W,H,T=0;
-let bgStars=[],shoots=[],particles=[],milkyWayParticles=[];
-let field=[],targetIdxs=[],tapped=[];
-let curPKey,curSoul,curShape,curAngle,curMirror;
-let roundActive=false,roundDone=false,gameStarted=false;
-let hintTimer=0;
-let hintCooldown=0;
-let hintParticles=[];
+// Soul system (for visual flavor)
+const PKEYS = ['micheal','gabriel','ariel','seraphina'];
+const PS = {
+  micheal: { name:'Micheal', role:'The Anchor', rgb:[212,175,55], hex:'#D4AF37' },
+  gabriel: { name:'Gabriel', role:'The Examiner', rgb:[126,184,232], hex:'#7eb8e8' },
+  ariel: { name:'Ariel', role:'The Space-Holder', rgb:[212,160,200], hex:'#d4a0c8' },
+  seraphina: { name:'Seraphina', role:'The Architect', rgb:[240,208,128], hex:'#f0d080' }
+};
 
-// ── Persistence ───────────────────────────────────────────────────────────────
-function loadU(){const s=localStorage.getItem('axium_unlocked');return s?JSON.parse(s):{micheal:[],gabriel:[],ariel:[],seraphina:[]};}
-function saveU(u){localStorage.setItem('axium_unlocked',JSON.stringify(u));}
-function loadN(){return parseInt(localStorage.getItem('axium_constellation_count')||'0');}
-function saveN(n){localStorage.setItem('axium_constellation_count',String(n));}
-let unlocked=loadU(), foundCount=loadN();
+// Synthesis templates
+const SYNTHESES = [
+  (p,pr,pa) => `The ${p.name} carries a wound still speaking — ${p.meaning.split('.')[0].toLowerCase()}. In this moment, ${pr.name} asks you to hold what is true. The path forward is ${pa.name}: ${pa.meaning.split('.')[0].toLowerCase()}.`,
+  (p,pr,pa) => `From ${p.name}, something was learned that cannot be unlearned. Now, ${pr.name} holds the center of the reading — a threshold. The cathedral says your path is ${pa.name}.`,
+  (p,pr,pa) => `${p.name} in the past position speaks of the root. What is present — ${pr.name} — reveals the shape of now. Follow the stars toward ${pa.name}: the way has always been forward.`,
+  (p,pr,pa) => `The sky remembers ${p.name}. You stand inside ${pr.name}. What comes is ${pa.name} — not as destination, but as invitation.`,
+  (p,pr,pa) => `${p.name} shaped the seeker. ${pr.name} is the crucible. ${pa.name} is the flame that does not consume — it illuminates.`,
+];
 
-function pickWord(pk){
-  const m=WM[pk],have=unlocked[pk]||[];
-  for(const w of[...m.tier2,...m.tier3,...m.tier4,...m.rare]){
-    if(!have.includes(w)&&!m.tier1.includes(w))return w;
+// ── CANVAS / STATE ──────────────────────────────────────────────────────────
+const cv = document.getElementById('sky');
+const ctx = cv.getContext('2d');
+const rcv = document.getElementById('ref-canvas');
+const rctx = rcv.getContext('2d');
+
+let W, H, T = 0;
+let bgStars = [], shoots = [], particles = [], milkyWayParticles = [];
+let field = [], targetIdxs = [], tapped = [];
+let curPKey, curSoul, curCard, curAngle, curMirror;
+let roundActive = false, roundDone = false, gameStarted = false;
+let hintTimer = 0, hintCooldown = 0, hintParticles = [];
+
+// Reading state
+let readingCards = []; // 3 cards for this reading
+let currentPosition = 0; // 0, 1, or 2
+let readingComplete = false;
+let shuffledDeck = [];
+let deckIndex = 0;
+
+function shuffleDeck() {
+  shuffledDeck = [...ALL_CARDS];
+  for (let i = shuffledDeck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
   }
-  return null;
-}
-function doUnlock(pk,w){
-  if(!unlocked[pk])unlocked[pk]=[];
-  if(!unlocked[pk].includes(w)){unlocked[pk].push(w);saveU(unlocked);}
-}
-function showHint(){
-  if(!roundActive || roundDone) return;
-  if(hintCooldown > 0) return;
-  hintTimer = 180;
-  hintCooldown = 600;
-
-  // Create opaque hint particles around each target star
-  hintParticles = [];
-  targetIdxs.forEach(idx => {
-    const star = field[idx];
-    if (!star.tapped) {
-      // Create 3-4 orbiting particles per target
-      const particleCount = 3 + Math.floor(Math.random() * 2);
-      for (let i = 0; i < particleCount; i++) {
-        hintParticles.push({
-          starIndex: idx,
-          angle: (Math.PI * 2 / particleCount) * i + Math.random() * 0.5,
-          radius: 25 + Math.random() * 15,
-          speed: 0.02 + Math.random() * 0.02,
-          size: 2 + Math.random() * 2,
-          alpha: 0.6 + Math.random() * 0.3
-        });
-      }
-    }
-  });
-
-  const btn = document.getElementById('help-btn');
-  btn.classList.add('cooldown');
 }
 
-// ── Star Color Generation ────────────────────────────────────────────────────
+function getNextCard() {
+  if (deckIndex >= shuffledDeck.length) { deckIndex = 0; shuffleDeck(); }
+  return shuffledDeck[deckIndex++];
+}
+
+// ── COLOR HELPERS ─────────────────────────────────────────────────────────
 function generateStarColor(baseRgb, variation = 0.15) {
-  // Create slight temperature variations
-  const tempShift = (Math.random() - 0.5) * variation;
-  const r = Math.min(255, Math.max(0, baseRgb[0] + baseRgb[0] * tempShift));
-  const g = Math.min(255, Math.max(0, baseRgb[1] + baseRgb[1] * tempShift * 0.8));
-  const b = Math.min(255, Math.max(0, baseRgb[2] + baseRgb[2] * tempShift * 1.2));
-  return [Math.floor(r), Math.floor(g), Math.floor(b)];
+  const ts = (Math.random() - 0.5) * variation;
+  return [Math.min(255,Math.max(0,baseRgb[0]+baseRgb[0]*ts)),Math.min(255,Math.max(0,baseRgb[1]+baseRgb[1]*ts*0.8)),Math.min(255,Math.max(0,baseRgb[2]+baseRgb[2]*ts*1.2))].map(Math.floor);
 }
-
 function generateBackgroundStarColor() {
-  // Slight blue-white to yellow-white variations
-  const temp = Math.random();
-  if (temp < 0.3) {
-    // Cool blue-white
-    return [200 + Math.random() * 55, 210 + Math.random() * 45, 255];
-  } else if (temp < 0.7) {
-    // Neutral white
-    return [240 + Math.random() * 15, 240 + Math.random() * 15, 255];
-  } else {
-    // Warm yellow-white
-    return [255, 240 + Math.random() * 15, 200 + Math.random() * 55];
-  }
+  const t = Math.random();
+  if (t < 0.3) return [200+Math.random()*55, 210+Math.random()*45, 255];
+  if (t < 0.7) return [240+Math.random()*15, 240+Math.random()*15, 255];
+  return [255, 240+Math.random()*15, 200+Math.random()*55];
 }
 
-// ── RNG ───────────────────────────────────────────────────────────────────────
-function lcg(s){let v=s;return()=>{v=(v*1664525+1013904223)&0xffffffff;return(v>>>0)/0xffffffff;};}
-
-// ── Milky Way Background ──────────────────────────────────────────────────────
+// ── MILKY WAY ─────────────────────────────────────────────────────────────
 function initMilkyWay() {
   milkyWayParticles = [];
-  const count = 400;
-  const centerX = W * 0.5;
-  const centerY = H * 0.6;
-
-  for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    // Elliptical distribution
-    const r = Math.random() * Math.max(W, H) * 0.8;
-    const x = centerX + Math.cos(angle) * r * 1.5;
-    const y = centerY + Math.sin(angle) * r * 0.4;
-
-    milkyWayParticles.push({
-      x: x,
-      y: y,
-      baseX: x,
-      baseY: y,
-      angle: angle,
-      radius: r,
-      size: 0.5 + Math.random() * 1.5,
-      alpha: 0.1 + Math.random() * 0.3,
-      twinkleSpeed: 0.3 + Math.random() * 0.7,
-      twinklePhase: Math.random() * Math.PI * 2,
-      color: generateBackgroundStarColor()
-    });
+  for (let i = 0; i < 400; i++) {
+    const angle = Math.random() * Math.PI * 2, r = Math.random() * Math.max(W,H) * 0.8;
+    milkyWayParticles.push({ x:W*.5+Math.cos(angle)*r*1.5, y:H*.6+Math.sin(angle)*r*.4, angle, radius:r, size:.5+Math.random()*1.5, alpha:.1+Math.random()*.25, twinkleSpeed:.3+Math.random()*.7, twinklePhase:Math.random()*Math.PI*2, color:generateBackgroundStarColor() });
   }
 }
-
 function drawMilkyWay() {
-  const centerX = W * 0.5;
-  const centerY = H * 0.6;
-  const rotationSpeed = 0.0002;
-
   milkyWayParticles.forEach(p => {
-    // Rotate around galactic center
-    p.angle += rotationSpeed;
-    p.x = centerX + Math.cos(p.angle) * p.radius * 1.5;
-    p.y = centerY + Math.sin(p.angle) * p.radius * 0.4;
-
-    // Twinkle effect
-    const twinkle = 0.5 + 0.5 * Math.sin(T * p.twinkleSpeed + p.twinklePhase);
-    const alpha = p.alpha * twinkle;
-
-    // Draw with glow
-    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
-    g.addColorStop(0, `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha})`);
-    g.addColorStop(0.5, `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha * 0.5})`);
-    g.addColorStop(1, `rgba(${p.color[0]},${p.color[1]},${p.color[2]},0)`);
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Core
-    ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha * 1.5})`;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
+    p.angle += 0.0001;
+    p.x = W*.5+Math.cos(p.angle)*p.radius*1.5;
+    p.y = H*.6+Math.sin(p.angle)*p.radius*.4;
+    const tw = .5+.5*Math.sin(T*p.twinkleSpeed+p.twinklePhase);
+    const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*3);
+    g.addColorStop(0,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.alpha*tw})`);
+    g.addColorStop(.5,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.alpha*tw*.4})`);
+    g.addColorStop(1,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2); ctx.fill();
   });
 }
 
-// ── Background stars ───────────────────────────────────────────────────────────
-function makeBg(){
+// ── BACKGROUND STARS ──────────────────────────────────────────────────────
+function lcg(s){ let v=s; return ()=>{ v=(v*1664525+1013904223)&0xffffffff; return (v>>>0)/0xffffffff; }; }
+function makeBg() {
   const r=lcg(42);
-  return Array.from({length:300},()=>{
-    const color = generateBackgroundStarColor();
-    return{
-      x:r()*W, y:r()*H,
-      rad:0.4+r()*1.5,
-      mag:r(),
-      ph:r()*Math.PI*2,
-      spd:0.2+r()*0.45,
-      color: color,
-      twinkleSpeed: 0.5 + r() * 1.0
-    };
-  });
+  return Array.from({length:280},()=>({ x:r()*W, y:r()*H, rad:.4+r()*1.4, mag:r(), ph:r()*Math.PI*2, spd:.2+r()*.45, color:generateBackgroundStarColor(), twinkleSpeed:.5+r()*.8 }));
 }
-
-function drawBg(){
-  bgStars.forEach(s=>{
-    // Twinkle calculation
-    const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(s.ph + T * s.twinkleSpeed));
-    const b=s.rad, gR=b*(2.6+twinkle*1.8);
-
-    // Outer halo
+function drawBg() {
+  bgStars.forEach(s => {
+    const tw=.3+.7*Math.abs(Math.sin(s.ph+T*s.twinkleSpeed));
+    const b=s.rad, gR=b*(2.5+tw*1.6);
     const h1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2.2);
-    h1.addColorStop(0,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(0.08*twinkle).toFixed(3)})`);
+    h1.addColorStop(0,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(.07*tw).toFixed(3)})`);
     h1.addColorStop(1,'rgba(200,215,255,0)');
-    ctx.fillStyle=h1;ctx.beginPath();ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2);ctx.fill();
-
-    // Inner glow
+    ctx.fillStyle=h1; ctx.beginPath(); ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2); ctx.fill();
     const h2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR);
-    h2.addColorStop(0,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(0.92*twinkle).toFixed(2)})`);
-    h2.addColorStop(0.22,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(0.55*twinkle).toFixed(2)})`);
+    h2.addColorStop(0,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(.9*tw).toFixed(2)})`);
     h2.addColorStop(1,'rgba(200,215,255,0)');
-    ctx.fillStyle=h2;ctx.beginPath();ctx.arc(s.x,s.y,gR,0,Math.PI*2);ctx.fill();
-
-    // Core
-    ctx.beginPath();ctx.arc(s.x,s.y,b,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${(0.96*twinkle).toFixed(2)})`;ctx.fill();
-
-    // Spike rays on mag>0.5 stars
-    if(s.mag>0.5){
-      [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
-        const sl=gR*1.7;
-        const sg=ctx.createLinearGradient(s.x,s.y,s.x+dx*sl,s.y+dy*sl);
-        sg.addColorStop(0,`rgba(${s.color[0]},${s.color[1]},${s.color[2]},${(0.18*twinkle).toFixed(2)})`);
-        sg.addColorStop(1,'rgba(255,255,255,0)');
-        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=0.7;
-        ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+dx*sl,s.y+dy*sl);ctx.stroke();
-      });
-    }
+    ctx.fillStyle=h2; ctx.beginPath(); ctx.arc(s.x,s.y,gR,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s.x,s.y,b,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(.94*tw).toFixed(2)})`; ctx.fill();
   });
 }
 
-// ── Shooting stars ───────────────────────────────────────────────────────────
-function spawnShoot(){
-  const rgb=curSoul?curSoul.rgb:[212,175,55];
-  // Random direction anywhere on circle
-  const ang = Math.random() * Math.PI * 2;
-  const spd = 4 + Math.random() * 6;
-  // Spawn from edges based on direction
-  let x, y;
-  if (Math.random() > 0.5) {
-    x = Math.random() < 0.5 ? -50 : W + 50;
-    y = Math.random() * H;
-  } else {
-    x = Math.random() * W;
-    y = Math.random() < 0.5 ? -50 : H + 50;
-  }
-
-  shoots.push({
-    x: x, y: y,
-    vx: Math.cos(ang) * spd,
-    vy: Math.sin(ang) * spd,
-    len: 60 + Math.random() * 100,
-    a: 0.8 + Math.random() * 0.2,
-    rgb: rgb,
-    width: 1 + Math.random() * 1.5
-  });
+// ── SHOOTING STARS ────────────────────────────────────────────────────────
+let shootList = [];
+function spawnShoot() {
+  const rgb = curSoul ? curSoul.rgb : [212,175,55];
+  const ang = Math.random()*Math.PI*2, spd = 4+Math.random()*6;
+  let x = Math.random()>.5 ? (Math.random()<.5 ? -50 : W+50) : Math.random()*W;
+  let y = Math.random()>.5 ? (Math.random()<.5 ? -50 : H+50) : Math.random()*H;
+  shootList.push({ x, y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, len:60+Math.random()*90, a:.7+Math.random()*.2, rgb, width:1+Math.random()*1.5 });
 }
-
-// Initial shooting star
 spawnShoot();
-setInterval(()=>{if(Math.random()<0.4)spawnShoot();},4000);
-
-function drawShoots(){
+setInterval(()=>{ if(Math.random()<.35) spawnShoot(); }, 4500);
+function drawShoots() {
   const keep=[];
-  shoots.forEach(ss=>{
-    if(ss.a<=0.02)return;
-    const tailX = ss.x - ss.vx * (ss.len / 10);
-    const tailY = ss.y - ss.vy * (ss.len / 10);
-
-    const gd=ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
+  shootList.forEach(ss => {
+    if(ss.a<=.02) return;
+    const tailX=ss.x-ss.vx*(ss.len/10), tailY=ss.y-ss.vy*(ss.len/10);
+    const gd=ctx.createLinearGradient(ss.x,ss.y,tailX,tailY);
     gd.addColorStop(0,`rgba(${ss.rgb.join(',')},${ss.a.toFixed(2)})`);
-    gd.addColorStop(0.3,`rgba(${ss.rgb.join(',')},${(ss.a * 0.5).toFixed(2)})`);
     gd.addColorStop(1,`rgba(${ss.rgb.join(',')},0)`);
-
-    ctx.beginPath();
-    ctx.strokeStyle=gd;
-    ctx.lineWidth=ss.width;
-    ctx.moveTo(ss.x, ss.y);
-    ctx.lineTo(tailX, tailY);
-    ctx.stroke();
-
-    // Head glow
-    const headGlow = ctx.createRadialGradient(ss.x, ss.y, 0, ss.x, ss.y, 6);
-    headGlow.addColorStop(0, `rgba(255,255,255,${ss.a})`);
-    headGlow.addColorStop(0.5, `rgba(${ss.rgb.join(',')},${ss.a * 0.8})`);
-    headGlow.addColorStop(1, `rgba(${ss.rgb.join(',')},0)`);
-    ctx.fillStyle = headGlow;
-    ctx.beginPath();
-    ctx.arc(ss.x, ss.y, 6, 0, Math.PI * 2);
-    ctx.fill();
-
-    ss.x += ss.vx;
-    ss.y += ss.vy;
-    ss.a -= 0.008;
-    keep.push(ss);
+    ctx.beginPath(); ctx.strokeStyle=gd; ctx.lineWidth=ss.width; ctx.moveTo(ss.x,ss.y); ctx.lineTo(tailX,tailY); ctx.stroke();
+    ss.x+=ss.vx; ss.y+=ss.vy; ss.a-=.008; keep.push(ss);
   });
-  shoots.splice(0, shoots.length, ...keep);
+  shootList.splice(0,shootList.length,...keep);
 }
 
-// ── Round ─────────────────────────────────────────────────────────────────────
-function generateRound(){
-  tapped=[];roundDone=false;roundActive=false;
-  hintParticles = [];
-  document.getElementById('next-btn').style.display='none';
-  curPKey=PKEYS[Math.floor(Math.random()*4)];
-  curSoul=PS[curPKey];
+// ── ROUND GENERATION ──────────────────────────────────────────────────────
+function generateRound() {
+  tapped=[]; roundDone=false; roundActive=false; hintParticles=[];
+  curPKey = PKEYS[Math.floor(Math.random()*4)];
+  curSoul = PS[curPKey];
+  curCard = readingCards[currentPosition];
+  curAngle = Math.random()*Math.PI*2;
+  curMirror = Math.random()>.5;
+  buildField(); drawRef(); buildDots(); updateHUD();
+  roundActive = true;
 
-  const useProcedural = Math.random() > 0.3;
-  if (useProcedural) {
-    const seed = Date.now() + Math.floor(Math.random() * 1000000);
-    curShape = ConstellationGenerator.generate(seed);
-  } else {
-    const maxI=Math.min(CLASSIC_SHAPES.length-1,2+Math.floor(foundCount/4));
-    curShape=CLASSIC_SHAPES[Math.floor(Math.random()*(maxI+1))];
-  }
-
-  curAngle=Math.random()*Math.PI*2;
-  curMirror=Math.random()>0.5;
-  buildField();drawRef();buildDots();updateHUD();
-  roundActive=true;
-}
-
-function buildField(){
-  const mg=70,topY=60,botY=H-155;
-  const pW=W-mg*2,pH=botY-topY;
-  const sp=Math.min(pW,pH)*(0.26+Math.random()*0.18);
-  const cx=mg+sp*0.5+Math.random()*Math.max(0,pW-sp);
-  const cy=topY+sp*0.5+Math.random()*Math.max(0,pH-sp);
-  const cos=Math.cos(curAngle),sin=Math.sin(curAngle);
-
-  const tgts=curShape.pts.map(([px,py],i)=>{
-    let nx=px-0.5,ny=py-0.5;if(curMirror)nx=-nx;
-    const color = generateStarColor(curSoul.rgb, 0.2);
-    return{
-      x:cx+(nx*cos-ny*sin)*sp,
-      y:cy+(nx*sin+ny*cos)*sp,
-      isT:true,
-      seq:i,
-      mag:0.5+Math.random()*0.5,
-      ph:Math.random()*Math.PI*2,
-      spd:0.5+Math.random()*0.8,
-      tapped:false,
-      wp:0,
-      cp:0,
-      color: color,
-      orbitParticles: [],
-      hasOrbit: i === 0 // First star starts with orbit
-    };
+  // Update positions HUD
+  document.querySelectorAll('.pos-slot').forEach((el,i)=>{
+    el.classList.remove('active','complete');
+    if(i < currentPosition) el.classList.add('complete');
+    if(i === currentPosition) el.classList.add('active');
   });
 
-  const nd=22+Math.floor(foundCount*1.8), md=Math.min(pW,pH)*0.05;
-  const dec=[];let att=0;
-  while(dec.length<nd&&att<5000){
+  // Update ref label
+  document.getElementById('ref-pos-lbl').textContent = POSITIONS[currentPosition].label;
+
+  // Update stars counter
+  document.getElementById('stars-remain').textContent = curCard.constellation.n;
+}
+
+function buildField() {
+  const mg=65, topY=85, botY=H-140;
+  const pW=W-mg*2, pH=botY-topY;
+  const sp=Math.min(pW,pH)*(.26+Math.random()*.18);
+  const cx=mg+sp*.5+Math.random()*Math.max(0,pW-sp);
+  const cy=topY+sp*.5+Math.random()*Math.max(0,pH-sp);
+  const cos=Math.cos(curAngle), sin=Math.sin(curAngle);
+  const posColor = POSITIONS[currentPosition].color;
+
+  const tgts = curCard.constellation.pts.map(([px,py],i)=>{
+    let nx=px-.5, ny=py-.5;
+    if(curMirror) nx=-nx;
+    const color = generateStarColor(posColor, .2);
+    return { x:cx+(nx*cos-ny*sin)*sp, y:cy+(nx*sin+ny*cos)*sp, isT:true, seq:i, mag:.5+Math.random()*.5, ph:Math.random()*Math.PI*2, spd:.5+Math.random()*.8, tapped:false, wp:0, cp:0, color, orbitParticles:[], hasOrbit:i===0 };
+  });
+
+  const nd=20+Math.floor(currentPosition*5), md=Math.min(pW,pH)*.05;
+  const dec=[]; let att=0;
+  while(dec.length<nd && att<5000) {
     att++;
     const dx=mg+Math.random()*pW, dy=topY+Math.random()*pH;
-    if(tgts.every(t=>Math.hypot(t.x-dx,t.y-dy)>md)&&dec.every(d=>Math.hypot(d.x-dx,d.y-dy)>md*0.6)) {
-      const color = generateBackgroundStarColor();
-      dec.push({
-        x:dx,
-        y:dy,
-        isT:false,
-        seq:-1,
-        mag:0.1+Math.random()*0.4,
-        ph:Math.random()*Math.PI*2,
-        spd:0.3+Math.random()*0.7,
-        tapped:false,
-        wp:0,
-        cp:0,
-        color: color
-      });
+    if(tgts.every(t=>Math.hypot(t.x-dx,t.y-dy)>md) && dec.every(d=>Math.hypot(d.x-dx,d.y-dy)>md*.6)) {
+      dec.push({ x:dx, y:dy, isT:false, seq:-1, mag:.1+Math.random()*.4, ph:Math.random()*Math.PI*2, spd:.3+Math.random()*.7, tapped:false, wp:0, cp:0, color:generateBackgroundStarColor() });
     }
   }
 
-  field=[...tgts,...dec].sort(()=>Math.random()-0.5);
-  targetIdxs=field.reduce((a,s,i)=>{if(s.isT)a.push(i);return a;},[]);
-  targetIdxs.sort((a,b)=>field[a].seq-field[b].seq);
-
-  // Initialize orbit particles for the first star
-  const firstStar = field[targetIdxs[0]];
-  if (firstStar) {
-    initOrbitParticles(firstStar);
-  }
+  field=[...tgts,...dec].sort(()=>Math.random()-.5);
+  targetIdxs=field.reduce((a,s,i)=>{ if(s.isT) a.push(i); return a; },[]).sort((a,b)=>field[a].seq-field[b].seq);
+  if(field[targetIdxs[0]]) initOrbitParticles(field[targetIdxs[0]]);
 }
 
 function initOrbitParticles(star) {
-  star.orbitParticles = [];
-  const count = 3;
-  for (let i = 0; i < count; i++) {
-    star.orbitParticles.push({
-      angle: (Math.PI * 2 / count) * i,
-      radius: 18 + Math.random() * 8,
-      speed: 0.03 + Math.random() * 0.02,
-      size: 1.5 + Math.random() * 1.5,
-      color: star.color
-    });
+  star.orbitParticles=[];
+  const posColor = POSITIONS[currentPosition].color;
+  for(let i=0;i<3;i++) {
+    star.orbitParticles.push({ angle:(Math.PI*2/3)*i, radius:18+Math.random()*8, speed:.03+Math.random()*.02, size:1.5+Math.random()*1.5, color:generateStarColor(posColor,.1) });
   }
-  star.hasOrbit = true;
+  star.hasOrbit=true;
 }
 
-// ── Reference canvas ──────────────────────────────────────────────────────────
-function drawRef(){
-  const tw=rcv.width,th=rcv.height;
+// ── REFERENCE CANVAS ──────────────────────────────────────────────────────
+function drawRef() {
+  const tw=rcv.width, th=rcv.height;
   rctx.clearRect(0,0,tw,th);
-  const cx=tw/2,cy=th/2,sc=Math.min(tw,th)*0.36;
-  const cos=Math.cos(curAngle),sin=Math.sin(curAngle);
-  const[R,G,B]=curSoul.rgb;
-  const pts=curShape.pts.map(([px,py])=>{
-    let nx=px-0.5,ny=py-0.5;if(curMirror)nx=-nx;
-    return{x:cx+(nx*cos-ny*sin)*sc,y:cy+(nx*sin+ny*cos)*sc};
+  const cx=tw/2, cy=th/2, sc=Math.min(tw,th)*.36;
+  const cos=Math.cos(curAngle), sin=Math.sin(curAngle);
+  const posColor = POSITIONS[currentPosition].color;
+  const [R,G,B]=posColor;
+  const con = curCard.constellation;
+  const pts=con.pts.map(([px,py])=>{
+    let nx=px-.5, ny=py-.5;
+    if(curMirror) nx=-nx;
+    return { x:cx+(nx*cos-ny*sin)*sc, y:cy+(nx*sin+ny*cos)*sc };
   });
-  rctx.strokeStyle=`rgba(${R},${G},${B},.5)`;rctx.lineWidth=1.2;
-  curShape.edges.forEach(([a,b])=>{rctx.beginPath();rctx.moveTo(pts[a].x,pts[a].y);rctx.lineTo(pts[b].x,pts[b].y);rctx.stroke();});
+  rctx.strokeStyle=`rgba(${R},${G},${B},.5)`; rctx.lineWidth=1.2;
+  con.edges.forEach(([a,b])=>{ rctx.beginPath(); rctx.moveTo(pts[a].x,pts[a].y); rctx.lineTo(pts[b].x,pts[b].y); rctx.stroke(); });
   pts.forEach((p,i)=>{
     const g=rctx.createRadialGradient(p.x,p.y,0,p.x,p.y,8);
-    g.addColorStop(0,`rgba(${R},${G},${B},.6)`);g.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    rctx.fillStyle=g;rctx.beginPath();rctx.arc(p.x,p.y,8,0,Math.PI*2);rctx.fill();
-    rctx.beginPath();rctx.arc(p.x,p.y,2.6,0,Math.PI*2);rctx.fillStyle=`rgba(${R},${G},${B},1)`;rctx.fill();
-    rctx.font='bold 7px Space Mono';rctx.textAlign='center';
-    rctx.fillStyle='rgba(255,255,255,.65)';rctx.fillText(i+1,p.x,p.y-5.5);
+    g.addColorStop(0,`rgba(${R},${G},${B},.6)`); g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    rctx.fillStyle=g; rctx.beginPath(); rctx.arc(p.x,p.y,8,0,Math.PI*2); rctx.fill();
+    rctx.beginPath(); rctx.arc(p.x,p.y,2.6,0,Math.PI*2);
+    rctx.fillStyle=`rgba(${R},${G},${B},1)`; rctx.fill();
+    rctx.font='bold 7px Space Mono'; rctx.textAlign='center';
+    rctx.fillStyle='rgba(255,255,255,.65)'; rctx.fillText(i+1,p.x,p.y-5.5);
   });
 }
 
-function buildDots(){
-  const row=document.getElementById('progress-dots');row.innerHTML='';
-  for(let i=0;i<curShape.n;i++){
-    const d=document.createElement('div');d.className='pdot';d.id='pd'+i;
-    d.style.setProperty('--c',curSoul.hex);row.appendChild(d);
+function buildDots() {
+  const row=document.getElementById('progress-dots'); row.innerHTML='';
+  const posColor=POSITIONS[currentPosition].color;
+  const hexColor='#'+posColor.map(x=>x.toString(16).padStart(2,'0')).join('');
+  for(let i=0;i<curCard.constellation.n;i++){
+    const d=document.createElement('div'); d.className='pdot'; d.id='pd'+i;
+    d.style.setProperty('--c',hexColor);
+    row.appendChild(d);
   }
 }
-function updateHUD(){
+
+function updateHUD() {
   const pl=document.getElementById('persona-lbl');
-  pl.textContent=curSoul.name+' · '+curSoul.role;pl.style.color=curSoul.hex+'99';
-  document.getElementById('shape-lbl').textContent=curShape.name;
-  document.getElementById('found-count').textContent=foundCount>0?foundCount+' found':'';
+  pl.textContent=curCard.name;
+  const posColor=POSITIONS[currentPosition].color;
+  pl.style.color='#'+posColor.map(x=>x.toString(16).padStart(2,'0')).join('')+'aa';
+  document.getElementById('shape-lbl').textContent=curCard.type==='major' ? 'Major Arcana' : (curCard.suit||'').toUpperCase();
 }
 
-// ── Tap ───────────────────────────────────────────────────────────────────────
-function handleTap(e){
-  if(!gameStarted||!roundActive||roundDone)return;
-  const rect=cv.getBoundingClientRect();
-  const tx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
-  const ty=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
-  const tapR=Math.max(44,Math.min(W,H)*0.06);
-  let best=-1,bestD=Infinity;
-  field.forEach((s,i)=>{
-    if(s.tapped)return;
-    const d=Math.hypot(s.x-tx,s.y-ty);
-    if(d<tapR&&d<bestD){best=i;bestD=d;}
-  });
-  if(best===-1)return;
-  const exp=targetIdxs[tapped.length];
-  if(best===exp){
-    const s=field[best];s.tapped=true;s.cp=1;tapped.push(best);
-
-    // Add orbit particles to this star
-    initOrbitParticles(s);
-
-    burstAt(s.x,s.y,s.color,24);
-    const pd=document.getElementById('pd'+(tapped.length-1));if(pd)pd.classList.add('hit');
-    if(tapped.length===curShape.n)onComplete();
-  }else{
-    field[best].wp=14;
-    const wf=document.getElementById('wrong-flash');wf.style.opacity='1';setTimeout(()=>wf.style.opacity='0',230);
-  }
-}
-
-// ── Complete ──────────────────────────────────────────────────────────────────
-function onComplete(){
-  roundDone=true;roundActive=false;
-  foundCount++;saveN(foundCount);
-  targetIdxs.forEach(i=>burstAt(field[i].x,field[i].y,curSoul.rgb,32));
-  const[R,G,B]=curSoul.rgb;
-  const cf=document.getElementById('complete-flash');
-  cf.style.background=`radial-gradient(ellipse at center,rgba(${R},${G},${B},.22) 0%,transparent 65%)`;
-  cf.style.opacity='1';setTimeout(()=>cf.style.opacity='0',1400);
-
-  const iv=Math.max(1,Math.floor(foundCount/6));
-  let pw=null;
-  if(foundCount%iv===0){
-    pw=pickWord(curPKey);
-    if(pw){
-      doUnlock(curPKey,pw);
-      const uf=document.getElementById('unlock-flash');uf.textContent=pw;uf.classList.add('show');
-      setTimeout(()=>uf.classList.remove('show'),4200);
+// ── HINT SYSTEM ───────────────────────────────────────────────────────────
+function showHint() {
+  if(!roundActive||roundDone) return;
+  if(hintCooldown>0) return;
+  hintTimer=180; hintCooldown=600;
+  hintParticles=[];
+  const posColor=POSITIONS[currentPosition].color;
+  targetIdxs.forEach(idx=>{
+    const star=field[idx];
+    if(!star.tapped) {
+      for(let i=0;i<3+Math.floor(Math.random()*2);i++) {
+        hintParticles.push({ starIndex:idx, angle:(Math.PI*2/4)*i+Math.random()*.5, radius:25+Math.random()*15, speed:.02+Math.random()*.02, size:2+Math.random()*2, alpha:.6+Math.random()*.3, color:posColor });
+      }
     }
-  }
-
-  document.getElementById('found-count').textContent=foundCount+' found';
-  setTimeout(()=>{
-    const nb=document.getElementById('next-btn');nb.style.display='flex';
-    const nw=document.getElementById('next-unlock-word');
-    nw.textContent=pw?'"'+pw+'" unlocked in '+curSoul.name:'';
-    nw.style.color=curSoul.hex+'cc';
-  },900);
+  });
+  document.getElementById('help-btn').classList.add('cooldown');
+  setTimeout(()=>document.getElementById('help-btn').classList.remove('cooldown'), 10000);
 }
-function nextRound(){generateRound();}
 
-// ── Particles ─────────────────────────────────────────────────────────────────
-function burstAt(x,y,rgb,n){
+// ── PARTICLES ─────────────────────────────────────────────────────────────
+function burstAt(x,y,rgb,n) {
   for(let i=0;i<n;i++){
-    const a=Math.random()*Math.PI*2,sp=0.8+Math.random()*4;
-    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:0.018+Math.random()*0.025,r:0.5+Math.random()*2,rgb});
+    const a=Math.random()*Math.PI*2, sp=.8+Math.random()*4;
+    particles.push({ x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:.018+Math.random()*.025,r:.5+Math.random()*2,rgb });
   }
 }
-function tickP(){
-  particles=particles.filter(p=>p.life>0.02);
+function tickP() {
+  particles=particles.filter(p=>p.life>.02);
   particles.forEach(p=>{
-    p.x+=p.vx;p.y+=p.vy;p.vx*=0.92;p.vy*=0.92;p.life-=p.dec;
-    const[R,G,B]=p.rgb;ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
-    ctx.fillStyle=`rgba(${R},${G},${B},${p.life.toFixed(2)})`;ctx.fill();
+    p.x+=p.vx; p.y+=p.vy; p.vx*=.92; p.vy*=.92; p.life-=p.dec;
+    const [R,G,B]=p.rgb;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${R},${G},${B},${p.life.toFixed(2)})`; ctx.fill();
   });
 }
 
-// ── Draw Orbit Particles ────────────────────────────────────────────────────
 function drawOrbitParticles(star) {
-  if (!star.hasOrbit || !star.orbitParticles) return;
-
-  star.orbitParticles.forEach(p => {
-    p.angle += p.speed;
-    const px = star.x + Math.cos(p.angle) * p.radius;
-    const py = star.y + Math.sin(p.angle) * p.radius;
-
-    // Glow
-    const g = ctx.createRadialGradient(px, py, 0, px, py, p.size * 3);
-    g.addColorStop(0, `rgba(${p.color[0]},${p.color[1]},${p.color[2]},0.8)`);
-    g.addColorStop(0.5, `rgba(${p.color[0]},${p.color[1]},${p.color[2]},0.4)`);
-    g.addColorStop(1, `rgba(${p.color[0]},${p.color[1]},${p.color[2]},0)`);
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(px, py, p.size * 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Core
-    ctx.fillStyle = `rgba(255,255,255,0.9)`;
-    ctx.beginPath();
-    ctx.arc(px, py, p.size * 0.6, 0, Math.PI * 2);
-    ctx.fill();
+  if(!star.hasOrbit||!star.orbitParticles) return;
+  star.orbitParticles.forEach(p=>{
+    p.angle+=p.speed;
+    const px=star.x+Math.cos(p.angle)*p.radius, py=star.y+Math.sin(p.angle)*p.radius;
+    const g=ctx.createRadialGradient(px,py,0,px,py,p.size*3);
+    g.addColorStop(0,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0.8)`);
+    g.addColorStop(.5,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0.4)`);
+    g.addColorStop(1,`rgba(${p.color[0]},${p.color[1]},${p.color[2]},0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,p.size*3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(px,py,p.size*.6,0,Math.PI*2); ctx.fill();
   });
 }
 
-// ── Draw Hint Particles ──────────────────────────────────────────────────────
 function drawHintParticles() {
-  if (hintParticles.length === 0) return;
-
-  hintParticles.forEach(p => {
-    const star = field[p.starIndex];
-    if (!star || star.tapped) return;
-
-    p.angle += p.speed;
-    const px = star.x + Math.cos(p.angle) * p.radius;
-    const py = star.y + Math.sin(p.angle) * p.radius;
-
-    // Opaque, visible particles
-    const g = ctx.createRadialGradient(px, py, 0, px, py, p.size * 4);
-    g.addColorStop(0, `rgba(${curSoul.rgb[0]},${curSoul.rgb[1]},${curSoul.rgb[2]},${p.alpha})`);
-    g.addColorStop(0.4, `rgba(${curSoul.rgb[0]},${curSoul.rgb[1]},${curSoul.rgb[2]},${p.alpha * 0.6})`);
-    g.addColorStop(1, `rgba(${curSoul.rgb[0]},${curSoul.rgb[1]},${curSoul.rgb[2]},0)`);
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(px, py, p.size * 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Solid core
-    ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
-    ctx.beginPath();
-    ctx.arc(px, py, p.size, 0, Math.PI * 2);
-    ctx.fill();
+  if(!hintParticles.length) return;
+  hintParticles.forEach(p=>{
+    const star=field[p.starIndex];
+    if(!star||star.tapped) return;
+    p.angle+=p.speed;
+    const px=star.x+Math.cos(p.angle)*p.radius, py=star.y+Math.sin(p.angle)*p.radius;
+    const [R,G,B]=p.color||[212,175,55];
+    const g=ctx.createRadialGradient(px,py,0,px,py,p.size*4);
+    g.addColorStop(0,`rgba(${R},${G},${B},${p.alpha})`);
+    g.addColorStop(.4,`rgba(${R},${G},${B},${p.alpha*.5})`);
+    g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,p.size*4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=`rgba(255,255,255,${p.alpha})`; ctx.beginPath(); ctx.arc(px,py,p.size,0,Math.PI*2); ctx.fill();
   });
 }
 
-// ── Draw Connection Lines ────────────────────────────────────────────────────
 function drawConnectionLines() {
-  if (tapped.length < 2) return;
-
-  const[R,G,B]=curSoul.rgb;
-
-  for (let i = 0; i < tapped.length - 1; i++) {
-    const s1 = field[tapped[i]];
-    const s2 = field[tapped[i + 1]];
-
-    // Animated traveling light effect
-    const progress = (T * 2) % 1;
-
-    // Base line
-    const eg=ctx.createLinearGradient(s1.x, s1.y, s2.x, s2.y);
-    eg.addColorStop(0,`rgba(${R},${G},${B},0.3)`);
-    eg.addColorStop(0.5,`rgba(${R},${G},${B},0.6)`);
-    eg.addColorStop(1,`rgba(${R},${G},${B},0.3)`);
-
-    ctx.beginPath();
-    ctx.strokeStyle=eg;
-    ctx.lineWidth=2;
-    ctx.moveTo(s1.x, s1.y);
-    ctx.lineTo(s2.x, s2.y);
-    ctx.stroke();
-
-    // Traveling light dot
-    const lx = s1.x + (s2.x - s1.x) * progress;
-    const ly = s1.y + (s2.y - s1.y) * progress;
-
-    const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, 8);
-    lg.addColorStop(0, `rgba(255,255,255,0.9)`);
-    lg.addColorStop(0.5, `rgba(${R},${G},${B},0.6)`);
-    lg.addColorStop(1, `rgba(${R},${G},${B},0)`);
-
-    ctx.fillStyle = lg;
-    ctx.beginPath();
-    ctx.arc(lx, ly, 8, 0, Math.PI * 2);
-    ctx.fill();
+  if(tapped.length<2) return;
+  const posColor=POSITIONS[currentPosition].color;
+  const [R,G,B]=posColor;
+  for(let i=0;i<tapped.length-1;i++){
+    const s1=field[tapped[i]], s2=field[tapped[i+1]];
+    const progress=(T*2)%1;
+    const eg=ctx.createLinearGradient(s1.x,s1.y,s2.x,s2.y);
+    eg.addColorStop(0,`rgba(${R},${G},${B},0.3)`); eg.addColorStop(.5,`rgba(${R},${G},${B},0.6)`); eg.addColorStop(1,`rgba(${R},${G},${B},0.3)`);
+    ctx.beginPath(); ctx.strokeStyle=eg; ctx.lineWidth=2; ctx.moveTo(s1.x,s1.y); ctx.lineTo(s2.x,s2.y); ctx.stroke();
+    const lx=s1.x+(s2.x-s1.x)*progress, ly=s1.y+(s2.y-s1.y)*progress;
+    const lg=ctx.createRadialGradient(lx,ly,0,lx,ly,8);
+    lg.addColorStop(0,'rgba(255,255,255,0.9)'); lg.addColorStop(.5,`rgba(${R},${G},${B},0.6)`); lg.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(lx,ly,8,0,Math.PI*2); ctx.fill();
   }
 }
 
-// ── Field draw ────────────────────────────────────────────────────────────────
-function drawField(){
-  const[R,G,B]=curSoul.rgb;
-  const expI=roundDone?-1:targetIdxs[tapped.length];
-
-  // Faint nebula at constellation center
+// ── FIELD DRAW ────────────────────────────────────────────────────────────
+function drawField() {
+  const posColor=POSITIONS[currentPosition].color;
+  const [R,G,B]=posColor;
+  const expI=roundDone ? -1 : targetIdxs[tapped.length];
   if(targetIdxs.length){
     const cx=targetIdxs.reduce((a,i)=>a+field[i].x,0)/targetIdxs.length;
     const cy=targetIdxs.reduce((a,i)=>a+field[i].y,0)/targetIdxs.length;
-    const ng=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*0.22);
-    ng.addColorStop(0,`rgba(${R},${G},${B},.06)`);ng.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+    const ng=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.22);
+    ng.addColorStop(0,`rgba(${R},${G},${B},.05)`); ng.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    ctx.fillStyle=ng; ctx.fillRect(0,0,W,H);
   }
-
-  // Draw completed connection lines
   drawConnectionLines();
-
-  // Draw edges between tapped stars
-  curShape.edges.forEach(([a,b])=>{
-    const ia=targetIdxs[a],ib=targetIdxs[b];
-    if(ia===undefined||ib===undefined)return;
-    const sa=field[ia],sb=field[ib];if(!sa||!sb)return;
-    const both=sa.tapped&&sb.tapped,either=sa.tapped||sb.tapped;if(!either)return;
-    const al=both?0.6:0.2,lw=both?1.6:0.8;
+  const con=curCard.constellation;
+  con.edges.forEach(([a,b])=>{
+    const ia=targetIdxs[a], ib=targetIdxs[b];
+    if(ia===undefined||ib===undefined) return;
+    const sa=field[ia], sb=field[ib];
+    if(!sa||!sb) return;
+    const both=sa.tapped&&sb.tapped, either=sa.tapped||sb.tapped;
+    if(!either) return;
+    const al=both?.6:.2, lw=both?1.6:.8;
     const eg=ctx.createLinearGradient(sa.x,sa.y,sb.x,sb.y);
-    eg.addColorStop(0,`rgba(${R},${G},${B},${al})`);
-    eg.addColorStop(0.5,`rgba(255,255,255,${al*0.4})`);
-    eg.addColorStop(1,`rgba(${R},${G},${B},${al})`);
-    ctx.beginPath();ctx.strokeStyle=eg;ctx.lineWidth=lw;ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+    eg.addColorStop(0,`rgba(${R},${G},${B},${al})`); eg.addColorStop(.5,`rgba(255,255,255,${al*.4})`); eg.addColorStop(1,`rgba(${R},${G},${B},${al})`);
+    ctx.beginPath(); ctx.strokeStyle=eg; ctx.lineWidth=lw; ctx.moveTo(sa.x,sa.y); ctx.lineTo(sb.x,sb.y); ctx.stroke();
   });
-
-  // Draw hint particles (behind stars)
   drawHintParticles();
-
-  // Draw stars
   field.forEach((s,i)=>{
-    const isT=s.isT,isN=i===expI&&!s.tapped;
-    const hintGlow = hintTimer>0 && isT && !s.tapped;
-    const[SR,SG,SB]=isT?s.color:[200,205,220];
-    const tw=0.45+0.55*Math.sin(T*1.1*s.spd+s.ph);
-    const bR=s.tapped?2.8+s.mag*3.2:
-         hintGlow?3.6+s.mag*3.4:
-         isT?1.6+s.mag*2.4:
-         0.7+s.mag*1.4;
+    const isT=s.isT, isN=i===expI&&!s.tapped;
+    const hintGlow=hintTimer>0&&isT&&!s.tapped;
+    const [SR,SG,SB]=isT ? s.color : [200,205,220];
+    const tw=.45+.55*Math.sin(T*1.1*s.spd+s.ph);
+    const bR=s.tapped ? 2.8+s.mag*3.2 : hintGlow ? 3.6+s.mag*3.4 : isT ? 1.6+s.mag*2.4 : .7+s.mag*1.4;
     const gR=bR*(s.tapped?4.5:isN?4:isT?2.8:2.2);
-
-    if(s.wp>0){s.wp--;ctx.beginPath();ctx.arc(s.x,s.y,gR*2.5,0,Math.PI*2);ctx.fillStyle=`rgba(200,55,55,${(0.3*s.wp/14).toFixed(2)})`;ctx.fill();}
-    if(s.cp>0){s.cp=Math.max(0,s.cp-0.022);ctx.beginPath();ctx.arc(s.x,s.y,gR*(1.5+s.cp*4.5),0,Math.PI*2);ctx.fillStyle=`rgba(${SR},${SG},${SB},${(0.2*s.cp).toFixed(2)})`;ctx.fill();}
-    if(isN){const p=0.2+0.18*Math.sin(T*3.2);ctx.beginPath();ctx.arc(s.x,s.y,gR*2,0,Math.PI*2);ctx.strokeStyle=`rgba(${R},${G},${B},${p})`;ctx.lineWidth=1;ctx.stroke();}
-
-    // Outer glow with twinkle
-    const oA=s.tapped?0.28:isT?0.07:0.028;
+    if(s.wp>0){ s.wp--; ctx.beginPath(); ctx.arc(s.x,s.y,gR*2.5,0,Math.PI*2); ctx.fillStyle=`rgba(200,55,55,${(.3*s.wp/14).toFixed(2)})`; ctx.fill(); }
+    if(s.cp>0){ s.cp=Math.max(0,s.cp-.022); ctx.beginPath(); ctx.arc(s.x,s.y,gR*(1.5+s.cp*4.5),0,Math.PI*2); ctx.fillStyle=`rgba(${SR},${SG},${SB},${(.2*s.cp).toFixed(2)})`; ctx.fill(); }
+    if(isN){ const p=.2+.18*Math.sin(T*3.2); ctx.beginPath(); ctx.arc(s.x,s.y,gR*2,0,Math.PI*2); ctx.strokeStyle=`rgba(${R},${G},${B},${p})`; ctx.lineWidth=1; ctx.stroke(); }
+    const oA=s.tapped?.28:isT?.07:.028;
     const g1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2.2);
-    g1.addColorStop(0,`rgba(${SR},${SG},${SB},${oA * (0.7 + 0.3 * tw)})`);
-    g1.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
-    ctx.fillStyle=g1;ctx.beginPath();ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2);ctx.fill();
-
-    // Inner glow
-    const iA=s.tapped?0.9:isT?tw*0.42:tw*0.22;
+    g1.addColorStop(0,`rgba(${SR},${SG},${SB},${oA*(.7+.3*tw)})`); g1.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
+    ctx.fillStyle=g1; ctx.beginPath(); ctx.arc(s.x,s.y,gR*2.2,0,Math.PI*2); ctx.fill();
+    const iA=s.tapped?.9:isT?tw*.42:tw*.22;
     const g2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR);
-    g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`);
-    g2.addColorStop(0.25,`rgba(${SR},${SG},${SB},${(iA*0.75).toFixed(2)})`);
-    g2.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
-    ctx.fillStyle=g2;ctx.beginPath();ctx.arc(s.x,s.y,gR,0,Math.PI*2);ctx.fill();
-
-    // Core
-    const cA=s.tapped?1:isT?0.72+0.28*tw:0.22+0.16*tw;
-    ctx.beginPath();ctx.arc(s.x,s.y,bR,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${cA.toFixed(2)})`;ctx.fill();
-
-    // Spike rays
-    if(s.tapped||(isT&&s.mag>0.5)){
+    g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`); g2.addColorStop(.25,`rgba(${SR},${SG},${SB},${(iA*.75).toFixed(2)})`); g2.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
+    ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(s.x,s.y,gR,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s.x,s.y,bR,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(s.tapped?1:isT?.72+.28*tw:.22+.16*tw).toFixed(2)})`; ctx.fill();
+    if(s.tapped||(isT&&s.mag>.5)){
       [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
         const sl=gR*(s.tapped?2.2:1.4);
         const sg=ctx.createLinearGradient(s.x,s.y,s.x+dx*sl,s.y+dy*sl);
-        sg.addColorStop(0,`rgba(${SR},${SG},${SB},${(0.15*tw).toFixed(2)})`);
-        sg.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
-        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=0.7;ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+dx*sl,s.y+dy*sl);ctx.stroke();
+        sg.addColorStop(0,`rgba(${SR},${SG},${SB},${(.15*tw).toFixed(2)})`); sg.addColorStop(1,`rgba(${SR},${SG},${SB},0)`);
+        ctx.beginPath(); ctx.strokeStyle=sg; ctx.lineWidth=.7; ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+dx*sl,s.y+dy*sl); ctx.stroke();
       });
     }
-
-    // Draw orbit particles for tapped stars or first star
-    if (s.hasOrbit) {
-      drawOrbitParticles(s);
-    }
-
-    // Number label
+    if(s.hasOrbit) drawOrbitParticles(s);
     if(isT&&!s.tapped&&!roundDone){
-      const fs=Math.max(9,Math.min(12,W*0.015));
-      ctx.font=`${isN?'700':'400'} ${fs}px Space Mono`;ctx.textAlign='center';
-      const na=isN?0.6+0.25*Math.sin(T*3):0.22;
-      ctx.fillStyle=`rgba(${R},${G},${B},${na})`;
+      const fs=Math.max(9,Math.min(12,W*.015));
+      ctx.font=`${isN?'700':'400'} ${fs}px Space Mono`; ctx.textAlign='center';
+      ctx.fillStyle=`rgba(${R},${G},${B},${isN?.6+.25*Math.sin(T*3):.22})`;
       ctx.fillText(s.seq+1,s.x,s.y-bR-8);
     }
   });
 }
 
-// ── Main loop ─────────────────────────────────────────────────────────────────
-function draw(){
-  requestAnimationFrame(draw);T+=0.016;
+// ── MAIN LOOP ─────────────────────────────────────────────────────────────
+function draw() {
+  requestAnimationFrame(draw); T+=.016;
   if(hintTimer>0) hintTimer--;
-  if(hintCooldown>0) {
-    hintCooldown--;
-    if(hintCooldown===0) {
-      document.getElementById('help-btn').classList.remove('cooldown');
-      hintParticles = [];
-    }
-  }
-
-  ctx.fillStyle='#04040a';ctx.fillRect(0,0,W,H);
-
-  // Draw Milky Way first (background)
-  drawMilkyWay();
-
-  // Then regular background stars
-  drawBg();
-
-  // Shooting stars
-  drawShoots();
-
-  // Game field
-  if(gameStarted&&field.length)drawField();
-
-  // Burst particles
+  ctx.fillStyle='#02020a'; ctx.fillRect(0,0,W,H);
+  drawMilkyWay(); drawBg(); drawShoots();
+  if(gameStarted&&field.length) drawField();
   tickP();
 }
 
-function resize(){
-  W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;
-  bgStars=makeBg();
-  initMilkyWay();
-  if(gameStarted&&roundActive)buildField();
+function resize() {
+  W=cv.width=window.innerWidth; H=cv.height=window.innerHeight;
+  bgStars=makeBg(); initMilkyWay();
+  if(gameStarted&&roundActive) buildField();
 }
 
-function beginGame(){
+// ── TAP HANDLING ──────────────────────────────────────────────────────────
+function handleTap(e) {
+  if(!gameStarted||!roundActive||roundDone) return;
+  const rect=cv.getBoundingClientRect();
+  const tx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+  const ty=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+  const tapR=Math.max(44,Math.min(W,H)*.06);
+  let best=-1, bestD=Infinity;
+  field.forEach((s,i)=>{
+    if(s.tapped) return;
+    const d=Math.hypot(s.x-tx,s.y-ty);
+    if(d<tapR&&d<bestD){ best=i; bestD=d; }
+  });
+  if(best===-1) return;
+  const exp=targetIdxs[tapped.length];
+  if(best===exp){
+    const s=field[best]; s.tapped=true; s.cp=1; tapped.push(best);
+    initOrbitParticles(s); burstAt(s.x,s.y,s.color,24);
+    const pd=document.getElementById('pd'+(tapped.length-1));
+    if(pd) pd.classList.add('hit');
+    // Update stars counter
+    document.getElementById('stars-remain').textContent=curCard.constellation.n-tapped.length;
+    if(tapped.length===curCard.constellation.n) onConstellationComplete();
+  } else {
+    field[best].wp=14;
+    const wf=document.getElementById('wrong-flash'); wf.style.opacity='1';
+    setTimeout(()=>wf.style.opacity='0',230);
+  }
+}
+
+// ── CONSTELLATION COMPLETE ────────────────────────────────────────────────
+function onConstellationComplete() {
+  roundDone=true; roundActive=false;
+
+  // Flash
+  const posColor=POSITIONS[currentPosition].color;
+  const [R,G,B]=posColor;
+  targetIdxs.forEach(i=>burstAt(field[i].x,field[i].y,posColor,36));
+  const cf=document.getElementById('complete-flash');
+  cf.style.background=`radial-gradient(ellipse at center,rgba(${R},${G},${B},.25) 0%,transparent 65%)`;
+  cf.style.opacity='1'; setTimeout(()=>cf.style.opacity='0',1200);
+
+  // Mark slot complete
+  const slot=document.getElementById('pos-'+currentPosition);
+  slot.classList.remove('active'); slot.classList.add('complete');
+  document.getElementById('pos-card-'+currentPosition).textContent=curCard.name;
+
+  // Flash unlock text
+  const uf=document.getElementById('unlock-flash');
+  uf.textContent=POSITIONS[currentPosition].label+' — '+curCard.name;
+  uf.classList.add('show');
+  setTimeout(()=>uf.classList.remove('show'),2200);
+
+  currentPosition++;
+
+  if(currentPosition<3){
+    // Brief pause then next constellation
+    setTimeout(()=>generateRound(), 1600);
+  } else {
+    // All three done — show reading
+    setTimeout(()=>showReading(), 1400);
+  }
+}
+
+// ── SHOW READING ──────────────────────────────────────────────────────────
+function showReading() {
+  const spread=document.getElementById('spread-display');
+  spread.classList.add('show');
+  setTimeout(()=>spread.classList.add('visible'),50);
+
+  const container=document.getElementById('three-cards');
+  container.innerHTML='';
+
+  const posLabels=['Past','Present','Path'];
+  readingCards.forEach((card,i)=>{
+    const el=document.createElement('div');
+    el.className='spread-card';
+    const cSize=clamp(80,window.innerWidth*.14,140);
+
+    el.innerHTML=`
+      <div class="spread-card-pos">${posLabels[i]}</div>
+      <canvas class="spread-card-canvas" width="${cSize}" height="${cSize}" style="width:${cSize}px;height:${cSize}px;" id="scc-${i}"></canvas>
+      <div class="spread-card-name">${card.name}</div>
+      <div class="spread-card-suit">${card.type==='major' ? 'Major Arcana' : (card.suit||'').toUpperCase()}</div>
+      <div class="spread-card-meaning">${card.meaning}</div>
+    `;
+    container.appendChild(el);
+    setTimeout(()=>{
+      el.classList.add('reveal');
+      drawSpreadConstellation(i, cSize);
+    }, 200+i*350);
+  });
+
+  // Synthesis
+  setTimeout(()=>{
+    const synthFn=SYNTHESES[Math.floor(Math.random()*SYNTHESES.length)];
+    document.getElementById('synthesis-text').textContent=synthFn(readingCards[0],readingCards[1],readingCards[2]);
+    document.getElementById('synthesis-section').classList.add('show');
+  }, 1500);
+
+  setTimeout(()=>{
+    document.getElementById('new-reading-btn').classList.add('show');
+  }, 2200);
+}
+
+function clamp(min,val,max){ return Math.max(min,Math.min(max,val)); }
+
+function drawSpreadConstellation(idx, size) {
+  const cv2=document.getElementById('scc-'+idx);
+  if(!cv2) return;
+  const c=cv2.getContext('2d');
+  const card=readingCards[idx];
+  const con=card.constellation;
+  const posColor=POSITIONS[idx].color;
+  const [R,G,B]=posColor;
+  const w=cv2.width, h=cv2.height;
+  c.clearRect(0,0,w,h);
+  const cx=w/2, cy=h/2, sc=Math.min(w,h)*.36;
+  const pts=con.pts.map(([px,py])=>({ x:cx+(px-.5)*sc*2, y:cy+(py-.5)*sc*2 }));
+  c.strokeStyle=`rgba(${R},${G},${B},0.6)`; c.lineWidth=1.5;
+  con.edges.forEach(([a,b])=>{ c.beginPath(); c.moveTo(pts[a].x,pts[a].y); c.lineTo(pts[b].x,pts[b].y); c.stroke(); });
+  pts.forEach(p=>{
+    const g=c.createRadialGradient(p.x,p.y,0,p.x,p.y,8);
+    g.addColorStop(0,`rgba(${R},${G},${B},0.8)`); g.addColorStop(.5,`rgba(${R},${G},${B},0.4)`); g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+    c.fillStyle=g; c.beginPath(); c.arc(p.x,p.y,8,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(p.x,p.y,3,0,Math.PI*2);
+    c.fillStyle='rgba(255,255,255,0.95)'; c.fill();
+  });
+}
+
+// ── GAME INIT ─────────────────────────────────────────────────────────────
+function newReading() {
+  const spread=document.getElementById('spread-display');
+  spread.classList.remove('visible');
+  setTimeout(()=>{
+    spread.classList.remove('show');
+    document.querySelectorAll('.pos-slot').forEach((el,i)=>{
+      el.classList.remove('active','complete');
+      document.getElementById('pos-card-'+i).textContent='';
+    });
+    document.getElementById('synthesis-section').classList.remove('show');
+    document.getElementById('new-reading-btn').classList.remove('show');
+    startReading();
+  }, 800);
+}
+
+function startReading() {
+  readingCards=[];
+  for(let i=0;i<3;i++) readingCards.push(getNextCard());
+  currentPosition=0;
+  readingComplete=false;
+  generateRound();
+}
+
+function beginGame() {
   document.getElementById('start').style.display='none';
-  gameStarted=true;generateRound();
+  shuffleDeck(); gameStarted=true;
+  startReading();
 }
 
 cv.addEventListener('mousedown',handleTap);
-cv.addEventListener('touchstart',e=>{e.preventDefault();handleTap(e);},{passive:false});
+cv.addEventListener('touchstart',e=>{ e.preventDefault(); handleTap(e); },{passive:false});
 window.addEventListener('resize',resize);
-resize();draw();
+resize(); draw();
 </script>
 </body>
 </html>
