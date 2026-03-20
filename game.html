@@ -122,55 +122,78 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 
 /* Three card frames */
 #three-cards{
-  display:flex;gap:clamp(10px,2.5vw,24px);align-items:stretch;
-  justify-content:center;flex-wrap:wrap;max-width:780px;width:100%;
+  display:flex;gap:clamp(10px,2.5vw,22px);align-items:stretch;
+  justify-content:center;flex-wrap:wrap;max-width:820px;width:100%;
 }
 .spread-card{
-  flex:0 0 auto;width:clamp(180px,28vw,220px);
-  background:linear-gradient(175deg,rgba(14,10,26,.99),rgba(4,3,12,1));
-  border:1px solid rgba(212,175,55,.22);border-radius:12px;
-  padding:20px 16px 16px;
-  display:flex;flex-direction:column;align-items:center;gap:0;
-  box-shadow:0 0 50px rgba(0,0,0,.85),0 0 20px rgba(212,175,55,.06);
-  opacity:0;transform:translateY(22px) scale(.96);
+  flex:0 0 auto;width:clamp(195px,30vw,240px);
+  background:linear-gradient(175deg,rgba(10,8,20,.99),rgba(4,3,12,1));
+  border:1px solid rgba(212,175,55,.2);border-radius:12px;
+  overflow:hidden;
+  display:flex;flex-direction:column;align-items:stretch;gap:0;
+  box-shadow:0 0 50px rgba(0,0,0,.9),0 0 20px rgba(212,175,55,.05);
+  opacity:0;transform:translateY(24px) scale(.96);
   transition:opacity .6s,transform .6s,box-shadow .4s;
 }
 .spread-card.reveal{opacity:1;transform:translateY(0) scale(1);}
-.spread-card.reveal:hover{box-shadow:0 0 50px rgba(0,0,0,.85),0 0 28px rgba(212,175,55,.16);}
+.spread-card.reveal:hover{box-shadow:0 0 50px rgba(0,0,0,.9),0 0 30px rgba(212,175,55,.14);}
+
+/* Header area: canvas + overlay text */
+.sc-header{
+  position:relative;
+  width:100%;
+  height:160px;
+  flex-shrink:0;
+  overflow:hidden;
+}
+.sc-header-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+}
+.sc-header-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+  padding:0 12px 14px;
+  background:linear-gradient(to bottom,
+    rgba(4,3,12,0) 0%,
+    rgba(4,3,12,.1) 40%,
+    rgba(4,3,12,.82) 75%,
+    rgba(4,3,12,.97) 100%
+  );
+}
 .sc-group{
   font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.35em;
-  text-transform:uppercase;margin-bottom:10px;
+  text-transform:uppercase;margin-bottom:6px;
 }
 .sc-name{
-  font-family:'Cinzel',serif;font-size:clamp(11px,1.6vw,14px);font-weight:600;
+  font-family:'Cinzel',serif;font-size:clamp(11px,1.5vw,13px);font-weight:600;
   letter-spacing:.1em;color:#D4AF37;text-align:center;
-  text-shadow:0 0 14px rgba(212,175,55,.28);line-height:1.35;
-  margin-bottom:6px;
+  text-shadow:0 0 20px rgba(0,0,0,1),0 0 10px rgba(0,0,0,1);
+  line-height:1.3;
+}
+
+/* Body */
+.sc-body{
+  padding:14px 14px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  flex:1;
 }
 .sc-keywords{
-  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.12em;
-  color:rgba(255,255,255,.22);text-align:center;
-  margin-bottom:12px;
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.14em;
+  color:rgba(255,255,255,.2);text-align:center;
+  margin-bottom:10px;
 }
 .sc-rule{
-  width:60px;height:1px;margin:0 auto 12px;
-  background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);
+  width:50px;height:1px;margin:0 auto 12px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.28),transparent);
 }
 .sc-meaning{
   font-family:'Cormorant Garamond',serif;font-style:italic;
-  font-size:clamp(10px,1.35vw,12px);letter-spacing:.03em;
-  color:rgba(255,255,255,.65);text-align:center;line-height:1.75;
-  margin-bottom:16px;flex:1;
-}
-.sc-canvas-wrap{
-  width:100%;display:flex;justify-content:center;
-  padding-top:12px;
-  border-top:1px solid rgba(255,255,255,.05);
-}
-.sc-canvas{
-  border-radius:50%;border:1px solid rgba(212,175,55,.15);
-  background:radial-gradient(circle at center,rgba(7,5,16,.97),rgba(2,2,8,1));
-  opacity:.85;
+  font-size:clamp(10px,1.25vw,11.5px);letter-spacing:.03em;
+  color:rgba(255,255,255,.62);text-align:center;line-height:1.78;
+  flex:1;
 }
 
 /* Synthesis */
@@ -333,28 +356,52 @@ const GROUPS = {
 // pts: normalized [x,y] 0..1 constellation points
 const CARDS = {
 
-  // ── ID: Minor Pip cards ─────────────────────────────────────────────────
+  // ── ID: Minor Pip cards — full 40 cards (Ace-10, four suits) ───────────
   id: [
-    { id:'c1',  name:'Ace of Cups',        suit:'cups',      pts:[[.5,.2],[.3,.7],[.7,.7]],                                                                         keywords:'love · awakening · grace',      meaning:'The cup overflows before you even raise it. Something new has flooded in — emotional, uninvited, and wanted at the same time. The ID does not ask permission to feel; it simply opens. What is arriving in your body right now is real and worth naming. Do not manage it into something smaller. Let it fill the vessel before you decide what to do with it.' },
-    { id:'c3',  name:'Three of Cups',      suit:'cups',      pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85]],                                                     keywords:'celebration · reunion · warmth', meaning:'The body remembers joy in a way the mind never quite can. There is a reunion happening — of people, or of parts of yourself that were separated. The ID does not celebrate alone; it reaches for the others who have shared the road. Something deserves to be marked. Do not let the moment pass without acknowledging it. Gather your people and let them witness what has become true.' },
-    { id:'c5',  name:'Five of Cups',       suit:'cups',      pts:[[.5,.15],[.2,.4],[.8,.4],[.35,.75],[.65,.75],[.5,.95]],                                            keywords:'grief · loss · what remains',   meaning:'Three cups have spilled. The ID stands over them and the grief is real, not metaphorical. But two cups remain standing behind you, and they are full. Something has been genuinely lost and needs to be mourned without explanation or apology. The mistake is in making the spilled cups the whole story. What still stands is also asking to be seen. The body knows the difference between loss and ruin.' },
-    { id:'c7',  name:'Seven of Cups',      suit:'cups',      pts:[[.5,.12],[.25,.34],[.75,.34],[.2,.58],[.8,.58],[.35,.84],[.65,.84]],                                keywords:'desire · illusion · hunger',    meaning:'The ID is projecting. Every option looks luminous right now, because the wanting itself has become the pleasure. Seven doors glow and the mind cannot choose because choice would end the fantasy. This is not indecision — it is the ID\'s way of staying in the sweetest part of possibility. But doors close. The dream has to become a decision before the clouds take it. Choose one cup and drink from it, even if it turns out to be different than imagined.' },
-    { id:'c9',  name:'Nine of Cups',       suit:'cups',      pts:[[.5,.1],[.72,.28],[.9,.5],[.72,.72],[.5,.9],[.28,.72],[.1,.5],[.28,.28],[.5,.5]],                   keywords:'wish · satisfaction · pleasure',meaning:'This is the wish card, and the wish was granted. The ID got what it wanted — really wanted, not just wanted in a polite way. There is a particular quality to satisfaction that the body recognizes before the mind catches up: a settling, a quiet that isn\'t empty. You are allowed to feel this without immediately asking what comes next. The nine cups are full and they are yours. Enjoy this without guilt. The body earned the right to rest in its own contentment.' },
-    { id:'c10', name:'Ten of Cups',        suit:'cups',      pts:[[.5,.1],[.65,.25],[.82,.42],[.82,.62],[.65,.78],[.5,.9],[.35,.78],[.18,.62],[.18,.42],[.35,.25]],   keywords:'bliss · family · home',         meaning:'The nervous system finally rests. This is not happiness as performance — it is the deep contentment that comes when the people and places around you are genuinely aligned with who you are. The ID does not hunger or reach when the ten cups are full; it simply exists inside something that works. Home is not always a place. Sometimes it is a relationship, a season, a version of yourself you finally stopped fighting. This is it. Be in it completely.' },
-    { id:'s1',  name:'Ace of Swords',      suit:'swords',    pts:[[.5,.1],[.5,.72],[.28,.5],[.72,.5]],                                                               keywords:'clarity · cut · breakthrough',  meaning:'The ID sharpens into a single clean point and the fog breaks. Something that was obscured becomes blindingly obvious — not comfortable, but true. The Ace of Swords does not ask how you feel about the truth; it simply reveals it. What needs to be cut away has been making you carry extra weight for longer than you realize. The blade is already in your hand. The only question is whether you will use it with intention or keep carrying it pointed at yourself.' },
-    { id:'s3',  name:'Three of Swords',    suit:'swords',    pts:[[.5,.15],[.2,.42],[.8,.42],[.35,.86],[.65,.86]],                                                   keywords:'heartbreak · grief · pain',     meaning:'The wound is real and it does not need to be rationalized into something more manageable. Three swords through the heart is not a metaphor for inconvenience. The ID knows this and it is not lying to you — something genuinely hurt, and the pain is proportionate to how much you cared. Do not explain it away or make it smaller to make others comfortable. Feel it and move through it, not around it. The rain passes. The swords eventually come out. What heals is what was willing to bleed.' },
-    { id:'s7',  name:'Seven of Swords',    suit:'swords',    pts:[[.5,.1],[.3,.34],[.7,.34],[.14,.6],[.86,.6],[.34,.9],[.66,.9]],                                    keywords:'strategy · shadow · cunning',   meaning:'Something moves unseen and the ID has already sensed it. There is a strategy at work — possibly yours, possibly directed at you — that has not been stated plainly. The body reads the room before the mind builds its explanation, and right now the body is sending a signal worth trusting. What have you been avoiding looking at directly? The Seven of Swords does not condemn cleverness, but it asks whether the cleverness is serving something honest. Check your blind spots. Check who else might have them.' },
-    { id:'s8',  name:'Eight of Swords',    suit:'swords',    pts:[[.2,.2],[.5,.14],[.8,.2],[.14,.5],[.86,.5],[.2,.8],[.5,.86],[.8,.8]],                              keywords:'paralysis · fear · trapped',    meaning:'The cage is partly imagined and partly built by choices made in fear. The ID recognizes the feeling of paralysis — the body won\'t move, the options seem gone, the blindfold stays on even though you could remove it. But the swords around you are not touching you. They are standing in a ring, waiting. One step in any direction and the pattern breaks. The fear that has been keeping you still is real, but it has been working with outdated information. What was dangerous then may not be dangerous now.' },
-    { id:'s10', name:'Ten of Swords',      suit:'swords',    pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'endings · collapse · new dawn', meaning:'This is the lowest point, and the lowest point is also a foundation. The ten swords in the back means it is finished — the suffering, the situation, the version of things that had to end. The ID does not pretend this doesn\'t hurt. But the sky in the distance is already lightening. Rock bottom has a particular quality: there is no further to fall, which means the next movement is only upward. What rises from here will be built from what actually survived. That is the only material worth building with.' },
-    { id:'w1',  name:'Ace of Wands',       suit:'wands',     pts:[[.5,.1],[.5,.72],[.34,.42],[.66,.42]],                                                             keywords:'spark · fire · impulse',        meaning:'The drive ignites before thought arrives, which is exactly correct. The Ace of Wands is pure creative impulse in the moment before it gets organized into a plan or talked into something reasonable. The ID is lit. Something wants to begin — a project, a direction, a way of being — and it wants to begin now. Do not wait for permission or perfect conditions. The spark does not stay at full brightness forever. Act on it while it is still this hot, and let the refinement come after.' },
-    { id:'w3',  name:'Three of Wands',     suit:'wands',     pts:[[.5,.2],[.24,.5],[.76,.5],[.24,.86],[.76,.86]],                                                    keywords:'ambition · horizon · momentum', meaning:'The ships are on the horizon and they are yours. The ID made a plan — boldly, early, with more confidence than the circumstances warranted — and the plan worked. What was set in motion is now in motion without your constant supervision. There is a particular sensation to this: the waiting that is also confirmation. The fire planned ahead and the evidence is coming in. Trust what was set in motion. Your work right now is to hold the horizon with both eyes open and be ready to receive what comes in.' },
-    { id:'w6',  name:'Six of Wands',       suit:'wands',     pts:[[.5,.1],[.2,.42],[.8,.42],[.14,.66],[.86,.66],[.34,.9],[.66,.9]],                                  keywords:'victory · recognition · pride', meaning:'The crowd is cheering and you earned it — not as a performance, but as the real result of real effort. The ID already knew this was coming because it was paying attention. Now the external world is confirming what the body has felt for some time: that what you have been building is worth something. Accept the recognition without immediately deflecting it or making it smaller. Victory lap is not arrogance. It is acknowledgment of the cost of getting here, and the people who witnessed it deserve to see you receive it fully.' },
-    { id:'w8',  name:'Eight of Wands',     suit:'wands',     pts:[[.1,.2],[.3,.14],[.5,.1],[.7,.14],[.9,.2],[.7,.86],[.5,.9],[.3,.86]],                              keywords:'speed · acceleration · urgency',meaning:'Everything is arriving at once and the velocity is real. The ID is already moving — the decision has been made in the body before the conscious mind caught up. Eight wands in flight means events have outpaced the usual pace of things, and the correct response is not to slow down but to be fully present inside the speed. Do not overthink this. The acceleration is not a warning; it is the universe matching your energy. Stay in your body, stay responsive, and trust that what is coming toward you was aimed in your direction for a reason.' },
-    { id:'w10', name:'Ten of Wands',       suit:'wands',     pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]],   keywords:'burden · weight · overextension',meaning:'The fire is carrying too much and the body knows it, even if the mind keeps insisting on one more thing. Ten wands is not a discipline problem — it is often the result of caring too much about too many things that genuinely matter. But the weight is slowing you down and the destination is still ahead. What can be put down without betrayal? Not what should be abandoned — but what has already been completed, or what belongs to someone else\'s hands now. The wands were meant to build something, not to be carried indefinitely.' },
-    { id:'p1',  name:'Ace of Pentacles',   suit:'pentacles', pts:[[.5,.14],[.86,.5],[.5,.86],[.14,.5]],                                                              keywords:'seed · resource · ground',      meaning:'Something material is beginning and the body recognizes the right soil before the mind has time to calculate the odds. The Ace of Pentacles is a real opportunity — not a concept, not a fantasy, but something tangible that can be planted and cultivated. The ID senses the ground is fertile. This is a moment that rewards careful beginning, not reckless haste. Plant the seed with intention. Water it with patience. The return on what is started here will compound in ways that are not yet visible but are already in motion.' },
-    { id:'p3',  name:'Three of Pentacles', suit:'pentacles', pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.86],[.65,.86],[.5,.5]],                                              keywords:'craft · skill · recognition',   meaning:'The hands are producing something real and the work is being seen. The Three of Pentacles is the card of mastery in progress — not finished mastery, but the moment when skill becomes visible to others and earns the room\'s attention. Something you have practiced quietly is now producing a result that others recognize as genuine. The ID is satisfied in a specific way: the satisfaction of doing something well and knowing it. This is not the end of learning — it is the first confirmation that the investment of time and effort was made in the right direction.' },
-    { id:'p5',  name:'Five of Pentacles',  suit:'pentacles', pts:[[.5,.14],[.2,.5],[.5,.86],[.8,.5],[.5,.5]],                                                        keywords:'lack · cold · faith',           meaning:'The body knows scarcity in a way that is not metaphorical. Something material is missing — money, security, warmth, the sense of being provided for — and the cold is real. The two figures pass by the lit window and the ID registers the distance between where you are and where safety seems to be. But the window is lit. The door is not locked. What is making you pass by it rather than going in? The Five of Pentacles asks whether the poverty is also a belief that has outlasted the circumstances that created it.' },
-    { id:'p9',  name:'Nine of Pentacles',  suit:'pentacles', pts:[[.5,.1],[.76,.24],[.86,.5],[.76,.76],[.5,.9],[.24,.76],[.14,.5],[.24,.24]],                         keywords:'abundance · earned · solitude', meaning:'What was built through discipline is now being enjoyed, and the enjoyment is clean because it was earned. The ID rests inside real security — not borrowed security, not performed security, but the kind that comes from having built the infrastructure of your own life with your own hands. The Nine of Pentacles is about beautiful solitude: the pleasure of your own company in surroundings you created. You do not need to share this to validate it. The garden is yours. Walk through it slowly.' },
+    // CUPS
+    { id:'c1',  name:'Ace of Cups',       suit:'cups', pts:[[.5,.2],[.3,.7],[.7,.7]], keywords:'love · awakening · grace', meaning:'The cup overflows before you even raise it. Something new has flooded in — emotional, uninvited, and wanted at the same time. The ID does not ask permission to feel; it simply opens. What is arriving in your body right now is real and worth naming. Do not manage it into something smaller. Let it fill the vessel before you decide what to do with it.' },
+    { id:'c2',  name:'Two of Cups',       suit:'cups', pts:[[.3,.25],[.7,.25],[.3,.75],[.7,.75]], keywords:'connection · recognition · bond', meaning:'Two people, or two parts of yourself, recognize something true in each other. The ID does not calculate compatibility — it simply knows. This is the feeling of seeing and being seen, of offering something real and having it received. A genuine connection is forming or deepening. The body registers this as warmth, not electricity; as settling, not disruption. Trust what the instinct already knows about who belongs in your orbit.' },
+    { id:'c3',  name:'Three of Cups',     suit:'cups', pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.85],[.65,.85]], keywords:'celebration · reunion · warmth', meaning:'The body remembers joy in a way the mind never quite can. There is a reunion happening — of people, or of parts of yourself that were separated. The ID does not celebrate alone; it reaches for the others who have shared the road. Something deserves to be marked. Do not let the moment pass without acknowledging it. Gather your people and let them witness what has become true.' },
+    { id:'c4',  name:'Four of Cups',      suit:'cups', pts:[[.5,.15],[.2,.42],[.8,.42],[.2,.8],[.8,.8]], keywords:'apathy · discontent · withdrawal', meaning:'The ID sits under the tree and stares at the ground. Three cups are right there, available, and a fourth is being offered from the clouds — and none of it looks interesting. This is not ingratitude; it is a particular kind of soul-exhaustion that precedes reassessment. What has lost its meaning recently is telling you something important. The withdrawal is not permanent, but it is necessary. Something is being reconsidered at a level below conscious thought.' },
+    { id:'c5',  name:'Five of Cups',      suit:'cups', pts:[[.5,.15],[.2,.4],[.8,.4],[.35,.75],[.65,.75],[.5,.95]], keywords:'grief · loss · what remains', meaning:'Three cups have spilled. The ID stands over them and the grief is real, not metaphorical. But two cups remain standing behind you, and they are full. Something has been genuinely lost and needs to be mourned without explanation or apology. The mistake is in making the spilled cups the whole story. What still stands is also asking to be seen. The body knows the difference between loss and ruin.' },
+    { id:'c6',  name:'Six of Cups',       suit:'cups', pts:[[.3,.2],[.7,.2],[.2,.5],[.8,.5],[.3,.8],[.7,.8]], keywords:'nostalgia · memory · innocence', meaning:'Something from the past is reaching forward into the present with unexpected gentleness. The ID holds childhood memories differently than the conscious mind — not as history but as living material, still warm. A sweetness you thought you had outgrown is available again. The question is whether you are visiting the past to remember something real, or hiding there to avoid something present.' },
+    { id:'c7',  name:'Seven of Cups',     suit:'cups', pts:[[.5,.12],[.25,.34],[.75,.34],[.2,.58],[.8,.58],[.35,.84],[.65,.84]], keywords:'desire · illusion · hunger', meaning:'The ID is projecting. Every option looks luminous right now, because the wanting itself has become the pleasure. Seven doors glow and the mind cannot choose because choice would end the fantasy. This is not indecision — it is the ID staying in the sweetest part of possibility. But doors close. The dream has to become a decision before the clouds take it. Choose one cup and drink from it, even if it turns out differently than imagined.' },
+    { id:'c8',  name:'Eight of Cups',     suit:'cups', pts:[[.2,.8],[.35,.6],[.5,.4],[.65,.6],[.8,.8],[.5,.15]], keywords:'departure · deeper meaning · move on', meaning:'The ID turns away from what was abundant and walks toward the mountains. The cups are still full — nothing was taken from you. But the body knows when a chapter has closed, and continuing to stay in a completed chapter costs something that cannot be recovered. The departure is not defeat. It is the acknowledgment that what satisfied before no longer satisfies, and that honesty is worth the disruption it causes.' },
+    { id:'c9',  name:'Nine of Cups',      suit:'cups', pts:[[.5,.1],[.72,.28],[.9,.5],[.72,.72],[.5,.9],[.28,.72],[.1,.5],[.28,.28],[.5,.5]], keywords:'wish · satisfaction · pleasure', meaning:'This is the wish card, and the wish was granted. The ID got what it wanted — really wanted, not just wanted in a polite way. There is a particular quality to satisfaction that the body recognizes before the mind catches up: a settling, a quiet that is not empty. You are allowed to feel this without immediately asking what comes next. The nine cups are full and they are yours. Enjoy this without guilt.' },
+    { id:'c10', name:'Ten of Cups',       suit:'cups', pts:[[.5,.1],[.65,.25],[.82,.42],[.82,.62],[.65,.78],[.5,.9],[.35,.78],[.18,.62],[.18,.42],[.35,.25]], keywords:'bliss · family · home', meaning:'The nervous system finally rests. This is not happiness as performance — it is the deep contentment that comes when the people and places around you are genuinely aligned with who you are. The ID does not hunger or reach when the ten cups are full; it simply exists inside something that works. Home is not always a place. Sometimes it is a relationship, a season, a version of yourself you finally stopped fighting.' },
+    // SWORDS
+    { id:'s1',  name:'Ace of Swords',     suit:'swords', pts:[[.5,.1],[.5,.72],[.28,.5],[.72,.5]], keywords:'clarity · cut · breakthrough', meaning:'The ID sharpens into a single clean point and the fog breaks. Something that was obscured becomes blindingly obvious — not comfortable, but true. The Ace of Swords does not ask how you feel about the truth; it simply reveals it. What needs to be cut away has been making you carry extra weight for longer than you realize. The blade is in your hand. Use it with intention.' },
+    { id:'s2',  name:'Two of Swords',     suit:'swords', pts:[[.5,.2],[.2,.5],[.8,.5],[.35,.82],[.65,.82]], keywords:'stalemate · avoidance · blindfold', meaning:'The ID crosses the swords over the heart to keep both options at bay. This is not wisdom — it is the body preventing a choice that feels dangerous regardless of direction. The blindfold is self-imposed. The stalemate is comfortable only in comparison to the discomfort of deciding. The truth you are refusing to look at directly is still there, and it gets heavier the longer you hold the pose.' },
+    { id:'s3',  name:'Three of Swords',   suit:'swords', pts:[[.5,.15],[.2,.42],[.8,.42],[.35,.86],[.65,.86]], keywords:'heartbreak · grief · pain', meaning:'The wound is real and it does not need to be rationalized into something more manageable. Three swords through the heart is not a metaphor for inconvenience. The ID knows this and it is not lying to you — something genuinely hurt, and the pain is proportionate to how much you cared. Do not explain it away or make it smaller. Feel it and move through it, not around it. What heals is what was willing to bleed.' },
+    { id:'s4',  name:'Four of Swords',    suit:'swords', pts:[[.2,.3],[.5,.2],[.8,.3],[.2,.7],[.5,.8],[.8,.7]], keywords:'rest · recovery · recuperation', meaning:'The ID has finally stopped fighting and the body is grateful. The knight lies in the chapel not in defeat but in necessary rest between battles. The mind insists there is still work to do, threats to monitor, problems to solve. The body knows better — the next level of this cannot be accessed from exhaustion. Right now, stillness is the only strategy that matters.' },
+    { id:'s5',  name:'Five of Swords',    suit:'swords', pts:[[.5,.15],[.2,.4],[.8,.4],[.15,.75],[.85,.75],[.5,.9]], keywords:'conflict · hollow victory · loss', meaning:'Someone won and no one feels good about it. The ID knows the difference between victory and vindication, and what just happened was neither. The swords were collected but the figures walking away carry something heavier than defeat — they carry the knowledge of what was spent to get here. Ask honestly: was this worth it? A win that costs the trust, or your own integrity, is worth examining before the next sword is drawn.' },
+    { id:'s6',  name:'Six of Swords',     suit:'swords', pts:[[.15,.4],[.4,.3],[.65,.3],[.9,.4],[.5,.85],[.5,.62]], keywords:'transition · moving on · passage', meaning:'The boat moves slowly through still water toward a clearer shore, and the figures inside are not yet at peace — but they are moving. The ID recognizes this feeling: not healed, not resolved, but in motion away from what was damaging. You do not have to be done with the hard thing before you leave it behind. You just have to leave.' },
+    { id:'s7',  name:'Seven of Swords',   suit:'swords', pts:[[.5,.1],[.3,.34],[.7,.34],[.14,.6],[.86,.6],[.34,.9],[.66,.9]], keywords:'strategy · shadow · cunning', meaning:'Something moves unseen and the ID has already sensed it. There is a strategy at work — possibly yours, possibly directed at you — that has not been stated plainly. The body reads the room before the mind builds its explanation, and right now the body is sending a signal worth trusting. What have you been avoiding looking at directly? Check your blind spots. Check who else might have them.' },
+    { id:'s8',  name:'Eight of Swords',   suit:'swords', pts:[[.2,.2],[.5,.14],[.8,.2],[.14,.5],[.86,.5],[.2,.8],[.5,.86],[.8,.8]], keywords:'paralysis · fear · trapped', meaning:'The cage is partly imagined and partly built by choices made in fear. The ID recognizes the feeling of paralysis — the body will not move, the options seem gone, the blindfold stays on even though you could remove it. But the swords around you are not touching you. One step in any direction and the pattern breaks. The fear has been working with outdated information. What was dangerous then may not be dangerous now.' },
+    { id:'s9',  name:'Nine of Swords',    suit:'swords', pts:[[.5,.1],[.65,.3],[.85,.45],[.75,.7],[.5,.9],[.25,.7],[.15,.45],[.35,.3],[.5,.5]], keywords:'anxiety · nightmare · dread', meaning:'The ID wakes at 3 AM with all nine swords arranged in the dark above it. This is the card of anxiety — not danger, but the body running disaster scenarios in the absence of actual information. The mind builds worst-case futures with impressive detail, and at this hour they feel like prophecy. They are not. What you are afraid of is real as a fear, but the fear is feeding on itself now, not on evidence. Turn on the light and look at the actual situation.' },
+    { id:'s10', name:'Ten of Swords',     suit:'swords', pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]], keywords:'endings · collapse · new dawn', meaning:'This is the lowest point, and the lowest point is also a foundation. The ten swords in the back means it is finished — the suffering, the situation, the version of things that had to end. The ID does not pretend this does not hurt. But the sky in the distance is already lightening. Rock bottom has a particular quality: there is no further to fall, which means the next movement is only upward. What rises from here will be built from what actually survived.' },
+    // WANDS
+    { id:'w1',  name:'Ace of Wands',      suit:'wands', pts:[[.5,.1],[.5,.72],[.34,.42],[.66,.42]], keywords:'spark · fire · impulse', meaning:'The drive ignites before thought arrives, which is exactly correct. The Ace of Wands is pure creative impulse in the moment before it gets organized into a plan or talked into something reasonable. The ID is lit. Something wants to begin and it wants to begin now. Do not wait for permission or perfect conditions. The spark does not stay at full brightness forever. Act on it while it is still this hot, and let the refinement come after.' },
+    { id:'w2',  name:'Two of Wands',      suit:'wands', pts:[[.3,.25],[.7,.25],[.3,.75],[.7,.75],[.5,.5]], keywords:'planning · vision · decision', meaning:'The fire stands at the window holding the globe and looks at what is possible from a position of genuine power. The ID has arrived somewhere real and is now looking outward at what comes next. The Two of Wands is the moment before the adventure begins — the plans are being drawn, the possibilities are being felt in the body. One wand is planted behind; one is held in the hand. Trust the direction the body is already leaning.' },
+    { id:'w3',  name:'Three of Wands',    suit:'wands', pts:[[.5,.2],[.24,.5],[.76,.5],[.24,.86],[.76,.86]], keywords:'ambition · horizon · momentum', meaning:'The ships are on the horizon and they are yours. The ID made a plan — boldly, early, with more confidence than the circumstances warranted — and the plan worked. What was set in motion is now in motion without your constant supervision. The fire planned ahead and the evidence is coming in. Trust what was set in motion. Your work right now is to hold the horizon with both eyes open and be ready to receive what comes.' },
+    { id:'w4',  name:'Four of Wands',     suit:'wands', pts:[[.2,.25],[.4,.15],[.6,.15],[.8,.25],[.8,.75],[.6,.85],[.4,.85],[.2,.75]], keywords:'celebration · homecoming · harvest', meaning:'The four wands form the gateway and the garlands hang in welcome. Something has been completed and the body gets to celebrate before the next thing begins. The ID does not skip the party; it knows that marking milestones is not indulgence — it is the ritual that makes the effort mean something. You have earned a moment of genuine joy. The harvest is real. Walk through the gate.' },
+    { id:'w5',  name:'Five of Wands',     suit:'wands', pts:[[.5,.15],[.2,.4],[.8,.4],[.2,.7],[.8,.7],[.5,.9]], keywords:'conflict · competition · tension', meaning:'Everyone is swinging and no one seems to be winning, which is a specific kind of chaos the ID recognizes as formative. The Five of Wands is creative friction — people competing, testing each other, finding their edge through contact with other edges. This is the kind of conflict that sharpens. The question is whether the fighting is clarifying something or just burning energy. If there is a shared goal, the competition becomes productive.' },
+    { id:'w6',  name:'Six of Wands',      suit:'wands', pts:[[.5,.1],[.2,.42],[.8,.42],[.14,.66],[.86,.66],[.34,.9],[.66,.9]], keywords:'victory · recognition · pride', meaning:'The crowd is cheering and you earned it — not as a performance, but as the real result of real effort. The ID already knew this was coming because it was paying attention. Now the external world is confirming what the body has felt for some time: that what you have been building is worth something. Accept the recognition without deflecting it. Victory lap is not arrogance. It is acknowledgment of the cost of getting here.' },
+    { id:'w7',  name:'Seven of Wands',    suit:'wands', pts:[[.5,.15],[.25,.35],[.75,.35],[.2,.6],[.8,.6],[.35,.9],[.65,.9]], keywords:'defense · perseverance · stance', meaning:'The ID holds the high ground and it matters. Everyone seems to be pushing back at once — the voices, the doubts, the opposition — and the fire is choosing to stand rather than retreat. This takes a particular kind of stubbornness that is not the same as ego: it is the stubborn refusal to abandon something that is genuinely worth defending. Maintain your position. Do not negotiate down from something that is actually right.' },
+    { id:'w8',  name:'Eight of Wands',    suit:'wands', pts:[[.1,.2],[.3,.14],[.5,.1],[.7,.14],[.9,.2],[.7,.86],[.5,.9],[.3,.86]], keywords:'speed · acceleration · urgency', meaning:'Everything is arriving at once and the velocity is real. The ID is already moving — the decision has been made in the body before the conscious mind caught up. Eight wands in flight means events have outpaced the usual pace of things. Do not overthink this. The acceleration is not a warning; it is the universe matching your energy. Stay in your body, stay responsive, and trust that what is coming toward you was aimed in your direction for a reason.' },
+    { id:'w9',  name:'Nine of Wands',     suit:'wands', pts:[[.5,.1],[.65,.28],[.85,.42],[.78,.68],[.5,.88],[.22,.68],[.15,.42],[.35,.28],[.5,.5]], keywords:'resilience · last stand · guarded', meaning:'The ID is bruised and still standing, which is not nothing — it is everything. The wounded figure leans on the wand but does not drop it. There is one more push ahead and the body is not sure it has the reserves, but the choice to remain is already made. Guard yourself intelligently — the wariness is earned. But do not confuse the scars with the wound. You are not as depleted as fear is telling you.' },
+    { id:'w10', name:'Ten of Wands',      suit:'wands', pts:[[.5,.05],[.62,.26],[.76,.42],[.86,.62],[.8,.86],[.5,.75],[.2,.86],[.14,.62],[.24,.42],[.38,.26]], keywords:'burden · weight · overextension', meaning:'The fire is carrying too much and the body knows it, even if the mind keeps insisting on one more thing. Ten wands is not a discipline problem — it is often the result of caring too much about too many things that genuinely matter. But the weight is slowing you down. What can be put down without betrayal? Not what should be abandoned — but what has already been completed, or what belongs in someone else\'s hands now.' },
+    // PENTACLES
+    { id:'p1',  name:'Ace of Pentacles',  suit:'pentacles', pts:[[.5,.14],[.86,.5],[.5,.86],[.14,.5]], keywords:'seed · resource · ground', meaning:'Something material is beginning and the body recognizes the right soil before the mind has time to calculate the odds. The Ace of Pentacles is a real opportunity — not a concept, not a fantasy, but something tangible that can be planted and cultivated. The ID senses the ground is fertile. Plant the seed with intention. Water it with patience. The return on what is started here will compound in ways that are not yet visible but are already in motion.' },
+    { id:'p2',  name:'Two of Pentacles',  suit:'pentacles', pts:[[.3,.3],[.5,.2],[.7,.3],[.7,.7],[.5,.8],[.3,.7]], keywords:'balance · adaptability · juggling', meaning:'The body juggles two weights and manages to make it look graceful, but the ID knows how much effort that grace costs. Two pentacles in perpetual motion — income and expenses, work and rest, one obligation and another — and the sea behind churns with ships that are also riding the waves. The balance is in the motion, not the stillness. Keep moving. Adapt faster than the circumstances change.' },
+    { id:'p3',  name:'Three of Pentacles', suit:'pentacles', pts:[[.5,.2],[.2,.6],[.8,.6],[.35,.86],[.65,.86],[.5,.5]], keywords:'craft · skill · recognition', meaning:'The hands are producing something real and the work is being seen. The Three of Pentacles is the card of mastery in progress — not finished mastery, but the moment when skill becomes visible to others and earns the room\'s attention. Something you have practiced quietly is now producing a result that others recognize as genuine. The ID is satisfied in a specific way: the satisfaction of doing something well and knowing it.' },
+    { id:'p4',  name:'Four of Pentacles', suit:'pentacles', pts:[[.2,.2],[.8,.2],[.8,.8],[.2,.8],[.35,.35],[.65,.35],[.65,.65],[.35,.65]], keywords:'security · control · hoarding', meaning:'The figure holds the coins with both hands and feet, and the city is behind him. The ID recognizes this grip — the need to hold what was hard-won so tightly that the holding becomes its own kind of poverty. Security is real and legitimate; this reading is not telling you to give everything away. But there is a difference between protecting what matters and clutching it so hard that nothing new can enter. The pentacle on the crown is blocking the view.' },
+    { id:'p5',  name:'Five of Pentacles', suit:'pentacles', pts:[[.5,.14],[.2,.5],[.5,.86],[.8,.5],[.5,.5]], keywords:'lack · cold · faith', meaning:'The body knows scarcity in a way that is not metaphorical. Something material is missing — money, security, warmth, the sense of being provided for — and the cold is real. The two figures pass by the lit window and the ID registers the distance between where you are and where safety seems to be. But the window is lit. The door is not locked. The Five of Pentacles asks whether the poverty is also a belief that has outlasted the circumstances that created it.' },
+    { id:'p6',  name:'Six of Pentacles',  suit:'pentacles', pts:[[.5,.15],[.2,.42],[.8,.42],[.14,.68],[.86,.68],[.35,.9],[.65,.9]], keywords:'generosity · charity · exchange', meaning:'The scales are in hand and the coins are moving — some are given, some are received, and the flow itself is the point. The ID knows that abundance moves; it does not accumulate. What is given freely returns in some form; what is hoarded stagnates. This card asks which side of the exchange you are on right now, and whether the position is chosen or inherited. If you have, give. If you need, ask without shame.' },
+    { id:'p7',  name:'Seven of Pentacles', suit:'pentacles', pts:[[.5,.1],[.3,.35],[.7,.35],[.25,.62],[.75,.62],[.4,.9],[.6,.9]], keywords:'patience · assessment · tending', meaning:'The figure leans on the hoe and looks at what has grown, and the body is in that pause between effort and result. Seven pentacles hang in the vine — real, tangible, not yet harvested. The ID knows this feeling: you have done the work, and now you must wait, which is its own kind of discipline. Do not uproot the plant to check the roots. Do not harvest before the season. Tend what you have started.' },
+    { id:'p8',  name:'Eight of Pentacles', suit:'pentacles', pts:[[.15,.2],[.5,.1],[.85,.2],[.85,.5],[.5,.6],[.15,.5],[.3,.85],[.7,.85]], keywords:'mastery · practice · diligence', meaning:'The apprentice hammers the coin again and again and the coins hang on the wall above like completed chapters. The ID finds genuine satisfaction in the repetition — not boredom, but the pleasure of incremental refinement. Something is being mastered right now through practice, not talent. Each repetition is slightly better than the last. Show up, do the work, let the accumulation speak for itself.' },
+    { id:'p9',  name:'Nine of Pentacles', suit:'pentacles', pts:[[.5,.1],[.76,.24],[.86,.5],[.76,.76],[.5,.9],[.24,.76],[.14,.5],[.24,.24]], keywords:'abundance · earned · solitude', meaning:'What was built through discipline is now being enjoyed, and the enjoyment is clean because it was earned. The ID rests inside real security — not borrowed security, not performed security, but the kind that comes from having built the infrastructure of your own life with your own hands. The Nine of Pentacles is about beautiful solitude: the pleasure of your own company in surroundings you created. The garden is yours. Walk through it slowly.' },
+    { id:'p10', name:'Ten of Pentacles',  suit:'pentacles', pts:[[.5,.05],[.72,.2],[.86,.42],[.86,.65],[.7,.86],[.5,.95],[.3,.86],[.14,.65],[.14,.42],[.28,.2]], keywords:'legacy · wealth · inheritance', meaning:'The ten pentacles are arranged in the Kabbalistic tree of life, and three generations stand inside the archway. The ID recognizes the feeling of arriving somewhere that was built before you got here, or the feeling of building something that will outlast you. This is the card of legacy — not just financial, but the full weight of what is passed down and passed forward. What are you building that will matter after you are no longer the one tending it?' },
   ],
 
   // ── EGO: Court cards ─────────────────────────────────────────────────────
@@ -939,25 +986,28 @@ function showSpread(){
 
   cards.forEach(({card,group,posLabel,color},i)=>{
     const [R,G,B]=color;
-    const sz=clamp(70,Math.floor(window.innerWidth*.1),100);
     const el=document.createElement('div');
     el.className='spread-card';
-    el.style.borderColor=`rgba(${R},${G},${B},.28)`;
+    el.style.borderColor=`rgba(${R},${G},${B},.25)`;
     el.innerHTML=`
-      <div class="sc-group" style="color:rgba(${R},${G},${B},.5)">${posLabel}</div>
-      <div class="sc-name">${card.name}</div>
-      <div class="sc-keywords" style="color:rgba(${R},${G},${B},.38)">${card.keywords}</div>
-      <div class="sc-rule" style="background:linear-gradient(90deg,transparent,rgba(${R},${G},${B},.3),transparent)"></div>
-      <div class="sc-meaning">${card.meaning}</div>
-      <div class="sc-canvas-wrap">
-        <canvas class="sc-canvas" width="${sz}" height="${sz}" style="width:${sz}px;height:${sz}px;border-color:rgba(${R},${G},${B},.18)" id="scc${i}"></canvas>
+      <div class="sc-header">
+        <canvas class="sc-header-canvas" id="scc${i}"></canvas>
+        <div class="sc-header-overlay">
+          <div class="sc-group" style="color:rgba(${R},${G},${B},.55)">${posLabel}</div>
+          <div class="sc-name">${card.name}</div>
+        </div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-keywords" style="color:rgba(${R},${G},${B},.38)">${card.keywords}</div>
+        <div class="sc-rule" style="background:linear-gradient(90deg,transparent,rgba(${R},${G},${B},.28),transparent)"></div>
+        <div class="sc-meaning">${card.meaning}</div>
       </div>
     `;
     container.appendChild(el);
     setTimeout(()=>{
       el.classList.add('reveal');
-      drawCardCv(i,sz,color,card);
-    },200+i*380);
+      startCardAnimation(i,color,card);
+    },200+i*420);
   });
 
   // Synthesis
@@ -970,53 +1020,163 @@ function showSpread(){
   setTimeout(()=>document.getElementById('new-reading-btn').classList.add('show'),2400);
 }
 
-function drawCardCv(idx,sz,color,card){
-  const el=document.getElementById('scc'+idx);
-  if(!el)return;
-  const c=el.getContext('2d');
-  const [R,G,B]=color;
-  const w=el.width,h=el.height;
-  c.clearRect(0,0,w,h);
+// Track active card animations so we can cancel on new reading
+const cardAnimFrames = [];
 
-  const pts=card.pts;
+function startCardAnimation(idx, color, card) {
+  const cv2 = document.getElementById('scc' + idx);
+  if (!cv2) return;
+
+  // Size canvas to its CSS container
+  const rect = cv2.parentElement.getBoundingClientRect();
+  const W2 = rect.width || 240;
+  const H2 = rect.height || 160;
+  cv2.width = W2;
+  cv2.height = H2;
+
+  const c = cv2.getContext('2d');
+  const [R, G, B] = color;
+
+  // Map card pts to canvas coords with padding
+  const pts = card.pts;
   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  pts.forEach(([x,y])=>{if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;});
-  const pad=.15;
-  const aw=w*(1-pad*2),ah=h*(1-pad*2);
-  const sx=aw/(maxX-minX||1),sy=ah/(maxY-minY||1),sc=Math.min(sx,sy);
-  const cx=w/2,cy=h/2;
-  const offX=cx-(minX+maxX)/2*sc,offY=cy-(minY+maxY)/2*sc;
-  const mapped=pts.map(([x,y])=>({x:x*sc+offX,y:y*sc+offY}));
+  pts.forEach(([x,y])=>{ if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y; });
+  const padX = W2 * 0.14, padY = H2 * 0.16;
+  const scaleX = (W2 - padX*2) / (maxX-minX||1);
+  const scaleY = (H2 - padY*2) / (maxY-minY||1);
+  const sc = Math.min(scaleX, scaleY);
+  const offX = W2/2 - (minX+maxX)/2 * sc;
+  const offY = H2/2 - (minY+maxY)/2 * sc;
+  const mapped = pts.map(([x,y]) => ({ x: x*sc+offX, y: y*sc+offY }));
 
-  // Radial glow
-  const bg=c.createRadialGradient(cx,cy,0,cx,cy,sz*.5);
-  bg.addColorStop(0,`rgba(${R},${G},${B},.08)`);bg.addColorStop(1,'rgba(0,0,0,0)');
-  c.fillStyle=bg;c.fillRect(0,0,w,h);
-
-  // Draw constellation lines (connect each pair of points with a faint web)
-  // Use Delaunay-lite: connect each point to its 2 nearest neighbors
-  mapped.forEach((p,i)=>{
-    const dists=mapped.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
-    dists.slice(0,2).forEach(({j})=>{
-      c.beginPath();
-      c.strokeStyle=`rgba(${R},${G},${B},0.38)`;c.lineWidth=1.1;
-      c.moveTo(p.x,p.y);c.lineTo(mapped[j].x,mapped[j].y);c.stroke();
+  // Build edges: connect each point to 2 nearest neighbors
+  const edges = [];
+  const edgeSet = new Set();
+  mapped.forEach((p,i) => {
+    const dists = mapped.map((q,j) => ({j, d: Math.hypot(q.x-p.x, q.y-p.y)}))
+      .filter(v => v.j !== i).sort((a,b) => a.d-b.d);
+    dists.slice(0, 2).forEach(({j}) => {
+      const key = Math.min(i,j) + '-' + Math.max(i,j);
+      if (!edgeSet.has(key)) { edgeSet.add(key); edges.push([i,j]); }
     });
   });
 
-  // Stars
-  mapped.forEach(p=>{
-    const g=c.createRadialGradient(p.x,p.y,0,p.x,p.y,8);
-    g.addColorStop(0,`rgba(${R},${G},${B},.9)`);g.addColorStop(.5,`rgba(${R},${G},${B},.35)`);g.addColorStop(1,'rgba(0,0,0,0)');
-    c.fillStyle=g;c.beginPath();c.arc(p.x,p.y,8,0,Math.PI*2);c.fill();
-    c.fillStyle='rgba(255,255,255,.95)';c.beginPath();c.arc(p.x,p.y,2.2,0,Math.PI*2);c.fill();
-  });
+  // Traveling lights on edges
+  const travelers = edges.map((e,i) => ({
+    edge: e,
+    t: Math.random(), // position 0..1 along edge
+    speed: 0.004 + Math.random() * 0.006,
+    dir: Math.random() > 0.5 ? 1 : -1
+  }));
+
+  // Twinkling phases per star
+  const twinkles = mapped.map(() => ({
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.8 + Math.random() * 1.2
+  }));
+
+  let t2 = 0;
+  let rafId;
+
+  function frame() {
+    rafId = requestAnimationFrame(frame);
+    t2 += 0.016;
+    c.clearRect(0, 0, W2, H2);
+
+    // Background: deep space gradient
+    const bg = c.createRadialGradient(W2*.5, H2*.5, 0, W2*.5, H2*.5, Math.max(W2,H2)*.7);
+    bg.addColorStop(0, `rgba(${R},${G},${B},.07)`);
+    bg.addColorStop(0.5, 'rgba(4,3,12,.85)');
+    bg.addColorStop(1, 'rgba(2,2,8,1)');
+    c.fillStyle = bg; c.fillRect(0, 0, W2, H2);
+
+    // Subtle background star dust
+    for(let i=0;i<12;i++){
+      const bx=((i*137.5)%1)*W2, by=((i*97.3+13.7)%1)*H2;
+      const ba=0.06+0.04*Math.sin(t2*0.4+i*1.3);
+      c.beginPath(); c.arc(bx,by,0.7,0,Math.PI*2);
+      c.fillStyle=`rgba(255,255,255,${ba})`; c.fill();
+    }
+
+    // Draw edges
+    edges.forEach(([a,b]) => {
+      const pa = mapped[a], pb = mapped[b];
+      const eg = c.createLinearGradient(pa.x,pa.y,pb.x,pb.y);
+      eg.addColorStop(0, `rgba(${R},${G},${B},0.25)`);
+      eg.addColorStop(0.5, `rgba(${R},${G},${B},0.45)`);
+      eg.addColorStop(1, `rgba(${R},${G},${B},0.25)`);
+      c.beginPath(); c.strokeStyle = eg; c.lineWidth = 1;
+      c.moveTo(pa.x, pa.y); c.lineTo(pb.x, pb.y); c.stroke();
+    });
+
+    // Traveling lights
+    travelers.forEach(tr => {
+      tr.t += tr.speed * tr.dir;
+      if(tr.t > 1) { tr.t = 0; tr.dir = Math.random()>.5?1:-1; }
+      if(tr.t < 0) { tr.t = 1; tr.dir = Math.random()>.5?1:-1; }
+      const [a,b] = tr.edge;
+      const pa = mapped[a], pb = mapped[b];
+      const lx = pa.x + (pb.x-pa.x)*tr.t;
+      const ly = pa.y + (pb.y-pa.y)*tr.t;
+      const lg = c.createRadialGradient(lx,ly,0,lx,ly,5);
+      lg.addColorStop(0, 'rgba(255,255,255,.95)');
+      lg.addColorStop(0.4, `rgba(${R},${G},${B},.6)`);
+      lg.addColorStop(1, `rgba(${R},${G},${B},0)`);
+      c.fillStyle = lg; c.beginPath(); c.arc(lx,ly,5,0,Math.PI*2); c.fill();
+    });
+
+    // Draw stars
+    mapped.forEach((p, i) => {
+      const tw = twinkles[i];
+      const pulse = 0.5 + 0.5 * Math.sin(t2 * tw.speed + tw.phase);
+      const bR = 1.8 + pulse * 1.4;
+      const gR = bR * 3.5;
+
+      // Outer glow
+      const g1 = c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR*2);
+      g1.addColorStop(0, `rgba(${R},${G},${B},${(0.18*pulse).toFixed(3)})`);
+      g1.addColorStop(1, `rgba(${R},${G},${B},0)`);
+      c.fillStyle=g1; c.beginPath(); c.arc(p.x,p.y,gR*2,0,Math.PI*2); c.fill();
+
+      // Core glow
+      const g2 = c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR);
+      g2.addColorStop(0, `rgba(255,255,255,${(0.9*pulse+0.1).toFixed(2)})`);
+      g2.addColorStop(0.3, `rgba(${R},${G},${B},${(0.7*pulse).toFixed(2)})`);
+      g2.addColorStop(1, `rgba(${R},${G},${B},0)`);
+      c.fillStyle=g2; c.beginPath(); c.arc(p.x,p.y,gR,0,Math.PI*2); c.fill();
+
+      // Core dot
+      c.beginPath(); c.arc(p.x,p.y,bR,0,Math.PI*2);
+      c.fillStyle=`rgba(255,255,255,${(0.85+0.15*pulse).toFixed(2)})`; c.fill();
+
+      // Spikes
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy]) => {
+        const sl = gR * (1.6 + pulse * 0.8);
+        const sg = c.createLinearGradient(p.x,p.y,p.x+dx*sl,p.y+dy*sl);
+        sg.addColorStop(0, `rgba(${R},${G},${B},${(0.2*pulse).toFixed(2)})`);
+        sg.addColorStop(1, `rgba(${R},${G},${B},0)`);
+        c.beginPath(); c.strokeStyle=sg; c.lineWidth=0.6;
+        c.moveTo(p.x,p.y); c.lineTo(p.x+dx*sl,p.y+dy*sl); c.stroke();
+      });
+    });
+  }
+
+  // Cancel any existing animation on this slot
+  if (cardAnimFrames[idx]) cancelAnimationFrame(cardAnimFrames[idx]);
+  frame();
+  cardAnimFrames[idx] = rafId;
+}
+
+function stopCardAnimations() {
+  cardAnimFrames.forEach(id => { if(id) cancelAnimationFrame(id); });
+  cardAnimFrames.length = 0;
 }
 
 function clamp(a,v,b){return Math.max(a,Math.min(b,v));}
 
 // ── New reading ───────────────────────────────────────────────────────────
 function newReading(){
+  stopCardAnimations();
   const spread=document.getElementById('spread-display');
   spread.classList.remove('visible');
   setTimeout(()=>{
