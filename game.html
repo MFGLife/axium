@@ -592,9 +592,11 @@ let gameStarted=false;
 let nodes=[];
 const NODE_COUNT=58;
 let pathIndices=[];
+let lineProgress=[]; // 0..1 draw progress per edge, animated on tap
 let lastTouchPos=null;
-let matchedCards=null; // {id, ego, superego}
+let matchedCards=null;
 let readingActive=false;
+const LINE_DRAW_SPEED=0.06; // ~0.35s per edge at 60fps
 
 // ── Star colors ───────────────────────────────────────────────────────────
 function rndStarColor(){
@@ -614,10 +616,12 @@ function initMW(){
   }
 }
 function drawMW(){
+  if(!W||!H) return;
   milkyWayPts.forEach(p=>{
     p.a+=.00007;p.x=W*.5+Math.cos(p.a)*p.r*1.5;p.y=H*.6+Math.sin(p.a)*p.r*.42;
     const tw=.5+.5*Math.sin(T*p.ts+p.tp);
-    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.sz*3);
+    const g=safeRadialGradient(p.x,p.y,0,p.x,p.y,p.sz*3);
+    if(!g) return;
     g.addColorStop(0,`rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.al*tw})`);
     g.addColorStop(1,`rgba(${p.col[0]},${p.col[1]},${p.col[2]},0)`);
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.sz*3,0,Math.PI*2);ctx.fill();
@@ -633,7 +637,8 @@ function drawBg(){
   bgStars.forEach(s=>{
     const tw=.3+.7*Math.abs(Math.sin(s.ph+T*s.spd));
     const b=s.rad,gR=b*(2.3+tw*1.4);
-    const h1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2);
+    const h1=safeRadialGradient(s.x,s.y,0,s.x,s.y,gR*2);
+    if(!h1) return;
     h1.addColorStop(0,`rgba(${s.col[0]},${s.col[1]},${s.col[2]},${(.06*tw).toFixed(3)})`);
     h1.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=h1;ctx.beginPath();ctx.arc(s.x,s.y,gR*2,0,Math.PI*2);ctx.fill();
@@ -649,14 +654,27 @@ function spawnShoot(){
   let y=Math.random()>.5?(Math.random()<.5?-50:H+50):Math.random()*H;
   shoots.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,len:50+Math.random()*75,a:.6+Math.random()*.2,w:.7+Math.random()*1.1});
 }
-spawnShoot();
-setInterval(()=>{if(Math.random()<.28)spawnShoot();},5500);
+// Guard: only spawn once W/H are valid
+setInterval(()=>{if(W&&H&&Math.random()<.28)spawnShoot();},5500);
+
+// Safe gradient helpers — skip draw if any coord is non-finite
+function safeLinearGradient(x0,y0,x1,y1){
+  if(!isFinite(x0)||!isFinite(y0)||!isFinite(x1)||!isFinite(y1)) return null;
+  return ctx.createLinearGradient(x0,y0,x1,y1);
+}
+function safeRadialGradient(x0,y0,r0,x1,y1,r1){
+  if(!isFinite(x0)||!isFinite(y0)||!isFinite(r0)||!isFinite(x1)||!isFinite(y1)||!isFinite(r1)) return null;
+  if(r0<0||r1<0) return null;
+  return ctx.createRadialGradient(x0,y0,r0,x1,y1,r1);
+}
+
 function drawShoots(){
   const k=[];
   shoots.forEach(s=>{
     if(s.a<=.02)return;
     const tx=s.x-s.vx*(s.len/10),ty=s.y-s.vy*(s.len/10);
-    const gd=ctx.createLinearGradient(s.x,s.y,tx,ty);
+    const gd=safeLinearGradient(s.x,s.y,tx,ty);
+    if(!gd){k.push(s);return;}
     gd.addColorStop(0,`rgba(212,175,55,${s.a.toFixed(2)})`);
     gd.addColorStop(1,'rgba(212,175,55,0)');
     ctx.beginPath();ctx.strokeStyle=gd;ctx.lineWidth=s.w;ctx.moveTo(s.x,s.y);ctx.lineTo(tx,ty);ctx.stroke();
@@ -693,7 +711,7 @@ function generateNodes(){
     att++;
     const x=mg+Math.random()*pW,y=topY+Math.random()*pH;
     if(nodes.every(n=>Math.hypot(n.x-x,n.y-y)>minD)){
-      nodes.push({x,y,r:.6+Math.random()*1.1,mag:.2+Math.random()*.8,ph:Math.random()*Math.PI*2,spd:.4+Math.random()*.7,col:rndStarColor(),inPath:false,pathIdx:-1,orbits:[],pulsePhase:Math.random()*Math.PI*2,pulseSpeed:.5+Math.random()*.5,pulseAmt:0});
+      nodes.push({x,y,r:.6+Math.random()*1.1,mag:.2+Math.random()*.8,ph:Math.random()*Math.PI*2,spd:.4+Math.random()*.7,col:rndStarColor(),inPath:false,pathIdx:-1,orbits:[],pulsePhase:Math.random()*Math.PI*2,pulseSpeed:.5+Math.random()*.5,pulseAmt:0,selectFlash:0});
     }
   }
 }
@@ -707,41 +725,74 @@ function initOrbits(node){
 
 // ── Draw nodes & path ─────────────────────────────────────────────────────
 function drawScene(){
-  // Ambient soft glow near path centroid
+  // Advance line draw animations
+  for(let i=0;i<lineProgress.length;i++){
+    if(lineProgress[i]<1) lineProgress[i]=Math.min(1,lineProgress[i]+LINE_DRAW_SPEED);
+  }
+
+  // Ambient glow at path centroid
   if(pathIndices.length>2){
     let cx=0,cy=0;
     pathIndices.forEach(i=>{cx+=nodes[i].x;cy+=nodes[i].y;});
     cx/=pathIndices.length;cy/=pathIndices.length;
-    const ng=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.28);
-    ng.addColorStop(0,'rgba(212,175,55,.04)');
-    ng.addColorStop(1,'rgba(212,175,55,0)');
-    ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+    const ng=safeRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.28);
+    if(ng){
+      ng.addColorStop(0,'rgba(212,175,55,.04)');
+      ng.addColorStop(1,'rgba(212,175,55,0)');
+      ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+    }
   }
 
-  // Path edges
-  for(let i=1;i<pathIndices.length;i++){
-    const na=nodes[pathIndices[i-1]],nb=nodes[pathIndices[i]];
-    const prog=(T*1.8)%1;
-    const eg=ctx.createLinearGradient(na.x,na.y,nb.x,nb.y);
-    eg.addColorStop(0,'rgba(212,175,55,.2)');
-    eg.addColorStop(.5,'rgba(212,175,55,.5)');
-    eg.addColorStop(1,'rgba(212,175,55,.2)');
-    ctx.beginPath();ctx.strokeStyle=eg;ctx.lineWidth=1.6;ctx.moveTo(na.x,na.y);ctx.lineTo(nb.x,nb.y);ctx.stroke();
-    // traveling mote
-    const lx=na.x+(nb.x-na.x)*prog,ly=na.y+(nb.y-na.y)*prog;
-    const lg=ctx.createRadialGradient(lx,ly,0,lx,ly,6);
-    lg.addColorStop(0,'rgba(255,255,255,.9)');lg.addColorStop(.5,'rgba(212,175,55,.6)');lg.addColorStop(1,'rgba(212,175,55,0)');
-    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,6,0,Math.PI*2);ctx.fill();
+  // Drawn edges — each animates from previous node toward new node
+  for(let i=0;i<lineProgress.length;i++){
+    const p=lineProgress[i];
+    if(p<=0) continue;
+    const na=nodes[pathIndices[i]];
+    const nb=nodes[pathIndices[i+1]];
+    if(!na||!nb) continue;
+    const ex=na.x+(nb.x-na.x)*p;
+    const ey=na.y+(nb.y-na.y)*p;
+    const drawBright=p<1?0.9:0.55;
+    const eg=safeLinearGradient(na.x,na.y,ex,ey);
+    if(eg){
+      eg.addColorStop(0,`rgba(212,175,55,${(drawBright*0.45).toFixed(2)})`);
+      eg.addColorStop(0.5,`rgba(212,175,55,${drawBright.toFixed(2)})`);
+      eg.addColorStop(1,`rgba(212,175,55,${(drawBright*0.6).toFixed(2)})`);
+      ctx.beginPath();ctx.strokeStyle=eg;ctx.lineWidth=1.8;
+      ctx.moveTo(na.x,na.y);ctx.lineTo(ex,ey);ctx.stroke();
+    }
+    if(p<1){
+      const tipG=safeRadialGradient(ex,ey,0,ex,ey,10);
+      if(tipG){
+        tipG.addColorStop(0,'rgba(255,255,255,1)');
+        tipG.addColorStop(0.3,'rgba(212,175,55,.9)');
+        tipG.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.fillStyle=tipG;ctx.beginPath();ctx.arc(ex,ey,10,0,Math.PI*2);ctx.fill();
+      }
+    }
+    if(p>=1){
+      const prog=(T*1.8)%1;
+      const lx=na.x+(nb.x-na.x)*prog,ly=na.y+(nb.y-na.y)*prog;
+      const lg=safeRadialGradient(lx,ly,0,lx,ly,5);
+      if(lg){
+        lg.addColorStop(0,'rgba(255,255,255,.9)');
+        lg.addColorStop(0.5,'rgba(212,175,55,.6)');
+        lg.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,5,0,Math.PI*2);ctx.fill();
+      }
+    }
   }
 
-  // Dashed live line
-  if(pathIndices.length>0&&lastTouchPos){
+  // Dashed live line from last node to cursor
+  if(pathIndices.length>0&&lastTouchPos&&isFinite(lastTouchPos.x)&&isFinite(lastTouchPos.y)){
     const last=nodes[pathIndices[pathIndices.length-1]];
-    const dl=ctx.createLinearGradient(last.x,last.y,lastTouchPos.x,lastTouchPos.y);
-    dl.addColorStop(0,'rgba(212,175,55,.3)');dl.addColorStop(1,'rgba(212,175,55,.06)');
-    ctx.beginPath();ctx.strokeStyle=dl;ctx.lineWidth=1;
-    ctx.setLineDash([4,7]);ctx.moveTo(last.x,last.y);ctx.lineTo(lastTouchPos.x,lastTouchPos.y);
-    ctx.stroke();ctx.setLineDash([]);
+    const dl=safeLinearGradient(last.x,last.y,lastTouchPos.x,lastTouchPos.y);
+    if(dl){
+      dl.addColorStop(0,'rgba(212,175,55,.3)');dl.addColorStop(1,'rgba(212,175,55,.06)');
+      ctx.beginPath();ctx.strokeStyle=dl;ctx.lineWidth=1;
+      ctx.setLineDash([4,7]);ctx.moveTo(last.x,last.y);ctx.lineTo(lastTouchPos.x,lastTouchPos.y);
+      ctx.stroke();ctx.setLineDash([]);
+    }
   }
 
   // Orbits
@@ -750,7 +801,8 @@ function drawScene(){
     n.orbits.forEach(o=>{
       o.angle+=o.speed;
       const ox=n.x+Math.cos(o.angle)*o.radius,oy=n.y+Math.sin(o.angle)*o.radius;
-      const g=ctx.createRadialGradient(ox,oy,0,ox,oy,o.size*2.5);
+      const g=safeRadialGradient(ox,oy,0,ox,oy,o.size*2.5);
+      if(!g) return;
       g.addColorStop(0,'rgba(212,175,55,.85)');g.addColorStop(.6,'rgba(212,175,55,.3)');g.addColorStop(1,'rgba(212,175,55,0)');
       ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,o.size*2.5,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(ox,oy,o.size*.45,0,Math.PI*2);ctx.fill();
@@ -760,45 +812,64 @@ function drawScene(){
   // Nodes
   nodes.forEach(n=>{
     const inP=n.inPath;
+    if(!isFinite(n.x)||!isFinite(n.y)) return;
     const tw=.45+.55*Math.sin(T*1.1*n.spd+n.ph);
-    // Pulse effect for matched nodes (after reading)
-    const pulse=n.pulseAmt>0 ? n.pulseAmt*Math.sin(T*8+n.pulsePhase)*.5+.5 : 0;
+    const pulse=n.pulseAmt>0?n.pulseAmt*Math.sin(T*8+n.pulsePhase)*.5+.5:0;
+    if(n.selectFlash>0) n.selectFlash=Math.max(0,n.selectFlash-0.025);
+    const sf=n.selectFlash;
     const [R,G,B]=inP?[212,175,55]:n.col;
-    const bR=(inP?2.6+n.mag*2.6:.65+n.mag*1.1)*(1+pulse*.8);
+    const bR=(inP?2.6+n.mag*2.6:.65+n.mag*1.1)*(1+pulse*.8)*(1+sf*1.2);
     const gR=bR*(inP?4.2:2.3);
 
+    if(sf>0){
+      const flashR=gR*(1+sf*6);
+      ctx.beginPath();ctx.arc(n.x,n.y,flashR,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,255,255,${(sf*0.7).toFixed(2)})`;ctx.lineWidth=2;ctx.stroke();
+      const fb=safeRadialGradient(n.x,n.y,0,n.x,n.y,gR*(1+sf*3));
+      if(fb){
+        fb.addColorStop(0,`rgba(255,255,255,${(sf*0.5).toFixed(2)})`);
+        fb.addColorStop(0.4,`rgba(212,175,55,${(sf*0.3).toFixed(2)})`);
+        fb.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.fillStyle=fb;ctx.beginPath();ctx.arc(n.x,n.y,gR*(1+sf*3),0,Math.PI*2);ctx.fill();
+      }
+    }
+
     if(pulse>0){
-      // Pulsing ring
       const pr=gR*(2+pulse*3);
       ctx.beginPath();ctx.arc(n.x,n.y,pr,0,Math.PI*2);
       ctx.strokeStyle=`rgba(${R},${G},${B},${(.4*pulse).toFixed(2)})`;ctx.lineWidth=1.5;ctx.stroke();
     }
 
-    const g1=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,gR*2.1);
-    g1.addColorStop(0,`rgba(${R},${G},${B},${((inP?.22:.04)*(1+pulse*.5)*(.7+.3*tw)).toFixed(3)})`);
-    g1.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    ctx.fillStyle=g1;ctx.beginPath();ctx.arc(n.x,n.y,gR*2.1,0,Math.PI*2);ctx.fill();
+    const g1=safeRadialGradient(n.x,n.y,0,n.x,n.y,gR*2.1);
+    if(g1){
+      g1.addColorStop(0,`rgba(${R},${G},${B},${((inP?.22:.04)*(1+pulse*.5)*(1+sf*.8)*(.7+.3*tw)).toFixed(3)})`);
+      g1.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      ctx.fillStyle=g1;ctx.beginPath();ctx.arc(n.x,n.y,gR*2.1,0,Math.PI*2);ctx.fill();
+    }
 
-    const iA=inP?.86:tw*.2;
-    const g2=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,gR);
-    g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`);
-    g2.addColorStop(.28,`rgba(${R},${G},${B},${(iA*.65).toFixed(2)})`);
-    g2.addColorStop(1,`rgba(${R},${G},${B},0)`);
-    ctx.fillStyle=g2;ctx.beginPath();ctx.arc(n.x,n.y,gR,0,Math.PI*2);ctx.fill();
+    const iA=inP?Math.min(1,.86+sf*.14):tw*.2+sf*.4;
+    const g2=safeRadialGradient(n.x,n.y,0,n.x,n.y,gR);
+    if(g2){
+      g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`);
+      g2.addColorStop(.28,`rgba(${R},${G},${B},${(iA*.65).toFixed(2)})`);
+      g2.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      ctx.fillStyle=g2;ctx.beginPath();ctx.arc(n.x,n.y,gR,0,Math.PI*2);ctx.fill();
+    }
 
     ctx.beginPath();ctx.arc(n.x,n.y,bR,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${(inP?1:tw*.24+.14).toFixed(2)})`;ctx.fill();
+    ctx.fillStyle=`rgba(255,255,255,${(inP?Math.min(1,1+sf*.2):tw*.24+.14+sf*.3).toFixed(2)})`;ctx.fill();
 
     if(inP){
       [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
-        const sl=gR*2.1;
-        const sg=ctx.createLinearGradient(n.x,n.y,n.x+dx*sl,n.y+dy*sl);
-        sg.addColorStop(0,`rgba(212,175,55,${(.16*tw).toFixed(2)})`);sg.addColorStop(1,'rgba(212,175,55,0)');
-        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=.6;ctx.moveTo(n.x,n.y);ctx.lineTo(n.x+dx*sl,n.y+dy*sl);ctx.stroke();
+        const sl=gR*(2.1+sf*2);
+        const sg=safeLinearGradient(n.x,n.y,n.x+dx*sl,n.y+dy*sl);
+        if(!sg) return;
+        sg.addColorStop(0,`rgba(212,175,55,${(.16*tw+sf*.4).toFixed(2)})`);sg.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=.6+sf*.8;ctx.moveTo(n.x,n.y);ctx.lineTo(n.x+dx*sl,n.y+dy*sl);ctx.stroke();
       });
       const fs=Math.max(8,Math.min(10,W*.013));
       ctx.font=`700 ${fs}px Space Mono`;ctx.textAlign='center';
-      ctx.fillStyle='rgba(212,175,55,.6)';
+      ctx.fillStyle=`rgba(212,175,55,${(.6+sf*.4).toFixed(2)})`;
       ctx.fillText(n.pathIdx+1,n.x,n.y-bR-6);
     }
   });
@@ -843,16 +914,21 @@ function handleTap(e){
   if(nodes[idx].inPath)return;
   nodes[idx].inPath=true;
   nodes[idx].pathIdx=pathIndices.length;
+  // Node select flash — bright white bloom that fades over ~1s
+  nodes[idx].selectFlash=1.0;
   pathIndices.push(idx);
+  // Start a new edge draw animation (one per connection, so edges = nodes-1)
+  if(pathIndices.length>1) lineProgress.push(0);
   initOrbits(nodes[idx]);
-  burst(nodes[idx].x,nodes[idx].y,[212,175,55],14);
+  burst(nodes[idx].x,nodes[idx].y,[212,175,55],22);
   updateUI();
 }
 
 function handleMove(e){
   if(!gameStarted||readingActive)return;
   if(document.getElementById('spread-display').classList.contains('show'))return;
-  lastTouchPos=getPos(e);
+  const pos=getPos(e);
+  if(isFinite(pos.x)&&isFinite(pos.y)) lastTouchPos=pos;
 }
 
 function handleUp(){
@@ -870,8 +946,8 @@ function updateUI(){
 }
 
 function clearPath(){
-  nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;});
-  pathIndices=[];lastTouchPos=null;
+  nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;n.selectFlash=0;});
+  pathIndices=[];lineProgress=[];lastTouchPos=null;
   document.getElementById('nc').textContent='0';
   document.getElementById('node-count').classList.remove('active');
   document.getElementById('read-btn').classList.remove('show');
@@ -1183,8 +1259,8 @@ function newReading(){
     spread.classList.remove('show');
     document.getElementById('synthesis-wrap').classList.remove('show');
     document.getElementById('new-reading-btn').classList.remove('show');
-    nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;n.col=rndStarColor();});
-    pathIndices=[];lastTouchPos=null;readingActive=false;
+    nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;n.selectFlash=0;n.col=rndStarColor();});
+    pathIndices=[];lineProgress=[];lastTouchPos=null;readingActive=false;
     document.getElementById('nc').textContent='0';
     document.getElementById('node-count').classList.remove('active');
     document.getElementById('guide-text').classList.remove('hidden');
