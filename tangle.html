@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AXIUM — Untangle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#D4AF37;
+  --gold-dim:rgba(212,175,55,.35);
+  --gold-ghost:rgba(212,175,55,.08);
+  --void:#02020a;
+  --text:rgba(255,255,255,.72);
+  --text-dim:rgba(255,255,255,.28);
+  --gabriel:#7EB8E8;
+  --ariel:#D4A0C8;
+  --crossing:rgba(200,80,70,.9);
+  --clear:rgba(126,184,232,.45);
+  --solved:rgba(212,175,55,.7);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--void);}
+
+body{
+  font-family:'Cinzel',serif;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ── STARFIELD ── */
+#bg-canvas{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+}
+
+/* ── GAME WRAP ── */
+#game-wrap{
+  position:relative;
+  width:min(100vw,100vh);
+  height:min(100vw,100vh);
+  max-width:700px;max-height:700px;
+  z-index:1;
+}
+
+#game-canvas{
+  display:block;width:100%;height:100%;
+  cursor:default;
+}
+
+/* ── HUD — TOP CENTER ── */
+#hud{
+  position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  pointer-events:none;z-index:10;
+}
+.hud-label{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.4em;
+  text-transform:uppercase;color:rgba(212,175,55,.3);
+}
+#level-display{
+  font-family:'Cinzel Decorative',serif;font-size:clamp(13px,2.5vw,18px);
+  font-weight:900;letter-spacing:.18em;color:var(--gold);
+  text-shadow:0 0 24px rgba(212,175,55,.4);
+}
+#crossing-count{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(28px,5vw,42px);font-weight:300;
+  color:rgba(255,255,255,.8);line-height:1;
+  transition:color .4s;
+}
+#crossing-count.zero{color:var(--gold);text-shadow:0 0 30px rgba(212,175,55,.5);}
+.hud-cross-label{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(255,255,255,.18);margin-top:2px;
+}
+
+/* ── TIMER ARC RING ── */
+#timer-wrap{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(100%,100%);height:min(100%,100%);
+  pointer-events:none;z-index:5;
+}
+#timer-svg{
+  position:absolute;inset:0;width:100%;height:100%;
+  overflow:visible;
+}
+#timer-arc{
+  fill:none;stroke:rgba(212,175,55,.18);stroke-width:1.5;
+  stroke-linecap:round;
+  transition:stroke .6s;
+}
+#timer-arc.urgent{stroke:rgba(200,80,70,.5);}
+
+/* ── CONTROLS — TOP RIGHT ── */
+#controls{
+  position:absolute;top:20px;right:20px;
+  display:flex;gap:8px;z-index:10;
+}
+.ctrl-btn{
+  width:34px;height:34px;
+  background:rgba(212,175,55,.05);
+  border:1px solid rgba(212,175,55,.18);
+  border-radius:2px;color:rgba(212,175,55,.45);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s;font-size:13px;
+}
+.ctrl-btn:hover{
+  background:rgba(212,175,55,.12);
+  border-color:rgba(212,175,55,.5);
+  color:var(--gold);
+}
+.ctrl-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.5;fill:none;}
+
+/* ── TOP LEFT — AXIUM LOGO ── */
+#logo{
+  position:absolute;top:20px;left:20px;z-index:10;
+  font-family:'Cinzel Decorative',serif;font-size:11px;
+  letter-spacing:.2em;color:rgba(212,175,55,.28);font-weight:900;
+  text-decoration:none;
+}
+
+/* ── TIMER LABEL — BOTTOM LEFT ── */
+#timer-label{
+  position:absolute;bottom:22px;left:22px;z-index:10;
+  display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  pointer-events:none;
+}
+#timer-seconds{
+  font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);font-weight:600;
+  letter-spacing:.1em;color:rgba(255,255,255,.55);line-height:1;
+  transition:color .4s;
+}
+#timer-seconds.urgent{color:rgba(200,80,70,.9);text-shadow:0 0 16px rgba(200,80,70,.4);}
+.timer-sub{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(255,255,255,.15);
+}
+
+/* ── NODE COUNT INDICATOR — BOTTOM RIGHT ── */
+#node-indicator{
+  position:absolute;bottom:22px;right:22px;z-index:10;
+  display:flex;flex-direction:column;align-items:flex-end;gap:2px;
+  pointer-events:none;
+}
+#node-count-num{
+  font-family:'Cinzel',serif;font-size:clamp(18px,3vw,26px);font-weight:600;
+  letter-spacing:.1em;color:rgba(255,255,255,.4);line-height:1;
+}
+.node-sub{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(255,255,255,.12);
+}
+
+/* ── OVERLAY: SOLVED / RESET ── */
+#overlay{
+  position:absolute;inset:0;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+  background:rgba(2,2,10,.88);
+  backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;
+  transition:opacity .5s;
+}
+#overlay.visible{opacity:1;pointer-events:all;}
+
+.overlay-eyebrow{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.4em;
+  text-transform:uppercase;color:rgba(212,175,55,.35);margin-bottom:16px;
+}
+.overlay-title{
+  font-family:'Cinzel Decorative',serif;font-size:clamp(22px,4vw,36px);
+  font-weight:900;letter-spacing:.12em;color:var(--gold);
+  text-shadow:0 0 60px rgba(212,175,55,.3);margin-bottom:8px;
+}
+.overlay-sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(13px,2vw,16px);color:rgba(255,255,255,.35);
+  letter-spacing:.06em;margin-bottom:36px;max-width:320px;
+}
+.overlay-btn{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--gold);
+  background:rgba(212,175,55,.07);
+  border:1px solid rgba(212,175,55,.4);
+  padding:14px 40px;border-radius:2px;cursor:pointer;
+  transition:all .35s;display:inline-block;
+}
+.overlay-btn:hover{
+  background:rgba(212,175,55,.16);
+  border-color:var(--gold);
+  box-shadow:0 0 40px rgba(212,175,55,.2);
+}
+.overlay-stats{
+  display:flex;gap:32px;margin-bottom:36px;
+}
+.overlay-stat{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.overlay-stat-num{
+  font-family:'Cinzel',serif;font-size:clamp(20px,3vw,28px);
+  font-weight:600;letter-spacing:.1em;color:var(--gold);
+}
+.overlay-stat-lbl{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(255,255,255,.2);
+}
+.new-node-tag{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(126,184,232,.6);
+  border:1px solid rgba(126,184,232,.2);padding:5px 12px;border-radius:2px;
+  margin-top:12px;display:inline-block;
+}
+
+/* ── INTRO SCREEN ── */
+#intro{
+  position:absolute;inset:0;z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px;
+  background:var(--void);
+  transition:opacity .6s;
+}
+#intro.hidden{opacity:0;pointer-events:none;}
+.intro-logo{
+  font-family:'Cinzel Decorative',serif;font-size:clamp(28px,6vw,48px);
+  font-weight:900;letter-spacing:.15em;color:var(--gold);
+  text-shadow:0 0 80px rgba(212,175,55,.2);margin-bottom:6px;
+}
+.intro-sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(14px,2.5vw,18px);color:rgba(255,255,255,.25);
+  letter-spacing:.1em;margin-bottom:48px;
+}
+.intro-rule{
+  width:80px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);
+  margin:0 auto 40px;
+}
+.intro-desc{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(13px,2vw,15px);
+  color:rgba(255,255,255,.3);letter-spacing:.05em;line-height:1.9;
+  max-width:320px;margin:0 auto 40px;
+}
+.intro-graphic-wrap{
+  width:100px;height:100px;margin:0 auto 36px;position:relative;
+}
+.intro-graphic-wrap canvas{width:100%;height:100%;}
+.start-btn{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--gold);
+  background:rgba(212,175,55,.07);
+  border:1px solid rgba(212,175,55,.35);
+  padding:16px 52px;border-radius:2px;cursor:pointer;
+  transition:all .4s;
+}
+.start-btn:hover{
+  background:rgba(212,175,55,.14);
+  border-color:rgba(212,175,55,.7);
+  box-shadow:0 0 40px rgba(212,175,55,.15);
+}
+
+/* ── HINT TEXT ── */
+#hint-text{
+  position:absolute;top:64px;right:20px;z-index:10;
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(212,175,55,.55);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+#hint-text.visible{opacity:1;}
+
+/* ── STREAK BADGE ── */
+#streak{
+  position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+  z-index:10;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+#streak-num{
+  font-family:'Cinzel',serif;font-size:clamp(14px,2.5vw,18px);
+  font-weight:600;letter-spacing:.12em;color:rgba(212,175,55,.4);
+  line-height:1;transition:color .4s;
+}
+#streak-num.hot{color:var(--gold);text-shadow:0 0 20px rgba(212,175,55,.5);}
+.streak-sub{
+  font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(255,255,255,.1);
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- Starfield -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Game -->
+<div id="game-wrap">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Timer SVG ring (drawn over canvas, same size) -->
+  <svg id="timer-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible;">
+    <circle id="timer-track" fill="none" stroke="rgba(212,175,55,.07)" stroke-width="1.5"/>
+    <circle id="timer-arc" fill="none" stroke="rgba(212,175,55,.22)" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>
+
+  <!-- Logo -->
+  <a id="logo" href="index.html">AXIUM</a>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-label">Level</div>
+    <div id="level-display">I</div>
+    <div id="crossing-count">0</div>
+    <div class="hud-cross-label">crossings</div>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button class="ctrl-btn" id="hint-btn" title="Hint">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><text x="12" y="16.5" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor" stroke="none" font-family="serif">?</text></svg>
+    </button>
+    <button class="ctrl-btn" id="reset-btn" title="Reshuffle">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    </button>
+  </div>
+
+  <!-- Hint text -->
+  <div id="hint-text">Drag toward the ghost</div>
+
+  <!-- Timer label -->
+  <div id="timer-label">
+    <div id="timer-seconds">40</div>
+    <div class="timer-sub">seconds</div>
+  </div>
+
+  <!-- Node count -->
+  <div id="node-indicator">
+    <div id="node-count-num">4</div>
+    <div class="node-sub">nodes</div>
+  </div>
+
+  <!-- Streak -->
+  <div id="streak">
+    <div id="streak-num">1</div>
+    <div class="streak-sub">solved streak</div>
+  </div>
+
+  <!-- Solved/Reset overlay -->
+  <div id="overlay">
+    <div class="overlay-eyebrow" id="overlay-eyebrow">Constellation Clear</div>
+    <div class="overlay-title" id="overlay-title">Untangled</div>
+    <div class="overlay-sub" id="overlay-sub">The pattern resolves.</div>
+    <div class="overlay-stats" id="overlay-stats">
+      <div class="overlay-stat"><div class="overlay-stat-num" id="stat-level">I</div><div class="overlay-stat-lbl">Level</div></div>
+      <div class="overlay-stat"><div class="overlay-stat-num" id="stat-nodes">4</div><div class="overlay-stat-lbl">Nodes</div></div>
+      <div class="overlay-stat"><div class="overlay-stat-num" id="stat-streak">1</div><div class="overlay-stat-lbl">Streak</div></div>
+    </div>
+    <div class="new-node-tag" id="new-node-tag">+ 1 node added</div>
+    <button class="overlay-btn" id="next-btn">Continue →</button>
+  </div>
+
+  <!-- Intro -->
+  <div id="intro">
+    <div class="intro-logo">Untangle</div>
+    <div class="intro-sub">A cathedral puzzle</div>
+    <div class="intro-rule"></div>
+    <canvas class="intro-graphic-wrap" id="intro-canvas" width="200" height="200" style="width:100px;height:100px;"></canvas>
+    <div class="intro-desc">
+      Drag the nodes until no lines cross.<br>
+      Each solved level adds a node.<br>
+      40 seconds before reset.
+    </div>
+    <button class="start-btn" id="start-btn">Begin</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// STARFIELD BACKGROUND
+// ─────────────────────────────────────────────
+(function(){
+  const bg = document.getElementById('bg-canvas');
+  const bx = bg.getContext('2d');
+  let BW, BH, BT = 0, stars = [], nebs = [];
+  function rCol(){const t=Math.random();if(t<.3)return[200+t*55,210+t*45,255];if(t<.7)return[240,240,255];return[255,240,196+t*59];}
+  function initBG(){
+    BW = bg.width = window.innerWidth; BH = bg.height = window.innerHeight;
+    stars = Array.from({length:120},()=>({x:Math.random()*BW,y:Math.random()*BH,r:.2+Math.random()*.8,ph:Math.random()*6.28,sp:.1+Math.random()*.3,col:rCol()}));
+    const pals=[[80,40,120],[40,30,100],[20,50,90],[60,20,80],[30,60,80]];
+    nebs = Array.from({length:4},(_,i)=>({x:Math.random()*BW,y:Math.random()*BH,rx:(.16+Math.random()*.2)*Math.max(BW,BH),ry:(.08+Math.random()*.11)*Math.max(BW,BH),angle:Math.random()*3.14,alpha:.01+Math.random()*.015,dx:(Math.random()-.5)*.04,dy:(Math.random()-.5)*.02,da:(Math.random()-.5)*.0001,ts:.08+Math.random()*.12,tp:Math.random()*6.28,col:pals[i%5]}));
+  }
+  function bgFrame(){
+    requestAnimationFrame(bgFrame); BT+=.014;
+    bx.fillStyle='#02020a'; bx.fillRect(0,0,BW,BH);
+    nebs.forEach(n=>{n.x+=n.dx;n.y+=n.dy;n.angle+=n.da;const tw=.7+.3*Math.sin(BT*n.ts+n.tp);bx.save();bx.translate(n.x,n.y);bx.rotate(n.angle);bx.scale(1,n.ry/n.rx);const g=bx.createRadialGradient(0,0,0,0,0,n.rx);g.addColorStop(0,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},${(n.alpha*tw).toFixed(4)})`);g.addColorStop(1,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},0)`);bx.fillStyle=g;bx.beginPath();bx.arc(0,0,n.rx,0,Math.PI*2);bx.fill();bx.restore();});
+    stars.forEach(s=>{const tw=.3+.7*Math.abs(Math.sin(s.ph+BT*s.sp));bx.beginPath();bx.arc(s.x,s.y,s.r,0,Math.PI*2);bx.fillStyle=`rgba(255,255,255,${(.7*tw).toFixed(2)})`;bx.fill();});
+  }
+  window.addEventListener('resize',initBG);
+  initBG(); bgFrame();
+})();
+
+// ─────────────────────────────────────────────
+// INTRO ANIMATION
+// ─────────────────────────────────────────────
+(function(){
+  const ic = document.getElementById('intro-canvas');
+  const ix = ic.getContext('2d');
+  const W = ic.width, H = ic.height;
+  let t = 0;
+  const pts = [
+    {x:.18,y:.18},{x:.82,y:.18},{x:.82,y:.82},{x:.18,y:.82},{x:.5,y:.1},{x:.5,y:.9},{x:.1,y:.5},{x:.9,y:.5}
+  ].map(p=>({x:p.x*W,y:p.y*H,ph:Math.random()*6.28}));
+  const links = [[0,2],[1,3],[4,5],[6,7],[0,5],[1,4],[2,6],[3,7]];
+  function introFrame(){
+    requestAnimationFrame(introFrame); t+=.018;
+    ix.clearRect(0,0,W,H);
+    links.forEach(([a,b])=>{
+      ix.beginPath();ix.moveTo(pts[a].x,pts[a].y);ix.lineTo(pts[b].x,pts[b].y);
+      ix.strokeStyle='rgba(212,175,55,.22)';ix.lineWidth=1.5;ix.stroke();
+    });
+    pts.forEach((p,i)=>{
+      const tw=.5+.5*Math.sin(t*.8+p.ph);
+      const gr=ix.createRadialGradient(p.x,p.y,0,p.x,p.y,10);
+      gr.addColorStop(0,`rgba(212,175,55,${.8*tw+.1})`);gr.addColorStop(1,'rgba(212,175,55,0)');
+      ix.fillStyle=gr;ix.beginPath();ix.arc(p.x,p.y,10,0,Math.PI*2);ix.fill();
+      ix.beginPath();ix.arc(p.x,p.y,3.5,0,Math.PI*2);
+      ix.fillStyle=`rgba(255,255,255,${.85+.15*tw})`;ix.fill();
+    });
+  }
+  introFrame();
+})();
+
+// ─────────────────────────────────────────────
+// GAME ENGINE
+// ─────────────────────────────────────────────
+const canvas  = document.getElementById('game-canvas');
+const ctx     = canvas.getContext('2d');
+const wrap    = document.getElementById('game-wrap');
+const dpr     = window.devicePixelRatio || 1;
+let W, H;
+
+function resize(){
+  const r = wrap.getBoundingClientRect();
+  W = r.width; H = r.height;
+  canvas.width  = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+  updateTimerSVG();
+  if(gameStarted) repositionOnResize();
+}
+window.addEventListener('resize', resize);
+
+// ─── ROMAN NUMERAL HELPER ───
+function toRoman(n){
+  const val=[1000,900,500,400,100,90,50,40,10,9,5,4,1];
+  const sym=['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+  let r='';val.forEach((v,i)=>{while(n>=v){r+=sym[i];n-=v;}});return r;
+}
+
+// ─── TIMER SVG RING ───
+const TIMER_DURATION = 40;
+let timerTotal = TIMER_DURATION;
+
+function updateTimerSVG(){
+  const r  = wrap.getBoundingClientRect();
+  const cx = r.width / 2, cy = r.height / 2;
+  const radius = Math.min(r.width, r.height) / 2 - 8;
+  const track = document.getElementById('timer-track');
+  const arc   = document.getElementById('timer-arc');
+  track.setAttribute('cx', cx); track.setAttribute('cy', cy); track.setAttribute('r', radius);
+  arc.setAttribute('cx', cx); arc.setAttribute('cy', cy); arc.setAttribute('r', radius);
+  arc.setAttribute('stroke-dasharray', 2 * Math.PI * radius);
+  arc._radius = radius; arc._cx = cx; arc._cy = cy;
+}
+
+function setTimerArc(frac){
+  const arc = document.getElementById('timer-arc');
+  if(!arc._radius) return;
+  const circ = 2 * Math.PI * arc._radius;
+  arc.setAttribute('stroke-dashoffset', circ * (1 - frac));
+  arc.setAttribute('transform', `rotate(-90,${arc._cx},${arc._cy})`);
+}
+
+// ─── STATE ───
+let nodes       = [];
+let edges       = [];
+let draggedNode = null;
+let hoveredNode = null;
+let hintedNode  = null;
+let ghostPos    = null;
+let level       = 1;
+let nodeCount   = 4;       // starts at 4, grows by 1 each solve
+let solved      = false;
+let celebrating = false;
+let crossings   = 0;
+let gameStarted = false;
+let hintPulse   = 0;
+let solvedT     = 0;
+let streak      = 0;
+let timerLeft   = TIMER_DURATION;
+let timerInterval = null;
+let lastTimerTick = 0;
+let timerRunning  = false;
+let animT = 0;
+
+// ─── NODE CLASS ───
+class Node{
+  constructor(x,y,id){
+    this.x=x; this.y=y; this.id=id;
+    this.r=13; this.scale=1; this.hintGlow=0;
+    this.trail=[]; // for solved shimmer
+  }
+  draw(){
+    const isDrag   = draggedNode===this;
+    const isHover  = hoveredNode===this;
+    const isHinted = hintedNode===this;
+    const sr = this.r * this.scale;
+
+    // outer glow when dragging
+    if(isDrag){
+      const g = ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,sr*2.8);
+      g.addColorStop(0,'rgba(212,175,55,.15)');g.addColorStop(1,'rgba(212,175,55,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(this.x,this.y,sr*2.8,0,Math.PI*2);ctx.fill();
+    }
+
+    // hint pulse ring
+    if(isHinted && this.hintGlow>0){
+      const ring = sr + 7 + Math.sin(hintPulse)*3;
+      ctx.beginPath();ctx.arc(this.x,this.y,ring,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(212,175,55,${this.hintGlow*.6})`;
+      ctx.lineWidth=2;ctx.stroke();
+    }
+
+    // solved shimmer
+    if(solvedT>0){
+      const glow = ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,sr*2.4);
+      glow.addColorStop(0,`rgba(212,175,55,${.5*solvedT})`);glow.addColorStop(1,'rgba(212,175,55,0)');
+      ctx.fillStyle=glow;ctx.beginPath();ctx.arc(this.x,this.y,sr*2.4,0,Math.PI*2);ctx.fill();
+    }
+
+    // shadow
+    ctx.beginPath();
+    ctx.arc(this.x+(isDrag?8:3),this.y+(isDrag?10:4),sr,0,Math.PI*2);
+    ctx.fillStyle=isDrag?'rgba(0,0,0,.35)':'rgba(0,0,0,.25)';ctx.fill();
+
+    // node body
+    ctx.beginPath(); ctx.arc(this.x,this.y,sr,0,Math.PI*2);
+    if(solvedT>0){
+      ctx.fillStyle=`rgba(212,175,55,${.6+.4*solvedT})`;
+    } else if(isDrag){
+      ctx.fillStyle='rgba(212,175,55,.85)';
+    } else if(isHinted && this.hintGlow>0){
+      ctx.fillStyle=`rgba(212,175,55,${.4+this.hintGlow*.5})`;
+    } else if(isHover){
+      ctx.fillStyle='rgba(126,184,232,.7)';
+    } else {
+      ctx.fillStyle='rgba(255,255,255,.65)';
+    }
+    ctx.fill();
+
+    // inner dot
+    ctx.beginPath();ctx.arc(this.x,this.y,sr*.28,0,Math.PI*2);
+    ctx.fillStyle=solvedT>0?'rgba(255,255,255,.9)':'rgba(2,2,10,.7)';
+    ctx.fill();
+  }
+  contains(px,py){
+    const dx=px-this.x,dy=py-this.y;
+    return dx*dx+dy*dy<=(this.r+14)*(this.r+14);
+  }
+}
+
+// ─── GEOMETRY ───
+function ccw(A,B,C){return(C.y-A.y)*(B.x-A.x)>(B.y-A.y)*(C.x-A.x);}
+function segmentsIntersect(p1,p2,p3,p4){
+  if(p1.id===p3.id||p1.id===p4.id||p2.id===p3.id||p2.id===p4.id)return false;
+  return(ccw(p1,p3,p4)!==ccw(p2,p3,p4))&&(ccw(p1,p2,p3)!==ccw(p1,p2,p4));
+}
+function countAll(){
+  let c=0;
+  for(let i=0;i<edges.length;i++)for(let j=i+1;j<edges.length;j++)
+    if(segmentsIntersect(edges[i].a,edges[i].b,edges[j].a,edges[j].b))c++;
+  return c;
+}
+function edgeCrosses(e){
+  for(const o of edges){if(e===o)continue;if(segmentsIntersect(e.a,e.b,o.a,o.b))return true;}return false;
+}
+function nodeCrossings(node){
+  let c=0;
+  const ne=edges.filter(e=>e.a===node||e.b===node);
+  for(const e of ne)for(const o of edges){if(e===o)continue;if(segmentsIntersect(e.a,e.b,o.a,o.b))c++;}
+  return c;
+}
+function crossingsAt(node,x,y){
+  const ox=node.x,oy=node.y;node.x=x;node.y=y;
+  const c=nodeCrossings(node);node.x=ox;node.y=oy;return c;
+}
+
+// ─── HINT ───
+function findWorstNode(){
+  let worst=null,mx=0;
+  for(const n of nodes){const c=nodeCrossings(n);if(c>mx){mx=c;worst=n;}}
+  return worst;
+}
+function findBetterPos(node){
+  const cur=nodeCrossings(node);if(!cur)return null;
+  const cx=W/2,cy=H/2,rad=Math.min(W,H)/2-60;
+  let best=null,bestC=cur;
+  for(let a=0;a<Math.PI*2;a+=Math.PI/18){
+    for(let r=rad*.2;r<=rad*.95;r+=rad*.12){
+      const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
+      const c=crossingsAt(node,x,y);
+      if(c<bestC){bestC=c;best={x,y};}
+    }
+  }
+  return best;
+}
+function showHint(){
+  if(solved||celebrating||!gameStarted)return;
+  if(hintedNode)gsap.to(hintedNode,{hintGlow:0,duration:.2});
+  ghostPos=null;
+  const worst=findWorstNode();if(!worst)return;
+  const pos=findBetterPos(worst);if(!pos)return;
+  hintedNode=worst;
+  ghostPos={x:pos.x,y:pos.y,opacity:0,nodeId:worst.id};
+  gsap.to(ghostPos,{opacity:1,duration:.4,ease:'power2.out'});
+  document.getElementById('hint-text').classList.add('visible');
+  gsap.to(worst,{hintGlow:1,duration:.5,ease:'power2.out'});
+  gsap.to(worst,{hintGlow:0,duration:.5,delay:5,ease:'power2.in',onComplete:()=>{hintedNode=null;document.getElementById('hint-text').classList.remove('visible');}});
+  gsap.to(ghostPos,{opacity:0,duration:.5,delay:5,ease:'power2.in',onComplete:()=>{ghostPos=null;}});
+}
+
+// ─── LEVEL GENERATION ───
+function generateLevel(){
+  nodes=[]; edges=[];
+  solved=false; celebrating=false; solvedT=0;
+  hintedNode=null; ghostPos=null;
+
+  const n = nodeCount;
+  const cx=W/2, cy=H/2;
+  const baseR = Math.min(W,H)/2 - 70;
+
+  // place on scrambled circle
+  for(let i=0;i<n;i++){
+    const ang = Math.random()*Math.PI*2;
+    const dist = baseR*(.35+Math.random()*.55);
+    nodes.push(new Node(cx+Math.cos(ang)*dist, cy+Math.sin(ang)*dist, i));
+  }
+
+  // polygon ring
+  for(let i=0;i<n;i++) edges.push({a:nodes[i],b:nodes[(i+1)%n]});
+
+  // diagonals — scale with node count
+  const diagCount = Math.floor((n-3)/2);
+  for(let d=0;d<diagCount;d++){
+    const step=Math.floor(n/3)+d;
+    edges.push({a:nodes[d%n], b:nodes[(d+step)%n]});
+  }
+
+  // extra random edges for large levels
+  if(n>=8){
+    const extraEdges=Math.floor((n-7)/2)+1;
+    for(let e=0;e<extraEdges;e++){
+      const a=Math.floor(Math.random()*n);
+      const b=(a+Math.floor(n/4)+Math.floor(Math.random()*(n/3)))%n;
+      if(a!==b) edges.push({a:nodes[a],b:nodes[b]});
+    }
+  }
+
+  // ensure crossings exist (re-scramble if flat)
+  let tries=0;
+  while(countAll()<2 && tries<80){
+    nodes.forEach(nd=>{
+      const ang=Math.random()*Math.PI*2;
+      const dist=baseR*(.25+Math.random()*.65);
+      nd.x=cx+Math.cos(ang)*dist; nd.y=cy+Math.sin(ang)*dist;
+    });
+    tries++;
+  }
+
+  updateHUD();
+}
+
+// ─── REPOSITION ON RESIZE ───
+function repositionOnResize(){
+  const cx=W/2,cy=H/2;
+  const baseR=Math.min(W,H)/2-70;
+  nodes.forEach(n=>{
+    // keep relative position but clamp to new bounds
+    const dx=n.x-cx,dy=n.y-cy;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const maxR=baseR*.95;
+    if(dist>maxR){const f=maxR/dist;n.x=cx+dx*f;n.y=cy+dy*f;}
+  });
+}
+
+// ─── TIMER ───
+function startTimer(){
+  timerLeft = TIMER_DURATION;
+  timerRunning = true;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    if(!timerRunning)return;
+    timerLeft--;
+    updateTimerDisplay();
+    if(timerLeft<=0) onTimeout();
+  },1000);
+}
+
+function stopTimer(){timerRunning=false;clearInterval(timerInterval);}
+
+function updateTimerDisplay(){
+  const el=document.getElementById('timer-seconds');
+  el.textContent=Math.max(0,timerLeft);
+  const frac=timerLeft/TIMER_DURATION;
+  setTimerArc(frac);
+  const urgent=timerLeft<=10;
+  el.classList.toggle('urgent',urgent);
+  document.getElementById('timer-arc').classList.toggle('urgent',urgent);
+}
+
+function onTimeout(){
+  if(solved||celebrating)return;
+  stopTimer();
+  streak=0;
+  showOverlay('reset');
+}
+
+// ─── HUD UPDATE ───
+function updateHUD(){
+  const c=countAll();
+  crossings=c;
+  const el=document.getElementById('crossing-count');
+  el.textContent=c;
+  el.classList.toggle('zero',c===0);
+  document.getElementById('level-display').textContent=toRoman(level);
+  document.getElementById('node-count-num').textContent=nodeCount;
+  document.getElementById('streak-num').textContent=streak;
+  document.getElementById('streak-num').classList.toggle('hot',streak>=3);
+}
+
+function updateCrossings(){
+  crossings=countAll();
+  const el=document.getElementById('crossing-count');
+  el.textContent=crossings;
+  el.classList.toggle('zero',crossings===0);
+  if(crossings===0&&!solved&&!celebrating&&gameStarted) onSolved();
+}
+
+// ─── SOLVE ───
+function onSolved(){
+  solved=true; celebrating=true;
+  stopTimer();
+  streak++;
+  document.getElementById('hint-text').classList.remove('visible');
+  if(hintedNode){gsap.to(hintedNode,{hintGlow:0,duration:.2});hintedNode=null;}
+  ghostPos=null;
+
+  gsap.to({val:0},{val:1,duration:.8,ease:'power2.out',onUpdate:function(){solvedT=this.targets()[0].val;}});
+
+  setTimeout(()=>{
+    showOverlay('solved');
+    celebrating=false;
+  },1400);
+}
+
+function showOverlay(type){
+  const ov=document.getElementById('overlay');
+  const eyebrow=document.getElementById('overlay-eyebrow');
+  const title=document.getElementById('overlay-title');
+  const sub=document.getElementById('overlay-sub');
+  const tag=document.getElementById('new-node-tag');
+  const sLevel=document.getElementById('stat-level');
+  const sNodes=document.getElementById('stat-nodes');
+  const sStreak=document.getElementById('stat-streak');
+  const btn=document.getElementById('next-btn');
+
+  if(type==='solved'){
+    eyebrow.textContent='Constellation Clear';
+    title.textContent='Untangled';
+    sub.textContent=streak>=5?'Extraordinary clarity.':streak>=3?'The pattern resolves.':'Beautifully done.';
+    tag.textContent='+ 1 node added';
+    tag.style.display='inline-block';
+    btn.textContent='Continue →';
+    sLevel.textContent=toRoman(level);
+    sNodes.textContent=nodeCount;
+    sStreak.textContent=streak;
+  } else {
+    eyebrow.textContent='Time Expired';
+    title.textContent='Reset';
+    sub.textContent='The constellation reforms. Hold the question differently.';
+    tag.style.display='none';
+    btn.textContent='Try Again →';
+    sLevel.textContent=toRoman(level);
+    sNodes.textContent=nodeCount;
+    sStreak.textContent='0';
+  }
+
+  ov.classList.add('visible');
+}
+
+function hideOverlay(){
+  document.getElementById('overlay').classList.remove('visible');
+}
+
+// ─── NEXT LEVEL ───
+function nextLevel(){
+  hideOverlay();
+  if(solved){
+    level++;
+    nodeCount++;   // ALWAYS add a node on solve
+  } else {
+    // timeout reset — same level, same node count
+    streak=0;
+  }
+
+  gsap.to(nodes,{scale:0,duration:.25,stagger:.015,ease:'power2.in',onComplete:()=>{
+    generateLevel();
+    nodes.forEach(n=>n.scale=0);
+    gsap.to(nodes,{scale:1,duration:.38,stagger:.025,ease:'back.out(1.7)'},);
+    startTimer();
+    updateHUD();
+  }});
+}
+
+// ─── RESET (same level) ───
+function resetLevel(){
+  if(!gameStarted||solved||celebrating)return;
+  stopTimer();
+  document.getElementById('hint-text').classList.remove('visible');
+  hintedNode=null; ghostPos=null;
+  gsap.to(nodes,{scale:0,duration:.18,stagger:.01,ease:'power2.in',onComplete:()=>{
+    generateLevel();
+    nodes.forEach(n=>n.scale=0);
+    gsap.to(nodes,{scale:1,duration:.3,stagger:.02,ease:'back.out(1.5)'},);
+    startTimer();
+    updateHUD();
+  }});
+}
+
+// ─── DRAW LOOP ───
+function draw(){
+  requestAnimationFrame(draw);
+  animT += .016;
+  hintPulse += .07;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='rgba(2,2,10,.0)'; ctx.fillRect(0,0,W,H); // transparent — bg canvas shows
+
+  if(!gameStarted)return;
+
+  // Ghost
+  if(ghostPos&&ghostPos.opacity>0){
+    ctx.beginPath();ctx.arc(ghostPos.x,ghostPos.y,16,0,Math.PI*2);
+    ctx.fillStyle=`rgba(212,175,55,${ghostPos.opacity*.18})`;ctx.fill();
+    ctx.setLineDash([4,5]);
+    ctx.strokeStyle=`rgba(212,175,55,${ghostPos.opacity*.7})`;
+    ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);
+    const pr=16+6+Math.sin(hintPulse*1.8)*4;
+    ctx.beginPath();ctx.arc(ghostPos.x,ghostPos.y,pr,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(212,175,55,${ghostPos.opacity*.3})`;
+    ctx.lineWidth=1.5;ctx.stroke();
+  }
+
+  // Edges
+  ctx.lineCap='round';
+  for(const e of edges){
+    const crosses=edgeCrosses(e);
+    ctx.beginPath();ctx.moveTo(e.a.x,e.a.y);ctx.lineTo(e.b.x,e.b.y);
+    if(solvedT>0){
+      ctx.strokeStyle=`rgba(212,175,55,${.45+.3*solvedT})`;
+      ctx.lineWidth=1.8+solvedT;
+    } else if(crosses){
+      ctx.strokeStyle='rgba(200,80,70,.75)';
+      ctx.lineWidth=2;
+    } else {
+      ctx.strokeStyle='rgba(126,184,232,.35)';
+      ctx.lineWidth=1.5;
+    }
+    ctx.stroke();
+  }
+
+  // Nodes
+  const sorted=[...nodes].sort((a,b)=>{
+    if(a===draggedNode)return 1;if(b===draggedNode)return-1;return 0;
+  });
+  for(const n of sorted)n.draw();
+}
+
+// ─── INPUT ───
+function getPos(e){
+  const r=canvas.getBoundingClientRect();
+  const cl=e.touches?e.touches[0].clientX:e.clientX;
+  const ct=e.touches?e.touches[0].clientY:e.clientY;
+  return{x:(cl-r.left)*(W/(r.width)),y:(ct-r.top)*(H/(r.height))};
+}
+
+function onDown(e){
+  if(!gameStarted||solved||celebrating)return;
+  const pos=getPos(e);
+  for(const n of nodes){
+    if(n.contains(pos.x,pos.y)){
+      draggedNode=n;
+      if(n===hintedNode){gsap.to(n,{hintGlow:0,duration:.2});hintedNode=null;document.getElementById('hint-text').classList.remove('visible');}
+      gsap.to(n,{scale:1.18,duration:.2,ease:'back.out(2)'});
+      canvas.style.cursor='grabbing';
+      break;
+    }
+  }
+}
+function onMove(e){
+  if(!gameStarted)return;
+  const pos=getPos(e);
+  if(draggedNode){
+    draggedNode.x=pos.x; draggedNode.y=pos.y;
+    updateCrossings();
+    if(ghostPos&&ghostPos.nodeId===draggedNode.id){
+      const dx=pos.x-ghostPos.x,dy=pos.y-ghostPos.y;
+      if(dx*dx+dy*dy<500)gsap.to(ghostPos,{opacity:0,duration:.2});
+    }
+  } else if(!solved&&!celebrating){
+    let found=null;
+    for(const n of nodes){if(n.contains(pos.x,pos.y)){found=n;break;}}
+    if(found!==hoveredNode){
+      if(hoveredNode&&hoveredNode!==hintedNode)gsap.to(hoveredNode,{scale:1,duration:.2});
+      hoveredNode=found;
+      if(hoveredNode){gsap.to(hoveredNode,{scale:1.1,duration:.2});canvas.style.cursor='grab';}
+      else canvas.style.cursor='default';
+    }
+  }
+}
+function onUp(){
+  if(draggedNode){
+    gsap.to(draggedNode,{scale:1,duration:.3,ease:'back.out(1.5)'});
+    draggedNode=null;
+    canvas.style.cursor=hoveredNode?'grab':'default';
+  }
+}
+
+canvas.addEventListener('mousedown',onDown);
+canvas.addEventListener('mousemove',onMove);
+canvas.addEventListener('mouseup',onUp);
+canvas.addEventListener('mouseleave',onUp);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();onDown(e);},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();onMove(e);},{passive:false});
+canvas.addEventListener('touchend',onUp);
+
+document.getElementById('hint-btn').addEventListener('click',showHint);
+document.getElementById('reset-btn').addEventListener('click',resetLevel);
+document.getElementById('next-btn').addEventListener('click',nextLevel);
+
+// ─── START ───
+document.getElementById('start-btn').addEventListener('click',()=>{
+  const intro=document.getElementById('intro');
+  intro.classList.add('hidden');
+  setTimeout(()=>{intro.style.display='none';},700);
+
+  gameStarted=true;
+  resize();
+  generateLevel();
+  updateHUD();
+
+  nodes.forEach(n=>n.scale=0);
+  gsap.to(nodes,{scale:1,duration:.5,stagger:.05,ease:'back.out(1.7)'});
+
+  startTimer();
+  updateTimerDisplay();
+  draw();
+});
+
+// Boot resize + draw
+resize();
+draw();
+</script>
+</body>
+</html>
