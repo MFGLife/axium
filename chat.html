@@ -460,7 +460,7 @@ footer {
   </div>
   <div class="site-label">Axium.church — Field Operations</div>
   <h1>The Arsenal</h1>
-  <p class="header-sub">Sixty-four openers. Three follow-up types each. One destination. Drop the line. Wait. Then deliver the address.</p>
+  <p class="header-sub">Eighty openers. Three follow-up types each. One destination. Drop the line. Wait. Then deliver the address.</p>
   <div class="divider">
     <div class="divider-line"></div>
     <div class="divider-glyph">✦</div>
@@ -479,6 +479,8 @@ footer {
     <a href="#sec-ai">AI</a>
     <a href="#sec-political">Political</a>
     <a href="#sec-flatearth">Flat Earth</a>
+    <a href="#sec-mentalhealth">Mental Health</a>
+    <a href="#sec-race">Race &amp; Identity</a>
     <a href="#cta">The Site</a>
   </div>
 </nav>
@@ -486,7 +488,7 @@ footer {
 <main>
   <div id="arsenal" class="controls-bar reveal">
     <span class="controls-label">Filter</span>
-    <button class="filter-btn active" onclick="filterCards('all',this)">All 64</button>
+    <button class="filter-btn active" onclick="filterCards('all',this)">All 80</button>
     <button class="filter-btn" onclick="filterCards('christianity',this)">Christianity</button>
     <button class="filter-btn" onclick="filterCards('atheism',this)">Atheism</button>
     <button class="filter-btn" onclick="filterCards('manifestation',this)">Manifestation</button>
@@ -495,8 +497,10 @@ footer {
     <button class="filter-btn" onclick="filterCards('ai',this)">AI</button>
     <button class="filter-btn" onclick="filterCards('political',this)">Political</button>
     <button class="filter-btn" onclick="filterCards('flatearth',this)">Flat Earth</button>
+    <button class="filter-btn" onclick="filterCards('mentalhealth',this)">Mental Health</button>
+    <button class="filter-btn" onclick="filterCards('race',this)">Race &amp; Identity</button>
     <div class="ctrl-spacer"></div>
-    <span class="count-badge" id="countBadge">64 shots</span>
+    <span class="count-badge" id="countBadge">80 shots</span>
     <button class="shuffle-btn" id="shuffleBtn" onclick="shuffleCards()">⟳ Shuffle</button>
   </div>
 
@@ -921,6 +925,107 @@ var MATRIX = [
     psych:'The historical grounding of this calculation matters psychologically: this predates every institution being blamed for the supposed cover-up by over two millennia. The distrust narrative requires a conspiracy that was already operating before the Roman Empire. The anachronism is worth examining.',
     religion:'Wisdom literature consistently honors careful observation of the natural world as a path toward wisdom. Proverbs 8 personifies wisdom as present at the ordering of physical reality — implying that patient, careful engagement with how things actually are is itself a form of encounter with something larger than the observation.'
   }
+,
+
+  // ── MENTAL HEALTH / THERAPY CULTURE ─────────────────────────
+  { id:'mh01', cat:'mentalhealth',
+    shot1:'Therapy didn\'t replace the work. It just gave the work a room to happen in.',
+    science:'Outcomes research on psychotherapy consistently shows that the strongest predictor of therapeutic benefit is not the modality — CBT, psychodynamic, ACT — but the quality of the therapeutic alliance. The relationship is the mechanism. The techniques are the language it uses.',
+    psych:'People often enter therapy expecting to be fixed by someone with the right answers. The research shows it works when they use the relationship to do their own examination. The therapist doesn\'t heal the person. They create the conditions under which the person heals themselves.',
+    religion:'Every serious spiritual tradition built a relationship-based practice for exactly this reason — confessor, spiritual director, guru, elder. The role was never to have better answers. It was to hold the space where the person could encounter what they were avoiding. The container enables the work.'
+  },
+  { id:'mh02', cat:'mentalhealth',
+    shot1:'Diagnosing yourself from a TikTok isn\'t self-awareness. It\'s self-labeling. There\'s a meaningful difference.',
+    science:'Diagnostic criteria for mental health conditions exist on spectrums that require trained evaluation of severity, duration, and functional impairment across contexts. Self-diagnosis from symptom lists systematically over-identifies — anxiety checklists applied broadly produce near-universal positive results.',
+    psych:'Identity-based diagnosis — adopting a clinical label as a core self-description — can function as both genuine self-understanding and as a way to foreclose deeper examination. The label explains behavior without requiring change. That can be relief or avoidance. The difference matters.',
+    religion:'The examined life requires specificity. Naming something you\'re experiencing is the beginning of the work, not the completion of it. Every tradition that built genuine transformation knew the difference between naming your condition and understanding it. The name is the door. Walking through it is another matter.'
+  },
+  { id:'mh03', cat:'mentalhealth',
+    shot1:'Medication and therapy aren\'t the same thing. One adjusts the conditions. The other changes what you do with them.',
+    science:'Neurobiological research shows that psychiatric medication primarily modulates the substrate — reducing symptom amplitude, shifting the floor of functional capacity. Psychotherapy produces structural changes in how the brain processes and responds. Both are valid. Conflating them produces unrealistic expectations of both.',
+    psych:'People who expect medication to do what therapy does stop it when it doesn\'t produce insight. People who expect therapy to do what medication does get frustrated when talking doesn\'t regulate acute symptoms. The disappointment is usually a category error, not a treatment failure.',
+    religion:'Spiritual traditions have always distinguished between practices that clear the ground and practices that cultivate what grows in it. Fasting, silence, and rest clear the ground. Prayer, study, and service cultivate the growth. Using one in place of the other produces the same confusion.'
+  },
+  { id:'mh04', cat:'mentalhealth',
+    shot1:'Trauma isn\'t what happened to you. It\'s what happened inside you because of what happened. That distinction changes everything about how you heal.',
+    science:'Peter Levine\'s somatic trauma research and van der Kolk\'s work both establish that trauma is encoded in the body\'s regulatory systems, not primarily in narrative memory. The event is the trigger. The lasting impact is the dysregulation it installs. Healing targets the dysregulation, not just the story.',
+    psych:'Focusing exclusively on the narrative of what happened — retelling the event — without addressing the somatic response it activated can reinforce the traumatic encoding rather than resolve it. This is why some talk therapy produces re-traumatization. The story isn\'t where the wound lives.',
+    religion:'The contemplative tradition understood this in practice before the neuroscience confirmed it. Centering prayer, body-based meditation, breathwork — these were not decorative. They were technologies for accessing the level of the person where the wound actually lives. The body keeps the score. The tradition knew.'
+  },
+  { id:'mh05', cat:'mentalhealth',
+    shot1:'Boundaries aren\'t walls you build to keep people out. They\'re the definition of where you end and someone else begins.',
+    science:'Self-differentiation research in family systems theory — Bowen — shows that clearly defined psychological boundaries correlate with measurably better relationship outcomes, lower anxiety, and higher resilience than either enmeshed or isolated patterns. The boundary enables genuine contact, not just protection.',
+    psych:'The contemporary misuse of "boundary" as a synonym for preference enforcement misses what the research shows. A boundary is not a demand that others behave differently. It is a clarity about what you will and won\'t do. The distinction is the difference between self-definition and control.',
+    religion:'Martin Buber\'s I-Thou relationship requires two distinct selves in genuine encounter. Without differentiation — where I end and you begin — there is no meeting, only merger. The tradition valued genuine encounter above comfort. Genuine encounter requires clearly defined individuals.'
+  },
+  { id:'mh06', cat:'mentalhealth',
+    shot1:'Toxic positivity and optimism aren\'t the same thing. One suppresses what\'s real. The other works with it.',
+    science:'Positive psychology research by Seligman distinguishes learned optimism — a cognitive style that interprets setbacks as temporary and specific — from forced positivity, which suppresses negative affect without processing it. The outcomes diverge sharply. Learned optimism predicts resilience. Forced positivity predicts emotional blunting.',
+    psych:'When people are told to look on the bright side of genuine loss or systemic harm, the message received is: your experience is inconvenient. The suppression that follows doesn\'t resolve the underlying state — it delays and compounds it. Acknowledgment is the prerequisite for processing, not the obstacle to it.',
+    religion:'Lamentations exists in the canon specifically because the tradition understood that some experiences require full expression before movement is possible. The Psalms contain more complaint than praise. The tradition didn\'t sanitize grief — it gave it form. Form is what allows grief to move through rather than accumulate.'
+  },
+  { id:'mh07', cat:'mentalhealth',
+    shot1:'The most dangerous thought in mental health culture is that being self-aware means you\'re done.',
+    science:'Metacognition research shows that self-awareness is a tool, not a destination. High self-awareness without behavioral change produces sophisticated self-justification rather than transformation. The insight has to get into the nervous system to change anything. That requires practice, not just understanding.',
+    psych:'A common pattern in long-term therapy clients is the development of elaborate, accurate, and completely ineffective self-narratives. They can describe their patterns in clinical language, trace them to childhood origins, and then repeat them with full awareness. Insight is necessary but not sufficient. The gap between knowing and changing is where the actual work lives.',
+    religion:'Every tradition that produced genuine transformation built practice into its center — not insight, not understanding, not belief. Practice. The Desert Fathers said: go to your cell, and your cell will teach you everything. Not: understand your cell. Go to it. Repeatedly. Under conditions of discomfort. That is the mechanism.'
+  },
+  { id:'mh08', cat:'mentalhealth',
+    shot1:'Healing isn\'t returning to who you were before. That person is how you got here.',
+    science:'Post-traumatic growth research — Tedeschi and Calhoun — documents that meaningful recovery trajectories produce people who are genuinely different from their pre-trauma selves in ways they value: greater compassion, clearer priorities, deeper relationships. Returning to baseline is often a grief response, not a recovery goal.',
+    psych:'The fantasy of returning to the person before the loss, the diagnosis, the rupture is structurally impossible and psychologically counterproductive. The work is integration, not restoration. Who you become with the experience is the actual question. The old self was the container that broke so something larger could form.',
+    religion:'The resurrection narrative is not a restoration narrative. The risen figure is not identical to the pre-crucifixion figure — the wounds are still present, recognition takes time. The tradition encoded the truth that transformation passes through, not around, the breaking. The return is always to something new.'
+  },
+
+  // ── RACE & IDENTITY ──────────────────────────────────────────
+  { id:'ri01', cat:'race',
+    shot1:'Race is a social technology built to do a specific job. Understanding what job it was built to do is more useful than debating whether it\'s real.',
+    science:'Genetic research — including the Human Genome Project — established that there is more genetic variation within racial categories than between them. Race has no meaningful biological substrate. As a social and legal category with material consequences, it is entirely real. These two facts are compatible and both necessary.',
+    psych:'The brain categorizes for efficiency — ingroup/outgroup distinctions activate faster and earlier in processing than almost any other social information. The categories we use are culturally inherited, not biologically given. But once installed, they operate automatically. Understanding the installation is the prerequisite for examining the operation.',
+    religion:'The imago dei — every person bearing the image of God — is a theological claim about fundamental human dignity that predates and transcends every racial category ever constructed. Every tradition that weaponized religion to justify racial hierarchy did so by subordinating this foundational claim to a political one. The hierarchy is the corruption, not the source.'
+  },
+  { id:'ri02', cat:'race',
+    shot1:'Colorblindness isn\'t neutrality. It\'s the refusal to see a variable that is actively shaping outcomes.',
+    science:'Audit studies — identical resumes with racially coded names — consistently show differential callback rates across industries, cities, and economic conditions. The outcomes diverge in ways invisible to a framework that doesn\'t account for the variable producing them. Not seeing the variable doesn\'t neutralize it.',
+    psych:'Research on aversive racism documents that people who consciously reject racial bias and hold egalitarian values still exhibit measurable differential behavior in ambiguous situations. The gap between stated value and behavioral reality is the site of the actual work, and it is invisible to those who believe the stated value is sufficient.',
+    religion:'The prophetic tradition in every major faith insisted that justice requires seeing clearly, not looking away. Amos did not advocate colorblind economics. He named who was being harmed and who was doing the harming. The tradition consistently treated willful non-seeing as a moral failure, not a neutral stance.'
+  },
+  { id:'ri03', cat:'race',
+    shot1:'White fragility and Black fatigue are both real and they\'re caused by the same thing. The system exhausts everyone differently.',
+    science:'Minority stress theory documents the chronic physiological and psychological costs of navigating environments that require constant self-monitoring, code-switching, and threat assessment. System justification theory documents the psychological costs of defending a system that disadvantages you. Different mechanisms, same source.',
+    psych:'White fragility describes a psychological pattern, not a personal accusation — the defensive response that shuts down examination before it can produce change. The fragility is proportional to how much identity investment is tied to a self-image of non-racism. Examination feels like accusation because the identity requires a particular verdict.',
+    religion:'The tradition of lament — naming suffering honestly before seeking resolution — is present in every major faith. Neither suppressing the lament nor weaponizing it serves the work. The tradition understood that honest naming was the beginning of reconciliation, not its obstacle. The refusal to name is the obstacle.'
+  },
+  { id:'ri04', cat:'race',
+    shot1:'Identity politics isn\'t new. It\'s just newly visible to people who didn\'t need politics to protect their identity before.',
+    science:'Political sociology research shows that group-based political mobilization has been the primary mechanism of democratic inclusion throughout history — labor movements, suffrage, civil rights, disability rights. Groups whose interests were already centered experienced this as neutral governance. Groups whose interests were not experienced it as exclusion.',
+    psych:'The psychological experience of universalism versus particularism tracks closely with whose particular experience is treated as the default. When the default matches your experience, universalist framing feels accurate and natural. When it doesn\'t, it feels like erasure. Both responses are coherent given the data each person is working from.',
+    religion:'The covenant tradition in Hebrew scripture was explicitly particular before it was universal — a specific people, a specific promise — in service of a universal purpose: that all nations would be blessed through them. Particularity was never the enemy of universality. In the tradition\'s own framing, it was the path toward it.'
+  },
+  { id:'ri05', cat:'race',
+    shot1:'Racism isn\'t only personal hatred. Most of it is institutional inertia that doesn\'t require anyone to intend it.',
+    science:'Sociological research on structural racism documents how policies with no explicit racial intent — mortgage lending criteria, school funding tied to property tax, sentencing guidelines — produce racially disparate outcomes through the accumulated weight of previously discriminatory decisions. The mechanism is path dependency, not ongoing malice.',
+    psych:'Attribution theory explains why structural racism is cognitively difficult to hold: humans are wired to attribute outcomes to agents with intentions. A harm without a villain is psychologically unsatisfying. The demand for an intentional racist as the explanatory unit is partly a cognitive artifact, not just a political position.',
+    religion:'The concept of structural sin — sin embedded in institutions rather than only in individual hearts — has a long theological history. Catholic social teaching, liberation theology, and the prophetic literature all identified collective and institutional moral failure as distinct from and not reducible to individual moral failure.'
+  },
+  { id:'ri06', cat:'race',
+    shot1:'Talking about race doesn\'t create racial division. Pretending it doesn\'t exist while it shapes everything is what sustains it.',
+    science:'Communication research on taboo topics shows that enforced silence about a salient, consequential variable does not reduce its influence — it drives the influence underground, making it harder to examine and address. The silence protects the variable from scrutiny, not the group from harm.',
+    psych:'Suppression research — Wegner\'s work and subsequent studies — demonstrates that explicit attempts not to think about something increase its cognitive salience and behavioral influence. The effort to not see race, in an environment where race is producing real outcomes, is not neutral. It is cognitively costly and behaviorally counterproductive.',
+    religion:'Truth-telling as a precondition for reconciliation is a principle embedded in every restorative justice framework with religious roots — the South African TRC, Rwandan gacaca courts, the Quaker tradition of speaking truth to power. The tradition consistently held that reconciliation requires naming, not silence.'
+  },
+  { id:'ri07', cat:'race',
+    shot1:'The question isn\'t whether your ancestors did something. It\'s what you\'re doing with what you inherited.',
+    science:'Intergenerational wealth research documents that economic advantages and disadvantages transmit across generations through concrete mechanisms — inheritance, network access, educational opportunity, neighborhood quality. Acknowledging inheritance is not guilt assignment. It is accurate accounting of the conditions you\'re operating from.',
+    psych:'Collective guilt and collective responsibility are psychologically distinct concepts that get conflated in ways that shut down productive conversation. Guilt requires personal agency in the original act. Responsibility requires only that you are in a position to affect the present situation. The conflation lets people reject responsibility by correctly rejecting guilt.',
+    religion:'The concept of inherited condition — original sin in Christian theology, karma in Eastern traditions, ancestral patterns in indigenous traditions — reflects the universal recognition that humans enter situations they did not create and bear obligations they did not personally incur. The tradition never used inherited condition as an excuse for present inaction. It used it as the description of where the work begins.'
+  },
+  { id:'ri08', cat:'race',
+    shot1:'Diversity without inclusion is decoration. Inclusion without equity is performance. The work is in the order you do them.',
+    science:'Organizational research on diversity initiatives shows that representation metrics without structural changes to decision-making power, promotion criteria, and accountability systems produce no measurable improvement in outcomes for underrepresented groups and sometimes produce backlash. The sequence matters as much as the components.',
+    psych:'Token representation activates the illusion of inclusion — the organization feels like it has addressed the problem because a visible change occurred. The psychological satisfaction of the visible change reduces motivation to pursue the less visible structural work. The decoration substitutes for the architecture.',
+    religion:'The tradition of justice — tzedakah in Hebrew, not charity but righteousness — was never about symbolic gesture. It was about structural restoration: returning what was taken, rebalancing what was unbalanced, releasing what was bound. The Jubilee was not a symbolic acknowledgment of inequality. It was a mandatory structural reset. The tradition knew the difference between gesture and repair.'
+  }
 ];
 
 // ── RENDER ENGINE ──────────────────────────────────────────────
@@ -935,9 +1040,11 @@ var CAT_META = {
   systems:      { label:'Systems & Power',              anchor:'sec-systems' },
   ai:           { label:'AI & Technology',              anchor:'sec-ai' },
   political:    { label:'Political Debates',            anchor:'sec-political' },
-  flatearth:    { label:'Flat Earth & Conspiracy',      anchor:'sec-flatearth' }
+  flatearth:    { label:'Flat Earth & Conspiracy',      anchor:'sec-flatearth' },
+  mentalhealth: { label:'Mental Health & Therapy',       anchor:'sec-mentalhealth' },
+  race:         { label:'Race & Identity',                anchor:'sec-race' }
 };
-var CAT_ORDER = ['christianity','atheism','manifestation','general','systems','ai','political','flatearth'];
+var CAT_ORDER = ['christianity','atheism','manifestation','general','systems','ai','political','flatearth','mentalhealth','race'];
 
 // Store texts on the element using data attributes to avoid escaping issues
 function buildCard(entry, idx) {
