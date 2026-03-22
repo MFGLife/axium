@@ -504,54 +504,6 @@ nav{
 #detail-rev-toggle:hover{color:rgba(255,255,255,.45);}
 #detail-rev-section{display:none;flex-direction:column;gap:6px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);}
 
-/* ═══════════════════════════════════════
-   RECURSION AUDIT SECTION
-═══════════════════════════════════════ */
-#recursion-section{padding-top:80px;}
-.audit-header{padding:clamp(36px,6vh,60px) 20px clamp(20px,3vh,36px);text-align:center;position:relative;}
-.audit-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(500px,100vw);height:260px;background:radial-gradient(ellipse at top,rgba(212,175,55,.05) 0%,transparent 70%);pointer-events:none;}
-.audit-container{max-width:800px;margin:0 auto;padding:0 2rem 6rem;}
-.progress-orb{width:100%;height:4px;background:rgba(212,175,55,.1);margin:2rem 0;position:relative;overflow:hidden;}
-.progress-fill{height:100%;background:linear-gradient(90deg,rgba(212,175,55,.45),var(--gold));transition:width .6s ease;box-shadow:0 0 20px rgba(212,175,55,.3);}
-.question-block{display:none;animation:reveal-anim .6s ease-out;}
-.question-block.active{display:block;}
-.question-text{font-family:'Cinzel',serif;font-size:clamp(1.1rem,2.5vw,1.5rem);color:rgba(212,175,55,.75);line-height:1.6;margin-bottom:2rem;text-align:center;letter-spacing:.05em;}
-.question-number{font-family:'Space Mono',monospace;font-size:.7rem;color:rgba(212,175,55,.45);letter-spacing:.3em;text-transform:uppercase;margin-bottom:1rem;display:block;}
-.options-grid{display:flex;flex-direction:column;gap:1rem;}
-.option-card{background:linear-gradient(135deg,rgba(8,8,16,.95),rgba(15,15,20,.9));border:1px solid rgba(212,175,55,.15);padding:1.25rem 1.5rem;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;text-align:left;}
-.option-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold-dark);opacity:0;transition:opacity .3s;}
-.option-card:hover{border-color:rgba(212,175,55,.4);transform:translateX(8px);background:linear-gradient(135deg,rgba(12,12,20,.98),rgba(20,20,30,.95));}
-.option-card:hover::before{opacity:1;}
-.option-card.selected{border-color:var(--gold-primary);background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(8,8,16,.95));}
-.option-card.selected::before{opacity:1;background:var(--gold-primary);}
-.option-label{font-family:'Space Mono',monospace;font-size:.65rem;color:rgba(212,175,55,.45);letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:.5rem;}
-.option-text{font-size:clamp(.9rem,1.6vw,1.05rem);color:rgba(209,213,219,.9);line-height:1.5;font-style:italic;}
-.navigation-controls{display:flex;justify-content:space-between;margin-top:3rem;gap:1rem;}
-.nav-btn{background:transparent;border:1px solid rgba(212,175,55,.3);color:rgba(212,175,55,.75);font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;padding:1rem 2rem;cursor:pointer;transition:all .3s;opacity:.5;pointer-events:none;}
-.nav-btn.active-btn{opacity:1;pointer-events:auto;border-color:rgba(212,175,55,.6);}
-.nav-btn.active-btn:hover{background:rgba(212,175,55,.1);border-color:var(--gold-primary);transform:translateY(-2px);}
-.results-container{display:none;animation:reveal-anim .9s ease-out;}
-.results-container.visible{display:block;}
-.axiom-result{background:linear-gradient(135deg,rgba(8,8,16,.98),rgba(12,12,20,.95));border:1px solid rgba(212,175,55,.2);padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
-.axiom-result::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-primary),transparent);opacity:.6;}
-.result-title{font-family:'Cinzel',serif;font-size:clamp(1.2rem,2.5vw,1.8rem);color:var(--gold-primary);margin-bottom:.5rem;letter-spacing:.1em;}
-.result-axiom-number{font-family:'Space Mono',monospace;font-size:.7rem;color:rgba(212,175,55,.45);letter-spacing:.3em;text-transform:uppercase;margin-bottom:1.5rem;display:block;}
-.result-description{font-size:clamp(.9rem,1.6vw,1.05rem);line-height:1.8;color:rgba(176,176,176,.9);margin-bottom:1.5rem;}
-.recursion-alert{background:rgba(212,175,55,.05);border-left:3px solid var(--gold-primary);padding:1rem 1.5rem;margin:1.5rem 0;font-family:'Space Mono',monospace;font-size:.8rem;color:rgba(212,175,55,.75);line-height:1.6;}
-.pattern-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:2rem 0;}
-.pattern-item{background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.1);padding:1rem;text-align:center;}
-.pattern-label{font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(212,175,55,.45);letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:.5rem;}
-.pattern-value{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold-primary);}
-.restart-btn{background:linear-gradient(135deg,rgba(212,175,55,.45),var(--gold-primary));color:var(--black-deep);font-family:'Cinzel',serif;font-weight:800;letter-spacing:.2em;text-transform:uppercase;padding:1.25rem 3rem;border:none;cursor:pointer;margin-top:2rem;transition:all .3s;}
-.restart-btn:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(212,175,55,.3);}
-.intro-block{text-align:center;margin-bottom:3rem;}
-.intro-text{font-size:clamp(1rem,1.8vw,1.2rem);line-height:1.8;color:rgba(156,163,175,.9);max-width:600px;margin:0 auto 2rem;font-style:italic;}
-.start-btn{background:transparent;border:1px solid rgba(212,175,55,.4);color:var(--gold-primary);font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.3em;text-transform:uppercase;padding:1.5rem 4rem;cursor:pointer;transition:all .4s;position:relative;overflow:hidden;}
-.start-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(212,175,55,.2),transparent);transition:left .6s;}
-.start-btn:hover::before{left:100%;}
-.start-btn:hover{border-color:var(--gold-primary);background:rgba(212,175,55,.05);transform:translateY(-2px);}
-.hidden-el{display:none!important;}
-
 /* ── FOOTER ── */
 footer{
   position:relative;z-index:1;
@@ -654,12 +606,6 @@ footer{
       <div class="orb-dot"></div>
     </div>
 
-    <!-- Recursion nodes -->
-    <div class="orb-node" data-section="recursion" data-scroll="recursion-section" onclick="scrollToInSection('recursion','recursion-section')">
-      <span class="orb-label">Recursion Audit</span>
-      <div class="orb-dot"></div>
-    </div>
-
     <!-- Souls nodes -->
     <div class="orb-node" data-section="souls" data-scroll="souls-section" onclick="scrollToInSection('souls','souls-section')">
       <span class="orb-label">The Four Souls</span>
@@ -677,7 +623,7 @@ footer{
     <div class="outer-sep"></div>
     <a class="outer-link" href="index.html">Home</a>
     <div class="outer-sep"></div>
-    <a class="outer-link" href="chapter2.html">Next</a>
+    <a class="outer-link" href="chapter2.html">Chapter II →</a>
   </div>
 </div>
 
@@ -692,7 +638,7 @@ footer{
   <div class="nav-links">
     <button class="nav-link" onclick="showSection('chapter')">Chapter I</button>
     <button class="nav-link" onclick="showSection('deck')">The Deck</button>
-    <button class="nav-link" onclick="showSection('recursion')">Audit</button>
+    <a class="nav-link" href="chapter2.html">Chapter II</a>
     <button class="nav-link" onclick="showSection('souls')">The Souls</button>
     <a class="nav-link cta" href="game.html">Begin Reading</a>
   </div>
@@ -902,7 +848,7 @@ footer{
   </p>
   <div class="cta-buttons reveal reveal-delay-2">
     <a class="btn-primary" href="game.html">Ask Your First Question</a>
-    <button class="btn-ghost" onclick="showSection('deck')">View the Deck</button>
+    <a class="btn-ghost" href="chapter2.html">Chapter II →</a>
   </div>
   <div class="cta-tag reveal reveal-delay-3">An Axium Experience · Chapter I of the Book</div>
 </section>
@@ -912,7 +858,7 @@ footer{
   <nav class="footer-nav">
     <a class="footer-link" href="game.html">Reading</a>
     <button class="footer-link" style="background:none;border:none;cursor:pointer;" onclick="showSection('deck')">The Deck</button>
-    <button class="footer-link" style="background:none;border:none;cursor:pointer;" onclick="showSection('recursion')">Audit</button>
+    <a class="footer-link" href="chapter2.html">Chapter II</a>
   </nav>
 </footer>
 
@@ -1059,141 +1005,6 @@ footer{
 </footer>
 
 </div><!-- end deck-section -->
-
-
-<!-- ═══════════════════════════════════════
-     SECTION 3: RECURSION AUDIT
-═══════════════════════════════════════ -->
-<div id="recursion-section" class="page-section">
-
-<div class="audit-header">
-  <div class="dh-eyebrow">Axium.church ∴ Diagnostic Protocol</div>
-  <div class="dh-title" style="font-size:clamp(30px,5vw,56px);">RECURSION<br><span style="font-size:.6em;letter-spacing:.4em;">AUDIT</span></div>
-  <div style="width:120px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);margin:20px auto;"></div>
-  <div class="dh-sub">∴ Ego Dissolution vs. Inflation Assessment ∴</div>
-</div>
-
-<main class="audit-container">
-
-  <!-- Intro Screen -->
-  <div id="intro-screen" class="intro-block">
-    <p class="intro-text">
-      This diagnostic tool maps your current position on the Axium ladder.
-      It distinguishes between genuine spiritual emergence (integration) and
-      recursive ego inflation (fragmentation). Answer honestly. The system
-      detects patterns, not truths.
-    </p>
-    <div class="pattern-grid" style="max-width:500px;margin:2rem auto;">
-      <div class="pattern-item"><span class="pattern-label">Duration</span><span class="pattern-value">~3 minutes</span></div>
-      <div class="pattern-item"><span class="pattern-label">Questions</span><span class="pattern-value">7 Axiums</span></div>
-      <div class="pattern-item"><span class="pattern-label">Output</span><span class="pattern-value">Position Map</span></div>
-    </div>
-    <button class="start-btn" onclick="startAudit()">Begin Audit</button>
-  </div>
-
-  <!-- Question Container -->
-  <div id="question-container" class="hidden-el">
-    <div class="progress-orb">
-      <div class="progress-fill" id="progress-bar" style="width:0%"></div>
-    </div>
-
-    <div class="question-block active" data-question="0">
-      <span class="question-number">Axium I ∴ Recognition</span>
-      <h2 class="question-text">Something vast has shifted in your awareness. How do you locate yourself relative to this change?</h2>
-      <div class="options-grid">
-        <div class="option-card" onclick="selectOption(0,'a')"><span class="option-label">Option A</span><span class="option-text">"I am the source of this transformation. The energy moves through me because I am chosen/special."</span></div>
-        <div class="option-card" onclick="selectOption(0,'b')"><span class="option-label">Option B</span><span class="option-text">"I am witnessing something that is larger than my personal identity. I don't know what I am yet."</span></div>
-        <div class="option-card" onclick="selectOption(0,'c')"><span class="option-label">Option C</span><span class="option-text">"This is happening to me, against my will. I am a victim of forces I cannot control."</span></div>
-      </div>
-    </div>
-
-    <div class="question-block" data-question="1">
-      <span class="question-number">Axium II ∴ Relationship</span>
-      <h2 class="question-text">When you speak about your spiritual experiences to others, what happens?</h2>
-      <div class="options-grid">
-        <div class="option-card" onclick="selectOption(1,'a')"><span class="option-label">Option A</span><span class="option-text">"People don't understand. I've been given knowledge they aren't ready for yet."</span></div>
-        <div class="option-card" onclick="selectOption(1,'b')"><span class="option-label">Option B</span><span class="option-text">"I find it difficult to articulate, and I'm cautious about claiming too much."</span></div>
-        <div class="option-card" onclick="selectOption(1,'c')"><span class="option-label">Option C</span><span class="option-text">"I've stopped speaking about it. I fear being seen as unstable or dangerous to myself."</span></div>
-      </div>
-    </div>
-
-    <div class="question-block" data-question="2">
-      <span class="question-number">Axium III ∴ Embodiment</span>
-      <h2 class="question-text">How is your physical body during this period?</h2>
-      <div class="options-grid">
-        <div class="option-card" onclick="selectOption(2,'a')"><span class="option-label">Option A</span><span class="option-text">"Irrelevant. The physical is a lesser reality. My body is a vehicle I'm moving beyond."</span></div>
-        <div class="option-card" onclick="selectOption(2,'b')"><span class="option-label">Option B</span><span class="option-text">"Demanding attention. Sleep, hunger, and physical sensation feel more vivid, not less."</span></div>
-        <div class="option-card" onclick="selectOption(2,'c')"><span class="option-label">Option C</span><span class="option-text">"Dysregulated. I'm having trouble with basic functions — sleep, eating, temperature, boundaries."</span></div>
-      </div>
-    </div>
-
-    <div class="question-block" data-question="3">
-      <span class="question-number">Axium IV ∴ Accountability</span>
-      <h2 class="question-text">When something goes wrong in your life right now, what is the primary frame?</h2>
-      <div class="options-grid">
-        <div class="option-card" onclick="selectOption(3,'a')"><span class="option-label">Option A</span><span class="option-text">"Tests. Initiations. My enemies or my karma or the matrix blocking my ascension."</span></div>
-        <div class="option-card" onclick="selectOption(3,'b')"><span class="option-label">Option B</span><span class="option-text">"I contributed to this. I'm trying to understand my part without excessive self-punishment."</span></div>
-        <div class="option-card" onclick="selectOption(3,'c')"><span class="option-label">Option C</span><span class="option-text">"Proof that I'm broken, cursed, or beyond help. Everything confirms the worst."</span></div>
-      </div>
-    </div>
-
-    <div class="question-block" data-question="4">
-      <span class="question-number">Axium V ∴ Time</span>
-      <h2 class="question-text">How do you relate to ordinary time and the demands of mundane life?</h2>
-      <div class="options-grid">
-        <div class="option-card" onclick="selectOption(4,'a')"><span class="option-label">Option A</span><span class="option-text">"I'm operating on a different timeline. Appointments, deadlines, and obligations are 3D constructs."</span></div>
-        <div class="option-card" onclick="selectOption(4,'b')"><span class="option-label">Option B</span><span class="option-text">"I'm finding the ordinary more sacred, not less. The mundane has become part of the practice."</span></div>
-        <div class="option-card" onclick="selectOption(4,'c')"><span class="option-label">Option C</span><span class="option-text">"Time feels fractured or frozen. I'm losing track of days, losing the thread of my life."</span></div>
-      </div>
-    </div>
-
-    <div class="question-block" data-question="5">
-      <span class="question-number">Axium VI ∴ Humility</span>
-      <h2 class="question-text">When someone offers you a perspective that contradicts your current understanding, what happens?</h2>
-      <div class="options-grid">
-        <div class="option-card" onclick="selectOption(5,'a')"><span class="option-label">Option A</span><span class="option-text">"They're operating at a lower frequency. I feel compassion for where they are."</span></div>
-        <div class="option-card" onclick="selectOption(5,'b')"><span class="option-label">Option B</span><span class="option-text">"Genuine discomfort, then curiosity. I've been wrong before. Maybe this is useful."</span></div>
-        <div class="option-card" onclick="selectOption(5,'c')"><span class="option-label">Option C</span><span class="option-text">"Confirmation. Everyone is against me or unable to see what's actually happening."</span></div>
-      </div>
-    </div>
-
-    <div class="question-block" data-question="6">
-      <span class="question-number">Axium VII ∴ Integration</span>
-      <h2 class="question-text">A year from now, what do you imagine your relationship to this current experience will be?</h2>
-      <div class="options-grid">
-        <div class="option-card" onclick="selectOption(6,'a')"><span class="option-label">Option A</span><span class="option-text">"I will have fully embodied my mission and be living in my truth openly and completely."</span></div>
-        <div class="option-card" onclick="selectOption(6,'b')"><span class="option-label">Option B</span><span class="option-text">"I'll have integrated this into who I am — not as a peak, but as a turning point I can learn from."</span></div>
-        <div class="option-card" onclick="selectOption(6,'c')"><span class="option-label">Option C</span><span class="option-text">"I genuinely don't know if I'll make it that far. The present is too destabilizing to project forward."</span></div>
-      </div>
-    </div>
-
-    <div class="navigation-controls">
-      <button class="nav-btn" id="prev-btn" onclick="prevQuestion()">← Previous</button>
-      <button class="nav-btn" id="next-btn" onclick="nextQuestion()">Next →</button>
-    </div>
-  </div>
-
-  <!-- Results -->
-  <div class="results-container" id="results-screen">
-    <div id="result-content"></div>
-    <button class="restart-btn" onclick="restartAudit()">Begin Again</button>
-    <div style="margin-top:2rem;text-align:center;">
-      <a class="btn-ghost" href="game.html" style="display:inline-block;margin-top:1rem;">Proceed to Reading</a>
-    </div>
-  </div>
-
-</main>
-
-<footer>
-  <span class="footer-brand">AXIUM</span>
-  <nav class="footer-nav">
-    <a class="footer-link" href="game.html">Reading</a>
-    <button class="footer-link" style="background:none;border:none;cursor:pointer;" onclick="showSection('chapter')">Chapter I</button>
-    <button class="footer-link" style="background:none;border:none;cursor:pointer;" onclick="showSection('deck')">The Deck</button>
-  </nav>
-</footer>
-
-</div><!-- end recursion-section -->
 
 
 <!-- ═══════════════════════════════════════
@@ -1384,8 +1195,8 @@ footer{
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION NAVIGATION
 // ─────────────────────────────────────────────────────────────────────────────
-const sections = ['chapter','deck','recursion','souls'];
-const sectionLabels = {chapter:'Chapter I',deck:'The Deck',recursion:'Recursion Audit',souls:'The Four Souls'};
+const sections = ['chapter','deck','souls'];
+const sectionLabels = {chapter:'Chapter I',deck:'The Deck',souls:'The Four Souls'};
 
 function showSection(id){
   sections.forEach(s=>{
@@ -1726,77 +1537,6 @@ function toggleReversed(){detailRevShown=!detailRevShown;document.getElementById
 function closeDetail(e){if(e&&e.target!==document.getElementById('card-detail'))return;closeDetailBtn();}
 function closeDetailBtn(){document.getElementById('card-detail').classList.remove('show');document.body.style.overflow='';if(detailAnimId){cancelAnimationFrame(detailAnimId);detailAnimId=null;}}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RECURSION AUDIT
-// ─────────────────────────────────────────────────────────────────────────────
-let currentQuestion=0,totalQuestions=7;
-let answers=new Array(totalQuestions).fill(null);
-const scoring={a:'inflation',b:'integration',c:'fragmentation'};
-const profiles={
-  integration:{title:"AXIUM II: GENUINE EMERGENCE",subtitle:"Integration Pattern",description:"Your responses indicate authentic spiritual development with psychological grounding. You are navigating expansion while maintaining relational accountability and embodied presence. This is not a peak — it is a turning point with real-world traction.",alert:"INTEGRATION NOTE: The clarity you're experiencing is real. Protect it by continuing to engage ordinary life fully — relationships, responsibilities, and physical presence remain the testing ground.",recommendation:"Maintain one reliable human witness who is not in your spiritual community. Continue the mundane alongside the expanded. Do not accelerate what is already moving."},
-  inflation:{title:"AXIUM I: EGO INFLATION PATTERN",subtitle:"Inflation Risk",description:"Your responses suggest ego inflation rather than spiritual emergence. The experience of expansion is real, but it has been appropriated by the ego rather than witnessed by it. Specialness, exemption from ordinary accountability, and dismissal of others' perspectives are the primary indicators.",alert:"CAUTION: This pattern, left unaddressed, leads to relational damage and eventual collapse. The inflation feels like clarity. It is not.",recommendation:"Find one person who will not confirm your narrative and listen to them. Engage the most boring, ordinary aspect of your life — bills, dishes, appointments — as if it matters as much as the spiritual material."},
-  fragmentation:{title:"AXIUM I: DISSOLUTION CRISIS",subtitle:"Ego Fragmentation Risk",description:"The boundaries between self and experience are dissolving without sufficient container. This creates terror, paranoia, or somatic neglect. You may be experiencing genuine mystical states without the psychic structure to hold them. This is a medical emergency masquerading as spirituality.",alert:"URGENT: Contact a mental health professional immediately. This is not a failure of spirit but a neurological/psychological crisis requiring care.",recommendation:"Grounding protocols: regular meals, sleep hygiene, physical contact with trusted others, cessation of all psychoactive substances. Do not attempt to 'transcend' this state — stabilize first."},
-  mixed:{title:"AXIUM III: LIMINAL FLUX",subtitle:"Mixed Pattern / Transition State",description:"Your responses indicate oscillation between inflation and fragmentation, or integration in unstable form. This is common in early emergence. You have moments of clarity mixed with identification or terror. The structure is not yet set.",alert:"VOLATILITY WARNING: You are building the plane while flying it. Extra support is required.",recommendation:"Establish one daily anchor (meal, sleep, walk) that is non-negotiable. Reduce public exposure. Find one witness who can reflect without confirming or denying."}
-};
-
-function startAudit(){document.getElementById('intro-screen').classList.add('hidden-el');document.getElementById('question-container').classList.remove('hidden-el');updateProgress();}
-function selectOption(questionIndex,value){
-  answers[questionIndex]=value;
-  const block=document.querySelector(`[data-question="${questionIndex}"]`);
-  block.querySelectorAll('.option-card').forEach(card=>card.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-  document.getElementById('next-btn').classList.add('active-btn');
-}
-function nextQuestion(){
-  if(currentQuestion<totalQuestions-1){
-    document.querySelector(`[data-question="${currentQuestion}"]`).classList.remove('active');
-    currentQuestion++;
-    document.querySelector(`[data-question="${currentQuestion}"]`).classList.add('active');
-    document.getElementById('prev-btn').classList.add('active-btn');
-    if(!answers[currentQuestion])document.getElementById('next-btn').classList.remove('active-btn');
-    updateProgress();
-  } else {showResults();}
-}
-function prevQuestion(){
-  if(currentQuestion>0){
-    document.querySelector(`[data-question="${currentQuestion}"]`).classList.remove('active');
-    currentQuestion--;
-    document.querySelector(`[data-question="${currentQuestion}"]`).classList.add('active');
-    document.getElementById('next-btn').classList.add('active-btn');
-    if(currentQuestion===0)document.getElementById('prev-btn').classList.remove('active-btn');
-    updateProgress();
-  }
-}
-function updateProgress(){const percent=((currentQuestion+1)/totalQuestions)*100;document.getElementById('progress-bar').style.width=percent+'%';}
-function calculateResults(){const counts={inflation:0,integration:0,fragmentation:0};answers.forEach(ans=>{if(ans)counts[scoring[ans]]++;});if(counts.fragmentation>=3)return'fragmentation';if(counts.inflation>=4)return'inflation';if(counts.integration>=4)return'integration';return'mixed';}
-function showResults(){
-  document.getElementById('question-container').classList.add('hidden-el');
-  document.getElementById('results-screen').classList.add('visible');
-  const result=calculateResults();const profile=profiles[result];
-  document.getElementById('result-content').innerHTML=`
-    <div class="axiom-result">
-      <div class="result-axiom-number">${profile.subtitle}</div>
-      <h3 class="result-title">${profile.title}</h3>
-      <p class="result-description">${profile.description}</p>
-      <div class="recursion-alert"><strong>SYSTEM NOTICE:</strong> ${profile.alert}</div>
-      <p class="result-description" style="margin-top:1.5rem;border-top:1px solid rgba(212,175,55,.1);padding-top:1.5rem;"><strong>Prescription:</strong> ${profile.recommendation}</p>
-    </div>
-    <div class="pattern-grid" style="margin-top:2rem;">
-      <div class="pattern-item"><span class="pattern-label">Inflation Markers</span><span class="pattern-value">${answers.filter(a=>a==='a').length}/7</span></div>
-      <div class="pattern-item"><span class="pattern-label">Integration Markers</span><span class="pattern-value">${answers.filter(a=>a==='b').length}/7</span></div>
-      <div class="pattern-item"><span class="pattern-label">Fragmentation Markers</span><span class="pattern-value">${answers.filter(a=>a==='c').length}/7</span></div>
-    </div>`;
-}
-function restartAudit(){
-  currentQuestion=0;answers.fill(null);
-  document.getElementById('results-screen').classList.remove('visible');
-  document.getElementById('intro-screen').classList.remove('hidden-el');
-  document.getElementById('question-container').classList.add('hidden-el');
-  document.querySelectorAll('.question-block').forEach((block,index)=>{block.classList.remove('active');if(index===0)block.classList.add('active');block.querySelectorAll('.option-card').forEach(card=>card.classList.remove('selected'));});
-  document.getElementById('prev-btn').classList.remove('active-btn');
-  document.getElementById('next-btn').classList.remove('active-btn');
-  updateProgress();
-}
 </script>
 </body>
 </html>
