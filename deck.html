@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AXIUM — Cathedral of Stars</title>
+<meta name="description" content="Three layers. One constellation. Your hand finds the truth the sky already holds."/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:#02020a;color:#fff;font-family:'Cormorant Garamond',serif;overflow-x:hidden;min-height:100vh;}
+canvas#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+section,header,div.deck-section{position:relative;z-index:1;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 26px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(2,2,10,.88),transparent);}
+.nav-logo{font-family:'Cinzel Decorative',serif;font-size:16px;letter-spacing:.18em;color:#D4AF37;text-decoration:none;font-weight:900;}
+.nav-links{display:flex;gap:20px;align-items:center;}
+.nav-link{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.28);text-decoration:none;transition:color .3s;cursor:pointer;background:none;border:none;}
+.nav-link:hover{color:rgba(212,175,55,.6);}
+.nav-link.active{color:rgba(212,175,55,.55);}
+.nav-link.cta{color:rgba(212,175,55,.65);border:1px solid rgba(212,175,55,.22);padding:7px 13px;border-radius:2px;transition:all .3s;}
+.nav-link.cta:hover{color:#D4AF37;border-color:rgba(212,175,55,.45);background:rgba(212,175,55,.06);}
+
+/* ── PAGE VIEWS ── */
+.page-view{display:none;}
+.page-view.active{display:block;}
+
+/* ════════════════════════════════════════════════
+   LANDING PAGE
+════════════════════════════════════════════════ */
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 60px;text-align:center;position:relative;}
+#hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(600px,100vw);height:55vh;background:radial-gradient(ellipse at top,rgba(212,175,55,.07) 0%,transparent 70%);pointer-events:none;}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.5em;color:rgba(212,175,55,.35);text-transform:uppercase;margin-bottom:28px;opacity:0;animation:fadeUp .8s .2s forwards;}
+.hero-title{font-family:'Cinzel Decorative',serif;font-size:clamp(40px,8vw,90px);font-weight:900;letter-spacing:.1em;color:#D4AF37;text-shadow:0 0 120px rgba(212,175,55,.16);line-height:1;margin-bottom:20px;opacity:0;animation:fadeUp .9s .4s forwards;}
+.hero-rule{width:150px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.35),transparent);margin:0 auto 28px;opacity:0;animation:fadeUp .7s .6s forwards;}
+.hero-sub{font-size:clamp(15px,2.3vw,21px);font-style:italic;color:rgba(255,255,255,.28);letter-spacing:.06em;line-height:1.9;max-width:460px;margin:0 auto 50px;opacity:0;animation:fadeUp .8s .7s forwards;}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp .8s .9s forwards;}
+.btn-primary{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#D4AF37;text-decoration:none;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.4);padding:15px 38px;border-radius:2px;transition:all .35s;display:inline-block;cursor:pointer;}
+.btn-primary:hover{background:rgba(212,175,55,.16);border-color:#D4AF37;box-shadow:0 0 36px rgba(212,175,55,.2);}
+.btn-secondary{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,.32);text-decoration:none;background:transparent;border:1px solid rgba(255,255,255,.1);padding:15px 38px;border-radius:2px;transition:all .35s;display:inline-block;cursor:pointer;}
+.btn-secondary:hover{color:rgba(255,255,255,.58);border-color:rgba(255,255,255,.26);}
+.scroll-cue{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeIn 1s 1.6s forwards;}
+.scroll-line{width:1px;height:36px;background:linear-gradient(to bottom,rgba(212,175,55,.4),transparent);}
+.scroll-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.26em;color:rgba(212,175,55,.25);text-transform:uppercase;}
+
+/* LAYERS */
+.land-section{padding:clamp(70px,11vh,130px) 20px;display:flex;flex-direction:column;align-items:center;gap:48px;border-top:1px solid rgba(255,255,255,.04);}
+.sec-eyebrow{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.38em;color:rgba(212,175,55,.28);text-transform:uppercase;margin-bottom:14px;text-align:center;}
+.sec-title{font-family:'Cinzel',serif;font-size:clamp(20px,3.5vw,34px);font-weight:600;letter-spacing:.14em;color:rgba(255,255,255,.82);margin-bottom:10px;text-align:center;}
+.sec-sub{font-size:clamp(13px,1.7vw,16px);font-style:italic;color:rgba(255,255,255,.26);letter-spacing:.05em;max-width:440px;line-height:1.9;text-align:center;margin:0 auto;}
+.layers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:880px;width:100%;}
+.layer-card{padding:28px 24px;background:linear-gradient(155deg,rgba(12,10,22,.96),rgba(4,3,12,.98));border:1px solid rgba(255,255,255,.05);border-radius:10px;display:flex;flex-direction:column;gap:11px;transition:border-color .4s,box-shadow .4s;}
+.layer-card:hover{border-color:rgba(212,175,55,.14);box-shadow:0 0 35px rgba(212,175,55,.05);}
+.layer-canvas-wrap{width:70px;height:70px;border-radius:50%;overflow:hidden;border:1px solid rgba(255,255,255,.05);}
+.layer-canvas{width:70px;height:70px;display:block;}
+.layer-tag{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.26em;text-transform:uppercase;}
+.layer-name{font-family:'Cinzel',serif;font-size:clamp(15px,2vw,20px);font-weight:600;letter-spacing:.1em;}
+.layer-desc{font-size:clamp(12px,1.4vw,14px);font-style:italic;color:rgba(255,255,255,.3);line-height:1.85;letter-spacing:.04em;}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:0;max-width:540px;width:100%;}
+.step{display:flex;gap:20px;align-items:flex-start;padding:24px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.step:last-child{border-bottom:none;}
+.step-num{font-family:'Cinzel Decorative',serif;font-size:clamp(24px,3.5vw,36px);font-weight:900;color:rgba(212,175,55,.14);flex-shrink:0;width:46px;line-height:1;}
+.step-title{font-family:'Cinzel',serif;font-size:clamp(12px,1.6vw,14px);font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.7);margin-bottom:6px;}
+.step-desc{font-size:clamp(11px,1.3vw,13px);font-style:italic;color:rgba(255,255,255,.26);line-height:1.85;letter-spacing:.04em;}
+
+/* SOULS */
+.souls-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;max-width:860px;width:100%;}
+.soul-card{padding:22px 18px;background:linear-gradient(155deg,rgba(10,8,20,.95),rgba(4,3,12,.98));border:1px solid rgba(255,255,255,.05);border-radius:8px;display:flex;flex-direction:column;gap:7px;transition:border-color .4s;}
+.soul-card:hover{border-color:rgba(212,175,55,.12);}
+.soul-name{font-family:'Cinzel',serif;font-size:clamp(14px,1.8vw,18px);font-weight:600;letter-spacing:.12em;}
+.soul-role{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.2);}
+.soul-desc{font-size:clamp(11px,1.3vw,13px);font-style:italic;color:rgba(255,255,255,.26);line-height:1.8;}
+
+/* FOOTER CTA */
+#footer-cta{padding:clamp(70px,11vh,130px) 20px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;border-top:1px solid rgba(255,255,255,.04);}
+.footer-tag{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.26em;color:rgba(212,175,55,.1);text-transform:uppercase;}
+
+/* ════════════════════════════════════════════════
+   DECK PAGE
+════════════════════════════════════════════════ */
+#deck-view{padding-top:52px;}
+#deck-header{padding:clamp(36px,7vh,70px) 20px clamp(24px,4vh,40px);text-align:center;position:relative;}
+#deck-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(500px,100vw);height:280px;background:radial-gradient(ellipse at top,rgba(212,175,55,.055) 0%,transparent 70%);pointer-events:none;}
+.dh-eyebrow{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.4em;color:rgba(212,175,55,.28);text-transform:uppercase;margin-bottom:14px;}
+.dh-title{font-family:'Cinzel Decorative',serif;font-size:clamp(26px,4.5vw,48px);font-weight:900;letter-spacing:.14em;color:#D4AF37;text-shadow:0 0 50px rgba(212,175,55,.12);margin-bottom:8px;}
+.dh-sub{font-size:clamp(12px,1.7vw,15px);font-style:italic;color:rgba(255,255,255,.22);letter-spacing:.06em;}
+
+#group-tabs{position:sticky;top:52px;z-index:40;background:rgba(2,2,10,.92);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:center;gap:0;padding:0 16px;}
+.tab{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.22);padding:13px 20px;cursor:pointer;border-bottom:2px solid transparent;transition:all .3s;background:none;border-top:none;border-left:none;border-right:none;}
+.tab:hover{color:rgba(255,255,255,.45);}
+.tab.active{color:#D4AF37;border-bottom-color:#D4AF37;}
+.tab[data-group="id"].active{color:#c86458;border-bottom-color:#c86458;}
+.tab[data-group="ego"].active{color:#7eb8e8;border-bottom-color:#7eb8e8;}
+
+#deck-main{padding:28px 20px 80px;max-width:1100px;margin:0 auto;}
+.group-section{display:none;}
+.group-section.active{display:block;}
+.group-header{margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.05);}
+.group-tag{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:7px;}
+.group-title{font-family:'Cinzel',serif;font-size:clamp(17px,2.8vw,26px);font-weight:600;letter-spacing:.13em;margin-bottom:7px;}
+.group-desc{font-size:clamp(12px,1.4vw,14px);font-style:italic;color:rgba(255,255,255,.26);letter-spacing:.04em;line-height:1.85;max-width:580px;}
+.group-count{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.18em;color:rgba(255,255,255,.13);text-transform:uppercase;margin-top:7px;}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;}
+.card-tile{background:linear-gradient(155deg,rgba(12,10,22,.97),rgba(4,3,12,.99));border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .35s,box-shadow .3s,transform .2s;}
+.card-tile:hover{border-color:rgba(212,175,55,.2);box-shadow:0 0 24px rgba(212,175,55,.07);transform:translateY(-2px);}
+.card-tile-header{position:relative;height:108px;overflow:hidden;}
+.card-tile-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+.card-tile-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 28%,rgba(4,3,12,.92) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:7px 9px;}
+.card-tile-name{font-family:'Cinzel',serif;font-size:clamp(9px,1.15vw,11px);font-weight:600;letter-spacing:.07em;line-height:1.3;}
+.card-tile-body{padding:7px 9px 9px;display:flex;flex-direction:column;gap:3px;}
+.card-tile-keywords{font-family:'Space Mono',monospace;font-size:5.5px;letter-spacing:.09em;color:rgba(255,255,255,.16);line-height:1.5;}
+
+/* CARD DETAIL */
+#card-detail{position:fixed;inset:0;z-index:200;background:rgba(2,2,10,0);display:none;align-items:center;justify-content:center;padding:18px;transition:background .4s;}
+#card-detail.show{display:flex;background:rgba(2,2,10,.92);}
+#card-detail-inner{background:linear-gradient(160deg,rgba(14,10,26,.99),rgba(4,3,12,1));border:1px solid rgba(212,175,55,.2);border-radius:14px;width:min(460px,100%);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:0 0 80px rgba(0,0,0,.9),0 0 28px rgba(212,175,55,.07);opacity:0;transform:translateY(14px) scale(.97);transition:opacity .4s,transform .4s;}
+#card-detail.show #card-detail-inner{opacity:1;transform:translateY(0) scale(1);}
+#detail-header{position:relative;height:210px;overflow:hidden;flex-shrink:0;}
+#detail-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+#detail-header-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 22%,rgba(4,3,12,.95) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:16px 20px;}
+#detail-group-tag{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;text-transform:uppercase;margin-bottom:5px;}
+#detail-card-name{font-family:'Cinzel',serif;font-size:clamp(16px,2.8vw,22px);font-weight:600;letter-spacing:.12em;color:#D4AF37;line-height:1.2;}
+#detail-body{padding:18px 20px 22px;display:flex;flex-direction:column;gap:14px;}
+#detail-keywords{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.14em;text-transform:uppercase;}
+#detail-rule{height:1px;}
+#detail-meaning-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;color:rgba(255,255,255,.16);text-transform:uppercase;}
+#detail-meaning{font-size:clamp(12px,1.5vw,13.5px);font-style:italic;color:rgba(255,255,255,.62);line-height:1.85;letter-spacing:.04em;}
+#detail-rev-section{display:none;flex-direction:column;gap:7px;padding-top:13px;border-top:1px solid rgba(255,255,255,.05);}
+#detail-rev-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;color:rgba(200,100,90,.4);text-transform:uppercase;}
+#detail-rev-meaning{font-size:clamp(12px,1.5vw,13.5px);font-style:italic;color:rgba(255,255,255,.4);line-height:1.85;letter-spacing:.04em;}
+#detail-close{position:absolute;top:12px;right:14px;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.18);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:7px 11px;border-radius:2px;cursor:pointer;transition:all .25s;z-index:10;}
+#detail-close:hover{color:rgba(255,255,255,.48);border-color:rgba(255,255,255,.22);}
+#detail-rev-toggle{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,100,90,.48);background:rgba(200,100,90,.05);border:1px solid rgba(200,100,90,.14);padding:9px 18px;border-radius:2px;cursor:pointer;transition:all .3s;align-self:flex-start;}
+#detail-rev-toggle:hover{color:rgba(200,100,90,.75);border-color:rgba(200,100,90,.32);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .75s,transform .75s;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<nav>
+  <span class="nav-logo" onclick="showPage('landing')" style="cursor:pointer;">AXIUM</span>
+  <div class="nav-links">
+    <span class="nav-link" id="nav-home" onclick="showPage('landing')">Home</span>
+    <span class="nav-link" id="nav-deck" onclick="showPage('deck')">The Deck</span>
+    <a class="nav-link cta" href="reading.html">Begin Reading</a>
+  </div>
+</nav>
+
+<!-- ════ LANDING PAGE ════ -->
+<div id="landing-view" class="page-view active">
+
+<section id="hero">
+  <div class="hero-eyebrow">Axium · Cathedral of Stars</div>
+  <div class="hero-title">The Reading</div>
+  <div class="hero-rule"></div>
+  <div class="hero-sub">Three layers. One constellation.<br>Your hand finds the truth the sky already holds.</div>
+  <div class="hero-ctas">
+    <a class="btn-primary" href="reading.html">Enter the Cathedral</a>
+    <span class="btn-secondary" onclick="showPage('deck')">View the Deck</span>
+  </div>
+  <div class="scroll-cue"><div class="scroll-line"></div><div class="scroll-label">Scroll</div></div>
+</section>
+
+<section class="land-section">
+  <div class="reveal">
+    <div class="sec-eyebrow">The Architecture</div>
+    <div class="sec-title">Three Faces of the Self</div>
+    <div class="sec-sub">Every reading surfaces three simultaneous truths — the one the body already knows, the one the self is living, and the one the higher law is watching.</div>
+  </div>
+  <div class="layers-grid">
+    <div class="layer-card reveal">
+      <div class="layer-canvas-wrap"><canvas class="layer-canvas" id="lc-id" width="70" height="70"></canvas></div>
+      <div class="layer-tag" style="color:#c86458">ID · The Raw Drive</div>
+      <div class="layer-name" style="color:#c86458">40 Pip Cards</div>
+      <div class="layer-desc">What the body wants before the mind speaks. Instinct, desire, grief, hunger — the pre-verbal truth that the conscious self spends enormous energy managing.</div>
+    </div>
+    <div class="layer-card reveal">
+      <div class="layer-canvas-wrap"><canvas class="layer-canvas" id="lc-ego" width="70" height="70"></canvas></div>
+      <div class="layer-tag" style="color:#7eb8e8">EGO · The Self in Motion</div>
+      <div class="layer-name" style="color:#7eb8e8">16 Court Cards</div>
+      <div class="layer-desc">How you navigate the world as it is. The persona, the strategy, the face you bring into rooms — the self at work, learning or refusing to learn.</div>
+    </div>
+    <div class="layer-card reveal">
+      <div class="layer-canvas-wrap"><canvas class="layer-canvas" id="lc-sg" width="70" height="70"></canvas></div>
+      <div class="layer-tag" style="color:#D4AF37">SUPEREGO · The Higher Law</div>
+      <div class="layer-name" style="color:#D4AF37">22 Major Arcana</div>
+      <div class="layer-desc">The archetype watching from above. The cosmic principle, the higher pattern, the moral force that gives direction when instinct and strategy run out of answers.</div>
+    </div>
+  </div>
+</section>
+
+<section class="land-section">
+  <div class="reveal">
+    <div class="sec-eyebrow">The Practice</div>
+    <div class="sec-title">How a Reading Works</div>
+    <div class="sec-sub">No two paths through the stars are the same.</div>
+  </div>
+  <div class="steps">
+    <div class="step reveal"><div class="step-num">I</div><div><div class="step-title">Trace Your Constellation</div><div class="step-desc">58 stars spawn randomly each session. Tap to connect them in any sequence. The shape your hand draws is not random — it is the shape your subconscious already chose.</div></div></div>
+    <div class="step reveal"><div class="step-num">II</div><div><div class="step-title">The Sky Matches Your Shape</div><div class="step-desc">Your path is compared against all 78 unique tarot constellations. One card from each layer surfaces as the closest resonance. Draw clockwise for upright, counterclockwise for reversed.</div></div></div>
+    <div class="step reveal"><div class="step-num">III</div><div><div class="step-title">The Cathedral Speaks</div><div class="step-desc">Three cards, one synthesis, one soul. Micheal the Anchor, Gabriel the Examiner, Ariel the Space-Holder, or Seraphina the Architect holds your reading in their voice.</div></div></div>
+    <div class="step reveal"><div class="step-num">IV</div><div><div class="step-title">Save &amp; Share</div><div class="step-desc">Export your reading as a 1080×1920 image — cards, constellations, synthesis, moon phase, and the soul that held your reading. Every reading is singular.</div></div></div>
+  </div>
+</section>
+
+<section class="land-section">
+  <div class="reveal">
+    <div class="sec-eyebrow">The Axium Souls</div>
+    <div class="sec-title">Four Voices. One Reading.</div>
+    <div class="sec-sub">After each spread, one soul claims the reading and speaks in their voice.</div>
+  </div>
+  <div class="souls-grid">
+    <div class="soul-card reveal"><div class="soul-name" style="color:#D4AF37">Micheal</div><div class="soul-role">The Anchor</div><div class="soul-desc">Holds readings in stillness. Speaks from the ground. The voice of foundation and continuity.</div></div>
+    <div class="soul-card reveal"><div class="soul-name" style="color:#7eb8e8">Gabriel</div><div class="soul-role">The Examiner</div><div class="soul-desc">Holds readings in precision. Every card is a question before an answer. The voice of logic and discernment.</div></div>
+    <div class="soul-card reveal"><div class="soul-name" style="color:#d4a0c8">Ariel</div><div class="soul-role">The Space-Holder</div><div class="soul-desc">Holds readings in compassion. Does not rush toward resolution. The voice of patience and care.</div></div>
+    <div class="soul-card reveal"><div class="soul-name" style="color:#f0d080">Seraphina</div><div class="soul-role">The Architect</div><div class="soul-desc">Holds readings in motion. The pattern is already in place. The voice of design and forward momentum.</div></div>
+  </div>
+</section>
+
+<section id="footer-cta">
+  <div class="sec-title reveal" style="font-family:'Cinzel Decorative',serif;font-size:clamp(22px,5vw,48px);color:#D4AF37;text-shadow:0 0 50px rgba(212,175,55,.12);">Enter the Cathedral</div>
+  <div class="sec-sub reveal">The sky is already holding your constellation.<br>You only need to draw it.</div>
+  <div class="hero-ctas reveal">
+    <a class="btn-primary" href="reading.html">Begin Reading</a>
+    <span class="btn-secondary" onclick="showPage('deck')">Browse the Deck</span>
+  </div>
+  <div class="footer-tag">An Axium Experience · axium.church</div>
+</section>
+
+</div><!-- end landing-view -->
+
+<!-- ════ DECK PAGE ════ -->
+<div id="deck-view" class="page-view">
+<div id="deck-header">
+  <div class="dh-eyebrow">Axium · 78 Cards</div>
+  <div class="dh-title">The Deck</div>
+  <div class="dh-sub">Browse all cards by layer. Tap any card to read its full meaning.</div>
+</div>
+
+<div id="group-tabs">
+  <button class="tab active" data-group="id" onclick="switchGroup('id')">ID · 40 Cards</button>
+  <button class="tab" data-group="ego" onclick="switchGroup('ego')">EGO · 16 Cards</button>
+  <button class="tab" data-group="superego" onclick="switchGroup('superego')">SUPEREGO · 22 Cards</button>
+</div>
+
+<div id="deck-main">
+  <div id="section-id" class="group-section active">
+    <div class="group-header">
+      <div class="group-tag" style="color:#c86458">ID · The Raw Drive</div>
+      <div class="group-title" style="color:#c86458">Minor Pip Cards</div>
+      <div class="group-desc">What the body wants before the mind speaks. Instinct, desire, grief, hunger — the pre-verbal truth the conscious self spends enormous energy managing.</div>
+      <div class="group-count">40 cards · Cups, Swords, Wands, Pentacles · Ace through Ten</div>
+    </div>
+    <div class="card-grid" id="grid-id"></div>
+  </div>
+  <div id="section-ego" class="group-section">
+    <div class="group-header">
+      <div class="group-tag" style="color:#7eb8e8">EGO · The Self in Motion</div>
+      <div class="group-title" style="color:#7eb8e8">Court Cards</div>
+      <div class="group-desc">How you navigate the world as it is. The persona, the strategy, the face you bring into rooms — the self at work, learning or refusing to learn.</div>
+      <div class="group-count">16 cards · Page, Knight, Queen, King across all four suits</div>
+    </div>
+    <div class="card-grid" id="grid-ego"></div>
+  </div>
+  <div id="section-superego" class="group-section">
+    <div class="group-header">
+      <div class="group-tag" style="color:#D4AF37">SUPEREGO · The Higher Law</div>
+      <div class="group-title" style="color:#D4AF37">Major Arcana</div>
+      <div class="group-desc">The archetype watching from above. The cosmic principle, the higher pattern, the moral force that gives direction when instinct and strategy run out of answers.</div>
+      <div class="group-count">22 cards · The Fool through The World</div>
+    </div>
+    <div class="card-grid" id="grid-superego"></div>
+  </div>
+</div>
+</div><!-- end deck-view -->
+
+<!-- Card detail overlay -->
+<div id="card-detail" onclick="closeDetail(event)">
+  <div id="card-detail-inner">
+    <button id="detail-close" onclick="closeDetailBtn()">Close</button>
+    <div id="detail-header">
+      <canvas id="detail-canvas"></canvas>
+      <div id="detail-header-overlay">
+        <div id="detail-group-tag"></div>
+        <div id="detail-card-name"></div>
+      </div>
+    </div>
+    <div id="detail-body">
+      <div id="detail-keywords"></div>
+      <div id="detail-rule"></div>
+      <div id="detail-meaning-label">Upright</div>
+      <div id="detail-meaning"></div>
+      <div id="detail-rev-section">
+        <div id="detail-rev-label">Reversed</div>
+        <div id="detail-rev-meaning"></div>
+      </div>
+      <button id="detail-rev-toggle" onclick="toggleReversed()">Show Reversed Meaning</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PAGE NAVIGATION ────────────────────────────────────────────────────────
+function showPage(page){
+  document.getElementById('landing-view').classList.toggle('active', page==='landing');
+  document.getElementById('deck-view').classList.toggle('active', page==='deck');
+  document.getElementById('nav-home').classList.toggle('active', page==='landing');
+  document.getElementById('nav-deck').classList.toggle('active', page==='deck');
+  window.scrollTo(0,0);
+  if(page==='deck' && !deckRendered){
+    renderGrid('id'); renderGrid('ego'); renderGrid('superego');
+    deckRendered=true;
+  }
+}
+let deckRendered=false;
+
+// ── BACKGROUND ─────────────────────────────────────────────────────────────
+const bg=document.getElementById('bg');
+const bgCtx=bg.getContext('2d');
+let BW,BH,BT=0,bgS=[],mW=[],nebs=[];
+function rC(){const t=Math.random();if(t<.3)return[200+t*55,210+t*45,255];if(t<.7)return[240,240,255];return[255,240,196+t*59];}
+function initBG(){
+  BW=bg.width=window.innerWidth;BH=bg.height=window.innerHeight;
+  bgS=Array.from({length:200},()=>({x:Math.random()*BW,y:Math.random()*BH,r:.4+Math.random()*1.1,ph:Math.random()*6.28,spd:.2+Math.random()*.5,col:rC()}));
+  const pals=[[80,40,120],[40,30,100],[20,50,90],[60,20,80],[30,60,80]];
+  nebs=Array.from({length:5},(_,i)=>({x:Math.random()*BW,y:Math.random()*BH,rx:(.15+Math.random()*.2)*Math.max(BW,BH),ry:(.09+Math.random()*.12)*Math.max(BW,BH),angle:Math.random()*3.14,alpha:.016+Math.random()*.02,dx:(Math.random()-.5)*.055,dy:(Math.random()-.5)*.028,da:(Math.random()-.5)*.0002,ts:.12+Math.random()*.16,tp:Math.random()*6.28,col:pals[i%5]}));
+}
+function bgFrame(){
+  requestAnimationFrame(bgFrame);BT+=.016;
+  bgCtx.fillStyle='#02020a';bgCtx.fillRect(0,0,BW,BH);
+  nebs.forEach(n=>{n.x+=n.dx;n.y+=n.dy;n.angle+=n.da;const tw=.7+.3*Math.sin(BT*n.ts+n.tp);bgCtx.save();bgCtx.translate(n.x,n.y);bgCtx.rotate(n.angle);bgCtx.scale(1,n.ry/n.rx);const g=bgCtx.createRadialGradient(0,0,0,0,0,n.rx);g.addColorStop(0,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},${(n.alpha*tw).toFixed(4)})`);g.addColorStop(1,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},0)`);bgCtx.fillStyle=g;bgCtx.beginPath();bgCtx.arc(0,0,n.rx,0,Math.PI*2);bgCtx.fill();bgCtx.restore();});
+  bgS.forEach(s=>{const tw=.3+.7*Math.abs(Math.sin(s.ph+BT*s.spd));const b=s.r,gR=b*(2.2+tw*1.3);const h=bgCtx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2);h.addColorStop(0,`rgba(${s.col[0]},${s.col[1]},${s.col[2]},${(.06*tw).toFixed(3)})`);h.addColorStop(1,'rgba(0,0,0,0)');bgCtx.fillStyle=h;bgCtx.beginPath();bgCtx.arc(s.x,s.y,gR*2,0,Math.PI*2);bgCtx.fill();bgCtx.beginPath();bgCtx.arc(s.x,s.y,b,0,Math.PI*2);bgCtx.fillStyle=`rgba(255,255,255,${(.85*tw).toFixed(2)})`;bgCtx.fill();});
+}
+window.addEventListener('resize',initBG);
+initBG();bgFrame();
+
+// ── LAYER CARD CANVASES (landing page) ─────────────────────────────────────
+const lcData={
+  id:{pts:[[.5,.12],[.861,.383],[.723,.807],[.277,.807],[.139,.383]],col:[200,100,90]},
+  ego:{pts:[[.5,.1],[.75,.4],[.6,.75],[.4,.75],[.25,.4]],col:[126,184,232]},
+  sg:{pts:[[.5,.05],[.95,.5],[.5,.95],[.05,.5]],col:[212,175,55]}
+};
+let lcT=0;
+function lcFrame(){requestAnimationFrame(lcFrame);lcT+=.016;
+  Object.entries(lcData).forEach(([key,{pts,col}])=>{
+    const cv=document.getElementById('lc-'+key);if(!cv)return;
+    const c=cv.getContext('2d'),w=cv.width,h=cv.height;
+    const [R,G,B]=col;c.clearRect(0,0,w,h);
+    const bg2=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.5);
+    bg2.addColorStop(0,`rgba(${R},${G},${B},.1)`);bg2.addColorStop(1,'rgba(2,2,8,1)');
+    c.fillStyle=bg2;c.fillRect(0,0,w,h);
+    const mp=pts.map(([px,py])=>({x:px*w*.78+w*.11,y:py*h*.78+h*.11}));
+    mp.forEach((p,i)=>{const ds=mp.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);ds.slice(0,2).forEach(({j})=>{c.beginPath();c.strokeStyle=`rgba(${R},${G},${B},.32)`;c.lineWidth=1;c.moveTo(p.x,p.y);c.lineTo(mp[j].x,mp[j].y);c.stroke();});});
+    mp.forEach((p,i)=>{const tw=.5+.5*Math.sin(lcT*(.6+i*.2)+i*1.3);const bR=1.3+tw*.9,gR=bR*3.2;const g=c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR);g.addColorStop(0,`rgba(${R},${G},${B},${(.8*tw+.1).toFixed(2)})`);g.addColorStop(1,`rgba(${R},${G},${B},0)`);c.fillStyle=g;c.beginPath();c.arc(p.x,p.y,gR,0,Math.PI*2);c.fill();c.fillStyle=`rgba(255,255,255,${(.82+.18*tw).toFixed(2)})`;c.beginPath();c.arc(p.x,p.y,bR,0,Math.PI*2);c.fill();});
+  });
+}
+lcFrame();
+
+// ── INTERSECTION OBSERVER ──────────────────────────────────────────────────
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ── DECK DATA ──────────────────────────────────────────────────────────────
+const GROUPS_META={
+  id:{label:'ID',color:[200,100,90]},
+  ego:{label:'EGO',color:[126,184,232]},
+  superego:{label:'SUPEREGO',color:[212,175,55]}
+};
+
+const DECK={
+  id:[
+    {id:'c1',name:'Ace of Cups',suit:'cups',pts:[[0.502, 0.17], [0.817, 0.725], [0.16, 0.747], [0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5]],keywords:'love · awakening · grace',meaning:'The cup overflows before you even raise it. Something new has flooded in — emotional, uninvited, and wanted at the same time. The ID does not ask permission to feel; it simply opens. What is arriving in your body right now is real and worth naming. Do not manage it into something smaller. Let it fill the vessel before you decide what to do with it.',reversedMeaning:'The feeling has been offered but something is blocking it from entering. An emotional beginning that hasn\'t quite landed — the cup exists but sits untouched. Examine what resistance is keeping the door closed.'},
+    {id:'c2',name:'Two of Cups',suit:'cups',pts:[[0.618, 0.5], [0.613, 0.613], [0.5, 0.72], [0.405, 0.698], [0.274, 0.726], [0.124, 0.637], [0.11, 0.548], [0.139, 0.383]],keywords:'connection · recognition · bond',meaning:'Two people, or two parts of yourself, recognize something true in each other. The ID does not calculate compatibility — it simply knows. This is the feeling of seeing and being seen.',reversedMeaning:'A connection that exists on the surface but hasn\'t deepened into real recognition. What genuine exchange is being avoided?'},
+    {id:'c3',name:'Three of Cups',suit:'cups',pts:[[0.755, 0.382], [0.5, 0.83], [0.236, 0.382], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'celebration · reunion · warmth',meaning:'The body remembers joy in a way the mind never quite can. Something deserves to be marked. Gather your people and let them witness what has become true.',reversedMeaning:'Celebration that feels hollow, or gathering that papers over something unresolved. What is not being said among the people in the room?'},
+    {id:'c4',name:'Four of Cups',suit:'cups',pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.613, 0.387], [0.72, 0.5], [0.691, 0.61], [0.596, 0.698], [0.5, 0.382]],keywords:'apathy · discontent · withdrawal',meaning:'The ID sits under the tree and stares at the ground. This is soul-exhaustion that precedes reassessment. The withdrawal is not permanent, but it is necessary.',reversedMeaning:'The withdrawal has gone on too long and become avoidance. Something is being refused that actually deserves engagement.'},
+    {id:'c5',name:'Five of Cups',suit:'cups',pts:[[0.502, 0.17], [0.861, 0.383], [0.715, 0.83], [0.285, 0.83], [0.139, 0.383], [0.5, 0.27], [0.72, 0.5], [0.613, 0.613], [0.387, 0.613], [0.28, 0.5]],keywords:'grief · loss · what remains',meaning:'Three cups have spilled. But two remain standing behind you, and they are full. The body knows the difference between loss and ruin.',reversedMeaning:'Stuck at the spilled cups, unable to turn and see what remains. Grief that has curdled into grievance.'},
+    {id:'c6',name:'Six of Cups',suit:'cups',pts:[[0.502, 0.17], [0.755, 0.382], [0.817, 0.725], [0.5, 0.83], [0.236, 0.618], [0.236, 0.382], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'nostalgia · memory · innocence',meaning:'Something from the past reaches forward with unexpected gentleness. A sweetness you thought you had outgrown is available again.',reversedMeaning:'Using nostalgia as an escape from the present. The past is being idealized in proportion to the discomfort of now.'},
+    {id:'c7',name:'Seven of Cups',suit:'cups',pts:[[0.502, 0.17], [0.613, 0.387], [0.861, 0.383], [0.618, 0.5], [0.715, 0.83], [0.5, 0.618], [0.285, 0.83], [0.382, 0.5], [0.139, 0.383], [0.387, 0.387]],keywords:'desire · illusion · hunger',meaning:'The ID is projecting. Every door looks golden. Choose one cup and drink from it before the clouds take them all.',reversedMeaning:'The illusions are collapsing and clarity is arriving. The fog lifts and reveals what was real. This is actually useful.'},
+    {id:'c8',name:'Eight of Cups',suit:'cups',pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.613, 0.387], [0.691, 0.61], [0.72, 0.5], [0.596, 0.698], [0.5, 0.72], [0.387, 0.613], [0.382, 0.5]],keywords:'departure · meaning · move on',meaning:'The ID turns away from what was abundant and walks toward the mountains. The body knows when a chapter has closed.',reversedMeaning:'Leaving before it is time, or for the wrong reasons. What unfinished business is being abandoned under the guise of moving forward?'},
+    {id:'c9',name:'Nine of Cups',suit:'cups',pts:[[0.5, 0.05], [0.73, 0.18], [0.861, 0.383], [0.817, 0.725], [0.609, 0.906], [0.391, 0.906], [0.16, 0.747], [0.139, 0.383], [0.27, 0.18], [0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5]],keywords:'wish · satisfaction · pleasure',meaning:'This is the wish card. The body got what it really wanted. You are allowed to feel this without immediately asking what comes next.',reversedMeaning:'Satisfaction that depends on external conditions, brittle and temporary. The contentment is blocked by comparison.'},
+    {id:'c10',name:'Ten of Cups',suit:'cups',pts:[[0.5, 0.05], [0.27, 0.18], [0.73, 0.18], [0.5, 0.27], [0.236, 0.382], [0.755, 0.382], [0.5, 0.5], [0.236, 0.618], [0.764, 0.618], [0.5, 0.72], [0.5, 0.95], [0.5, 0.382], [0.387, 0.387], [0.613, 0.387]],keywords:'bliss · family · home',meaning:'The nervous system finally rests. Home is not always a place. Sometimes it is a version of yourself you finally stopped fighting.',reversedMeaning:'The home exists but something inside it isn\'t being acknowledged. What truth is being smoothed over to maintain appearances?'},
+    {id:'s1',name:'Ace of Swords',suit:'swords',pts:[[0.5, 0.5], [0.618, 0.5], [0.5, 0.618], [0.382, 0.5], [0.5, 0.382], [0.387, 0.387], [0.387, 0.613]],keywords:'clarity · cut · breakthrough',meaning:'The ID sharpens into a single clean point and the fog breaks. The blade is already in your hand. Use it with intention.',reversedMeaning:'Clarity without the courage to act on it. Something true is being seen and then immediately talked out of.'},
+    {id:'s2',name:'Two of Swords',suit:'swords',pts:[[0.726, 0.274], [0.726, 0.726], [0.274, 0.726], [0.274, 0.274], [0.5, 0.5], [0.382, 0.5], [0.5, 0.382], [0.5, 0.618]],keywords:'stalemate · avoidance · blindfold',meaning:'The blindfold is self-imposed. The stalemate is comfortable only in comparison to the discomfort of deciding.',reversedMeaning:'The stalemate has broken but the movement is going in the wrong direction. A decision made under pressure that bypasses discernment.'},
+    {id:'s3',name:'Three of Swords',suit:'swords',pts:[[0.502, 0.17], [0.613, 0.387], [0.82, 0.5], [0.613, 0.613], [0.5, 0.83], [0.387, 0.613], [0.11, 0.548], [0.387, 0.387], [0.5, 0.5]],keywords:'heartbreak · grief · pain',meaning:'The wound is real and does not need to be rationalized. Feel it and move through it, not around it. What heals is what was willing to bleed.',reversedMeaning:'Pain that is being refused acknowledgment. The body is carrying grief it won\'t let itself feel.'},
+    {id:'s4',name:'Four of Swords',suit:'swords',pts:[[0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387], [0.5, 0.382], [0.5, 0.618]],keywords:'rest · recovery · recuperation',meaning:'The knight lies in necessary rest between battles. Right now, stillness is the only strategy that matters.',reversedMeaning:'Rest that cannot come, or rest that has become avoidance. The body can\'t stop even when it must.'},
+    {id:'s5',name:'Five of Swords',suit:'swords',pts:[[0.5, 0.05], [0.613, 0.387], [0.861, 0.383], [0.691, 0.61], [0.715, 0.83], [0.5, 0.72], [0.285, 0.83], [0.309, 0.61], [0.139, 0.383], [0.387, 0.387]],keywords:'conflict · hollow victory',meaning:'Someone won and no one feels good about it. A win that costs trust or integrity deserves examination before the next sword is drawn.',reversedMeaning:'Being the one who walked away with the swords. The hollow victory is now visible from the inside.'},
+    {id:'s6',name:'Six of Swords',suit:'swords',pts:[[0.5, 0.05], [0.871, 0.29], [0.817, 0.725], [0.5, 0.95], [0.16, 0.747], [0.136, 0.29], [0.5, 0.27], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5]],keywords:'transition · moving on · passage',meaning:'The boat moves through still water toward a clearer shore. You do not have to be done with the hard thing before you leave it. You just have to leave.',reversedMeaning:'Trying to leave but being pulled back. Or: arriving somewhere new but bringing the old trouble along unchanged.'},
+    {id:'s7',name:'Seven of Swords',suit:'swords',pts:[[0.5, 0.05], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.876, 0.637], [0.613, 0.613], [0.715, 0.83], [0.5, 0.72], [0.285, 0.83], [0.387, 0.613], [0.11, 0.548], [0.28, 0.5]],keywords:'strategy · shadow · cunning',meaning:'Something moves unseen. The body reads the room before the mind builds its explanation. Trust the signal. Check your blind spots.',reversedMeaning:'The deception has come to light. Something that was taken in secret must be accounted for.'},
+    {id:'s8',name:'Eight of Swords',suit:'swords',pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'paralysis · fear · trapped',meaning:'The swords around you are not touching you. One step in any direction and the pattern breaks. What was dangerous then may not be dangerous now.',reversedMeaning:'Beginning to see through the cage. The blindfold is loosening. An awareness is arriving that the paralysis was largely self-constructed.'},
+    {id:'s9',name:'Nine of Swords',suit:'swords',pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297]],keywords:'anxiety · nightmare · dread',meaning:'The mind builds worst-case scenarios with impressive detail, and at this hour they feel like prophecy. They are not.',reversedMeaning:'Anxiety that has consumed so much it has started to consume itself. The catastrophizing must be named as a pattern, not a prophecy.'},
+    {id:'s10',name:'Ten of Swords',suit:'swords',pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.691, 0.61], [0.596, 0.698], [0.72, 0.5], [0.5, 0.72], [0.387, 0.613], [0.405, 0.698], [0.382, 0.5], [0.309, 0.61], [0.5, 0.382]],keywords:'endings · collapse · new dawn',meaning:'This is the lowest point, and the lowest point is also a foundation. The sky in the distance is already lightening.',reversedMeaning:'Refusing to acknowledge that the ending has happened. The collapse is still active, not yet complete.'},
+    {id:'w1',name:'Ace of Wands',suit:'wands',pts:[[0.5, 0.05], [0.817, 0.725], [0.16, 0.747], [0.5, 0.5], [0.382, 0.5], [0.5, 0.618], [0.5, 0.382]],keywords:'spark · fire · impulse',meaning:'The drive ignites before thought arrives. Something wants to begin and it wants to begin now. Act on it while it is still this hot.',reversedMeaning:'A creative spark that won\'t ignite, or one that was extinguished too early. Something is damping the drive.'},
+    {id:'w2',name:'Two of Wands',suit:'wands',pts:[[0.05, 0.236], [0.95, 0.236], [0.95, 0.764], [0.05, 0.764], [0.391, 0.199], [0.391, 0.801], [0.5, 0.5], [0.382, 0.5], [0.609, 0.199]],keywords:'planning · vision · decision',meaning:'The ID has arrived somewhere real and is now looking outward at what comes next. Trust the direction the body is already leaning.',reversedMeaning:'Plans that won\'t commit to direction. Ambivalence that is beginning to cost more than a decision would.'},
+    {id:'w3',name:'Three of Wands',suit:'wands',pts:[[0.5, 0.95], [0.136, 0.29], [0.871, 0.29], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'ambition · horizon · momentum',meaning:'The ships are on the horizon and they are yours. The fire planned ahead and the evidence is coming in. Trust what was set in motion.',reversedMeaning:'The ships on the horizon belong to someone else. What was set in motion has stalled and requires direct intervention.'},
+    {id:'w4',name:'Four of Wands',suit:'wands',pts:[[0.73, 0.18], [0.876, 0.637], [0.5, 0.83], [0.124, 0.637], [0.27, 0.18], [0.5, 0.27], [0.72, 0.5], [0.613, 0.613], [0.387, 0.613], [0.28, 0.5]],keywords:'celebration · homecoming · harvest',meaning:'Something has been completed and the body gets to celebrate. Marking milestones is ritual that makes effort mean something.',reversedMeaning:'Celebration that feels unearned or incomplete. Something about the achievement is being minimized.'},
+    {id:'w5',name:'Five of Wands',suit:'wands',pts:[[0.502, 0.17], [0.613, 0.387], [0.861, 0.383], [0.618, 0.5], [0.715, 0.83], [0.5, 0.618], [0.285, 0.83], [0.382, 0.5], [0.139, 0.383], [0.387, 0.387], [0.5, 0.5]],keywords:'conflict · competition · tension',meaning:'Creative friction that sharpens. The question is whether the fighting is clarifying something or just burning energy.',reversedMeaning:'Conflict that has become habit rather than productive friction. The wands are swinging at nothing real.'},
+    {id:'w6',name:'Six of Wands',suit:'wands',pts:[[0.5, 0.05], [0.871, 0.29], [0.876, 0.637], [0.715, 0.83], [0.285, 0.83], [0.11, 0.548], [0.136, 0.29], [0.5, 0.27], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5]],keywords:'victory · recognition · pride',meaning:'The crowd is cheering and you earned it. Accept the recognition without deflecting it or making it smaller.',reversedMeaning:'Seeking recognition as a substitute for genuine confidence. Or: a victory that doesn\'t feel like one.'},
+    {id:'w7',name:'Seven of Wands',suit:'wands',pts:[[0.502, 0.17], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.817, 0.725], [0.596, 0.698], [0.5, 0.83], [0.405, 0.698], [0.16, 0.747], [0.28, 0.5], [0.136, 0.29]],keywords:'defense · perseverance · stance',meaning:'The stubborn refusal to abandon something genuinely worth defending. Do not negotiate down from something that is actually right.',reversedMeaning:'Defending a position past the point of reason. Stubbornness that has become attachment.'},
+    {id:'w8',name:'Eight of Wands',suit:'wands',pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.236, 0.382]],keywords:'speed · acceleration · urgency',meaning:'Everything is arriving at once. The acceleration is not a warning; it is the universe matching your energy.',reversedMeaning:'The velocity has become chaos. Everything arriving at once with no capacity to receive it.'},
+    {id:'w9',name:'Nine of Wands',suit:'wands',pts:[[0.5, 0.5], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.416, 0.297], [0.584, 0.297], [0.95, 0.5], [0.7, 0.914], [0.3, 0.914], [0.05, 0.5], [0.3, 0.086], [0.7, 0.086]],keywords:'resilience · last stand · guarded',meaning:'The ID is bruised and still standing. Do not confuse the scars with the wound. You are not as depleted as fear is telling you.',reversedMeaning:'Wariness that has become paranoia. The protection is now preventing anything good from reaching you.'},
+    {id:'w10',name:'Ten of Wands',suit:'wands',pts:[[0.5, 0.618], [0.382, 0.5], [0.618, 0.5], [0.5, 0.382], [0.5, 0.5], [0.387, 0.613], [0.5, 0.72], [0.387, 0.387], [0.613, 0.387], [0.5, 0.27], [0.613, 0.613], [0.309, 0.61], [0.405, 0.698], [0.236, 0.382], [0.665, 0.335], [0.416, 0.297], [0.691, 0.61], [0.236, 0.618], [0.5, 0.83], [0.274, 0.274], [0.755, 0.382]],keywords:'burden · weight · overextension',meaning:'The fire carries too much. What can be put down without betrayal? The wands were meant to build something, not carried indefinitely.',reversedMeaning:'Dropping the burden before the destination. Something is being abandoned before it was completed.'},
+    {id:'p1',name:'Ace of Pentacles',suit:'pentacles',pts:[[0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5], [0.5, 0.5], [0.5, 0.382], [0.382, 0.5]],keywords:'seed · resource · ground',meaning:'Something material is beginning and the body recognizes the right soil. Plant the seed with intention. The return will compound.',reversedMeaning:'The seed exists but the ground isn\'t ready. What is preventing the beginning that is available?'},
+    {id:'p2',name:'Two of Pentacles',suit:'pentacles',pts:[[0.5, 0.27], [0.755, 0.382], [0.764, 0.618], [0.5, 0.83], [0.236, 0.618], [0.236, 0.382], [0.5, 0.382], [0.5, 0.618]],keywords:'balance · adaptability · juggling',meaning:'The balance is in the motion, not the stillness. Keep moving. Adapt faster than the circumstances change.',reversedMeaning:'The juggling has collapsed. Something needs to be set down before anything can be balanced again.'},
+    {id:'p3',name:'Three of Pentacles',suit:'pentacles',pts:[[0.502, 0.17], [0.764, 0.618], [0.236, 0.618], [0.5, 0.382], [0.613, 0.387], [0.613, 0.613], [0.5, 0.618], [0.387, 0.613], [0.387, 0.387]],keywords:'craft · skill · recognition',meaning:'The hands produce something real and the work is being seen. The satisfaction of doing something well and knowing it.',reversedMeaning:'Work being done without recognition, or recognition arriving without the work having been done.'},
+    {id:'p4',name:'Four of Pentacles',suit:'pentacles',pts:[[0.5, 0.05], [0.95, 0.5], [0.5, 0.95], [0.11, 0.548], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'security · control · hoarding',meaning:'There is a difference between protecting what matters and clutching it so hard that nothing new can enter.',reversedMeaning:'The grip has loosened — possibly through loss. Or: the hoarding releases and something flows again.'},
+    {id:'p5',name:'Five of Pentacles',suit:'pentacles',pts:[[0.502, 0.17], [0.613, 0.387], [0.755, 0.382], [0.618, 0.5], [0.726, 0.726], [0.5, 0.618], [0.274, 0.726], [0.382, 0.5], [0.236, 0.382]],keywords:'lack · cold · faith',meaning:'The body knows scarcity. But the window is lit. The door is not locked. Is the poverty also a belief that has outlasted the circumstances?',reversedMeaning:'Still outside in the cold but beginning to question whether the door was actually locked. A shift in the poverty mindset.'},
+    {id:'p6',name:'Six of Pentacles',suit:'pentacles',pts:[[0.5, 0.05], [0.871, 0.29], [0.817, 0.725], [0.5, 0.95], [0.16, 0.747], [0.136, 0.29], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'generosity · charity · exchange',meaning:'Abundance moves; it does not accumulate. If you have, give. If you need, ask without shame.',reversedMeaning:'Generosity that is depleting rather than flowing. Giving from scarcity or receiving with guilt.'},
+    {id:'p7',name:'Seven of Pentacles',suit:'pentacles',pts:[[0.609, 0.094], [0.871, 0.29], [0.876, 0.637], [0.609, 0.906], [0.285, 0.83], [0.11, 0.548], [0.27, 0.18], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'patience · assessment · tending',meaning:'Do not uproot the plant to check the roots. Do not harvest before the season. Tend what you have started.',reversedMeaning:'Impatience that has caused premature harvesting. What was pulled from the vine too early that now can\'t ripen?'},
+    {id:'p8',name:'Eight of Pentacles',suit:'pentacles',pts:[[0.502, 0.17], [0.726, 0.274], [0.82, 0.5], [0.726, 0.726], [0.5, 0.83], [0.274, 0.726], [0.11, 0.548], [0.274, 0.274], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'mastery · practice · diligence',meaning:'Show up, do the work, let the accumulation speak for itself. Something is being mastered through practice, not talent.',reversedMeaning:'Repetition that has become rote. The practice continues but the presence has left it.'},
+    {id:'p9',name:'Nine of Pentacles',suit:'pentacles',pts:[[0.609, 0.094], [0.871, 0.29], [0.949, 0.602], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.11, 0.548], [0.136, 0.29], [0.391, 0.094], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],keywords:'abundance · earned · solitude',meaning:'What was built through discipline is now being enjoyed. The pleasure of your own company in surroundings you created.',reversedMeaning:'Abundance that feels lonely rather than beautiful. Luxury that is being used to avoid something.'},
+    {id:'p10',name:'Ten of Pentacles',suit:'pentacles',pts:[[0.5, 0.05], [0.809, 0.116], [0.976, 0.405], [0.905, 0.75], [0.655, 0.95], [0.345, 0.95], [0.095, 0.75], [0.024, 0.405], [0.191, 0.116], [0.5, 0.27], [0.5, 0.5]],keywords:'legacy · wealth · inheritance',meaning:'This is the card of legacy — not just financial, but the full weight of what is passed down and passed forward.',reversedMeaning:'Legacy that feels like burden rather than inheritance. The weight of what was passed down without being asked for.'},
+  ],
+  ego:[
+    {id:'cp',name:'Page of Cups',suit:'cups',pts:[[0.5, 0.27], [0.764, 0.618], [0.236, 0.618], [0.5, 0.382], [0.613, 0.387], [0.613, 0.613], [0.5, 0.618], [0.387, 0.613], [0.387, 0.387]],keywords:'wonder · openness · feeling',meaning:'The self wanders with beginner\'s mind. Let impressions arrive before you name them or manage them into strategy.',reversedMeaning:'Openness that has become over-receptivity. Absorbing everything without discernment.'},
+    {id:'ckn',name:'Knight of Cups',suit:'cups',pts:[[0.5, 0.05], [0.27, 0.18], [0.73, 0.18], [0.5, 0.5], [0.765, 0.563], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.235, 0.563], [0.5, 0.383], [0.5, 0.95]],keywords:'romance · pursuit · idealism',meaning:'The self rides toward beauty. Poetic and earnest — do not let strategy kill the earnestness.',reversedMeaning:'The romantic pursuit has lost touch with reality. Chasing an ideal that has no actual person inside it.'},
+    {id:'cq',name:'Queen of Cups',suit:'cups',pts:[[0.502, 0.17], [0.755, 0.382], [0.817, 0.725], [0.5, 0.83], [0.236, 0.618], [0.236, 0.382], [0.5, 0.27], [0.613, 0.387], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],keywords:'empathy · intuition · depth',meaning:'The self holds space. Emotional intelligence navigates where logic stumbles.',reversedMeaning:'Holding space for others at the cost of holding none for yourself. The empathy has become self-erasure.'},
+    {id:'ck',name:'King of Cups',suit:'cups',pts:[[0.5, 0.5], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.416, 0.297], [0.584, 0.297], [0.95, 0.5], [0.7, 0.914], [0.3, 0.914], [0.05, 0.5], [0.3, 0.086], [0.7, 0.086], [0.5, 0.382], [0.618, 0.5]],keywords:'mastery · balance · diplomacy',meaning:'The self governs feeling without suppressing it. This is emotional authority.',reversedMeaning:'Emotional authority that has become control. Managing feelings so effectively that none of them are actually felt.'},
+    {id:'sp',name:'Page of Swords',suit:'swords',pts:[[0.502, 0.17], [0.82, 0.5], [0.5, 0.83], [0.18, 0.5], [0.5, 0.382], [0.618, 0.5], [0.613, 0.613], [0.387, 0.613], [0.382, 0.5]],keywords:'curiosity · ideas · restless',meaning:'The self questions everything. Let the sharp mind ask before it concludes.',reversedMeaning:'Curiosity that has become cynicism. The Page\'s questions are no longer genuine inquiries.'},
+    {id:'skn',name:'Knight of Swords',suit:'swords',pts:[[0.502, 0.17], [0.613, 0.387], [0.82, 0.5], [0.613, 0.613], [0.5, 0.83], [0.387, 0.613], [0.18, 0.5], [0.387, 0.387], [0.5, 0.5], [0.618, 0.5], [0.5, 0.382]],keywords:'speed · ambition · reckless',meaning:'The self charges. Think once before the blade lands.',reversedMeaning:'The charge has already happened and the consequences are arriving. Speed and ambition that outpaced judgment.'},
+    {id:'sq',name:'Queen of Swords',suit:'swords',pts:[[0.502, 0.17], [0.726, 0.274], [0.876, 0.637], [0.715, 0.83], [0.285, 0.83], [0.11, 0.548], [0.274, 0.274], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'clarity · boundary · discernment',meaning:'The self sees without softening. This is not cruelty — it is precision.',reversedMeaning:'Clarity that has become cruelty. The truth is being used as a weapon rather than a gift.'},
+    {id:'sk',name:'King of Swords',suit:'swords',pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297], [0.596, 0.698], [0.342, 0.311], [0.72, 0.5], [0.405, 0.698], [0.5, 0.27]],keywords:'authority · logic · judgment',meaning:'The self applies intellect with discipline. The verdict is just.',reversedMeaning:'Judgment that has become rigidity. The verdict was delivered before all the evidence arrived.'},
+    {id:'wp',name:'Page of Wands',suit:'wands',pts:[[0.871, 0.29], [0.5, 0.83], [0.136, 0.29], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'adventure · enthusiasm · spark',meaning:'The self discovers its first fire. Follow the excitement before reason dims it.',reversedMeaning:'The excitement has scattered without direction. The fire is burning in five places at once.'},
+    {id:'wkn',name:'Knight of Wands',suit:'wands',pts:[[0.861, 0.383], [0.715, 0.83], [0.285, 0.83], [0.139, 0.383], [0.5, 0.05], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'passion · courage · momentum',meaning:'The self rides full speed. Channel the fire or it consumes the rider.',reversedMeaning:'The fire has burned through its fuel. The Knight is exhausted from the charge and hasn\'t admitted it.'},
+    {id:'wq',name:'Queen of Wands',suit:'wands',pts:[[0.502, 0.17], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.817, 0.725], [0.596, 0.698], [0.5, 0.83], [0.405, 0.698], [0.16, 0.747], [0.28, 0.5], [0.136, 0.29], [0.416, 0.297], [0.5, 0.5]],keywords:'charisma · will · presence',meaning:'The self commands a room without trying. This is natural authority.',reversedMeaning:'The presence has become performance. Charisma being used to manage distance rather than create connection.'},
+    {id:'wk',name:'King of Wands',suit:'wands',pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],keywords:'vision · leadership · legacy',meaning:'The self builds something larger than itself. Carry the fire forward.',reversedMeaning:'Vision that has become ego. Building for legacy rather than purpose.'},
+    {id:'pp',name:'Page of Pentacles',suit:'pentacles',pts:[[0.05, 0.236], [0.95, 0.236], [0.95, 0.764], [0.05, 0.764], [0.391, 0.199], [0.609, 0.801], [0.5, 0.5], [0.618, 0.5], [0.391, 0.801]],keywords:'study · diligence · beginning',meaning:'The self takes the long view. Start carefully. Everything compounds.',reversedMeaning:'Study that has stalled. Ambition that hasn\'t translated into actual beginning.'},
+    {id:'pkn',name:'Knight of Pentacles',suit:'pentacles',pts:[[0.726, 0.274], [0.726, 0.726], [0.274, 0.726], [0.274, 0.274], [0.5, 0.27], [0.613, 0.387], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],keywords:'routine · reliability · patience',meaning:'The self moves slowly and wins. Trust the unglamorous progress.',reversedMeaning:'Reliability that has become rigidity. The steady pace has stopped and the Knight won\'t acknowledge it.'},
+    {id:'pq',name:'Queen of Pentacles',suit:'pentacles',pts:[[0.73, 0.18], [0.95, 0.5], [0.715, 0.83], [0.285, 0.83], [0.11, 0.548], [0.27, 0.18], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],keywords:'nurturing · security · care',meaning:'The self sustains others through practical love. Abundance flows outward.',reversedMeaning:'Nurturing that has become martyrdom. Practical care provided at genuine cost to self.'},
+    {id:'pk',name:'King of Pentacles',suit:'pentacles',pts:[[0.5, 0.5], [0.5, 0.382], [0.562, 0.44], [0.618, 0.5], [0.584, 0.584], [0.5, 0.618], [0.416, 0.584], [0.382, 0.5], [0.416, 0.416], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.5, 0.72], [0.28, 0.5]],keywords:'mastery · wealth · discipline',meaning:'The self has built the empire. Now govern it with wisdom.',reversedMeaning:'Mastery that has become a cage. The discipline is now preventing the growth it was meant to enable.'},
+  ],
+  superego:[
+    {id:'m0',name:'The Fool',pts:[[0.5, 0.05], [0.871, 0.29], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5]],keywords:'leap · pure potential · trust',meaning:'The higher law is: begin. The abyss beneath is also the sky above. Every great journey starts with a step that cannot be justified by the information currently available.',reversedMeaning:'The leap is being refused. Standing at the cliff\'s edge indefinitely, planning the fall instead of trusting it.'},
+    {id:'m1',name:'The Magician',pts:[[0.5, 0.5], [0.618, 0.5], [0.82, 0.5], [0.5, 0.618], [0.5, 0.83], [0.382, 0.5], [0.18, 0.5], [0.5, 0.382], [0.502, 0.17]],keywords:'will · manifestation · alignment',meaning:'Above and below are connected. You have all the tools required. The only thing missing is the alignment of intention with action.',reversedMeaning:'The tools are present but the will is fragmented. Manifestation that cancels itself through ambivalence.'},
+    {id:'m2',name:'The High Priestess',pts:[[0.618, 0.5], [0.613, 0.613], [0.5, 0.72], [0.405, 0.698], [0.274, 0.726], [0.124, 0.637], [0.11, 0.548], [0.139, 0.383], [0.274, 0.274], [0.342, 0.311], [0.5, 0.27]],keywords:'mystery · veil · knowing',meaning:'Some truths arrive only in silence. What is forming in the deep water beneath conscious thought will surface when the inner conditions are right.',reversedMeaning:'Forcing an answer before the silence has spoken. Pushing through the veil rather than sitting at its threshold.'},
+    {id:'m3',name:'The Empress',pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297], [0.596, 0.698], [0.342, 0.311]],keywords:'abundance · creation · nature',meaning:'The earth does not hurry. Growth has its own timing. Provide the conditions: warmth, attention, patience, nourishment.',reversedMeaning:'Forcing growth. Hurrying what needs to arrive in its own season.'},
+    {id:'m4',name:'The Emperor',pts:[[0.5, 0.05], [0.95, 0.5], [0.5, 0.95], [0.05, 0.5], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.596, 0.698], [0.405, 0.698], [0.309, 0.61], [0.28, 0.5], [0.342, 0.311]],keywords:'structure · authority · law',meaning:'Order is also a form of love. Build the container before you pour the contents. The foundation always determines the ceiling.',reversedMeaning:'Structure that has become tyranny. The container is crushing what it was built to protect.'},
+    {id:'m5',name:'The Hierophant',pts:[[0.5, 0.05], [0.825, 0.175], [0.949, 0.602], [0.7, 0.914], [0.3, 0.914], [0.051, 0.602], [0.136, 0.29], [0.5, 0.27], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5]],keywords:'tradition · initiation · lineage',meaning:'The teaching has been here longer than you. Receive before you revise. Innovate from knowledge, not ignorance.',reversedMeaning:'Tradition used to prevent evolution. Inherited knowledge being confused with permanent truth.'},
+    {id:'m6',name:'The Lovers',pts:[[0.5, 0.05], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.817, 0.725], [0.596, 0.698], [0.5, 0.95], [0.405, 0.698], [0.16, 0.747], [0.28, 0.5], [0.136, 0.29]],keywords:'union · sacred choice · alignment',meaning:'The highest law asks: what do you truly choose? Not what is expected — but the deepest yes available to you right now.',reversedMeaning:'Choosing from obligation rather than truth. Saying yes to what is expected rather than what is genuinely chosen.'},
+    {id:'m7',name:'The Chariot',pts:[[0.7, 0.086], [0.861, 0.383], [0.817, 0.725], [0.5, 0.95], [0.16, 0.747], [0.139, 0.383], [0.3, 0.086], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'will · victory · discipline',meaning:'Opposing forces harnessed become the vehicle. You are already moving. Victory comes to those who hold complexity without letting it become conflict.',reversedMeaning:'The opposing forces are winning. A deeper discipline is required, or an acknowledgment that one horse must be released.'},
+    {id:'m8',name:'Strength',pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.613, 0.387], [0.691, 0.61], [0.72, 0.5], [0.596, 0.698], [0.5, 0.72], [0.387, 0.613], [0.764, 0.618]],keywords:'courage · gentleness · mastery',meaning:'The lion is not subdued by force — it is held by love. What wildness is waiting to be approached with patience instead of control?',reversedMeaning:'Force being applied where gentleness would work. The lion is being fought rather than befriended.'},
+    {id:'m9',name:'The Hermit',pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61]],keywords:'solitude · lantern · inner light',meaning:'The answer is in the dark at the end of your own corridor, and you have to go there alone. The lamp lights only one step ahead, which is enough.',reversedMeaning:'The lantern is lit but the hermit won\'t go into the corridor. Solitude being used as protection rather than preparation.'},
+    {id:'m10',name:'Wheel of Fortune',pts:[[0.5, 0.05], [0.73, 0.18], [0.949, 0.398], [0.876, 0.637], [0.715, 0.83], [0.5, 0.95], [0.285, 0.83], [0.124, 0.637], [0.051, 0.398], [0.27, 0.18], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.342, 0.311]],keywords:'fate · cycles · turning',meaning:'The wheel turns without your permission. Every rise contains the seed of the next descent. Resistance costs energy that could be used to ride it.',reversedMeaning:'Resistance to the turn of the wheel. Fighting fate with energy that could be used to ride it.'},
+    {id:'m11',name:'Justice',pts:[[0.5, 0.05], [0.825, 0.175], [0.949, 0.602], [0.7, 0.914], [0.3, 0.914], [0.051, 0.602], [0.136, 0.29], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],keywords:'truth · law · consequence',meaning:'The higher law is exacting. What was sent returns with precision. Alignment with what is actually true is the only reliable navigation system.',reversedMeaning:'Avoiding the scales. Knowing what the verdict would be and refusing to step onto the platform.'},
+    {id:'m12',name:'The Hanged Man',pts:[[0.5, 0.95], [0.136, 0.29], [0.871, 0.29], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],keywords:'surrender · suspension · vision',meaning:'The view from upside down reveals what standing upright could not. Something is being processed at a level below strategy. Let it finish.',reversedMeaning:'Refusing to hang. The surrender is available but the ego is fighting it as though it is a punishment.'},
+    {id:'m13',name:'Death',pts:[[0.5, 0.05], [0.584, 0.297], [0.825, 0.175], [0.72, 0.5], [0.949, 0.602], [0.613, 0.613], [0.7, 0.914], [0.5, 0.72], [0.3, 0.914], [0.387, 0.613], [0.051, 0.602], [0.28, 0.5], [0.136, 0.29], [0.416, 0.297]],keywords:'transformation · ending · crossing',meaning:'Nothing that is meant to continue will end here. The old form dissolves to make room for the new one. Grieve what is ending. Then turn toward what is emerging.',reversedMeaning:'Clinging to what the Death card has already claimed. The transformation is complete but the old form is being kept on life support.'},
+    {id:'m14',name:'Temperance',pts:[[0.618, 0.5], [0.613, 0.613], [0.5, 0.72], [0.405, 0.698], [0.274, 0.726], [0.124, 0.637], [0.11, 0.548], [0.139, 0.383], [0.274, 0.274], [0.342, 0.311], [0.5, 0.27], [0.613, 0.387]],keywords:'alchemy · patience · blending',meaning:'The higher law is gradual. Pour between cups until the two become one. The opposites you are holding are not obstacles — they are ingredients.',reversedMeaning:'Impatience with the alchemical process. Demanding the gold appear before the pouring is complete.'},
+    {id:'m15',name:'The Devil',pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.28, 0.5], [0.342, 0.311]],keywords:'shadow · bondage · liberation',meaning:'The chains are real and they are yours to remove. The Devil bows when named. What binding has your consent that no longer serves anything?',reversedMeaning:'Seeing the chains but not yet moving to remove them. The liberation is closer than it appears.'},
+    {id:'m16',name:'The Tower',pts:[[0.5, 0.05], [0.613, 0.387], [0.95, 0.5], [0.613, 0.613], [0.5, 0.95], [0.387, 0.613], [0.05, 0.5], [0.387, 0.387], [0.5, 0.5], [0.382, 0.5], [0.5, 0.382]],keywords:'revelation · collapse · liberation',meaning:'The lightning strikes what was never true. The structure that falls was built on false foundation. What remains after the clearing is what was real all along.',reversedMeaning:'Refusing the lightning. The Tower is structurally compromised but the occupants won\'t leave.'},
+    {id:'m17',name:'The Star',pts:[[0.5, 0.05], [0.825, 0.175], [0.949, 0.398], [0.817, 0.725], [0.609, 0.906], [0.391, 0.906], [0.16, 0.747], [0.051, 0.398], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.596, 0.698], [0.405, 0.698], [0.309, 0.61], [0.28, 0.5], [0.342, 0.311]],keywords:'hope · renewal · guidance',meaning:'The wound becomes the opening. Light enters from the direction of the scar. Your wishes are heard by something that is listening.',reversedMeaning:'Hope that has curdled into despair. The star is in the sky but the figure has stopped looking up.'},
+    {id:'m18',name:'The Moon',pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297], [0.596, 0.698], [0.342, 0.311], [0.72, 0.5]],keywords:'illusion · mystery · cycles',meaning:'Not everything in the dark is threat. Navigate by feeling. The Moon lights enough for the next step.',reversedMeaning:'The moon is being given too much power over the waking hours. Anxiety that has colonized reason.'},
+    {id:'m19',name:'The Sun',pts:[[0.5, 0.05], [0.73, 0.18], [0.949, 0.398], [0.949, 0.602], [0.715, 0.83], [0.5, 0.95], [0.285, 0.83], [0.051, 0.602], [0.051, 0.398], [0.27, 0.18], [0.5, 0.27], [0.665, 0.335], [0.755, 0.382], [0.691, 0.61], [0.596, 0.698], [0.5, 0.72], [0.405, 0.698], [0.309, 0.61], [0.236, 0.382], [0.342, 0.311]],keywords:'joy · consciousness · radiance',meaning:'This is not earned, it simply is. You are allowed to be in it without justification. Shine without apology.',reversedMeaning:'The sun is present but something is blocking its reception. Joy that is available but being refused.'},
+    {id:'m20',name:'Judgement',pts:[[0.5, 0.5], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.416, 0.297], [0.584, 0.297], [0.95, 0.5], [0.7, 0.914], [0.3, 0.914], [0.05, 0.5], [0.3, 0.086], [0.7, 0.086], [0.5, 0.382]],keywords:'calling · awakening · rebirth',meaning:'The trumpet has already sounded. Something is calling you by your true name. Are you willing to answer?',reversedMeaning:'Hearing the trumpet and choosing not to rise. The calling is clear but something is keeping the old form in the coffin.'},
+    {id:'m21',name:'The World',pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5], [0.5, 0.5], [0.665, 0.335], [0.691, 0.61], [0.309, 0.61], [0.342, 0.311], [0.596, 0.698], [0.405, 0.698], [0.387, 0.387], [0.613, 0.387]],keywords:'completion · wholeness · arrival',meaning:'The journey arrives where it began and the beginning has been completely transformed by the arriving. You are whole. Not almost whole — whole, now, as you are.',reversedMeaning:'Completion that is being withheld from itself. Treating the full circle as insufficient or undeserved.'},
+  ]
+};
+
+// ── DECK GROUP SWITCHING ───────────────────────────────────────────────────
+let currentGroup='id';
+function switchGroup(g){
+  currentGroup=g;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.group===g));
+  document.querySelectorAll('.group-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('section-'+g).classList.add('active');
+}
+
+// ── RENDER GRIDS ───────────────────────────────────────────────────────────
+function renderGrid(groupKey){
+  const cards=DECK[groupKey];
+  const grid=document.getElementById('grid-'+groupKey);
+  const [R,G,B]=GROUPS_META[groupKey].color;
+  grid.innerHTML='';
+  cards.forEach(card=>{
+    const tile=document.createElement('div');
+    tile.className='card-tile';
+    tile.innerHTML=`
+      <div class="card-tile-header">
+        <canvas class="card-tile-canvas" data-id="${card.id}"></canvas>
+        <div class="card-tile-overlay">
+          <div class="card-tile-name" style="color:rgb(${R},${G},${B})">${card.name}</div>
+        </div>
+      </div>
+      <div class="card-tile-body">
+        <div class="card-tile-keywords" style="color:rgba(${R},${G},${B},.4)">${card.keywords}</div>
+      </div>
+    `;
+    tile.addEventListener('click',()=>openDetail(card,groupKey));
+    grid.appendChild(tile);
+    const cv=tile.querySelector('.card-tile-canvas');
+    animateTile(cv,card,[R,G,B]);
+  });
+}
+
+const tileAnims=new Map();
+function animateTile(cv,card,color){
+  const [R,G,B]=color;
+  let tT=Math.random()*100;
+  function frame(){
+    const id=requestAnimationFrame(frame);
+    tileAnims.set(cv,id);
+    const w=cv.offsetWidth||155,h=cv.offsetHeight||108;
+    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+    const c=cv.getContext('2d');
+    c.clearRect(0,0,w,h);
+    const bg2=c.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.max(w,h)*.6);
+    bg2.addColorStop(0,`rgba(${R},${G},${B},.09)`);bg2.addColorStop(1,'rgba(2,2,8,1)');
+    c.fillStyle=bg2;c.fillRect(0,0,w,h);
+    const pts=card.pts;
+    let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity;
+    pts.forEach(([px,py])=>{if(px<mnX)mnX=px;if(py<mnY)mnY=py;if(px>mxX)mxX=px;if(py>mxY)mxY=py;});
+    const pad=0.14;
+    const scX=(w*(1-pad*2))/(mxX-mnX||1),scY=(h*(1-pad*2))/(mxY-mnY||1),sc=Math.min(scX,scY);
+    const offX=w/2-(mnX+mxX)/2*sc,offY=h/2-(mnY+mxY)/2*sc;
+    const mp=pts.map(([px,py])=>({x:px*sc+offX,y:py*sc+offY}));
+    mp.forEach((p,i)=>{const ds=mp.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);ds.slice(0,2).forEach(({j})=>{c.beginPath();c.strokeStyle=`rgba(${R},${G},${B},.28)`;c.lineWidth=.8;c.moveTo(p.x,p.y);c.lineTo(mp[j].x,mp[j].y);c.stroke();});});
+    tT+=.016;
+    mp.forEach((p,i)=>{
+      const tw=.45+.55*Math.sin(tT*(.7+i*.18)+i*1.2);
+      const bR=1.1+tw*.85,gR=bR*2.8;
+      const g=c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR);
+      g.addColorStop(0,`rgba(${R},${G},${B},${(.72*tw+.1).toFixed(2)})`);g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      c.fillStyle=g;c.beginPath();c.arc(p.x,p.y,gR,0,Math.PI*2);c.fill();
+      c.fillStyle=`rgba(255,255,255,${(.78+.22*tw).toFixed(2)})`;c.beginPath();c.arc(p.x,p.y,bR,0,Math.PI*2);c.fill();
+    });
+  }
+  frame();
+}
+
+// ── CARD DETAIL ─────────────────────────────────────────────────────────────
+let detailAnimId=null,detailRevShown=false;
+function openDetail(card,groupKey){
+  const color=GROUPS_META[groupKey].color;
+  const [R,G,B]=color;
+  document.getElementById('detail-group-tag').textContent=GROUPS_META[groupKey].label;
+  document.getElementById('detail-group-tag').style.color=`rgba(${R},${G},${B},.5)`;
+  document.getElementById('detail-card-name').textContent=card.name;
+  document.getElementById('detail-card-name').style.color=`rgb(${R},${G},${B})`;
+  document.getElementById('detail-keywords').textContent=card.keywords;
+  document.getElementById('detail-keywords').style.color=`rgba(${R},${G},${B},.48)`;
+  document.getElementById('detail-rule').style.background=`linear-gradient(90deg,transparent,rgba(${R},${G},${B},.2),transparent)`;
+  document.getElementById('detail-meaning').textContent=card.meaning;
+  document.getElementById('detail-meaning-label').style.color=`rgba(${R},${G},${B},.3)`;
+  document.getElementById('detail-rev-meaning').textContent=card.reversedMeaning||'';
+  document.getElementById('detail-rev-section').style.display='none';
+  document.getElementById('detail-rev-toggle').style.display=card.reversedMeaning?'block':'none';
+  document.getElementById('detail-rev-toggle').textContent='Show Reversed Meaning';
+  detailRevShown=false;
+  const overlay=document.getElementById('card-detail');
+  overlay.classList.add('show');
+  document.body.style.overflow='hidden';
+  const dcv=document.getElementById('detail-canvas');
+  if(detailAnimId){cancelAnimationFrame(detailAnimId);detailAnimId=null;}
+  requestAnimationFrame(()=>{
+    const rect=dcv.parentElement.getBoundingClientRect();
+    dcv.width=rect.width;dcv.height=rect.height;
+    startDetailAnim(dcv,card,color);
+  });
+}
+
+function startDetailAnim(cv,card,color){
+  const [R,G,B]=color;
+  let dt=0;
+  const c=cv.getContext('2d');
+  const w=cv.width,h=cv.height;
+  const pts=card.pts;
+  let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity;
+  pts.forEach(([px,py])=>{if(px<mnX)mnX=px;if(py<mnY)mnY=py;if(px>mxX)mxX=px;if(py>mxY)mxY=py;});
+  const pad=.13;
+  const scX=(w*(1-pad*2))/(mxX-mnX||1),scY=(h*(1-pad*2))/(mxY-mnY||1),sc=Math.min(scX,scY);
+  const offX=w/2-(mnX+mxX)/2*sc,offY=h/2-(mnY+mxY)/2*sc;
+  const mp=pts.map(([px,py])=>({x:px*sc+offX,y:py*sc+offY}));
+  const edges=[];const es=new Set();
+  mp.forEach((p,i)=>{const ds=mp.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);ds.slice(0,2).forEach(({j})=>{const k=Math.min(i,j)+'-'+Math.max(i,j);if(!es.has(k)){es.add(k);edges.push([i,j]);}});});
+  const travelers=edges.map(e=>({edge:e,t:Math.random(),speed:.004+Math.random()*.005,dir:Math.random()>.5?1:-1}));
+  const twinkles=mp.map(()=>({phase:Math.random()*6.28,speed:.6+Math.random()*1.2}));
+  function frame(){
+    detailAnimId=requestAnimationFrame(frame);dt+=.016;
+    c.clearRect(0,0,w,h);
+    const bg3=c.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.max(w,h)*.6);
+    bg3.addColorStop(0,`rgba(${R},${G},${B},.1)`);bg3.addColorStop(.5,'rgba(6,5,14,.9)');bg3.addColorStop(1,'rgba(2,2,8,1)');
+    c.fillStyle=bg3;c.fillRect(0,0,w,h);
+    edges.forEach(([a,b])=>{const pa=mp[a],pb=mp[b];const eg=c.createLinearGradient(pa.x,pa.y,pb.x,pb.y);eg.addColorStop(0,`rgba(${R},${G},${B},.22)`);eg.addColorStop(.5,`rgba(${R},${G},${B},.42)`);eg.addColorStop(1,`rgba(${R},${G},${B},.22)`);c.beginPath();c.strokeStyle=eg;c.lineWidth=1;c.moveTo(pa.x,pa.y);c.lineTo(pb.x,pb.y);c.stroke();});
+    travelers.forEach(tr=>{tr.t+=tr.speed*tr.dir;if(tr.t>1){tr.t=0;tr.dir=Math.random()>.5?1:-1;}if(tr.t<0){tr.t=1;tr.dir=Math.random()>.5?1:-1;}const[a,b]=tr.edge;const pa=mp[a],pb=mp[b];const lx=pa.x+(pb.x-pa.x)*tr.t,ly=pa.y+(pb.y-pa.y)*tr.t;const lg=c.createRadialGradient(lx,ly,0,lx,ly,5);lg.addColorStop(0,'rgba(255,255,255,.92)');lg.addColorStop(.4,`rgba(${R},${G},${B},.65)`);lg.addColorStop(1,`rgba(${R},${G},${B},0)`);c.fillStyle=lg;c.beginPath();c.arc(lx,ly,5,0,Math.PI*2);c.fill();});
+    mp.forEach((p,i)=>{const tw=twinkles[i];const pulse=.5+.5*Math.sin(dt*tw.speed+tw.phase);const bR=1.8+pulse*1.4,gR=bR*3.2;const g1=c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR*2);g1.addColorStop(0,`rgba(${R},${G},${B},${(.18*pulse).toFixed(3)})`);g1.addColorStop(1,`rgba(${R},${G},${B},0)`);c.fillStyle=g1;c.beginPath();c.arc(p.x,p.y,gR*2,0,Math.PI*2);c.fill();const g2=c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR);g2.addColorStop(0,`rgba(255,255,255,${(.88*pulse+.1).toFixed(2)})`);g2.addColorStop(.3,`rgba(${R},${G},${B},${(.62*pulse).toFixed(2)})`);g2.addColorStop(1,`rgba(${R},${G},${B},0)`);c.fillStyle=g2;c.beginPath();c.arc(p.x,p.y,gR,0,Math.PI*2);c.fill();c.beginPath();c.arc(p.x,p.y,bR,0,Math.PI*2);c.fillStyle=`rgba(255,255,255,${(.82+.18*pulse).toFixed(2)})`;c.fill();});
+  }
+  frame();
+}
+
+function toggleReversed(){
+  detailRevShown=!detailRevShown;
+  document.getElementById('detail-rev-section').style.display=detailRevShown?'flex':'none';
+  document.getElementById('detail-rev-toggle').textContent=detailRevShown?'Hide Reversed Meaning':'Show Reversed Meaning';
+}
+function closeDetail(e){if(e&&e.target!==document.getElementById('card-detail'))return;closeDetailBtn();}
+function closeDetailBtn(){
+  document.getElementById('card-detail').classList.remove('show');
+  document.body.style.overflow='';
+  if(detailAnimId){cancelAnimationFrame(detailAnimId);detailAnimId=null;}
+}
+</script>
+</body>
+</html>
