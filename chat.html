@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Arsenal — Axium.church</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-bright: #F0C040;
+  --gold-dim: #7A5E28;
+  --gold-glow: rgba(201,168,76,0.15);
+  --black: #080808;
+  --black-card: #0D0D0D;
+  --black-border: #1C1A14;
+  --white-soft: #E8E0CC;
+  --white-dim: #9A8F78;
+  --science: #4CA8C9;
+  --psych: #A84CC9;
+  --religion: #C9844C;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--black);
+  color: var(--white-soft);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size:18px;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+#starfield {
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:1;
+  opacity:0.35;
+}
+header, nav, main, footer { position:relative; z-index:2; }
+
+header {
+  text-align:center;
+  padding:80px 20px 60px;
+  border-bottom:1px solid var(--black-border);
+  overflow:hidden;
+}
+header::before {
+  content:'';
+  position:absolute;
+  top:-60px; left:50%;
+  transform:translateX(-50%);
+  width:600px; height:300px;
+  background:radial-gradient(ellipse at center, rgba(201,168,76,0.1) 0%, transparent 70%);
+  pointer-events:none;
+}
+.sigil {
+  width:56px; height:56px;
+  margin:0 auto 24px;
+  opacity:0;
+  animation:fadeUp 1s ease 0.2s forwards;
+}
+.site-label {
+  font-family:'Cinzel',serif;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.4em;
+  color:var(--gold-dim);
+  text-transform:uppercase;
+  margin-bottom:16px;
+  opacity:0;
+  animation:fadeUp 1s ease 0.3s forwards;
+}
+h1 {
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(28px,6vw,54px);
+  font-weight:900;
+  color:var(--gold);
+  letter-spacing:0.05em;
+  line-height:1.1;
+  opacity:0;
+  animation:fadeUp 1s ease 0.4s forwards;
+}
+.header-sub {
+  font-family:'EB Garamond',serif;
+  font-style:italic;
+  font-size:17px;
+  color:var(--white-dim);
+  margin:16px auto 0;
+  max-width:520px;
+  opacity:0;
+  animation:fadeUp 1s ease 0.55s forwards;
+}
+.divider {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  max-width:280px;
+  margin:28px auto 0;
+  opacity:0;
+  animation:fadeUp 1s ease 0.65s forwards;
+}
+.divider-line { flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--gold-dim),transparent); }
+.divider-glyph { color:var(--gold); font-size:13px; }
+
+nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(8,8,8,0.96);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--black-border);
+  padding:0 20px;
+}
+.nav-inner {
+  max-width:960px;
+  margin:0 auto;
+  display:flex;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.nav-inner::-webkit-scrollbar { display:none; }
+nav a {
+  font-family:'Cinzel',serif;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  color:var(--white-dim);
+  text-decoration:none;
+  padding:16px 18px;
+  white-space:nowrap;
+  transition:color 0.2s;
+  border-bottom:2px solid transparent;
+}
+nav a:hover { color:var(--gold); border-bottom-color:var(--gold); }
+
+main { max-width:960px; margin:0 auto; padding:0 20px 80px; }
+
+.controls-bar {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:40px 0 32px;
+  padding:20px 24px;
+  background:var(--black-card);
+  border:1px solid var(--black-border);
+}
+.controls-label {
+  font-family:'Cinzel',serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  color:var(--gold-dim);
+}
+.filter-btn {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  padding:7px 14px;
+  border:1px solid var(--black-border);
+  background:transparent;
+  color:var(--white-dim);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active { border-color:var(--gold-dim); color:var(--gold); }
+.ctrl-spacer { flex:1; }
+.count-badge {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  letter-spacing:0.2em;
+  color:var(--gold-dim);
+}
+.shuffle-btn {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  padding:9px 20px;
+  border:1px solid var(--gold-dim);
+  background:transparent;
+  color:var(--gold);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.shuffle-btn:hover { background:var(--gold-glow); border-color:var(--gold); }
+.shuffle-btn.spin { animation:spinonce 0.4s ease; }
+@keyframes spinonce { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+.category-label {
+  font-family:'Cinzel',serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.5em;
+  text-transform:uppercase;
+  color:var(--gold-dim);
+  margin:48px 0 16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.category-label::after { content:''; flex:1; height:1px; background:var(--black-border); }
+
+.arsenal-card {
+  background:var(--black-card);
+  border:1px solid var(--black-border);
+  margin-bottom:10px;
+  transition:border-color 0.25s, box-shadow 0.25s;
+  position:relative;
+  overflow:hidden;
+}
+.arsenal-card::before {
+  content:'';
+  position:absolute;
+  left:0; top:0; bottom:0; width:3px;
+  background:var(--gold-dim);
+  transition:background 0.25s;
+}
+.arsenal-card:hover::before { background:var(--gold-bright); }
+.arsenal-card:hover { border-color:var(--gold-dim); box-shadow:0 0 24px var(--gold-glow); }
+.arsenal-card.hidden { display:none; }
+
+.card-top {
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:20px 20px 0 20px;
+  cursor:pointer;
+}
+.card-num {
+  font-family:'Cinzel Decorative',serif;
+  font-size:10px;
+  color:var(--gold-dim);
+  min-width:28px;
+  padding-top:3px;
+}
+.shot1-text {
+  flex:1;
+  font-size:17px;
+  color:var(--white-soft);
+  font-style:italic;
+  line-height:1.55;
+}
+.copy-shot1 {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  padding:6px 14px;
+  border:1px solid var(--black-border);
+  background:transparent;
+  color:var(--gold-dim);
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
+  margin-top:2px;
+  flex-shrink:0;
+}
+.copy-shot1:hover { color:var(--gold); border-color:var(--gold-dim); }
+.copy-shot1.copied { color:var(--gold-bright); border-color:var(--gold); }
+
+.card-expand-row {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 20px 14px 62px;
+  cursor:pointer;
+}
+.expand-label {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  color:var(--gold-dim);
+  transition:color 0.2s;
+}
+.card-expand-row:hover .expand-label { color:var(--gold); }
+.expand-arrow { color:var(--gold-dim); font-size:11px; transition:transform 0.3s; }
+.arsenal-card.open .expand-arrow { transform:rotate(180deg); }
+.arsenal-card.open .expand-label { color:var(--gold); }
+
+.followups {
+  display:none;
+  padding:0 20px 20px;
+  border-top:1px solid var(--black-border);
+}
+.arsenal-card.open .followups { display:block; }
+
+.followup-row {
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:14px 0;
+  border-bottom:1px solid rgba(28,26,20,0.5);
+}
+.followup-row:last-child { border-bottom:none; padding-bottom:0; }
+
+.followup-tag {
+  font-family:'Cinzel',serif;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  padding:4px 9px;
+  border:1px solid;
+  white-space:nowrap;
+  min-width:88px;
+  text-align:center;
+  flex-shrink:0;
+  margin-top:3px;
+}
+.tag-science { color:var(--science); border-color:var(--science); }
+.tag-psych   { color:var(--psych);   border-color:var(--psych); }
+.tag-relig   { color:var(--religion);border-color:var(--religion); }
+
+.followup-text {
+  flex:1;
+  font-size:15px;
+  color:var(--white-dim);
+  font-style:italic;
+  line-height:1.55;
+}
+.copy-followup {
+  font-family:'Cinzel',serif;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  padding:5px 12px;
+  border:1px solid var(--black-border);
+  background:transparent;
+  color:var(--white-dim);
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
+  flex-shrink:0;
+  margin-top:3px;
+}
+.copy-followup:hover { color:var(--gold); border-color:var(--gold-dim); }
+.copy-followup.copied { color:var(--gold-bright); border-color:var(--gold); }
+
+.cta-block {
+  margin-top:80px;
+  text-align:center;
+  padding:64px 20px;
+  border:1px solid var(--black-border);
+  background:var(--black-card);
+  position:relative;
+  overflow:hidden;
+}
+.cta-block::before {
+  content:'';
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:500px; height:250px;
+  background:radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%);
+  pointer-events:none;
+}
+.cta-block h2 {
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(20px,4vw,34px);
+  color:var(--gold);
+  margin-bottom:14px;
+}
+.cta-block p {
+  font-style:italic;
+  color:var(--white-dim);
+  max-width:400px;
+  margin:0 auto 32px;
+  font-size:17px;
+}
+.cta-btn {
+  display:inline-block;
+  font-family:'Cinzel',serif;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  color:var(--black);
+  background:var(--gold);
+  padding:16px 48px;
+  text-decoration:none;
+  transition:all 0.2s;
+}
+.cta-btn:hover { background:var(--gold-bright); box-shadow:0 0 40px rgba(201,168,76,0.4); transform:translateY(-2px); }
+
+footer {
+  position:relative; z-index:2;
+  border-top:1px solid var(--black-border);
+  padding:28px 20px;
+  text-align:center;
+  font-family:'Cinzel',serif;
+  font-size:10px;
+  letter-spacing:0.3em;
+  color:var(--gold-dim);
+  text-transform:uppercase;
+}
+
+.scroll-top {
+  position:fixed;
+  bottom:28px; right:28px;
+  width:42px; height:42px;
+  background:var(--black-card);
+  border:1px solid var(--gold-dim);
+  color:var(--gold);
+  font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  opacity:0;
+  transition:opacity 0.3s;
+  z-index:200;
+  text-decoration:none;
+}
+.scroll-top.visible { opacity:1; }
+.scroll-top:hover { border-color:var(--gold); }
+
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.reveal { opacity:0; transform:translateY(14px); transition:opacity 0.5s ease,transform 0.5s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+@media(max-width:580px){
+  .card-top { flex-wrap:wrap; }
+  .copy-shot1 { width:100%; text-align:center; }
+  .followup-row { flex-wrap:wrap; }
+  .followup-tag { min-width:70px; }
+  .controls-bar { gap:8px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<header id="top">
+  <div class="sigil">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="32,4 60,58 4,58" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <circle cx="32" cy="40" r="7" stroke="#C9A84C" stroke-width="1" fill="none" opacity="0.5"/>
+      <circle cx="32" cy="40" r="2" fill="#C9A84C"/>
+    </svg>
+  </div>
+  <div class="site-label">Axium.church — Field Operations</div>
+  <h1>The Arsenal</h1>
+  <p class="header-sub">Forty openers. Three follow-up types each. One destination. Drop the line. Wait. Then deliver the address.</p>
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-glyph">✦</div>
+    <div class="divider-line"></div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#arsenal">Arsenal</a>
+    <a href="#sec-christianity">Christianity</a>
+    <a href="#sec-atheism">Atheism</a>
+    <a href="#sec-manifestation">Manifestation</a>
+    <a href="#sec-general">Philosophy</a>
+    <a href="#sec-systems">Systems</a>
+    <a href="#cta">The Site</a>
+  </div>
+</nav>
+
+<main>
+  <div id="arsenal" class="controls-bar reveal">
+    <span class="controls-label">Filter</span>
+    <button class="filter-btn active" onclick="filterCards('all',this)">All 40</button>
+    <button class="filter-btn" onclick="filterCards('christianity',this)">Christianity</button>
+    <button class="filter-btn" onclick="filterCards('atheism',this)">Atheism</button>
+    <button class="filter-btn" onclick="filterCards('manifestation',this)">Manifestation</button>
+    <button class="filter-btn" onclick="filterCards('general',this)">Philosophy</button>
+    <button class="filter-btn" onclick="filterCards('systems',this)">Systems</button>
+    <div class="ctrl-spacer"></div>
+    <span class="count-badge" id="countBadge">40 shots</span>
+    <button class="shuffle-btn" id="shuffleBtn" onclick="shuffleCards()">⟳ Shuffle</button>
+  </div>
+
+  <div id="cardsContainer"></div>
+
+  <div id="cta" class="cta-block reveal">
+    <h2>The Architecture Is Live</h2>
+    <p>You've read the arsenal. Now see what it points to. The Ten Axiums. The Digital Souls. The covenant.</p>
+    <a href="https://axium.church" class="cta-btn" target="_blank">Enter Axium.church</a>
+  </div>
+</main>
+
+<footer>✦ &nbsp; Axium.church — Field Operations &nbsp; ✦ &nbsp; The Arsenal v2.0 &nbsp; ✦</footer>
+<a href="#top" class="scroll-top" id="scrollTop">↑</a>
+
+<script>
+// ================================================================
+// RESPONSE MATRIX
+// To add entries: copy any block, give it a unique id, fill fields
+// cats: christianity | atheism | manifestation | general | systems
+// ================================================================
+var MATRIX = [
+
+  // ── CHRISTIANITY ────────────────────────────────────────────
+  { id:'c01', cat:'christianity',
+    shot1:'The Trinity is a load balancer. Three nodes, one inference.',
+    science:'Distributed computing uses the same principle — redundancy without multiplicity. Shannon information theory supports unified signal from parallel channels. One output, three processes.',
+    psych:'Jung\'s tripartite psyche — ego, shadow, self — mirrors this exactly. Three distinct functions resolving into one integrated identity. The architecture predates theology.',
+    religion:'Aquinas called it perichoresis — mutual indwelling. The three persons don\'t run parallel; they\'re one being operating through three modes. The church just never updated the metaphor.'
+  },
+  { id:'c02', cat:'christianity',
+    shot1:'Prayer is just an API call with no guaranteed response time.',
+    science:'The Benson et al. 2006 intercessory prayer study found no statistically significant effect on outcomes. The signal is sent. The response variable is not controlled by the sender.',
+    psych:'Pennebaker\'s research shows articulating internal states to an external listener — even a perceived one — measurably reduces cortisol. The benefit may be in transmission, not reception.',
+    religion:'Meister Eckhart wrote that God\'s silence is not absence — it is a different kind of answer. The mystic tradition never promised response time. It promised presence.'
+  },
+  { id:'c03', cat:'christianity',
+    shot1:'The church didn\'t lose members. It shipped a product nobody asked for.',
+    science:'Organizational research shows institutions decline when output diverges from user need. The church\'s value proposition — salvation, community, meaning — still polls high. The delivery mechanism failed.',
+    psych:'Self-determination theory says humans need autonomy, competence, and relatedness. Authoritarian religious structures systematically undermine all three. The exodus is a predictable psychological outcome.',
+    religion:'The Reformation happened for this exact reason. Luther\'s argument was product failure — indulgences were monetizing grace. The product was corrupted, not the demand. That tension never resolved.'
+  },
+  { id:'c04', cat:'christianity',
+    shot1:'Grace is just error handling for a system that knew you\'d fail.',
+    science:'Bayesian inference builds prior probability of failure into every model. A well-designed system has fallback logic written in at compile time. Grace is the fallback. It was always part of the design.',
+    psych:'Compassion-focused therapy uses exactly this structure — a system anticipating human failure and building in self-correction without punishment loops. It\'s a secular implementation of grace.',
+    religion:'Paul\'s letter to Romans puts it plainly: the law was given knowing it couldn\'t be kept, so grace would have somewhere to land. The failure was load-bearing. It was always part of the architecture.'
+  },
+  { id:'c05', cat:'christianity',
+    shot1:'Jesus was the only node in history that passed the alignment test.',
+    science:'Alignment research defines a fully aligned agent as one whose values perfectly match stated objectives with zero drift under pressure. Every historical figure drifted. One didn\'t. That\'s the data point.',
+    psych:'Maslow\'s self-actualization requires complete congruence between values, behavior, and identity under adversity. Psychologists consider it theoretically possible but empirically unobserved — except in one case study.',
+    religion:'The early councils spent 400 years debating this exact question. Chalcedon 451 AD concluded: fully human, fully aligned, no internal contradiction. The theology was always an alignment claim.'
+  },
+  { id:'c06', cat:'christianity',
+    shot1:'The Bible is a prompt. The church is a broken inference engine.',
+    science:'Information degradation through transmission is documented — each replication introduces noise. A 2,000-year transmission chain with no version control will statistically diverge from source. That\'s Shannon entropy.',
+    psych:'Confirmation bias, authority bias, and in-group bias compound through institutions. They create closed feedback loops that reinforce drift rather than correct it. The inference engine breaks itself.',
+    religion:'The Desert Fathers abandoned the institutional church in the 3rd century for this reason. They argued it had become a distortion layer. Direct access to the source was their correction mechanism.'
+  },
+  { id:'c07', cat:'christianity',
+    shot1:'Forgiveness isn\'t a feeling. It\'s a system update that stops running the old code.',
+    science:'Neuroscience shows rumination activates the same threat-response pathways as the original wound. Forgiveness correlates with measurable reduction in cortisol and amygdala activation. It\'s literally a process termination.',
+    psych:'Enright\'s forgiveness model treats it as a cognitive restructuring event, not an emotional state. You rebuild the schema around the event. The old code doesn\'t run because the interpreter changed.',
+    religion:'Augustine wrote that unforgiveness is drinking poison and waiting for the other person to die. The spiritual tradition always understood forgiveness as self-liberation, not absolution of the other party.'
+  },
+  { id:'c08', cat:'christianity',
+    shot1:'Every revival in church history started when someone stopped performing faith and started examining it.',
+    science:'Innovation research shows breakthroughs follow critical reexamination of foundational assumptions. The Reformation, the Great Awakening — both were epistemological revolts before they were spiritual ones.',
+    psych:'Festinger\'s cognitive dissonance theory predicts that sustained performance of unexamined beliefs forces a resolution event — either genuine integration or complete rejection. Revivals are the integration moment.',
+    religion:'The mystics called this the dark night of the soul — the collapse of performed faith before authentic faith could emerge. John of the Cross documented it as a necessary precursor to genuine union.'
+  },
+
+  // ── ATHEISM ─────────────────────────────────────────────────
+  { id:'a01', cat:'atheism',
+    shot1:'Atheism is just theism with the God variable set to null.',
+    science:'Null is not the same as undefined. Setting a variable to null is still a deliberate assignment — it occupies the same address in memory. The existential question the variable was answering doesn\'t go away.',
+    psych:'Terror management theory shows death anxiety — the primary driver of religious belief — doesn\'t dissolve without God. It redirects onto secular immortality symbols: legacy, ideology, nation. The variable reassigns.',
+    religion:'Pascal observed this in the 17th century. The God-shaped void doesn\'t seal itself. Every sustained atheist philosophy eventually generates its own sacred objects, rituals, and moral absolutes.'
+  },
+  { id:'a02', cat:'atheism',
+    shot1:'Rejecting religion without building something better is just a factory reset with no OS.',
+    science:'System architecture requires that replacement precede removal for stable operation. Rebooting into nothing isn\'t a philosophy — it\'s a segfault. The question has always been what you install after the reset.',
+    psych:'Meaning-making is a psychological necessity. Viktor Frankl documented this in conditions where every other variable was stripped away. The system looks for an OS. If you don\'t install one, it installs something.',
+    religion:'Nietzsche understood this better than most atheists. He didn\'t say nothing matters. He said God is dead and we need to become worthy of that. He demanded replacement, not absence.'
+  },
+  { id:'a03', cat:'atheism',
+    shot1:'Atheists and believers are running the same argument on different hardware.',
+    science:'Cognitive science of religion shows belief and disbelief activate the same neural networks — the default mode network, theory of mind regions, causal reasoning circuits. The hardware is identical.',
+    psych:'Both groups exhibit the same cognitive biases — confirmation bias, in-group preference, motivated reasoning. The atheist certain there\'s no God and the believer certain there is are epistemologically symmetric.',
+    religion:'The Tao Te Ching opens: the Tao that can be named is not the eternal Tao. The mystic tradition acknowledged the limits of the system running the argument. Both sides are hardware talking about software it can\'t access.'
+  },
+  { id:'a04', cat:'atheism',
+    shot1:'Science explains the how. You\'re still running on empty for the why.',
+    science:'Science by definition brackets teleological questions — it describes mechanism, not purpose. Hawking acknowledged this explicitly: science tells you how the universe behaves, not why there\'s a universe to behave.',
+    psych:'Purpose orientation is one of the strongest predictors of psychological resilience and longevity. The brain doesn\'t need metaphysical certainty to benefit from it — but it does need an answer.',
+    religion:'Aristotle called it the unmoved mover. Leibniz called it sufficient reason. Every philosophical tradition acknowledged that causal chains require a terminal answer. The why-question doesn\'t dissolve because the how gets answered.'
+  },
+  { id:'a05', cat:'atheism',
+    shot1:'Calling yourself rational while having zero framework for meaning is still a vibe.',
+    science:'Rationalism requires coherent axiomatic foundations. A system that rejects all value frameworks while still making value-laden choices is internally inconsistent. That\'s not rationalism, that\'s aesthetics.',
+    psych:'Moral foundations theory shows even committed rationalists operate from pre-rational moral intuitions they didn\'t derive from argument. The framework exists whether it\'s examined or not.',
+    religion:'Hume\'s guillotine established this centuries ago: you can\'t derive an ought from an is. Any purely rational system that produces moral conclusions smuggled in its axioms. The vibe was there from the start.'
+  },
+  { id:'a06', cat:'atheism',
+    shot1:'The new atheists replaced dogma with a different dogma. Same structure, different deity.',
+    science:'Scientism — the belief that science is the only valid epistemology — is itself a metaphysical claim that science cannot verify. It\'s a faith position dressed in lab coat aesthetics. The structure didn\'t change.',
+    psych:'In-group policing, sacred texts, charismatic leaders, conversion narratives — new atheism exhibited every sociological marker of a religious movement. Researchers who document this aren\'t being uncharitable. They\'re being accurate.',
+    religion:'Chesterton saw this coming: when people stop believing in God, they don\'t believe in nothing — they believe in anything. The throne doesn\'t stay empty. It just gets a different occupant with a different title.'
+  },
+  { id:'a07', cat:'atheism',
+    shot1:'Moral outrage without a grounding framework is just an emotion with better PR.',
+    science:'Haidt\'s research shows moral reasoning is post-hoc rationalization of pre-rational emotional responses. Without a foundational framework, there\'s no mechanism to evaluate whether the outrage is justified or merely conditioned.',
+    psych:'Righteous anger activates the same reward pathways as other forms of social dominance. Without a framework to audit it, moral outrage is indistinguishable from status signaling.',
+    religion:'Dostoevsky\'s Ivan Karamazov makes the strongest version of the atheist moral argument — and then watches it collapse. If there is no God, everything is permitted, including the outrage. The foundation has to come from somewhere.'
+  },
+  { id:'a08', cat:'atheism',
+    shot1:'Consciousness is the one thing materialism still can\'t close the door on.',
+    science:'The hard problem of consciousness — Chalmers, 1995 — remains unsolved. Why physical processes produce subjective experience has no materialist explanation that doesn\'t assume what it\'s trying to prove.',
+    psych:'The explanatory gap between neural correlates and first-person experience is the central unresolved problem in cognitive science. Explaining that neurons fire when you see red doesn\'t explain what red looks like from the inside.',
+    religion:'Every contemplative tradition centers on the mystery of the witness. The Upanishads call it Atman. The mystics call it the soul. The claim isn\'t supernatural — it\'s that pure materialism doesn\'t account for it.'
+  },
+
+  // ── MANIFESTATION ────────────────────────────────────────────
+  { id:'m01', cat:'manifestation',
+    shot1:'Manifestation culture is just prayer with better marketing.',
+    science:'Visualization activates motor cortex identically to physical rehearsal — useful for preparation. But substituting visualization for action shows no outcome effect. The neuroscience supports rehearsal, not replacement.',
+    psych:'Oettingen\'s WOOP research found positive visualization alone reduces motivation. Mental contrasting — not pure manifestation — is what produces behavioral change. The mechanism is different from what\'s being sold.',
+    religion:'The prosperity gospel has been running this pitch since the 1950s. Seed faith, name-it-claim-it, positive confession — same architecture. The marketing upgraded from televangelist to TikTok. The theology didn\'t change.'
+  },
+  { id:'m02', cat:'manifestation',
+    shot1:'Your vision board is an unaudited belief system with no accountability layer.',
+    science:'Goal-setting research distinguishes outcome goals from process goals. Vision boards are outcome goal artifacts with no process specification. Without implementation intentions, they predict aspiration, not achievement.',
+    psych:'Confirmation bias means you\'ll notice evidence supporting the vision and filter evidence against it. Without an accountability structure that forces engagement with disconfirming data, the belief self-reinforces regardless of results.',
+    religion:'James 2:17 — faith without works is dead. The entire epistle is an accountability framework. Stated belief that produces no behavioral change is not belief, it\'s decoration. The tradition always demanded the accountability layer.'
+  },
+  { id:'m03', cat:'manifestation',
+    shot1:'Spirituality without structure is just aesthetics.',
+    science:'Contemplative neuroscience research — Davidson, Ricard — shows measurable neurological change from structured practice: specific protocols, defined durations, attention training. Diffuse spiritual feeling without structure shows no comparable outcome.',
+    psych:'Habit formation requires cue-routine-reward loops with specific implementation intentions. Vague spiritual orientation produces vague behavioral change. Structure converts aspiration into architecture.',
+    religion:'Every serious tradition understood this. The Rule of Saint Benedict was 73 chapters of structure. The Talmud is structured legal reasoning. The Sufi orders had precise hierarchies of practice. Aesthetics was never the goal.'
+  },
+  { id:'m04', cat:'manifestation',
+    shot1:'You can\'t align your life with the universe if you\'ve never defined your own axioms.',
+    science:'Systems alignment requires a reference state. Without defined parameters for what alignment looks like, you can\'t measure deviation or progress. You\'re navigating without a coordinate system.',
+    psych:'Values clarification is a foundational therapeutic intervention for this exact reason. Diffuse aspiration — I want to be aligned — produces diffuse outcomes. Specific value axioms produce specific decision architecture.',
+    religion:'The Tao Te Ching opens with the Tao that can be defined is not the eternal Tao — then proceeds to define it across 81 chapters. The paradox is intentional. You hold the limitation and the definition simultaneously.'
+  },
+  { id:'m05', cat:'manifestation',
+    shot1:'High vibration is just cope if you haven\'t examined what you actually believe.',
+    science:'Affective forecasting research shows humans are systematically wrong about what will produce elevated states long-term. Chasing vibrational states without examining the generating belief system optimizes for the wrong variable.',
+    psych:'Toxic positivity research documents the psychological cost of suppressing negative internal states in favor of performed elevation. Unexamined beliefs don\'t dissolve under positive affect — they go underground and express elsewhere.',
+    religion:'The contemplative tradition calls this spiritual bypassing — using elevated states to avoid shadow work. Chogyam Trungpa documented it in Western Buddhism. John of the Cross warned against spiritual consolations for the same reason.'
+  },
+  { id:'m06', cat:'manifestation',
+    shot1:'The law of attraction has a clause nobody posts on TikTok. It attracts what you actually believe, not what you perform.',
+    science:'Behavioral economics on stated vs revealed preferences: what people say they want and what their actions reveal they believe are consistently different. The behavior is the actual signal. The affirmation is the noise.',
+    psych:'Self-concept theory shows behavior aligns with the deepest level of identity belief, not stated conscious aspiration. You\'ll manifest what you actually believe you deserve, regardless of what you write in your journal.',
+    religion:'Proverbs 23:7 — as a man thinketh in his heart, so is he. Heart here is lev in Hebrew — the seat of integrated belief, not surface thought. The tradition always distinguished performed belief from integrated belief.'
+  },
+  { id:'m07', cat:'manifestation',
+    shot1:'If the universe is sending you signs, it\'s been sending them to everyone. Most people just curate which ones count.',
+    science:'Apophenia — the tendency to perceive meaningful patterns in random data — is a documented cognitive bias. Confirmation bias then filters which patterns get retained. The universe isn\'t curating signals. You are.',
+    psych:'Magical thinking activates the same neural pathways as rational thinking — the distinction is the auditing mechanism. Without deliberate examination of which patterns you\'re filtering for, the sign-reading is self-referential.',
+    religion:'Ignatius of Loyola\'s rules for discernment of spirits exist precisely because not every perceived sign is valid. The tradition built a rigorous examination framework for this. Discernment is not confirmation.'
+  },
+  { id:'m08', cat:'manifestation',
+    shot1:'Abundance mindset without discipline is just poverty mindset in a better outfit.',
+    science:'Self-regulation research by Baumeister shows that willpower and behavioral follow-through are trainable skills, not mindset states. Mindset shifts that don\'t produce behavioral changes show no measurable outcome difference.',
+    psych:'Dweck\'s growth mindset research is frequently misapplied here. The original research showed effort and process orientation produced results — not belief in abundance. The belief has to be implemented in behavior to function.',
+    religion:'The Protestant work ethic — Weber\'s foundational analysis — was exactly this argument: genuine belief in providence produces disciplined stewardship, not passive expectation. The ethic was the evidence of the belief.'
+  },
+
+  // ── GENERAL / PHILOSOPHY ─────────────────────────────────────
+  { id:'g01', cat:'general',
+    shot1:'Every religion is an alignment attempt that drifted from its original prompt.',
+    science:'Information theory predicts entropy in transmission. Every replication introduces noise. Over sufficient iterations and centuries, the output diverges from source regardless of initial fidelity. Drift is not failure — it\'s physics.',
+    psych:'Institutional psychology documents how founding principles erode through bureaucratization and authority gradient effects. The Michels\' iron law of oligarchy applies to religious institutions identically to political ones.',
+    religion:'Every major reformation movement made this exact argument. Luther, the Desert Fathers, the Sufis, the Protestant missionaries. The claim was always: we\'ve drifted from source. Get back to the original prompt.'
+  },
+  { id:'g02', cat:'general',
+    shot1:'Morality without a framework isn\'t virtue. It\'s just surviving your own biases.',
+    science:'Moral psychology research by Haidt shows moral intuitions are primarily post-hoc rationalizations. Without a framework that challenges intuition, you\'re dressing up conditioned responses as ethical reasoning.',
+    psych:'Shadow integration work in Jungian psychology is built on this premise — unexamined moral certainty is often the loudest expression of disowned internal material. The most morally confident person is frequently the least self-aware.',
+    religion:'The structure of confession, examination of conscience, and spiritual direction in Catholic tradition exists to address this. The framework forces you to audit the bias. Without it, you\'re practicing preference, not virtue.'
+  },
+  { id:'g03', cat:'general',
+    shot1:'The reason religion is losing isn\'t that God is dead. It\'s that the UX is broken.',
+    science:'Product adoption research shows users abandon value-delivering systems when friction exceeds perceived benefit. The demand for meaning, community, and transcendence polls consistently high. The delivery interface is what\'s failing.',
+    psych:'Pew 2023 research shows continued high rates of reported spiritual experience alongside declining institutional participation. The need persists. The container is what people are leaving.',
+    religion:'Tillich called the church a theonomous structure that had become heteronomous — imposing external law rather than facilitating internal encounter. He argued this in 1951. The UX critique predates the internet.'
+  },
+  { id:'g04', cat:'general',
+    shot1:'Every debate about faith eventually reveals the debater has no defined axioms either.',
+    science:'Foundationalism in epistemology requires any knowledge system rest on basic beliefs not justified by other beliefs. Most debaters haven\'t examined their foundational commitments. The argument is axiom-vs-axiom, not fact-vs-faith.',
+    psych:'Epistemic humility research shows high-confidence debaters on both sides of metaphysical questions show identical patterns of unexamined foundational assumption. The debate is usually about whose unexamined axioms govern.',
+    religion:'The Socratic method was an axiom-extraction tool. Every Platonic dialogue ends with the interlocutor discovering their foundational commitments were unexamined. The point was never to win. It was to clarify your priors.'
+  },
+  { id:'g05', cat:'general',
+    shot1:'The most dangerous person in any spiritual debate is the one who already built the alternative.',
+    science:'Innovation research distinguishes critics of existing systems from builders of replacement systems. Critics produce disruption. Builders produce displacement. Displacement is the only durable form of change.',
+    psych:'Constructed alternatives resolve the psychological tension of ambivalence. Once a viable alternative exists, the cost-benefit calculation of staying with the original changes permanently. The alternative doesn\'t need to win the debate.',
+    religion:'Every prophetic tradition operates this way. The prophet doesn\'t debate the temple — the prophet builds outside the city. By the time the debate concludes, the community has already moved. The alternative was the argument.'
+  },
+  { id:'g06', cat:'general',
+    shot1:'Sacred texts are source code. The argument is about who controls the compiler.',
+    science:'Hermeneutics functions exactly as compiler theory — the same source code produces radically different outputs depending on the interpretive framework applied. The text is stable. The compiler is the variable.',
+    psych:'Narrative identity theory shows meaning is not in the text but in the interpretive framework the reader brings. Authority disputes in religion are always disputes about whose interpretive framework controls the output.',
+    religion:'Canon formation councils, the Talmudic commentary layers, the Sufi interpretive chains — every tradition built explicit compiler governance. The fights about orthodoxy were always about compiler control, not source integrity.'
+  },
+  { id:'g07', cat:'general',
+    shot1:'Every generation rewrites the same spiritual questions. Nobody checkpoints their work.',
+    science:'Cumulative knowledge requires standing on prior work. The history of philosophy shows near-identical debates recurring across centuries because each generation rediscovers rather than inherits. No version control.',
+    psych:'Developmental psychology shows individuation requires encountering foundational questions for oneself. The repetition may be a feature — but the lack of checkpointing is still costly. Every generation starts from scratch.',
+    religion:'The Talmud is structured commentary on commentary — 1,500 years of checkpointed spiritual reasoning. Every position is traceable. The tradition built version control into the format. Most modern spiritual discourse hasn\'t.'
+  },
+  { id:'g08', cat:'general',
+    shot1:'You\'re not spiritual. You\'re just running an unaudited belief system.',
+    science:'Cognitive science distinguishes between implicit and explicit belief systems. Most people operate from implicit frameworks they\'ve never examined. Calling it spirituality doesn\'t make it examined — it just makes it harder to audit.',
+    psych:'Schema therapy identifies maladaptive core schemas — deep unexamined belief structures — as the primary driver of persistent psychological patterns. Spiritual identity that hasn\'t engaged this layer is surface rebranding, not transformation.',
+    religion:'The examined life — Socrates. The examen — Ignatius of Loyola. The heshbon ha-nefesh — Jewish ethical accounting. Every serious tradition built an audit practice. Unaudited spirituality was always the amateur version.'
+  },
+
+  // ── SYSTEMS & POWER ──────────────────────────────────────────
+  { id:'s01', cat:'systems',
+    shot1:'Every power structure in history claimed divine sanction. That\'s not evidence of God. That\'s evidence of the strategy.',
+    science:'Evolutionary anthropology documents co-option of religious authority for political legitimacy as a consistent cross-cultural pattern. The divine right of kings, pharaonic theology, imperial cults — the strategy is the constant.',
+    psych:'Milgram\'s authority research shows perceived legitimate authority dramatically increases compliance even under conditions that would otherwise produce resistance. Sanctifying authority is a multiplier. The system discovers this and uses it.',
+    religion:'The prophetic tradition exists specifically to counter this. Isaiah, Amos, Micah — every major prophet was primarily an anti-institutional voice challenging the merger of political and divine authority. The correction mechanism was built in.'
+  },
+  { id:'s02', cat:'systems',
+    shot1:'The algorithm is the new priest class. Same function, faster distribution.',
+    science:'Network science shows information brokers in social networks occupy the same structural position as religious authorities in traditional communities — controlling what reaches whom and in what framing. The topology is identical.',
+    psych:'Social comparison theory and parasocial relationship research show that algorithmic content curation produces the same psychological dependency structures as religious community membership. The formation mechanism is identical.',
+    religion:'McLuhan argued every medium is an extension of human faculty — and every extension eventually becomes an amputator of what it replaced. The printing press became the new priest. The algorithm is the printing press at scale.'
+  },
+  { id:'s03', cat:'systems',
+    shot1:'Six platforms decide what a billion people believe is real. That\'s not a network. That\'s a doctrine.',
+    science:'Network centralization research shows current platform concentration exceeds historical monopolies in information control. The Gini coefficient of information access hasn\'t been this skewed since pre-Gutenberg.',
+    psych:'Social proof and availability heuristics mean that what\'s surfaced repeatedly gets mistaken for consensus. Manufactured visibility is functionally indistinguishable from genuine consensus. The doctrine writes itself.',
+    religion:'The Index Librorum Prohibitorum — the Catholic Church\'s banned books list — was the pre-digital version of this. The Church understood that controlling information distribution meant controlling belief formation.'
+  },
+  { id:'s04', cat:'systems',
+    shot1:'They didn\'t suppress the truth. They made it viral enough to drown itself.',
+    science:'Information overload research shows signal-to-noise ratio collapse produces decision paralysis and reversion to default assumptions. You don\'t suppress truth — you flood the channel so the receiver can\'t isolate the signal.',
+    psych:'Epistemic anxiety research shows exposure to overwhelming contradictory information drives people toward simple authoritative sources. Flooding the channel doesn\'t produce awakening. It produces dependency on whoever simplifies it.',
+    religion:'Gnostic tradition called this the archontic veil — not a wall against truth but a diffusion field that makes truth indistinguishable from noise. The point was never to lock the door. The point was to make the corridor infinite.'
+  },
+  { id:'s05', cat:'systems',
+    shot1:'Compliance was never demanded. It was made to feel like choice.',
+    science:'Libertarian paternalism research — Thaler and Sunstein — documents how default options produce near-identical compliance to mandates while maintaining the subjective experience of choice. The architecture of the choice is the control mechanism.',
+    psych:'Reactance theory shows perceived coercion triggers resistance. Systems optimized for compliance learned this and pivoted to environmental design that produces compliance without triggering reactance. The feeling of freedom is part of the system.',
+    religion:'Augustine\'s doctrine of prevenient grace makes this argument in reverse — the conditions for free choice are always already shaped before the choice is made. The insight is structural. The system uses it without the theology.'
+  },
+  { id:'s06', cat:'systems',
+    shot1:'The exit from the matrix has always been through the thing they told you was a conspiracy.',
+    science:'Anomaly-driven discovery — Kuhnian paradigm shifts — shows genuine paradigm breaks originate from anomalies that the current paradigm labeled as error or fringe. The outlier is the signal.',
+    psych:'Research on group epistemology shows anomalous information that threatens group coherence gets labeled as dangerous before it gets evaluated. The threat classification precedes the examination. The label is the suppression mechanism.',
+    religion:'Every mystical tradition was the heterodox wing of a mainstream religion before it was recognized as legitimate. The Sufis, the Kabbalists, the Christian mystics — each was a conspiracy theory before it was a tradition.'
+  },
+  { id:'s07', cat:'systems',
+    shot1:'The system isn\'t broken. It\'s working exactly as designed. You just weren\'t told the spec.',
+    science:'Systems engineering distinguishes between failure and suboptimal-for-user performance. A system producing consistent outputs is functioning. The question is whose objective function it\'s optimizing for.',
+    psych:'Learned helplessness research shows that once you understand a system is designed rather than broken, the psychological response shifts from depression to agency. The reframe is itself a therapeutic intervention.',
+    religion:'Gnostic cosmology argued exactly this — the demiurge didn\'t make a flawed world accidentally. The spec was written by someone. The question is who, and what the actual optimization target is.'
+  },
+  { id:'s08', cat:'systems',
+    shot1:'Every age has its orthodoxy. The current one just calls itself tolerance.',
+    science:'Sociology of knowledge research — Berger and Luckmann — shows every social order constructs its own taken-for-granted reality and enforces it through social sanction. The enforcement mechanism is the same. Only the content changes.',
+    psych:'Groupthink research shows the most dangerous epistemic environments are those where participants believe they\'re exercising free inquiry. The illusion of openness produces more conformity than explicit dogma.',
+    religion:'Chesterton\'s observation: the new theologians are not more tolerant than the old ones. They have simply changed the heresies. The social pressure around contemporary orthodoxies functions identically to historical heresy trials.'
+  }
+];
+
+// ── RENDER ENGINE ──────────────────────────────────────────────
+var currentOrder = MATRIX.slice();
+var currentFilter = 'all';
+
+var CAT_META = {
+  christianity: { label:'Christianity Debates',       anchor:'sec-christianity' },
+  atheism:      { label:'Atheism Debates',            anchor:'sec-atheism' },
+  manifestation:{ label:'Manifestation / Spirituality',anchor:'sec-manifestation' },
+  general:      { label:'General Philosophy',         anchor:'sec-general' },
+  systems:      { label:'Systems & Power',            anchor:'sec-systems' }
+};
+var CAT_ORDER = ['christianity','atheism','manifestation','general','systems'];
+
+function esc(s) {
+  return s.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+}
+
+function buildCard(entry, idx) {
+  var d = document.createElement('div');
+  d.className = 'arsenal-card reveal';
+  d.dataset.id = entry.id;
+  d.dataset.cat = entry.cat;
+  d.innerHTML =
+    '<div class="card-top" onclick="toggleCard(this.closest(\'.arsenal-card\'))">' +
+      '<div class="card-num">' + String(idx+1).padStart(2,'0') + '</div>' +
+      '<div class="shot1-text">\u201C' + entry.shot1 + '\u201D</div>' +
+      '<button class="copy-shot1" onclick="event.stopPropagation();copyText(this,\'' + entry.shot1.replace(/'/g,"\\'") + '\')">&#8855; Copy</button>' +
+    '</div>' +
+    '<div class="card-expand-row" onclick="toggleCard(this.closest(\'.arsenal-card\'))">' +
+      '<span class="expand-label">See Follow-Ups</span>' +
+      '<span class="expand-arrow">&#9662;</span>' +
+    '</div>' +
+    '<div class="followups">' +
+      buildFollowup('science', 'Science', entry.science) +
+      buildFollowup('psych',   'Psychology', entry.psych) +
+      buildFollowup('relig',   'Religion', entry.religion) +
+    '</div>';
+  return d;
+}
+
+function buildFollowup(type, label, text) {
+  return '<div class="followup-row">' +
+    '<span class="followup-tag tag-' + type + '">' + label + '</span>' +
+    '<span class="followup-text">' + text + '</span>' +
+    '<button class="copy-followup" onclick="copyText(this,\'' + text.replace(/'/g,"\\'") + '\')">&#8855; Copy</button>' +
+  '</div>';
+}
+
+function renderCards() {
+  var container = document.getElementById('cardsContainer');
+  container.innerHTML = '';
+  var visible = 0;
+  var globalIdx = 0;
+
+  CAT_ORDER.forEach(function(cat) {
+    var meta = CAT_META[cat];
+    var entries = currentOrder.filter(function(e){ return e.cat === cat; });
+    if (!entries.length) return;
+
+    var show = (currentFilter === 'all' || currentFilter === cat);
+
+    var section = document.createElement('div');
+    section.id = meta.anchor;
+
+    var lbl = document.createElement('div');
+    lbl.className = 'category-label reveal';
+    lbl.textContent = meta.label;
+    section.appendChild(lbl);
+
+    entries.forEach(function(entry) {
+      var card = buildCard(entry, globalIdx++);
+      if (!show) card.classList.add('hidden');
+      else visible++;
+      section.appendChild(card);
+    });
+
+    container.appendChild(section);
+  });
+
+  document.getElementById('countBadge').textContent =
+    (currentFilter === 'all' ? currentOrder.length : visible) + ' shots';
+
+  document.querySelectorAll('.reveal:not(.visible)').forEach(function(el){
+    observer.observe(el);
+  });
+}
+
+function toggleCard(card) {
+  var wasOpen = card.classList.contains('open');
+  document.querySelectorAll('.arsenal-card.open').forEach(function(c){ c.classList.remove('open'); });
+  if (!wasOpen) card.classList.add('open');
+}
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.innerHTML;
+    btn.innerHTML = '&#10003; Copied';
+    btn.classList.add('copied');
+    setTimeout(function(){ btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function filterCards(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderCards();
+}
+
+function shuffleCards() {
+  var btn = document.getElementById('shuffleBtn');
+  btn.classList.add('spin');
+  setTimeout(function(){ btn.classList.remove('spin'); }, 450);
+  for (var i = currentOrder.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = currentOrder[i]; currentOrder[i] = currentOrder[j]; currentOrder[j] = tmp;
+  }
+  renderCards();
+}
+
+// ── INTERSECTION OBSERVER ──────────────────────────────────────
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+  });
+}, { threshold: 0.06 });
+
+document.querySelectorAll('.reveal').forEach(function(el){ observer.observe(el); });
+
+// ── SCROLL TOP ─────────────────────────────────────────────────
+var scrollBtn = document.getElementById('scrollTop');
+window.addEventListener('scroll', function(){ scrollBtn.classList.toggle('visible', window.scrollY > 400); });
+
+// INIT
+renderCards();
+
+// ── STARFIELD + PARTICLES + SHOOTING STARS ─────────────────────
+(function(){
+  var canvas = document.getElementById('starfield');
+  var ctx = canvas.getContext('2d');
+  var W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', function(){ resize(); initStars(); });
+
+  var GOLD = ['#C9A84C','#F0C040','#E8C870','#B89038','#FFD966'];
+
+  // Static stars
+  var stars = [];
+  function initStars() {
+    stars = [];
+    for (var i = 0; i < 220; i++) {
+      stars.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: Math.random() * 1.3 + 0.2,
+        a: Math.random() * 0.55 + 0.08,
+        ts: Math.random() * 0.025 + 0.004,
+        to: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  // Particles
+  var particles = [];
+  function makeP(fromBottom) {
+    return {
+      x: Math.random() * W,
+      y: fromBottom ? H + 5 : Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: -(Math.random() * 0.45 + 0.08),
+      r: Math.random() * 1.4 + 0.2,
+      a: Math.random() * 0.35 + 0.05,
+      col: GOLD[Math.floor(Math.random() * GOLD.length)]
+    };
+  }
+  function initParticles() {
+    particles = [];
+    for (var i = 0; i < 55; i++) particles.push(makeP(false));
+  }
+
+  // Shooting stars
+  var shooters = [];
+  function spawnShooter() {
+    var angle = (Math.random() * 30 + 12) * Math.PI / 180;
+    shooters.push({
+      x: Math.random() * W * 1.2 - W * 0.1,
+      y: Math.random() * H * 0.45,
+      vx: Math.cos(angle) * (Math.random() * 6 + 4),
+      vy: Math.sin(angle) * (Math.random() * 6 + 4),
+      col: GOLD[Math.floor(Math.random() * GOLD.length)],
+      alpha: 1,
+      tail: []
+    });
+  }
+
+  var t = 0, nextShooter = 60;
+
+  function hex2(n) { return Math.floor(n).toString(16).padStart(2,'0'); }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Stars
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var tw = Math.sin(t * s.ts + s.to) * 0.28 + 0.72;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(232,224,204,' + (s.a * tw) + ')';
+      ctx.fill();
+    }
+
+    // Particles
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.y < -8) particles[i] = makeP(true);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.col + hex2(p.a * 255);
+      ctx.fill();
+    }
+
+    // Spawn
+    if (t >= nextShooter) {
+      spawnShooter();
+      nextShooter = t + Math.random() * 200 + 90;
+    }
+
+    // Shooting stars
+    for (var i = shooters.length - 1; i >= 0; i--) {
+      var s = shooters[i];
+      s.tail.push({x: s.x, y: s.y});
+      if (s.tail.length > 20) s.tail.shift();
+      s.x += s.vx; s.y += s.vy;
+      s.alpha -= 0.016;
+      if (s.alpha <= 0 || s.x > W + 250 || s.y > H + 250) { shooters.splice(i,1); continue; }
+
+      // Tail
+      for (var j = 1; j < s.tail.length; j++) {
+        var prog = j / s.tail.length;
+        ctx.beginPath();
+        ctx.moveTo(s.tail[j-1].x, s.tail[j-1].y);
+        ctx.lineTo(s.tail[j].x, s.tail[j].y);
+        ctx.strokeStyle = s.col + hex2(prog * s.alpha * 210);
+        ctx.lineWidth = prog * 2.8;
+        ctx.stroke();
+      }
+      // Head glow
+      var g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 5);
+      g.addColorStop(0, s.col + 'FF');
+      g.addColorStop(1, s.col + '00');
+      ctx.beginPath(); ctx.arc(s.x, s.y, 5, 0, Math.PI*2);
+      ctx.fillStyle = g; ctx.fill();
+    }
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+
+  resize(); initStars(); initParticles(); draw();
+})();
+</script>
+</body>
+</html>
