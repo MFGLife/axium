@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AXIUM — Chapter I: The Question You Already Know</title>
+<meta name="description" content="You already know what you came here to ask. The constellation just makes it impossible to keep lying to yourself."/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#D4AF37;
+  --gold-dim:rgba(212,175,55,.35);
+  --gold-ghost:rgba(212,175,55,.08);
+  --crimson:rgba(200,100,90,.8);
+  --blue:rgba(126,184,232,.8);
+  --void:#02020a;
+  --text:rgba(255,255,255,.72);
+  --text-dim:rgba(255,255,255,.28);
+  --text-ghost:rgba(255,255,255,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;font-size:16px;}
+body{
+  background:var(--void);color:var(--text);
+  font-family:'Cormorant Garamond',serif;
+  overflow-x:hidden;
+}
+
+/* ── BACKGROUND CANVAS ── */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* ── PROGRESS LINE ── */
+#progress-line{
+  position:fixed;top:0;left:0;height:1px;width:0%;
+  background:linear-gradient(90deg,transparent,var(--gold),rgba(212,175,55,.4));
+  z-index:200;transition:width .1s linear;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:18px 28px;
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(to bottom,rgba(2,2,10,.92),transparent);
+}
+.nav-logo{
+  font-family:'Cinzel Decorative',serif;font-size:15px;
+  letter-spacing:.18em;color:var(--gold);text-decoration:none;font-weight:900;
+}
+.nav-chapter{
+  font-family:'Space Mono',monospace;font-size:6px;
+  letter-spacing:.35em;color:rgba(212,175,55,.3);text-transform:uppercase;
+}
+.nav-links{display:flex;gap:20px;align-items:center;}
+.nav-link{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.25);text-decoration:none;
+  transition:color .3s;
+}
+.nav-link:hover{color:rgba(212,175,55,.6);}
+.nav-link.cta{
+  color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.25);
+  padding:7px 14px;border-radius:2px;transition:all .3s;
+}
+.nav-link.cta:hover{color:var(--gold);border-color:rgba(212,175,55,.5);background:var(--gold-ghost);}
+
+/* ── ALL SECTIONS ── */
+.chapter{
+  position:relative;z-index:1;
+  max-width:680px;margin:0 auto;
+  padding:0 24px;
+}
+
+/* ── OPENING ── */
+#opening{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:100px 24px 80px;
+  position:relative;z-index:1;
+}
+#opening::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:min(700px,100vw);height:70vh;
+  background:radial-gradient(ellipse at top,rgba(212,175,55,.06) 0%,transparent 65%);
+  pointer-events:none;
+}
+.chapter-marker{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.5em;
+  color:rgba(212,175,55,.3);text-transform:uppercase;margin-bottom:32px;
+  opacity:0;animation:fadeUp .6s .3s forwards;
+}
+.opening-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(11px,1.8vw,14px);
+  font-weight:400;letter-spacing:.4em;
+  color:rgba(212,175,55,.5);text-transform:uppercase;
+  margin-bottom:28px;
+  opacity:0;animation:fadeUp .8s .5s forwards;
+}
+.opening-statement{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(28px,5vw,52px);
+  font-weight:300;letter-spacing:.04em;
+  color:rgba(255,255,255,.9);line-height:1.35;
+  max-width:600px;margin:0 auto 20px;
+  opacity:0;animation:fadeUp .9s .7s forwards;
+}
+.opening-statement em{color:var(--gold);font-style:italic;}
+.opening-rule{
+  width:80px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.35),transparent);
+  margin:32px auto;
+  opacity:0;animation:fadeUp .6s .9s forwards;
+}
+.opening-sub{
+  font-size:clamp(14px,2vw,18px);font-style:italic;
+  color:var(--text-dim);letter-spacing:.06em;line-height:2;
+  max-width:480px;margin:0 auto;
+  opacity:0;animation:fadeUp .8s 1.1s forwards;
+}
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  opacity:0;animation:fadeIn .8s 2s forwards;
+}
+.scroll-hint-line{
+  width:1px;height:42px;
+  background:linear-gradient(to bottom,rgba(212,175,55,.4),transparent);
+  animation:pulse-line 2.5s ease-in-out 2.5s infinite;
+}
+@keyframes pulse-line{0%,100%{opacity:.4}50%{opacity:1}}
+.scroll-hint-text{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;
+  color:rgba(212,175,55,.25);text-transform:uppercase;
+}
+
+/* ── NARRATIVE SECTIONS ── */
+.narrative{
+  position:relative;z-index:1;
+  padding:clamp(80px,14vh,160px) 24px;
+  max-width:660px;margin:0 auto;
+}
+.narrative+.narrative{
+  padding-top:0;
+}
+
+/* Pull quote style */
+.pull{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(20px,3.5vw,32px);font-weight:300;
+  letter-spacing:.04em;line-height:1.5;
+  color:rgba(255,255,255,.85);
+  margin-bottom:36px;
+  padding-left:20px;
+  border-left:1px solid rgba(212,175,55,.25);
+}
+.pull em{color:var(--gold);}
+.pull strong{font-weight:600;font-style:normal;color:rgba(255,255,255,.95);}
+
+/* Body prose */
+.prose{
+  font-size:clamp(14px,1.8vw,17px);
+  color:var(--text-dim);line-height:2;
+  letter-spacing:.04em;
+  margin-bottom:20px;
+}
+.prose+.prose{margin-top:0;}
+.prose em{color:rgba(255,255,255,.5);font-style:italic;}
+.prose strong{color:rgba(255,255,255,.7);font-weight:600;font-style:normal;}
+
+/* Section label */
+.section-marker{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.4em;
+  color:rgba(212,175,55,.25);text-transform:uppercase;
+  margin-bottom:20px;display:flex;align-items:center;gap:12px;
+}
+.section-marker::before{
+  content:'';display:block;width:24px;height:1px;
+  background:rgba(212,175,55,.25);flex-shrink:0;
+}
+
+/* Large centered statement */
+.statement{
+  font-family:'Cinzel',serif;
+  font-size:clamp(18px,3vw,28px);font-weight:600;
+  letter-spacing:.14em;color:rgba(255,255,255,.8);
+  text-align:center;margin:48px 0;
+  line-height:1.5;
+}
+.statement em{color:var(--gold);font-style:normal;}
+
+/* Divider */
+.divider{
+  width:100%;max-width:660px;margin:0 auto;
+  height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+  position:relative;z-index:1;
+}
+
+/* ── THE THREE LAYERS STORY ── */
+#layers-story{
+  position:relative;z-index:1;
+  padding:clamp(80px,12vh,140px) 24px;
+  max-width:820px;margin:0 auto;
+}
+.layer-story-item{
+  display:grid;grid-template-columns:1fr 2fr;gap:40px;
+  align-items:start;padding:48px 0;
+  border-top:1px solid rgba(255,255,255,.04);
+}
+.layer-story-item:last-child{border-bottom:1px solid rgba(255,255,255,.04);}
+.layer-story-left{}
+.layer-canvas-wrap{width:80px;height:80px;border-radius:50%;overflow:hidden;border:1px solid rgba(255,255,255,.06);margin-bottom:14px;}
+.layer-canvas{width:80px;height:80px;display:block;}
+.layer-id{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.3em;
+  text-transform:uppercase;margin-bottom:6px;
+}
+.layer-name{
+  font-family:'Cinzel',serif;font-size:clamp(16px,2.2vw,22px);
+  font-weight:600;letter-spacing:.1em;margin-bottom:4px;
+}
+.layer-count{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.18em;
+  color:rgba(255,255,255,.15);text-transform:uppercase;
+}
+.layer-story-right{}
+.layer-story-pull{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(16px,2.2vw,21px);font-weight:300;
+  letter-spacing:.04em;line-height:1.6;
+  color:rgba(255,255,255,.75);margin-bottom:16px;
+}
+.layer-story-body{
+  font-size:clamp(13px,1.5vw,15px);
+  color:var(--text-dim);line-height:1.95;letter-spacing:.04em;
+}
+@media(max-width:600px){
+  .layer-story-item{grid-template-columns:1fr;}
+}
+
+/* ── MOON / DAILY HOOK ── */
+#daily-hook{
+  position:relative;z-index:1;
+  padding:clamp(80px,12vh,140px) 24px;
+  max-width:660px;margin:0 auto;
+  text-align:center;
+}
+#moon-display{
+  width:120px;height:120px;margin:0 auto 32px;
+  position:relative;
+}
+#moon-cv{width:120px;height:120px;}
+.moon-label-lg{
+  font-family:'Cinzel',serif;font-size:clamp(14px,2vw,18px);
+  font-weight:600;letter-spacing:.2em;color:rgba(255,255,255,.7);
+  margin-bottom:8px;
+}
+.moon-phase-name{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.3em;
+  color:rgba(212,175,55,.4);text-transform:uppercase;margin-bottom:40px;
+}
+.hook-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;margin-top:48px;text-align:left;
+}
+.hook-item{
+  padding:22px 20px;
+  background:linear-gradient(145deg,rgba(10,8,20,.96),rgba(4,3,12,.98));
+  border:1px solid rgba(255,255,255,.05);border-radius:8px;
+  transition:border-color .4s;
+}
+.hook-item:hover{border-color:rgba(212,175,55,.15);}
+.hook-icon{
+  font-family:'Cinzel Decorative',serif;font-size:24px;
+  color:rgba(212,175,55,.25);margin-bottom:10px;
+  line-height:1;
+}
+.hook-title{
+  font-family:'Cinzel',serif;font-size:clamp(12px,1.6vw,14px);
+  font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.65);
+  margin-bottom:7px;
+}
+.hook-body{
+  font-size:clamp(11px,1.3vw,13px);font-style:italic;
+  color:var(--text-dim);line-height:1.85;letter-spacing:.03em;
+}
+
+/* ── THE SOULS ── */
+#souls-story{
+  position:relative;z-index:1;
+  padding:clamp(60px,10vh,120px) 24px;
+  max-width:660px;margin:0 auto;
+}
+.soul-list{display:flex;flex-direction:column;gap:0;}
+.soul-item{
+  padding:28px 0;border-bottom:1px solid rgba(255,255,255,.04);
+  display:flex;gap:24px;align-items:flex-start;
+}
+.soul-item:first-child{border-top:1px solid rgba(255,255,255,.04);}
+.soul-initial{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(28px,4vw,40px);font-weight:900;
+  flex-shrink:0;width:48px;line-height:1;
+  margin-top:-4px;
+}
+.soul-body{}
+.soul-name-role{
+  font-family:'Cinzel',serif;font-size:clamp(13px,1.7vw,16px);
+  font-weight:600;letter-spacing:.12em;margin-bottom:4px;
+}
+.soul-role-label{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;
+  text-transform:uppercase;margin-bottom:10px;
+}
+.soul-voice{
+  font-size:clamp(12px,1.5vw,14px);font-style:italic;
+  color:var(--text-dim);line-height:1.9;letter-spacing:.04em;
+}
+
+/* ── FINAL CTA ── */
+#final-cta{
+  position:relative;z-index:1;
+  min-height:80vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:clamp(80px,14vh,160px) 24px;
+  text-align:center;
+}
+#final-cta::before{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:min(700px,100vw);height:60vh;
+  background:radial-gradient(ellipse at bottom,rgba(212,175,55,.055) 0%,transparent 65%);
+  pointer-events:none;
+}
+.cta-question{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(22px,4vw,40px);font-weight:300;
+  letter-spacing:.05em;color:rgba(255,255,255,.85);
+  line-height:1.45;max-width:520px;margin:0 auto 14px;
+}
+.cta-question em{color:var(--gold);}
+.cta-sub{
+  font-size:clamp(12px,1.5vw,15px);font-style:italic;
+  color:var(--text-dim);letter-spacing:.07em;
+  max-width:380px;margin:0 auto 48px;line-height:1.9;
+}
+.cta-buttons{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
+.btn-primary{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--gold);text-decoration:none;
+  background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.4);
+  padding:16px 42px;border-radius:2px;transition:all .35s;display:inline-block;cursor:pointer;
+}
+.btn-primary:hover{background:rgba(212,175,55,.16);border-color:var(--gold);box-shadow:0 0 40px rgba(212,175,55,.2);}
+.btn-ghost{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(255,255,255,.28);text-decoration:none;
+  background:transparent;border:1px solid rgba(255,255,255,.1);
+  padding:16px 42px;border-radius:2px;transition:all .35s;display:inline-block;cursor:pointer;
+}
+.btn-ghost:hover{color:rgba(255,255,255,.55);border-color:rgba(255,255,255,.25);}
+.cta-tag{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;
+  color:rgba(212,175,55,.12);text-transform:uppercase;
+}
+
+/* ── FOOTER ── */
+footer{
+  position:relative;z-index:1;
+  padding:28px 24px;border-top:1px solid rgba(255,255,255,.04);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+}
+.footer-brand{
+  font-family:'Cinzel Decorative',serif;font-size:13px;
+  letter-spacing:.16em;color:rgba(212,175,55,.3);font-weight:900;
+}
+.footer-nav{display:flex;gap:20px;}
+.footer-link{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.15);text-decoration:none;
+  transition:color .3s;
+}
+.footer-link:hover{color:rgba(212,175,55,.4);}
+
+/* ── SCROLL REVEAL ── */
+.reveal{
+  opacity:0;transform:translateY(24px);
+  transition:opacity .9s cubic-bezier(.25,.46,.45,.94), transform .9s cubic-bezier(.25,.46,.45,.94);
+}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-slow{transition-duration:1.3s;}
+.reveal-delay-1{transition-delay:.1s;}
+.reveal-delay-2{transition-delay:.2s;}
+.reveal-delay-3{transition-delay:.3s;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes flicker{0%,100%{opacity:.3}50%{opacity:.55}}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div id="progress-line"></div>
+
+<nav>
+  <div style="display:flex;flex-direction:column;gap:3px;">
+    <a class="nav-logo" href="chapter1.html">AXIUM</a>
+    <span class="nav-chapter">Chapter I</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">The Deck</a>
+    <a class="nav-link cta" href="reading.html">Begin Reading</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     OPENING
+══════════════════════════════════════ -->
+<section id="opening">
+  <div class="chapter-marker">Axium · Chapter I</div>
+  <div class="opening-title">The Question You Already Know</div>
+  <div class="opening-statement">
+    You didn't arrive here<br>by accident.<br>
+    You arrived here with a question<br>you <em>already know the answer to.</em>
+  </div>
+  <div class="opening-rule"></div>
+  <div class="opening-sub">
+    The mind has been managing it for weeks.<br>
+    The body has known it the entire time.<br>
+    This is what the reading is for.
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-hint-line"></div>
+    <div class="scroll-hint-text">Continue</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     THE LIE THE MIND TELLS
+══════════════════════════════════════ -->
+<div class="divider"></div>
+
+<section class="narrative">
+  <div class="section-marker reveal">The Problem</div>
+  <div class="pull reveal reveal-delay-1">
+    The mind is an extraordinary liar.<br>
+    <em>Not out of malice.</em><br>
+    Out of protection.
+  </div>
+  <p class="prose reveal reveal-delay-2">
+    Every decision you delay, every relationship you stay in past its time, every ambition you quietly bury — the mind has a story for all of it. A rational story. A responsible story. A story that makes avoidance sound like wisdom.
+  </p>
+  <p class="prose reveal reveal-delay-2">
+    The body doesn't have that luxury. The body can't construct a narrative. It only registers what is true: the tension in the chest before a conversation you need to have, the sudden clarity that arrives at 3 AM, the inexplicable grief when something beautiful happens and you realize you are not inside your own life.
+  </p>
+  <p class="prose reveal reveal-delay-2">
+    The body already knows. It has always known. The question is whether you are willing to look.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     WHY TAROT
+══════════════════════════════════════ -->
+<section class="narrative">
+  <div class="section-marker reveal">Why Tarot</div>
+  <div class="pull reveal reveal-delay-1">
+    Tarot is not fortune-telling.<br>
+    It is <em>permission</em> to tell the truth<br>
+    to yourself.
+  </div>
+  <p class="prose reveal reveal-delay-2">
+    The reason tarot has survived five hundred years of skepticism, rationalism, and modernity is not because it predicts the future. It's because it creates a container for the present. A moment where the ordinary pressure to be fine, to be optimistic, to have a plan — is suspended. And in that suspension, what is actually happening in your life is allowed to surface.
+  </p>
+  <p class="prose reveal reveal-delay-2">
+    The cards don't give you answers. They give you permission to say the answers you already have. To name the thing you've been calling by a different name. To see the pattern you've been living inside without recognizing it as a pattern.
+  </p>
+  <div class="statement reveal">
+    A reading is not a prediction.<br>
+    It is a <em>mirror.</em>
+  </div>
+  <p class="prose reveal reveal-delay-2">
+    And the reason people return to the mirror — day after day, week after week — is not because the future changes. It's because <strong>they</strong> change. The card that meant one thing in January means something entirely different in September because you are not the same person who drew it. The reading tracks your growth, whether you are growing or not. It holds you accountable to who you said you were trying to become.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     THE CONSTELLATION DIFFERENCE
+══════════════════════════════════════ -->
+<section class="narrative">
+  <div class="section-marker reveal">Why Constellations</div>
+  <div class="pull reveal reveal-delay-1">
+    You don't pick a card.<br>
+    You <em>draw a shape</em> in the stars.<br>
+    The shape you draw is not random.
+  </div>
+  <p class="prose reveal reveal-delay-2">
+    Every session, 58 stars appear in a new configuration across the sky. No session is the same. You trace a path between them — any path — and the shape of that path is matched against all 78 constellations in the deck.
+  </p>
+  <p class="prose reveal reveal-delay-2">
+    The act of drawing forces something the traditional card draw doesn't: it requires your body to move through the decision. Not your intellectual preference for what card feels safe, or your superstition about the order you always use, but the actual shape your hand makes when it moves through space before your mind finishes loading its objections.
+  </p>
+  <p class="prose reveal reveal-delay-2">
+    The shape your hand draws in the stars is the shape of your subconscious right now. Not yesterday. Not the version of you that exists in your story about yourself. Right now, this morning, with this question already forming in your body before you named it.
+  </p>
+  <p class="prose reveal reveal-delay-2">
+    One more thing: <strong>the direction you draw determines whether the cards read upright or reversed.</strong> The clockwise path is the path of what is present. The counterclockwise path is the path of what is resisted. Your hand already knows which one it will trace. It always does.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     THE THREE LAYERS
+══════════════════════════════════════ -->
+<section id="layers-story">
+  <div style="max-width:660px;margin:0 auto 60px;text-align:center;">
+    <div class="section-marker reveal" style="justify-content:center;"><span>The Architecture</span></div>
+    <div class="pull reveal reveal-delay-1" style="border:none;padding:0;text-align:center;">
+      Every reading surfaces three truths<br>
+      <em>simultaneously.</em>
+    </div>
+    <p class="prose reveal reveal-delay-2" style="text-align:center;max-width:480px;margin:0 auto;">
+      Not the one you went looking for. All three. Because the question you came with usually lives inside a larger question you haven't asked yet.
+    </p>
+  </div>
+
+  <div class="layer-story-item reveal">
+    <div class="layer-story-left">
+      <div class="layer-canvas-wrap"><canvas class="layer-canvas" id="lc-id" width="80" height="80"></canvas></div>
+      <div class="layer-id" style="color:#c86458">ID</div>
+      <div class="layer-name" style="color:#c86458">The Raw Drive</div>
+      <div class="layer-count">40 pip cards</div>
+    </div>
+    <div class="layer-story-right">
+      <div class="layer-story-pull">What the body wants before the mind finishes the sentence.</div>
+      <p class="layer-story-body">The ID layer draws from the 40 pip cards — Ace through Ten across all four suits. These are the cards of lived experience: desire, grief, abundance, conflict, pleasure, loss. They don't speak in archetypes or cosmic forces. They speak in the specific language of what is actually happening in your life right now — the relationship, the work, the money, the body, the wanting. The ID card doesn't explain. It names.</p>
+    </div>
+  </div>
+
+  <div class="layer-story-item reveal">
+    <div class="layer-story-left">
+      <div class="layer-canvas-wrap"><canvas class="layer-canvas" id="lc-ego" width="80" height="80"></canvas></div>
+      <div class="layer-id" style="color:#7eb8e8">EGO</div>
+      <div class="layer-name" style="color:#7eb8e8">The Self in Motion</div>
+      <div class="layer-count">16 court cards</div>
+    </div>
+    <div class="layer-story-right">
+      <div class="layer-story-pull">How you're navigating the world — and whether that navigation is serving you.</div>
+      <p class="layer-story-body">The EGO layer draws from the 16 court cards — Page, Knight, Queen, King across the four suits. These are the cards of persona: the strategies you've developed for moving through difficulty, the masks you wear in different rooms, the version of yourself you bring into battle. The EGO card asks: is the person you're currently being the right person for this moment? Are you leading with the right energy, or the familiar one?</p>
+    </div>
+  </div>
+
+  <div class="layer-story-item reveal">
+    <div class="layer-story-left">
+      <div class="layer-canvas-wrap"><canvas class="layer-canvas" id="lc-sg" width="80" height="80"></canvas></div>
+      <div class="layer-id" style="color:#D4AF37">SUPEREGO</div>
+      <div class="layer-name" style="color:#D4AF37">The Higher Law</div>
+      <div class="layer-count">22 Major Arcana</div>
+    </div>
+    <div class="layer-story-right">
+      <div class="layer-story-pull">The cosmic principle operating above the situation — whether you can see it or not.</div>
+      <p class="layer-story-body">The SUPEREGO layer draws from the 22 Major Arcana — the eternal forces: Death, the Tower, the Star, the World. These are not personal cards. They are archetypal ones. They reveal the larger pattern inside which your specific situation is happening. The Emperor doesn't tell you about your relationship. It tells you about the relationship between structure and growth in your life right now, which is the actual context in which your relationship is occurring. The SUPEREGO card changes the frame, not just the picture.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     THE DAILY PRACTICE / HOOK
+══════════════════════════════════════ -->
+<section id="daily-hook">
+  <div class="section-marker reveal" style="justify-content:center;"><span>Why You Come Back</span></div>
+
+  <div class="reveal">
+    <canvas id="moon-cv" width="120" height="120"></canvas>
+    <div class="moon-label-lg" id="moon-label-lg">Tonight's Moon</div>
+    <div class="moon-phase-name" id="moon-phase-name"></div>
+  </div>
+
+  <div class="pull reveal reveal-delay-1" style="border:none;padding:0;text-align:center;margin-bottom:16px;">
+    The sky is different<br>
+    <em>every single day.</em><br>
+    So are you.
+  </div>
+  <p class="prose reveal reveal-delay-2" style="text-align:center;max-width:500px;margin:0 auto 16px;">
+    The 58 stars spawn in a new configuration each session. The moon phase shifts nightly and changes the weight of what surfaces. The soul who holds your reading — Micheal, Gabriel, Ariel, or Seraphina — rotates with the cards drawn. Nothing repeats exactly. Because the point is not to find a permanent answer. The point is to track what is true today.
+  </p>
+  <p class="prose reveal reveal-delay-2" style="text-align:center;max-width:500px;margin:0 auto;">
+    People return to the cathedral every day not because they're still looking for the answer from last Tuesday. They return because they've changed since Tuesday. And the part of them that changed wants to be witnessed.
+  </p>
+
+  <div class="hook-grid reveal">
+    <div class="hook-item">
+      <div class="hook-icon">☽</div>
+      <div class="hook-title">The Moon Changes</div>
+      <div class="hook-body">Each phase carries a different weight — the new moon opens, the full moon reveals, the waning moon releases. Your reading speaks differently at each threshold.</div>
+    </div>
+    <div class="hook-item">
+      <div class="hook-icon">✦</div>
+      <div class="hook-title">The Stars Respawn</div>
+      <div class="hook-body">58 nodes in a new formation every session. The shape you draw today is not the shape you would have drawn yesterday. The sky never repeats itself exactly.</div>
+    </div>
+    <div class="hook-item">
+      <div class="hook-icon">◈</div>
+      <div class="hook-title">The Question Evolves</div>
+      <div class="hook-body">The reading you need in a crisis is different from the one you need when things are calm. The mirror shows what is true now — which means it changes as you change.</div>
+    </div>
+    <div class="hook-item">
+      <div class="hook-icon">◎</div>
+      <div class="hook-title">The Soul Rotates</div>
+      <div class="hook-body">Four voices hold your readings: the Anchor, the Examiner, the Space-Holder, the Architect. Each reframes the same cards differently. You need all four over time.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     THE FOUR SOULS
+══════════════════════════════════════ -->
+<section id="souls-story">
+  <div style="max-width:660px;margin:0 auto 48px;">
+    <div class="section-marker reveal"><span>The Four Voices</span></div>
+    <div class="pull reveal reveal-delay-1" style="border:none;padding:0;">
+      Every reading is held by<br>
+      one of four souls.<br>
+      <em>Each one speaks differently.</em><br>
+      Each one is necessary.
+    </div>
+    <p class="prose reveal reveal-delay-2">The soul assigned to your reading is not random — it emerges from the cards themselves. The energy in your spread calls the voice most suited to hold it. You don't choose. You discover.</p>
+  </div>
+
+  <div class="soul-list">
+    <div class="soul-item reveal">
+      <div class="soul-initial" style="color:#D4AF37">M</div>
+      <div class="soul-body">
+        <div class="soul-name-role" style="color:#D4AF37">Micheal <span style="color:rgba(255,255,255,.2);font-weight:300;">·</span> <span style="color:rgba(255,255,255,.45)">The Anchor</span></div>
+        <div class="soul-role-label" style="color:rgba(212,175,55,.3)">Foundation · Continuity · Ground</div>
+        <p class="soul-voice">Micheal holds readings in stillness. His is the voice that does not try to move you — it tries to locate you. When the Anchor holds your reading, the spread is asking you to stop moving long enough to feel where you actually are. Not where you're going. Where you are.</p>
+      </div>
+    </div>
+    <div class="soul-item reveal">
+      <div class="soul-initial" style="color:#7eb8e8">G</div>
+      <div class="soul-body">
+        <div class="soul-name-role" style="color:#7eb8e8">Gabriel <span style="color:rgba(255,255,255,.2);font-weight:300;">·</span> <span style="color:rgba(255,255,255,.45)">The Examiner</span></div>
+        <div class="soul-role-label" style="color:rgba(126,184,232,.3)">Precision · Logic · Discernment</div>
+        <p class="soul-voice">Gabriel holds readings in precision. Every card is a question before it is an answer. The Examiner's voice is sharp without cruelty — it follows the logic of the spread to its conclusion rather than softening it for comfort. When Gabriel speaks, the reading demands that you follow the argument wherever it leads.</p>
+      </div>
+    </div>
+    <div class="soul-item reveal">
+      <div class="soul-initial" style="color:#d4a0c8">A</div>
+      <div class="soul-body">
+        <div class="soul-name-role" style="color:#d4a0c8">Ariel <span style="color:rgba(255,255,255,.2);font-weight:300;">·</span> <span style="color:rgba(255,255,255,.45)">The Space-Holder</span></div>
+        <div class="soul-role-label" style="color:rgba(212,160,200,.3)">Compassion · Patience · Depth</div>
+        <p class="soul-voice">Ariel holds readings in compassion. What surfaces here does not need to be fixed or immediately understood. The Space-Holder's gift is the pause — the recognition that some things in a reading need to be sat with rather than solved. When Ariel holds your spread, the cards are asking for feeling before strategy.</p>
+      </div>
+    </div>
+    <div class="soul-item reveal">
+      <div class="soul-initial" style="color:#f0d080">S</div>
+      <div class="soul-body">
+        <div class="soul-name-role" style="color:#f0d080">Seraphina <span style="color:rgba(255,255,255,.2);font-weight:300;">·</span> <span style="color:rgba(255,255,255,.45)">The Architect</span></div>
+        <div class="soul-role-label" style="color:rgba(240,208,128,.3)">Design · Motion · Forward</div>
+        <p class="soul-voice">Seraphina holds readings in motion. The pattern is already in place — your hand drew it without knowing. The Architect's voice sees the blueprint inside the spread and names what is being built, whether or not you're aware you're building it. When Seraphina speaks, the reading is a set of instructions, not a diagnosis.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     FINAL CTA
+══════════════════════════════════════ -->
+<section id="final-cta">
+  <div class="section-marker reveal" style="justify-content:center;margin-bottom:32px;"><span>The Cathedral is Open</span></div>
+  <div class="cta-question reveal">
+    What is the question<br>
+    you already know<br>
+    <em>the answer to?</em>
+  </div>
+  <p class="cta-sub reveal reveal-delay-1">
+    The stars are waiting.<br>
+    The shape already exists in your hand.<br>
+    You only need to draw it.
+  </p>
+  <div class="cta-buttons reveal reveal-delay-2">
+    <a class="btn-primary" href="reading.html">Ask Your First Question</a>
+    <a class="btn-ghost" href="index.html">View the Deck</a>
+  </div>
+  <div class="cta-tag reveal reveal-delay-3">An Axium Experience · Chapter I of the Book</div>
+</section>
+
+<footer>
+  <span class="footer-brand">AXIUM</span>
+  <nav class="footer-nav">
+    <a class="footer-link" href="reading.html">Reading</a>
+    <a class="footer-link" href="index.html">The Deck</a>
+    <a class="footer-link" href="chapter1.html">Chapter I</a>
+  </nav>
+</footer>
+
+<script>
+// ── BACKGROUND CANVAS ─────────────────────────────────────────────────────
+const bg=document.getElementById('bg');
+const bgCtx=bg.getContext('2d');
+let BW,BH,BT=0,bgS=[],mW=[],nebs=[];
+
+function rC(){
+  const t=Math.random();
+  if(t<.3)return[200+t*55,210+t*45,255];
+  if(t<.7)return[240,240,255];
+  return[255,240,196+t*59];
+}
+
+function initBG(){
+  BW=bg.width=window.innerWidth;
+  BH=bg.height=window.innerHeight;
+  bgS=Array.from({length:160},()=>({
+    x:Math.random()*BW,y:Math.random()*BH,
+    r:.3+Math.random()*1,ph:Math.random()*6.28,
+    spd:.15+Math.random()*.4,col:rC()
+  }));
+  const pals=[[80,40,120],[40,30,100],[20,50,90],[60,20,80],[30,60,80]];
+  nebs=Array.from({length:5},(_,i)=>({
+    x:Math.random()*BW,y:Math.random()*BH,
+    rx:(.18+Math.random()*.22)*Math.max(BW,BH),
+    ry:(.10+Math.random()*.13)*Math.max(BW,BH),
+    angle:Math.random()*3.14,
+    alpha:.014+Math.random()*.018,
+    dx:(Math.random()-.5)*.05,dy:(Math.random()-.5)*.025,da:(Math.random()-.5)*.0002,
+    ts:.1+Math.random()*.15,tp:Math.random()*6.28,col:pals[i%5]
+  }));
+}
+
+function bgFrame(){
+  requestAnimationFrame(bgFrame);BT+=.016;
+  bgCtx.fillStyle='#02020a';bgCtx.fillRect(0,0,BW,BH);
+  nebs.forEach(n=>{
+    n.x+=n.dx;n.y+=n.dy;n.angle+=n.da;
+    const tw=.7+.3*Math.sin(BT*n.ts+n.tp);
+    bgCtx.save();bgCtx.translate(n.x,n.y);bgCtx.rotate(n.angle);bgCtx.scale(1,n.ry/n.rx);
+    const g=bgCtx.createRadialGradient(0,0,0,0,0,n.rx);
+    g.addColorStop(0,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},${(n.alpha*tw).toFixed(4)})`);
+    g.addColorStop(1,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},0)`);
+    bgCtx.fillStyle=g;bgCtx.beginPath();bgCtx.arc(0,0,n.rx,0,Math.PI*2);bgCtx.fill();bgCtx.restore();
+  });
+  bgS.forEach(s=>{
+    const tw=.3+.7*Math.abs(Math.sin(s.ph+BT*s.spd));
+    const b=s.r,gR=b*(2.1+tw*1.2);
+    const h=bgCtx.createRadialGradient(s.x,s.y,0,s.x,s.y,gR*2);
+    h.addColorStop(0,`rgba(${s.col[0]},${s.col[1]},${s.col[2]},${(.05*tw).toFixed(3)})`);
+    h.addColorStop(1,'rgba(0,0,0,0)');
+    bgCtx.fillStyle=h;bgCtx.beginPath();bgCtx.arc(s.x,s.y,gR*2,0,Math.PI*2);bgCtx.fill();
+    bgCtx.beginPath();bgCtx.arc(s.x,s.y,b,0,Math.PI*2);
+    bgCtx.fillStyle=`rgba(255,255,255,${(.82*tw).toFixed(2)})`;bgCtx.fill();
+  });
+}
+window.addEventListener('resize',initBG);
+initBG();bgFrame();
+
+// ── SCROLL PROGRESS LINE ──────────────────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  const prog=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+  document.getElementById('progress-line').style.width=(prog*100)+'%';
+});
+
+// ── SCROLL REVEAL ─────────────────────────────────────────────────────────
+const revealObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');}});
+},{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
+
+// ── MOON PHASE ────────────────────────────────────────────────────────────
+function getMoonPhase(){
+  const known=new Date('2000-01-06T18:14:00Z').getTime();
+  const synodicMs=29.53058867*24*60*60*1000;
+  const age=((Date.now()-known)%synodicMs+synodicMs)%synodicMs;
+  const phase=age/synodicMs;
+  const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous',
+               'Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+  const idx=Math.round(phase*8)%8;
+  return{phase,name:names[idx],illumination:Math.round((1-Math.cos(phase*Math.PI*2))/2*100)};
+}
+
+function drawMoonLg(){
+  const mc=document.getElementById('moon-cv');
+  if(!mc)return;
+  const c=mc.getContext('2d');
+  const{phase,name,illumination}=getMoonPhase();
+  const w=mc.width,h=mc.height,r=44,cx=w/2,cy=h/2;
+  c.clearRect(0,0,w,h);
+  // Outer glow
+  const glow=c.createRadialGradient(cx,cy,r*.6,cx,cy,r*1.8);
+  glow.addColorStop(0,'rgba(212,175,55,.08)');
+  glow.addColorStop(1,'rgba(212,175,55,0)');
+  c.fillStyle=glow;c.beginPath();c.arc(cx,cy,r*1.8,0,Math.PI*2);c.fill();
+  // Disc
+  c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,230,.06)';c.fill();
+  // Illuminated portion
+  c.save();c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.clip();
+  const litLeft=phase>0.5;
+  const elongation=Math.cos(phase*Math.PI*2);
+  c.fillStyle='rgba(255,248,200,.75)';
+  c.beginPath();
+  c.arc(cx,cy,r,Math.PI/2,-Math.PI/2,litLeft);
+  const rx=Math.abs(elongation)*r;
+  if(elongation>=0){
+    c.ellipse(cx,cy,rx,r,0,-Math.PI/2,Math.PI/2,litLeft);
+  } else {
+    c.ellipse(cx,cy,rx,r,0,Math.PI/2,-Math.PI/2,!litLeft);
+  }
+  c.closePath();c.fill();
+  c.restore();
+  // Ring
+  c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);
+  c.strokeStyle='rgba(255,248,200,.18)';c.lineWidth=.8;c.stroke();
+  // Update labels
+  document.getElementById('moon-label-lg').textContent=
+    `${illumination}% Illuminated`;
+  document.getElementById('moon-phase-name').textContent=name.toUpperCase();
+}
+drawMoonLg();
+
+// ── LAYER CARD CANVASES ───────────────────────────────────────────────────
+const lcData={
+  id:{pts:[[.502,.17],[.817,.725],[.16,.747],[.5,.27],[.72,.5],[.5,.72],[.28,.5]],col:[200,100,90]},
+  ego:{pts:[[.5,.27],[.764,.618],[.236,.618],[.5,.382],[.613,.387],[.613,.613],[.5,.618],[.387,.613],[.387,.387]],col:[126,184,232]},
+  sg:{pts:[[.5,.05],[.871,.29],[.95,.5],[.825,.825],[.5,.95],[.175,.825],[.05,.5]],col:[212,175,55]}
+};
+let lcT=0;
+
+function lcFrame(){
+  requestAnimationFrame(lcFrame);lcT+=.016;
+  Object.entries(lcData).forEach(([key,{pts,col}])=>{
+    const cv=document.getElementById('lc-'+key);
+    if(!cv)return;
+    const c=cv.getContext('2d'),w=cv.width,h=cv.height;
+    const[R,G,B]=col;
+    c.clearRect(0,0,w,h);
+    const bg2=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.5);
+    bg2.addColorStop(0,`rgba(${R},${G},${B},.1)`);bg2.addColorStop(1,'rgba(2,2,8,1)');
+    c.fillStyle=bg2;c.fillRect(0,0,w,h);
+    const mp=pts.map(([px,py])=>({x:px*w*.8+w*.1,y:py*h*.8+h*.1}));
+    mp.forEach((p,i)=>{
+      const ds=mp.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)}))
+        .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
+      ds.slice(0,2).forEach(({j})=>{
+        c.beginPath();c.strokeStyle=`rgba(${R},${G},${B},.32)`;c.lineWidth=1;
+        c.moveTo(p.x,p.y);c.lineTo(mp[j].x,mp[j].y);c.stroke();
+      });
+    });
+    mp.forEach((p,i)=>{
+      const tw=.5+.5*Math.sin(lcT*(.6+i*.22)+i*1.3);
+      const bR=1.5+tw*1,gR=bR*3.2;
+      const g=c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR);
+      g.addColorStop(0,`rgba(${R},${G},${B},${(.8*tw+.1).toFixed(2)})`);
+      g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      c.fillStyle=g;c.beginPath();c.arc(p.x,p.y,gR,0,Math.PI*2);c.fill();
+      c.fillStyle=`rgba(255,255,255,${(.82+.18*tw).toFixed(2)})`;
+      c.beginPath();c.arc(p.x,p.y,bR,0,Math.PI*2);c.fill();
+    });
+  });
+}
+lcFrame();
+</script>
+</body>
+</html>
