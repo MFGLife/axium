@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIUM — Economic Dynamics | Axium.Church</title>
+<meta name="description" content="Interactive macroeconomic policy simulator with geopolitical war scenarios and stock market impact tracker.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   AXIUM ECONOMICS — DESIGN SYSTEM
+   Gold / Black Cathedral Aesthetic
+   ============================================================ */
+
+:root {
+  --gold:        #C9A84C;
+  --gold-bright: #F5D680;
+  --gold-mid:    #a08030;
+  --gold-dim:    #4a3c18;
+  --gold-glow:   rgba(201,168,76,0.18);
+  --black:       #060606;
+  --dark:        #0d0d0d;
+  --panel:       #101010;
+  --panel2:      #131313;
+  --border:      #221d0c;
+  --border2:     #2e2710;
+  --text:        #c8b888;
+  --text-dim:    #5a5030;
+  --text-mid:    #8a7848;
+  --red:         #b83030;
+  --red-bright:  #e05050;
+  --blue:        #3070b8;
+  --blue-bright: #5090e0;
+  --green:       #308050;
+  --green-bright:#50c080;
+  --orange:      #c07020;
+  --sras:        #408060;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* === GRAIN TEXTURE === */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 9000;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.028;
+  pointer-events: none;
+}
+
+/* === HEADER === */
+header {
+  position: relative;
+  text-align: center;
+  padding: 36px 20px 24px;
+  background: linear-gradient(180deg, #080600 0%, #0a0800 60%, var(--black) 100%);
+  overflow: hidden;
+}
+
+header::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 200px;
+  background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.header-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.header-ornament::before,
+.header-ornament::after {
+  content: '';
+  height: 1px; flex: 1; max-width: 120px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim));
+}
+.header-ornament::after {
+  background: linear-gradient(90deg, var(--gold-dim), transparent);
+}
+
+.header-diamond {
+  width: 8px; height: 8px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+.brand-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 6px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(22px, 5vw, 44px);
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-shadow: 0 0 60px rgba(201,168,76,0.25), 0 2px 0 rgba(0,0,0,0.8);
+  line-height: 1.1;
+}
+
+.header-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.header-desc {
+  max-width: 560px;
+  margin: 14px auto 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-mid);
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.header-bottom-line {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold-dim) 20%, var(--gold-mid) 50%, var(--gold-dim) 80%, transparent 100%);
+}
+
+/* === NAV TABS === */
+.tab-nav {
+  display: flex;
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 15px 8px 13px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  position: relative;
+}
+.tab-btn:hover {
+  color: var(--text);
+  background: rgba(201,168,76,0.03);
+}
+.tab-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  background: rgba(201,168,76,0.05);
+}
+.tab-num {
+  display: block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.tab-btn.active .tab-num { color: var(--gold-mid); }
+
+/* === SCENARIO BUTTONS (NEWS HEADLINES) === */
+.scenario-bar {
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+}
+
+.scenario-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.scenario-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.scenario-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scenario-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border2);
+  background: rgba(201,168,76,0.03);
+  color: var(--text-mid);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.scenario-btn::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, transparent 50%, rgba(201,168,76,0.03) 100%);
+}
+.scenario-btn:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold-bright);
+  background: rgba(201,168,76,0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.scenario-btn.active-scenario {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+  background: rgba(201,168,76,0.12);
+  box-shadow: 0 0 12px rgba(201,168,76,0.1), inset 0 0 8px rgba(201,168,76,0.05);
+}
+.scenario-btn.danger  { border-color: #3a1010; }
+.scenario-btn.warning { border-color: #3a2810; }
+.scenario-btn.ok      { border-color: #103020; }
+.scenario-btn:hover.danger  { border-color: var(--red); }
+.scenario-btn:hover.warning { border-color: var(--orange); }
+.scenario-btn:hover.ok      { border-color: var(--green); }
+.scenario-btn.active-scenario.danger  { border-color: var(--red-bright); background: rgba(184,48,48,0.1); color: var(--red-bright); }
+.scenario-btn.active-scenario.warning { border-color: var(--orange); background: rgba(192,112,32,0.1); color: #f0a040; }
+.scenario-btn.active-scenario.ok      { border-color: var(--green-bright); background: rgba(48,128,80,0.1); color: var(--green-bright); }
+
+.s-icon { font-size: 14px; }
+
+/* === LAYOUT === */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  min-height: calc(100vh - 220px);
+}
+
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .controls { border-right: none; border-bottom: 1px solid var(--border); }
+}
+
+/* === CONTROLS SIDEBAR === */
+.controls {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ctrl-block {
+  border: 1px solid var(--border);
+  padding: 14px 12px 12px;
+  position: relative;
+  background: var(--panel2);
+}
+.ctrl-block-title {
+  position: absolute; top: -9px; left: 10px;
+  background: var(--panel2);
+  padding: 0 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.ctrl-row {
+  margin-bottom: 11px;
+}
+.ctrl-row:last-child { margin-bottom: 0; }
+
+.ctrl-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.ctrl-label span:first-child {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.ctrl-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  min-width: 30px;
+  text-align: right;
+}
+.ctrl-val.positive { color: var(--green-bright); }
+.ctrl-val.negative { color: var(--red-bright); }
+
+input[type=range] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 2px;
+  background: var(--border2);
+  outline: none;
+  border-radius: 0;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px;
+  background: var(--gold);
+  cursor: pointer;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  transition: transform 0.1s;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+.preset-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preset-btn {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preset-btn:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  background: var(--gold-glow);
+}
+.preset-btn.lit {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+  background: rgba(201,168,76,0.08);
+}
+
+.reset-btn {
+  padding: 10px;
+  border: 1px solid #2a0e0e;
+  background: transparent;
+  color: #4a2020;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 2px;
+}
+.reset-btn:hover {
+  border-color: var(--red);
+  color: var(--red-bright);
+  background: rgba(184,48,48,0.08);
+}
+
+/* === CHART AREA === */
+.chart-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 20px;
+  background: var(--black);
+}
+
+canvas {
+  border: 1px solid var(--border);
+  background: #050505;
+  max-width: 100%;
+  display: block;
+}
+
+.legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+}
+.legend-line {
+  width: 22px; height: 2px;
+}
+.legend-dashed {
+  width: 22px; height: 2px;
+  background: repeating-linear-gradient(90deg, currentColor 0px, currentColor 4px, transparent 4px, transparent 8px);
+}
+
+/* === STAT CARDS === */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 640px;
+}
+.stat-card {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 12px 10px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+}
+.stat-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+.stat-val {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: var(--gold);
+  font-weight: 600;
+}
+.stat-unit {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-left: 2px;
+}
+
+/* === ANALYSIS BOX === */
+.analysis-box {
+  width: 100%; max-width: 640px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 16px 18px;
+  position: relative;
+}
+.analysis-box::before {
+  content: 'AXIUM ANALYSIS';
+  position: absolute; top: -9px; left: 14px;
+  background: var(--panel);
+  padding: 0 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--gold-dim);
+}
+.analysis-text {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text-mid);
+  letter-spacing: 0.2px;
+}
+.analysis-text strong {
+  color: var(--gold);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+.analysis-text .warn { color: var(--red-bright); }
+.analysis-text .good { color: var(--green-bright); }
+.analysis-text .note { color: var(--orange); }
+
+/* === SCENARIO FLASH OVERLAY === */
+.scenario-flash {
+  position: fixed; inset: 0; z-index: 8000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.7);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.scenario-flash.show { opacity: 1; }
+.flash-card {
+  border: 1px solid var(--gold-dim);
+  background: var(--dark);
+  padding: 20px 32px;
+  text-align: center;
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+.scenario-flash.show .flash-card { transform: scale(1); }
+.flash-headline {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--gold-bright);
+  margin-bottom: 4px;
+}
+.flash-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+}
+
+/* === FOOTER === */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 20px;
+  text-align: center;
+  background: var(--dark);
+}
+.footer-logo {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--gold-dim);
+  margin-bottom: 6px;
+}
+.footer-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+}
+.footer-links {
+  margin-top: 10px;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+.footer-links a {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+.footer-links a:hover { color: var(--gold); }
+
+/* === STOCK MARKET PANEL === */
+.market-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: calc(100vh - 220px);
+}
+@media (max-width: 760px) {
+  .market-layout { grid-template-columns: 1fr; }
+}
+
+.ticker-strip {
+  background: #070500;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+.ticker-inner {
+  display: inline-flex;
+  gap: 32px;
+  animation: tickerScroll 40s linear infinite;
+}
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-item {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ticker-sym { color: var(--gold); font-weight: 700; }
+.ticker-price { color: var(--text); }
+.ticker-chg.up { color: var(--green-bright); }
+.ticker-chg.down { color: var(--red-bright); }
+
+.market-controls {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.market-chart-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--black);
+}
+
+.sector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .sector-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.sector-card {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.sector-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  transition: background 0.3s;
+}
+.sector-card.sector-up { border-color: #103020; }
+.sector-card.sector-up::after { background: var(--green-bright); }
+.sector-card.sector-down { border-color: #2a0e0e; }
+.sector-card.sector-down::after { background: var(--red-bright); }
+.sector-card.sector-flat { border-color: var(--border2); }
+.sector-card.sector-flat::after { background: var(--gold-dim); }
+
+.sector-name {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.sector-val {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+.sector-val.up { color: var(--green-bright); }
+.sector-val.down { color: var(--red-bright); }
+.sector-val.flat { color: var(--gold); }
+
+.spy-chart-wrap {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #050505;
+  position: relative;
+}
+.spy-chart-title {
+  position: absolute;
+  top: 10px; left: 14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.market-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+@media (max-width: 760px) {
+  .market-stat-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Scenario category tags */
+.scenario-category {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  padding: 2px 6px;
+  border-radius: 0;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+.cat-war { background: rgba(184,48,48,0.15); color: var(--red-bright); border: 1px solid #3a1010; }
+.cat-policy { background: rgba(48,112,184,0.12); color: var(--blue-bright); border: 1px solid #102030; }
+.cat-market { background: rgba(201,168,76,0.1); color: var(--gold); border: 1px solid var(--gold-dim); }
+.cat-shock { background: rgba(192,112,32,0.12); color: #f0a040; border: 1px solid #3a2810; }
+
+.scenario-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.filter-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.filter-tag:hover { border-color: var(--gold-dim); color: var(--text); }
+.filter-tag.active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+
+</style>
+</head>
+<body>
+
+<!-- ======================================================== -->
+<!--  HEADER                                                  -->
+<!-- ======================================================== -->
+<header>
+  <div class="brand-tag">Axium.Church — Knowledge Systems Division</div>
+  <div class="header-ornament"><div class="header-diamond"></div></div>
+  <h1>ECONOMIC DYNAMICS</h1>
+  <div class="header-sub">// Interactive Policy Simulator //</div>
+  <p class="header-desc">
+    When they say "we're raising rates" or "inflation is up" — what does that <em>actually</em> mean?
+    Select a real-world headline below and watch the economics move in real time.
+  </p>
+  <div class="header-bottom-line"></div>
+</header>
+
+<!-- ======================================================== -->
+<!--  TAB NAVIGATION                                          -->
+<!-- ======================================================== -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('adas',this)">
+    <span class="tab-num">01</span>
+    AD — AS Model
+  </button>
+  <button class="tab-btn" onclick="switchTab('money',this)">
+    <span class="tab-num">02</span>
+    Money Market
+  </button>
+  <button class="tab-btn" onclick="switchTab('phillips',this)">
+    <span class="tab-num">03</span>
+    Phillips Curve
+  </button>
+  <button class="tab-btn" onclick="switchTab('market',this)">
+    <span class="tab-num">04</span>
+    Stock Market Impact
+  </button>
+</div>
+
+<!-- ======================================================== -->
+<!--  SCENARIO BAR — REAL WORLD HEADLINES                     -->
+<!-- ======================================================== -->
+<div class="scenario-bar" id="scenario-bar">
+  <div class="scenario-label-row">
+    <span class="scenario-label" style="margin:0">📰 Headlines</span>
+    <button class="filter-tag active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-tag" onclick="setFilter('war',this)">⚔ War/Geopolitical</button>
+    <button class="filter-tag" onclick="setFilter('policy',this)">🏦 Policy</button>
+    <button class="filter-tag" onclick="setFilter('shock',this)">⚡ Economic Shock</button>
+    <button class="filter-tag" onclick="setFilter('market',this)">📈 Markets</button>
+  </div>
+  <div class="scenario-grid" id="scenario-grid">
+    <!-- Populated by JS per active tab -->
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!--  AD-AS PANEL                                             -->
+<!-- ======================================================== -->
+<div class="tab-panel active" id="panel-adas">
+  <div class="layout">
+    <div class="controls">
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Aggregate Demand</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Consumer Spending</span>
+            <span class="ctrl-val" id="v-ad-consumer">0</span>
+          </div>
+          <input type="range" id="ad-consumer" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ad-consumer','v-ad-consumer');drawADAS()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Gov't Spending (Fiscal)</span>
+            <span class="ctrl-val" id="v-ad-gov">0</span>
+          </div>
+          <input type="range" id="ad-gov" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ad-gov','v-ad-gov');drawADAS()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Interest Rate Effect</span>
+            <span class="ctrl-val" id="v-ad-rate">0</span>
+          </div>
+          <input type="range" id="ad-rate" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ad-rate','v-ad-rate');drawADAS()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Net Exports</span>
+            <span class="ctrl-val" id="v-ad-exports">0</span>
+          </div>
+          <input type="range" id="ad-exports" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ad-exports','v-ad-exports');drawADAS()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Business Investment</span>
+            <span class="ctrl-val" id="v-ad-invest">0</span>
+          </div>
+          <input type="range" id="ad-invest" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ad-invest','v-ad-invest');drawADAS()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Short-Run Supply (SRAS)</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Input Costs / Wages</span>
+            <span class="ctrl-val" id="v-sras-wages">0</span>
+          </div>
+          <input type="range" id="sras-wages" min="-3" max="3" step="0.5" value="0" oninput="syncVal('sras-wages','v-sras-wages');drawADAS()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Energy / Oil Prices</span>
+            <span class="ctrl-val" id="v-sras-energy">0</span>
+          </div>
+          <input type="range" id="sras-energy" min="-3" max="3" step="0.5" value="0" oninput="syncVal('sras-energy','v-sras-energy');drawADAS()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Supply Chain Shock</span>
+            <span class="ctrl-val" id="v-sras-shock">0</span>
+          </div>
+          <input type="range" id="sras-shock" min="-3" max="3" step="0.5" value="0" oninput="syncVal('sras-shock','v-sras-shock');drawADAS()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Long-Run AS (Potential GDP)</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Technology / Productivity</span>
+            <span class="ctrl-val" id="v-lras-tech">0</span>
+          </div>
+          <input type="range" id="lras-tech" min="-2" max="2" step="0.5" value="0" oninput="syncVal('lras-tech','v-lras-tech');drawADAS()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Labor Force / Capital</span>
+            <span class="ctrl-val" id="v-lras-labor">0</span>
+          </div>
+          <input type="range" id="lras-labor" min="-2" max="2" step="0.5" value="0" oninput="syncVal('lras-labor','v-lras-labor');drawADAS()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Technical Presets</div>
+        <div class="preset-btns" id="adas-presets">
+          <button class="preset-btn" onclick="techPresetADAS('expansion')">▲ Fiscal Expansion</button>
+          <button class="preset-btn" onclick="techPresetADAS('contraction')">▼ Fiscal Contraction</button>
+          <button class="preset-btn" onclick="techPresetADAS('neg-supply')">⚡ Negative Supply Shock</button>
+          <button class="preset-btn" onclick="techPresetADAS('tech-boom')">◈ Tech / Productivity Boom</button>
+          <button class="preset-btn" onclick="techPresetADAS('stagflation')">☠ Stagflation</button>
+        </div>
+      </div>
+
+      <button class="reset-btn" id="adas-reset" onclick="resetADAS()">◻ RESET ALL CURVES</button>
+    </div>
+
+    <div class="chart-area">
+      <canvas id="canvas-adas" width="600" height="440"></canvas>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:#3070b8"></div>AD</div>
+        <div class="legend-item"><div class="legend-line" style="background:#408060"></div>SRAS</div>
+        <div class="legend-item"><div class="legend-line" style="background:#C9A84C"></div>LRAS</div>
+        <div class="legend-item"><div class="legend-dashed" style="color:#2a3a50"></div>Original</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="stat-label">Price Level</span>
+          <span class="stat-val" id="stat-price">100<span class="stat-unit">idx</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Real GDP</span>
+          <span class="stat-val" id="stat-gdp">100<span class="stat-unit">%</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Output Gap</span>
+          <span class="stat-val" id="stat-gap">0<span class="stat-unit">%</span></span>
+        </div>
+      </div>
+      <div class="analysis-box">
+        <p class="analysis-text" id="adas-analysis">
+          Adjust the sliders or pick a headline above to see what actually happens to prices and output.
+          The gold dot marks the current equilibrium — where supply meets demand in the aggregate economy.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!--  MONEY MARKET PANEL                                      -->
+<!-- ======================================================== -->
+<div class="tab-panel" id="panel-money">
+  <div class="layout">
+    <div class="controls">
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Money Supply (Fed Tools)</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Open Market Operations</span>
+            <span class="ctrl-val" id="v-ms-omo">0</span>
+          </div>
+          <input type="range" id="ms-omo" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ms-omo','v-ms-omo');drawMoney()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Reserve Requirement</span>
+            <span class="ctrl-val" id="v-ms-reserve">0</span>
+          </div>
+          <input type="range" id="ms-reserve" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ms-reserve','v-ms-reserve');drawMoney()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Discount Rate (Fed)</span>
+            <span class="ctrl-val" id="v-ms-discount">0</span>
+          </div>
+          <input type="range" id="ms-discount" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ms-discount','v-ms-discount');drawMoney()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Quantitative Easing</span>
+            <span class="ctrl-val" id="v-ms-qe">0</span>
+          </div>
+          <input type="range" id="ms-qe" min="-3" max="3" step="0.5" value="0" oninput="syncVal('ms-qe','v-ms-qe');drawMoney()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Money Demand</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Income / GDP</span>
+            <span class="ctrl-val" id="v-md-income">0</span>
+          </div>
+          <input type="range" id="md-income" min="-3" max="3" step="0.5" value="0" oninput="syncVal('md-income','v-md-income');drawMoney()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Price Level (Inflation)</span>
+            <span class="ctrl-val" id="v-md-price">0</span>
+          </div>
+          <input type="range" id="md-price" min="-3" max="3" step="0.5" value="0" oninput="syncVal('md-price','v-md-price');drawMoney()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Transaction Volume</span>
+            <span class="ctrl-val" id="v-md-trans">0</span>
+          </div>
+          <input type="range" id="md-trans" min="-3" max="3" step="0.5" value="0" oninput="syncVal('md-trans','v-md-trans');drawMoney()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Technical Presets</div>
+        <div class="preset-btns">
+          <button class="preset-btn" onclick="techPresetMoney('rate-hike')">▲ Fed Rate Hike</button>
+          <button class="preset-btn" onclick="techPresetMoney('rate-cut')">▼ Fed Rate Cut</button>
+          <button class="preset-btn" onclick="techPresetMoney('qe')">◈ Quantitative Easing</button>
+          <button class="preset-btn" onclick="techPresetMoney('qt')">☠ Quantitative Tightening</button>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetMoney()">◻ RESET ALL CURVES</button>
+    </div>
+
+    <div class="chart-area">
+      <canvas id="canvas-money" width="600" height="440"></canvas>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:#C9A84C"></div>MS (Money Supply)</div>
+        <div class="legend-item"><div class="legend-line" style="background:#3070b8"></div>MD (Money Demand)</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="stat-label">Interest Rate</span>
+          <span class="stat-val" id="stat-rate">5.0<span class="stat-unit">%</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Money Supply</span>
+          <span class="stat-val" id="stat-ms">100<span class="stat-unit">idx</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Rate Change</span>
+          <span class="stat-val" id="stat-rdelta">0<span class="stat-unit">pp</span></span>
+        </div>
+      </div>
+      <div class="analysis-box">
+        <p class="analysis-text" id="money-analysis">
+          The Fed's vertical Money Supply intersects the downward-sloping Money Demand to set the interest rate.
+          Pick a headline or move the sliders to see what happens to borrowing costs.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!--  PHILLIPS CURVE PANEL                                    -->
+<!-- ======================================================== -->
+<div class="tab-panel" id="panel-phillips">
+  <div class="layout">
+    <div class="controls">
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Curve Shifters</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Inflation Expectations</span>
+            <span class="ctrl-val" id="v-pc-expect">0</span>
+          </div>
+          <input type="range" id="pc-expect" min="-3" max="3" step="0.5" value="0" oninput="syncVal('pc-expect','v-pc-expect');drawPhillips()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Supply Shock (Energy/Food)</span>
+            <span class="ctrl-val" id="v-pc-shock">0</span>
+          </div>
+          <input type="range" id="pc-shock" min="-3" max="3" step="0.5" value="0" oninput="syncVal('pc-shock','v-pc-shock');drawPhillips()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Worker Bargaining Power</span>
+            <span class="ctrl-val" id="v-pc-wages">0</span>
+          </div>
+          <input type="range" id="pc-wages" min="-3" max="3" step="0.5" value="0" oninput="syncVal('pc-wages','v-pc-wages');drawPhillips()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Current Position</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Unemployment Rate</span>
+            <span class="ctrl-val" id="v-pc-unemp">5%</span>
+          </div>
+          <input type="range" id="pc-unemp" min="1" max="15" step="0.5" value="5" oninput="document.getElementById('v-pc-unemp').textContent=this.value+'%';drawPhillips()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Long-Run / NAIRU</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Natural Rate Shift</span>
+            <span class="ctrl-val" id="v-pc-nairu">0</span>
+          </div>
+          <input type="range" id="pc-nairu" min="-2" max="2" step="0.5" value="0" oninput="syncVal('pc-nairu','v-pc-nairu');drawPhillips()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Technical Presets</div>
+        <div class="preset-btns">
+          <button class="preset-btn" onclick="techPresetPC('volcker')">▼ Volcker Shock (1980s)</button>
+          <button class="preset-btn" onclick="techPresetPC('stagflation')">⚡ Stagflation Era</button>
+          <button class="preset-btn" onclick="techPresetPC('goldilocks')">◈ Goldilocks Economy</button>
+          <button class="preset-btn" onclick="techPresetPC('pandemic')">☠ Post-Pandemic Rebound</button>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetPhillips()">◻ RESET ALL CURVES</button>
+    </div>
+
+    <div class="chart-area">
+      <canvas id="canvas-phillips" width="600" height="440"></canvas>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:#3070b8"></div>SRPC</div>
+        <div class="legend-item"><div class="legend-line" style="background:#C9A84C"></div>LRPC / NAIRU</div>
+        <div class="legend-item"><div class="legend-line" style="background:#b83030; width:10px; height:10px; border-radius:50%"></div>Current</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="stat-label">Inflation Rate</span>
+          <span class="stat-val" id="stat-pc-infl">3.0<span class="stat-unit">%</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Unemployment</span>
+          <span class="stat-val" id="stat-pc-unemp">5.0<span class="stat-unit">%</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">NAIRU</span>
+          <span class="stat-val" id="stat-pc-nairu">5.0<span class="stat-unit">%</span></span>
+        </div>
+      </div>
+      <div class="analysis-box">
+        <p class="analysis-text" id="phillips-analysis">
+          The short-run Phillips Curve shows the trade-off between inflation and unemployment.
+          In the long run it's vertical — you can't permanently buy lower unemployment with higher inflation.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!--  STOCK MARKET IMPACT PANEL                               -->
+<!-- ======================================================== -->
+<div class="tab-panel" id="panel-market">
+
+  <!-- Live ticker strip -->
+  <div class="ticker-strip">
+    <div class="ticker-inner" id="ticker-inner">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <div class="market-layout">
+    <!-- LEFT: scenario controls -->
+    <div class="market-controls controls">
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">Market Shock Inputs</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Geopolitical Risk</span>
+            <span class="ctrl-val" id="v-mkt-geo">0</span>
+          </div>
+          <input type="range" id="mkt-geo" min="-3" max="3" step="0.5" value="0"
+            oninput="syncVal('mkt-geo','v-mkt-geo');drawMarket()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Oil / Energy Shock</span>
+            <span class="ctrl-val" id="v-mkt-oil">0</span>
+          </div>
+          <input type="range" id="mkt-oil" min="-3" max="3" step="0.5" value="0"
+            oninput="syncVal('mkt-oil','v-mkt-oil');drawMarket()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Fed Policy Tightness</span>
+            <span class="ctrl-val" id="v-mkt-fed">0</span>
+          </div>
+          <input type="range" id="mkt-fed" min="-3" max="3" step="0.5" value="0"
+            oninput="syncVal('mkt-fed','v-mkt-fed');drawMarket()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Earnings / Growth Outlook</span>
+            <span class="ctrl-val" id="v-mkt-earn">0</span>
+          </div>
+          <input type="range" id="mkt-earn" min="-3" max="3" step="0.5" value="0"
+            oninput="syncVal('mkt-earn','v-mkt-earn');drawMarket()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Safe-Haven Flight (USD/Gold)</span>
+            <span class="ctrl-val" id="v-mkt-haven">0</span>
+          </div>
+          <input type="range" id="mkt-haven" min="-3" max="3" step="0.5" value="0"
+            oninput="syncVal('mkt-haven','v-mkt-haven');drawMarket()">
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">
+            <span>Supply Chain Disruption</span>
+            <span class="ctrl-val" id="v-mkt-supply">0</span>
+          </div>
+          <input type="range" id="mkt-supply" min="-3" max="3" step="0.5" value="0"
+            oninput="syncVal('mkt-supply','v-mkt-supply');drawMarket()">
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-block-title">War / Geopolitical Presets</div>
+        <div class="preset-btns">
+          <button class="preset-btn" onclick="marketPreset('russia-ukraine')">⚔ Russia-Ukraine War</button>
+          <button class="preset-btn" onclick="marketPreset('middle-east')">🔥 Middle East Escalation</button>
+          <button class="preset-btn" onclick="marketPreset('taiwan')">⚠ Taiwan Strait Crisis</button>
+          <button class="preset-btn" onclick="marketPreset('us-china-tariff')">🚢 US-China Trade War</button>
+          <button class="preset-btn" onclick="marketPreset('nato-article5')">🛡 NATO Article 5 Invoked</button>
+          <button class="preset-btn" onclick="marketPreset('oil-embargo')">⛽ Global Oil Embargo</button>
+          <button class="preset-btn" onclick="marketPreset('soft-landing')">✅ Soft Landing</button>
+          <button class="preset-btn" onclick="marketPreset('bull-run')">🚀 Bull Market Rally</button>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetMarket()">◻ RESET MARKET</button>
+    </div>
+
+    <!-- RIGHT: charts -->
+    <div class="market-chart-area">
+
+      <!-- Sector heatmap -->
+      <div class="sector-grid" id="sector-grid">
+        <!-- populated by JS -->
+      </div>
+
+      <!-- S&P simulation chart -->
+      <div class="spy-chart-wrap">
+        <div class="spy-chart-title">S&P 500 — SIMULATED IMPACT TRAJECTORY</div>
+        <canvas id="canvas-market" width="680" height="300" style="max-width:100%;display:block;"></canvas>
+      </div>
+
+      <!-- Key metrics -->
+      <div class="market-stat-row">
+        <div class="stat-card">
+          <span class="stat-label">S&P 500 Δ</span>
+          <span class="stat-val" id="stat-spy">0.0<span class="stat-unit">%</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">VIX (Fear)</span>
+          <span class="stat-val" id="stat-vix">18<span class="stat-unit">pts</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">10Y Treasury</span>
+          <span class="stat-val" id="stat-10y">4.2<span class="stat-unit">%</span></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Oil (WTI) Δ</span>
+          <span class="stat-val" id="stat-oil">0.0<span class="stat-unit">%</span></span>
+        </div>
+      </div>
+
+      <div class="analysis-box">
+        <p class="analysis-text" id="market-analysis">
+          Select a geopolitical or economic scenario to see how markets typically react — across sectors, volatility, and key asset classes. War and conflict trigger sector rotation: defense up, tech down, energy surges, safe havens rally.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<div class="scenario-flash" id="flash">
+  <div class="flash-card">
+    <div class="flash-headline" id="flash-headline">LOADING SCENARIO</div>
+    <div class="flash-sub" id="flash-sub">AXIUM ECONOMICS — APPLYING SHIFTS</div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!--  FOOTER                                                  -->
+<!-- ======================================================== -->
+<footer>
+  <div class="footer-logo">AXIUM.CHURCH</div>
+  <div class="footer-text">// Knowledge Systems — Economics Division //</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="game.html">The Game</a>
+    <a href="axium_FINAL.html">Tarot</a>
+    <a href="axium-arsenal.html">Arsenal</a>
+  </div>
+</footer>
+
+<!-- ======================================================== -->
+<!--  JAVASCRIPT                                              -->
+<!-- ======================================================== -->
+<script>
+'use strict';
+
+// ── COLORS ────────────────────────────────────────────────
+var C = {
+  gold:     '#C9A84C',
+  goldBr:   '#F5D680',
+  goldDim:  '#3a2e10',
+  black:    '#050505',
+  border:   '#1e1908',
+  textDim:  '#4a4020',
+  blue:     '#3070b8',
+  blueBr:   '#5090e0',
+  sras:     '#408060',
+  srasBr:   '#60c090',
+  red:      '#b83030',
+  redBr:    '#e05050',
+  green:    '#308050',
+  greenBr:  '#50c080',
+  orange:   '#c07020',
+};
+
+// ── ACTIVE TAB ────────────────────────────────────────────
+var activeTab = 'adas';
+
+// ── SCENARIO DATA ─────────────────────────────────────────
+var activeFilter = 'all';
+
+var SCENARIOS = {
+  adas: [
+    // WAR/GEO
+    {
+      id: 'russia-ukraine', label: '⚔ Russia Invades Ukraine', cls: 'danger', category: 'war',
+      headline: '"Russia launches full-scale invasion — global commodity shock"',
+      values: { 'sras-energy': -3, 'sras-shock': -2, 'ad-exports': -1.5, 'ad-consumer': -1, 'ad-invest': -1.5 },
+      analysis: '<strong class="warn">WAR IN UKRAINE — COMMODITY SHOCK:</strong> Russia and Ukraine together export ~30% of global wheat and ~12% of oil. A full invasion triggers massive supply shocks: SRAS shifts hard LEFT as energy and food input costs explode. AD also contracts as business confidence collapses and trade routes close. Europe faces the sharpest blow — dependent on Russian gas — but the stagflationary ripple is global. This is the 1973 oil crisis playbook: higher prices AND lower output simultaneously. The Fed and ECB faced impossible choices: fight inflation (raise rates, deepen recession) or support growth (ease policy, worsen inflation).'
+    },
+    {
+      id: 'middle-east-war', label: '🔥 Middle East Escalation', cls: 'danger', category: 'war',
+      headline: '"Conflict spreads in Middle East — Strait of Hormuz at risk"',
+      values: { 'sras-energy': -2.5, 'sras-shock': -1.5, 'ad-consumer': -1, 'ad-invest': -2 },
+      analysis: '<strong class="warn">STRAIT OF HORMUZ RISK:</strong> ~20% of global oil transits the Strait of Hormuz daily. Any serious conflict threatening this passage sends oil prices surging 30–50% immediately. SRAS shifts hard LEFT — energy is embedded in every supply chain. Business investment freezes as uncertainty spikes. Consumer confidence collapses. Historical parallel: 1979 Iranian Revolution sent oil from $15 to $39/barrel and pushed the U.S. into back-to-back recessions.'
+    },
+    {
+      id: 'taiwan-strait', label: '⚠ Taiwan Strait Crisis', cls: 'danger', category: 'war',
+      headline: '"China blockades Taiwan — semiconductor supply at risk"',
+      values: { 'sras-shock': -3, 'ad-invest': -2.5, 'ad-exports': -2, 'lras-tech': -1.5 },
+      analysis: '<strong class="warn">SEMICONDUCTOR SUPPLY COLLAPSE:</strong> Taiwan produces ~90% of the world\'s most advanced chips (TSMC). A blockade or conflict would halt production across autos, AI infrastructure, smartphones, and defense systems. SRAS shifts catastrophically left. LRAS also contracts as technology capacity is lost. Investment freezes globally. This would dwarf COVID supply chain disruptions.'
+    },
+    {
+      id: 'nato-article5', label: '🛡 NATO Article 5 Invoked', cls: 'danger', category: 'war',
+      headline: '"NATO activates collective defense — full wartime mobilization"',
+      values: { 'ad-gov': 3, 'sras-shock': -2, 'sras-wages': -1.5, 'ad-invest': -2, 'ad-consumer': -1.5 },
+      analysis: '<strong class="warn">WARTIME ECONOMY MOBILIZATION:</strong> Article 5 activation means NATO members escalate defense spending dramatically — government spending shifts AD RIGHT as military contracts surge. But supply shocks hammer SRAS simultaneously: conscription removes workers, raw materials diverted to defense, civilian production disrupted. This is the WWII economic dynamic: massive government AD stimulus, but constrained civilian supply. Inflation runs hot unless price controls are imposed.'
+    },
+    {
+      id: 'oil-embargo', label: '⛽ Global Oil Embargo', cls: 'danger', category: 'war',
+      headline: '"OPEC+ cuts production 40% — energy crisis declared"',
+      values: { 'sras-energy': -3, 'sras-shock': -2.5, 'sras-wages': -1, 'ad-consumer': -2 },
+      analysis: '<strong class="warn">ENERGY CRISIS — 1973 REDUX:</strong> A 40% production cut triggers the most severe stagflation scenario possible. SRAS collapses: every industry that uses energy sees cost explosions. AD also falls as consumers spend all discretionary income on fuel and heating. GDP falls. Prices rise. Unemployment jumps. The Fed is paralyzed — the cure for inflation (rate hikes) deepens the recession, and the cure for recession (rate cuts) worsens inflation.'
+    },
+    // POLICY
+    {
+      id: 'fed-hike', label: '🏦 Fed Raises Rates', cls: 'warning', category: 'policy',
+      headline: '"Fed raises interest rates to fight inflation"',
+      values: { 'ad-rate': 2.5, 'ad-invest': -2, 'ad-consumer': -1 },
+      analysis: '<strong class="warn">FED RATE HIKE:</strong> Higher borrowing costs shrink consumer spending and business investment. AD shifts LEFT — real GDP falls and price pressure eases. This is the Fed\'s primary inflation weapon. Expect mortgage rates, car loans, and credit card APRs to rise. Businesses delay expansion. Unemployment may tick up as demand cools.'
+    },
+    { id: 'fed-cut', label: '🏦 Fed Cuts Rates', cls: 'ok', category: 'policy',
+      headline: '"Fed cuts rates to stimulate economy"',
+      values: { 'ad-rate': -2.5, 'ad-invest': 2, 'ad-consumer': 1 },
+      analysis: '<strong class="good">FED RATE CUT:</strong> Cheaper borrowing floods the economy with incentive to spend and invest. AD shifts RIGHT. Mortgages get cheaper, businesses expand, consumers borrow more. Risk: if near full potential, this adds inflation without real growth.' },
+    { id: 'gas-spike', label: '⛽ Gas Prices Spike', cls: 'danger', category: 'shock',
+      headline: '"Gas prices hit record highs — analysts blame oil supply"',
+      values: { 'sras-energy': -2.5, 'sras-shock': -1, 'ad-consumer': -1 },
+      analysis: '<strong class="warn">GAS PRICE SPIKE:</strong> Energy is an input to virtually everything. SRAS shifts LEFT — businesses pay more to produce, supply shrinks. Prices rise WHILE output falls — classic stagflation setup. The Fed faces an impossible choice: fight inflation (raise rates, hurt growth) or fight recession (cut rates, worsen inflation).' },
+    { id: 'food-prices', label: '🌽 Food Prices Rising', cls: 'danger', category: 'shock',
+      headline: '"Grocery bills up 20% — food inflation continues"',
+      values: { 'sras-wages': -1, 'sras-shock': -1.5, 'ad-consumer': -1.5 },
+      analysis: '<strong class="warn">FOOD INFLATION:</strong> Rising food costs hit two sides. As a production input, they shift SRAS left. As a consumer burden, they drain disposable income and shift AD left. Regressive: lower-income households spend a higher share of income on food.' },
+    { id: 'spy-crash', label: '📉 Stock Market Tanks', cls: 'danger', category: 'market',
+      headline: '"S&P 500 drops 15% — wealth effect hits consumers"',
+      values: { 'ad-consumer': -2, 'ad-invest': -2.5, 'ad-exports': -0.5 },
+      analysis: '<strong class="warn">MARKET CRASH:</strong> The wealth effect runs in reverse — people feel poorer and pull back spending. Business investment collapses. AD shifts hard LEFT. GDP falls, unemployment rises. This is how market crashes become real-economy recessions.' },
+    { id: 'stimulus', label: '💵 Gov\'t Sends Checks', cls: 'ok', category: 'policy',
+      headline: '"Congress passes $1.9T stimulus — checks going out"',
+      values: { 'ad-gov': 3, 'ad-consumer': 2 },
+      analysis: '<strong class="note">STIMULUS INJECTION:</strong> Government spending directly shifts AD RIGHT. Demand surges. GDP rises — but so does inflation risk if the economy is near potential. This is exactly what happened in 2021: massive AD shift met constrained SRAS.' },
+    { id: 'tariffs', label: '🚢 Tariffs Imposed', cls: 'warning', category: 'shock',
+      headline: '"New tariffs on imports — trade partners retaliate"',
+      values: { 'sras-shock': -1.5, 'sras-wages': -0.5, 'ad-exports': -1.5 },
+      analysis: '<strong class="note">TARIFF SHOCK:</strong> Tariffs raise input costs shifting SRAS left. Trading partners retaliate, shrinking export markets and shifting AD left. The economy loses on both sides — higher prices and lower output.' },
+    { id: 'tech-boom', label: '💻 AI / Tech Boom', cls: 'ok', category: 'market',
+      headline: '"Productivity surge — AI reshapes entire industries"',
+      values: { 'lras-tech': 2, 'lras-labor': 1, 'sras-shock': 1.5, 'ad-invest': 2 },
+      analysis: '<strong class="good">TECHNOLOGY BOOM:</strong> Productivity gains shift LRAS RIGHT (potential GDP increases). SRAS also shifts right. The ideal outcome: GDP grows without inflation, because supply keeps pace with demand. This is the only non-inflationary path to higher living standards.' },
+  ],
+
+  money: [
+    // WAR/GEO
+    { id: 'war-flight', label: '⚔ War — Capital Flight', cls: 'danger', category: 'war',
+      headline: '"Conflict erupts — investors flee to US dollar and bonds"',
+      values: { 'md-trans': 2.5, 'md-income': -1.5, 'ms-omo': 2 },
+      analysis: '<strong class="warn">WAR-DRIVEN CAPITAL FLIGHT:</strong> Global conflict sends investors rushing into safe-haven assets — US Treasuries and the dollar surge. Money demand for dollar-denominated assets spikes (MD shifts RIGHT). The Fed may inject liquidity to prevent credit markets from freezing. In 2022, the dollar hit 20-year highs after Russia invaded Ukraine, devastating emerging markets with dollar-denominated debt.' },
+    { id: 'sanctions', label: '🚫 Wartime Sanctions / SWIFT', cls: 'danger', category: 'war',
+      headline: '"G7 freezes $300B in Russian assets — SWIFT cutoff enacted"',
+      values: { 'ms-reserve': -2, 'md-trans': -1.5, 'ms-omo': 1.5 },
+      analysis: '<strong class="warn">FINANCIAL SANCTIONS SHOCK:</strong> Cutting a major economy from SWIFT and freezing reserves is financial warfare. For the sanctioned country, money supply collapses — reserves vanish, foreign exchange seizes. For the global system, bank counterparty risk spikes and liquidity channels fragment. The 2022 Russia sanctions were the largest peacetime financial weapon ever deployed.' },
+    { id: 'defense-spending', label: '🛡 Defense Spending Surge', cls: 'warning', category: 'war',
+      headline: '"NATO members pledge 3% GDP on defense — bond issuance surges"',
+      values: { 'md-income': 2, 'md-trans': 1.5, 'ms-omo': -1.5 },
+      analysis: '<strong class="note">WARTIME BOND SURGE:</strong> Massive defense spending requires financing — governments flood the bond market, pushing yields UP. Money demand rises as GDP expands from government stimulus (MD right). This is the classic crowding-out effect: war spending competes with private investment for limited loanable funds. The 10Y Treasury yield spikes even without Fed action.' },
+    // POLICY
+    { id: 'hike-money', label: '🏦 Fed Raises Rates', cls: 'danger', category: 'policy',
+      headline: '"Fed raises federal funds rate by 75 basis points"',
+      values: { 'ms-omo': -2.5, 'ms-reserve': 1, 'ms-discount': 1.5 },
+      analysis: '<strong class="warn">RATE HIKE:</strong> The Fed sells bonds, reducing bank reserves. Money supply shifts LEFT, interest rates rise. Every loan gets more expensive: mortgages, car loans, business credit. The 2022-2023 tightening cycle raised rates from 0.25% to 5.5%, the sharpest hike since Volcker.' },
+    { id: 'cut-money', label: '🏦 Fed Cuts Rates', cls: 'ok', category: 'policy',
+      headline: '"Fed cuts rates by half a point — emergency action"',
+      values: { 'ms-omo': 2.5, 'ms-reserve': -1, 'ms-discount': -1.5 },
+      analysis: '<strong class="good">RATE CUT:</strong> The Fed buys bonds, injecting reserves. Money supply shifts RIGHT, interest rates fall. Cheaper credit stimulates borrowing, investment, and spending. The 2008 and 2020 crises both triggered emergency rate cuts to near-zero.' },
+    { id: 'inflation-demand', label: '🔥 High Inflation', cls: 'danger', category: 'shock',
+      headline: '"CPI hits 8.5% — highest in 40 years"',
+      values: { 'md-price': 2.5, 'md-trans': 1.5, 'md-income': 1 },
+      analysis: '<strong class="warn">INFLATION SURGE:</strong> When prices rise, people need more money to conduct the same transactions. Money demand shifts RIGHT. If the Fed doesn\'t expand supply, the interest rate rises even without a policy decision. This is why inflation and rising rates tend to arrive together.' },
+    { id: 'qe', label: '🖨️ Quantitative Easing', cls: 'warning', category: 'policy',
+      headline: '"Fed announces $700B bond-buying program"',
+      values: { 'ms-qe': 3, 'ms-omo': 1.5 },
+      analysis: '<strong class="note">QUANTITATIVE EASING (QE):</strong> The Fed buys long-term bonds and MBS to flood the financial system with liquidity. Money supply expands dramatically. Critics warn it inflates asset prices more than the real economy, widening inequality.' },
+    { id: 'recession-money', label: '📉 Recession Hits', cls: 'danger', category: 'shock',
+      headline: '"GDP contracts two quarters — recession confirmed"',
+      values: { 'md-income': -2.5, 'md-trans': -2, 'ms-omo': 2 },
+      analysis: '<strong class="warn">RECESSION:</strong> GDP falls, incomes drop — money demand shifts LEFT as people need less cash to conduct business. The Fed responds by expanding supply (rate cuts, QE), shifting MS right. If rates hit zero and recession continues, the Fed enters unconventional territory.' },
+    { id: 'spy-money', label: '📉 Stock Market Crashes', cls: 'danger', category: 'market',
+      headline: '"Markets in freefall — Fed emergency meeting called"',
+      values: { 'ms-omo': 3, 'ms-reserve': -1.5, 'ms-discount': -2 },
+      analysis: '<strong class="warn">MARKET CRASH RESPONSE:</strong> A serious stock crash threatens the real economy. The Fed\'s playbook: emergency rate cuts, open market bond-buying, lowered discount rate — shifting MS hard right. In 2020 the Fed went from 1.75% to 0.25% in two emergency cuts in March alone.' },
+    { id: 'crypto-boom', label: '₿ Crypto / Speculation Boom', cls: 'warning', category: 'market',
+      headline: '"Speculative assets surge — liquidity floods markets"',
+      values: { 'md-trans': 2, 'md-income': 1.5 },
+      analysis: '<strong class="note">SPECULATION BOOM:</strong> When people pile into speculative assets, transaction demand for money rises — money demand shifts right. Asset price inflation precedes consumer price inflation. If speculation becomes leveraged, a crash could freeze credit markets.' },
+    { id: 'bank-run', label: '🏦 Bank Runs / SVB', cls: 'danger', category: 'shock',
+      headline: '"Silicon Valley Bank collapses — bank run spreads fear"',
+      values: { 'ms-reserve': -2.5, 'ms-omo': 2.5, 'md-trans': -1 },
+      analysis: '<strong class="warn">BANKING CRISIS:</strong> Bank failures shrink the effective money supply. Surviving banks hoard reserves, reducing lending. The Fed must backstop aggressively through emergency lending facilities. In the SVB crisis (2023), the Fed created the BTFP overnight to prevent contagion.' },
+  ],
+
+  phillips: [
+    // WAR/GEO
+    { id: 'war-stagflation-pc', label: '⚔ War Causes Stagflation', cls: 'danger', category: 'war',
+      headline: '"War disrupts supply chains — prices surge as unemployment rises"',
+      values: { 'pc-shock': 3, 'pc-expect': 2, 'pc-wages': 1.5, 'pc-unemp': 7 },
+      analysis: '<strong class="warn">WAR-INDUCED STAGFLATION:</strong> Major wars are the most potent stagflation triggers — they hit both sides simultaneously. Supply shocks push the SRPC UP while destroyed confidence kills investment, raising unemployment too. The curve shifts outward while the economy moves along it unfavorably. The 1970s oil shock stagflation took a decade to break — Volcker had to deliberately crush the economy to reset inflation expectations.' },
+    { id: 'ukraine-wheat-pc', label: '🌾 Ukraine War Food Shock', cls: 'danger', category: 'war',
+      headline: '"Black Sea grain deal collapses — global food inflation resurges"',
+      values: { 'pc-shock': 2.5, 'pc-expect': 1.5, 'pc-wages': 1, 'pc-unemp': 6 },
+      analysis: '<strong class="warn">FOOD SUPPLY SHOCK — CURVE SHIFTS OUT:</strong> Ukraine produces ~10% of global wheat and ~15% of corn. When the Black Sea corridor closes, food prices spike globally. The SRPC shifts UPWARD — cost-push inflation without demand stimulus. Workers demand wage hikes to cover food bills, threatening wage-price spirals. In developing nations the impact is far worse — food can be 40–60% of household budgets.' },
+    { id: 'arms-race-pc', label: '🛡 Defense Spending Arms Race', cls: 'warning', category: 'war',
+      headline: '"NATO doubles defense budgets — labor markets tighten"',
+      values: { 'pc-expect': 1.5, 'pc-wages': 2, 'pc-unemp': 3.5, 'pc-nairu': -0.5 },
+      analysis: '<strong class="note">WAR ECONOMY LABOR MARKET:</strong> Massive defense spending creates high-wage manufacturing and engineering jobs quickly, pulling unemployment DOWN below NAIRU. Workers in defense sectors receive premium wages, bleeds into adjacent labor markets. The SRPC shifts up from wage-push pressure while the economy moves up the curve from tight labor. WWII took U.S. unemployment from 14% to under 1%, but only price controls kept inflation in check.' },
+    { id: 'sanctions-pc', label: '🚫 Sanctions — Sanctioned Nation', cls: 'danger', category: 'war',
+      headline: '"Sweeping sanctions trigger currency collapse and hyperinflation"',
+      values: { 'pc-shock': 3, 'pc-expect': 3, 'pc-wages': 2, 'pc-nairu': 1, 'pc-unemp': 9 },
+      analysis: '<strong class="warn">SANCTIONS STAGFLATION — EXTREME:</strong> Currency collapse makes imports massively expensive — cost-push inflation explodes. Simultaneously, as businesses lose access to materials and export markets, production collapses and unemployment surges. The SRPC shifts catastrophically OUTWARD while the economy reaches the worst quadrant: high inflation + high unemployment. Russia 2022: ruble crashed 40%, import prices surged, GDP fell, unemployment rose.' },
+    // POLICY / SHOCK
+    { id: 'fed-hike-pc', label: '🏦 Fed Raises Rates', cls: 'danger', category: 'policy',
+      headline: '"Fed hikes rates aggressively to crush inflation"',
+      values: { 'pc-unemp': 8, 'pc-expect': -1.5 },
+      analysis: '<strong class="warn">ANTI-INFLATION TIGHTENING:</strong> The Fed deliberately moves the economy UP the Phillips Curve — accepting higher unemployment to crush inflation. The classic example: Paul Volcker 1979-1982. Inflation went from 13% to 3% — but unemployment hit 10.8%.' },
+    { id: 'gas-spike-pc', label: '⛽ Gas Prices Spike', cls: 'danger', category: 'shock',
+      headline: '"Oil shock sends inflation surging while growth stalls"',
+      values: { 'pc-shock': 2.5, 'pc-expect': 1.5, 'pc-unemp': 7 },
+      analysis: '<strong class="warn">SUPPLY-SIDE STAGFLATION:</strong> A gas/oil shock shifts the entire Phillips Curve UP and RIGHT — both inflation AND unemployment rise simultaneously. The 1970s oil shocks: OPEC embargo (1973) and Iranian Revolution (1979) pushed the SRPC outward. The Fed can\'t solve this with demand policy alone.' },
+    { id: 'food-prices-pc', label: '🌽 Food Prices Rising', cls: 'danger', category: 'shock',
+      headline: '"Food and energy costs drive core inflation higher"',
+      values: { 'pc-shock': 2, 'pc-wages': 1, 'pc-unemp': 5.5 },
+      analysis: '<strong class="warn">COST-PUSH INFLATION:</strong> Food and energy are cost-push drivers — they raise prices without stimulating demand. The SRPC shifts upward: same unemployment, more inflation. Workers demand higher wages to keep up, potentially triggering a wage-price spiral.' },
+    { id: 'spy-crash-pc', label: '📉 Stock Market Tanks', cls: 'danger', category: 'market',
+      headline: '"Wealth destruction hits consumer spending — layoffs rise"',
+      values: { 'pc-unemp': 8.5, 'pc-expect': -1 },
+      analysis: '<strong class="warn">DEMAND SHOCK — DOWN THE CURVE:</strong> A stock market crash destroys wealth. Unemployment rises while inflation falls — the economy slides DOWN the short-run Phillips Curve. Deflation risk emerges if the crash is severe. The Fed responds with rate cuts to pull unemployment back down.' },
+    { id: 'stimulus-pc', label: '💵 Stimulus / Hot Economy', cls: 'warning', category: 'policy',
+      headline: '"Unemployment hits 50-year lows — tight labor market"',
+      values: { 'pc-unemp': 3, 'pc-expect': 1, 'pc-wages': 1.5 },
+      analysis: '<strong class="note">DEMAND OVERHEAT:</strong> Massive stimulus drives unemployment well below the NAIRU. The economy moves UP the Phillips Curve — inflation rises as employers compete for scarce workers. This is exactly what happened in 2021-2022: stimulus + tight labor market + supply chain shocks produced the highest inflation in 40 years.' },
+    { id: 'goldilocks-pc', label: '✅ Soft Landing', cls: 'ok', category: 'policy',
+      headline: '"Inflation cooling without major job losses — soft landing"',
+      values: { 'pc-unemp': 4.5, 'pc-expect': -1, 'pc-shock': -0.5 },
+      analysis: '<strong class="good">SOFT LANDING:</strong> The SRPC shifts downward as expectations reset, unemployment stays near NAIRU, inflation returns toward 2%. Rare in history. The Fed achieved something like it in 1994-1995.' },
+    { id: 'tariffs-pc', label: '🚢 Tariffs / Trade War', cls: 'warning', category: 'shock',
+      headline: '"Trade war escalates — supply chains fractured"',
+      values: { 'pc-shock': 2, 'pc-expect': 1, 'pc-unemp': 6 },
+      analysis: '<strong class="note">TARIFF STAGFLATION:</strong> Tariffs raise prices (shifting the curve up) while costing jobs in import-reliant industries. The SRPC shifts outward: higher inflation AND higher unemployment — the stagflation quadrant.' },
+    { id: 'ai-boom-pc', label: '💻 AI Productivity Boom', cls: 'ok', category: 'market',
+      headline: '"AI drives productivity surge — NAIRU falls, wages rise cleanly"',
+      values: { 'pc-expect': -1.5, 'pc-shock': -2, 'pc-nairu': -1, 'pc-unemp': 4 },
+      analysis: '<strong class="good">PRODUCTIVITY MIRACLE:</strong> A genuine productivity surge shifts the LRPC (NAIRU) leftward — more people can be employed without inflationary pressure. SRPC also shifts down. Low unemployment AND low inflation become simultaneously achievable.' },
+  ],
+
+  market: [
+    { id: 'mkt-russia-ukraine', label: '⚔ Russia Invades Ukraine', cls: 'danger', category: 'war',
+      headline: '"Russia launches invasion — markets in shock"',
+      values: { 'mkt-geo': -3, 'mkt-oil': 3, 'mkt-earn': -2, 'mkt-haven': 3, 'mkt-supply': -2.5 },
+      analysis: '<strong class="warn">INVASION SHOCK — SECTOR ROTATION:</strong> The initial invasion saw S&P 500 futures drop 2.5%, crude oil surge toward $130/barrel, and gold jump 3%. Defense stocks (RTX, LMT, NOC) surged 10-20% within weeks. Energy stocks soared. European banks with Russian exposure cratered. Tech sold off on rising rate fears. This is textbook war-driven sector rotation: sell growth/risk, buy defense/energy/commodities. VIX spiked to 37.' },
+    { id: 'mkt-middle-east', label: '🔥 Middle East War', cls: 'danger', category: 'war',
+      headline: '"Conflict in Middle East — oil supply risk premium surges"',
+      values: { 'mkt-geo': -2.5, 'mkt-oil': 2.5, 'mkt-earn': -1.5, 'mkt-haven': 2.5, 'mkt-supply': -1.5 },
+      analysis: '<strong class="warn">MIDDLE EAST RISK PREMIUM:</strong> Any significant Middle East conflict embeds a permanent oil risk premium. Airlines, transport, and consumer discretionary stocks sell off first. Energy producers rally. Defense contractors surge on expectations of increased arms sales. Bond markets rally (flight to safety). Gold historically gains 5-15% in the first 30 days of major Middle East conflicts.' },
+    { id: 'mkt-taiwan', label: '⚠ Taiwan Strait Crisis', cls: 'danger', category: 'war',
+      headline: '"China threatens Taiwan — tech sector in freefall"',
+      values: { 'mkt-geo': -3, 'mkt-oil': 1.5, 'mkt-earn': -3, 'mkt-haven': 3, 'mkt-supply': -3, 'mkt-fed': -1 },
+      analysis: '<strong class="warn">SEMICONDUCTOR APOCALYPSE PRICING:</strong> A Taiwan crisis would trigger the most violent single-day tech selloff in modern history. TSMC produces chips used in 90% of advanced devices — markets would immediately price in multi-year production disruption. Nvidia, Apple, AMD could fall 30-50% in days. The VIX would likely reach 2008-level extremes (80+). This is the scenario that explains why Nvidia has invested in American chip fab contingency planning.' },
+    { id: 'mkt-nato', label: '🛡 NATO Article 5 Invoked', cls: 'danger', category: 'war',
+      headline: '"NATO collective defense activated — wartime economy begins"',
+      values: { 'mkt-geo': -2.5, 'mkt-earn': -1.5, 'mkt-fed': -1.5, 'mkt-haven': 2, 'mkt-supply': -2, 'mkt-oil': 1.5 },
+      analysis: '<strong class="warn">WARTIME MARKET REGIME:</strong> Article 5 activation shifts markets into full wartime pricing. Defense contractors (RTX, LMT, GD, NOC) could see 30-50% share price jumps in weeks. Civilian aerospace, luxury goods, and discretionary retail crater. European markets take the largest hit given proximity. Government bond markets face selling pressure as war financing needs emerge.' },
+    { id: 'mkt-china-tariff', label: '🚢 US-China Trade War', cls: 'warning', category: 'war',
+      headline: '"US imposes 60% tariffs on all Chinese goods — retaliation follows"',
+      values: { 'mkt-geo': -2, 'mkt-earn': -2, 'mkt-supply': -2.5, 'mkt-oil': 0.5, 'mkt-haven': 1.5 },
+      analysis: '<strong class="note">TRADE WAR — SUPPLY CHAIN REPRICING:</strong> Broad tariffs force immediate supply chain re-evaluation across consumer goods, industrials, and tech hardware. Apple (China-assembled products) faces margin compression. Retailers with China-dependent sourcing (Walmart, Target) sell off. Regional alternatives (Vietnam, Mexico, India) and nearshoring plays rally. If China restricts rare earth exports — which it controls 60% of globally — tech and defense face catastrophic input cost pressure.' },
+    { id: 'mkt-oil-embargo', label: '⛽ Oil Embargo', cls: 'danger', category: 'war',
+      headline: '"Global oil embargo — WTI crude spikes to $180/barrel"',
+      values: { 'mkt-geo': -2.5, 'mkt-oil': 3, 'mkt-earn': -2.5, 'mkt-supply': -2, 'mkt-haven': 2.5, 'mkt-fed': -1 },
+      analysis: '<strong class="warn">OIL SHOCK — 1973 REPRICED:</strong> $180/barrel oil would be the most inflationary event in modern history. Airlines ground fleets or go bankrupt. Chemical companies face input cost explosions. The S&P broad index would fall 20-30% quickly, but the internal rotation would be extreme: energy stocks could DOUBLE while airlines, cruise lines, and consumer discretionary fall 40-60%. Gold and TIPS become essential defensive positions.' },
+    { id: 'mkt-soft-landing', label: '✅ Soft Landing', cls: 'ok', category: 'policy',
+      headline: '"Inflation tamed, unemployment stable — markets celebrate"',
+      values: { 'mkt-geo': 0.5, 'mkt-oil': -0.5, 'mkt-earn': 2, 'mkt-fed': -1.5, 'mkt-haven': -1, 'mkt-supply': 1 },
+      analysis: '<strong class="good">BULL MARKET RESURGENCE:</strong> A confirmed soft landing is rocket fuel for markets. Growth stocks reprice as rate cut expectations solidify. The equity risk premium falls. Tech and consumer discretionary lead the rally. VIX collapses toward 12-14. The 1994-1995 parallel: the Fed hiked, cooled inflation, cut rates, and the market ripped. Between 1995-1999 the S&P returned 28%, 23%, 33%, 29%, and 21% annually.' },
+    { id: 'mkt-bull', label: '🚀 AI / Earnings Bull Market', cls: 'ok', category: 'market',
+      headline: '"AI-driven earnings boom — S&P 500 breaks all-time highs"',
+      values: { 'mkt-earn': 3, 'mkt-fed': -1, 'mkt-geo': 0.5, 'mkt-oil': -0.5, 'mkt-supply': 1.5 },
+      analysis: '<strong class="good">EARNINGS-DRIVEN EXPANSION:</strong> Genuine earnings growth is the most durable bull market fuel. When companies deliver accelerating profits — as the Magnificent 7 did in 2023-2024 on AI revenue — valuations expand even as rates stay elevated. The market pays up for growth certainty. The risk: earnings expectations become priced in TOO aggressively, and any miss triggers violent selloffs.' },
+  ],
+};
+
+// ── FILTER LOGIC ──────────────────────────────────────────
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-tag').forEach(function(t) { t.classList.remove('active'); });
+  if(el) el.classList.add('active');
+  renderScenarios();
+}
+
+// ── SCENARIO RENDERING ────────────────────────────────────
+function renderScenarios() {
+  var grid = document.getElementById('scenario-grid');
+  var list = SCENARIOS[activeTab] || [];
+  var filtered = activeFilter === 'all' ? list : list.filter(function(s) { return s.category === activeFilter; });
+  var html = '';
+  filtered.forEach(function(s) {
+    html += '<button class="scenario-btn ' + s.cls + '" id="sc-' + s.id + '" onclick="applyScenario(\'' + s.id + '\')">'
+      + '<span class="s-icon"></span>' + s.label + '</button>';
+  });
+  if(!html) html = '<span style="font-family:\'Share Tech Mono\',monospace;font-size:9px;color:var(--text-dim);letter-spacing:2px;">No scenarios in this category for the current tab.</span>';
+  grid.innerHTML = html;
+}
+
+function applyScenario(id) {
+  var list = SCENARIOS[activeTab] || [];
+  var scenario = null;
+  for(var i = 0; i < list.length; i++) {
+    if(list[i].id === id) { scenario = list[i]; break; }
+  }
+  if(!scenario) return;
+  showFlash(scenario.headline, 'AXIUM ECONOMICS — SCENARIO APPLIED');
+  document.querySelectorAll('.scenario-btn').forEach(function(b) { b.classList.remove('active-scenario'); });
+  var btn = document.getElementById('sc-' + id);
+  if(btn) btn.classList.add('active-scenario');
+  if(activeTab === 'adas') { resetADAS(false); applyValues(scenario.values); drawADAS(scenario.analysis); }
+  else if(activeTab === 'money') { resetMoney(false); applyValues(scenario.values); drawMoney(scenario.analysis); }
+  else if(activeTab === 'phillips') {
+    resetPhillips(false); applyValues(scenario.values);
+    document.getElementById('v-pc-unemp').textContent = (scenario.values['pc-unemp'] || 5) + '%';
+    drawPhillips(scenario.analysis);
+  } else if(activeTab === 'market') { resetMarket(false); applyValues(scenario.values); drawMarket(scenario.analysis); }
+}
+
+function applyValues(vals) {
+  for(var k in vals) {
+    var el = document.getElementById(k);
+    if(el) {
+      el.value = vals[k];
+      var vid = 'v-' + k;
+      var vel = document.getElementById(vid);
+      if(vel && k !== 'pc-unemp') {
+        var v = parseFloat(vals[k]);
+        vel.textContent = (v > 0 ? '+' : '') + v;
+        vel.className = 'ctrl-val' + (v > 0 ? ' positive' : v < 0 ? ' negative' : '');
+      }
+    }
+  }
+}
+
+function showFlash(headline, sub) {
+  var flash = document.getElementById('flash');
+  document.getElementById('flash-headline').textContent = headline;
+  document.getElementById('flash-sub').textContent = sub;
+  flash.classList.add('show');
+  setTimeout(function() { flash.classList.remove('show'); }, 1400);
+}
+
+// ── TAB SWITCHING ──────────────────────────────────────────
+function switchTab(id, btn) {
+  activeTab = id;
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('panel-' + id).classList.add('active');
+  renderScenarios();
+  if(id === 'adas') drawADAS();
+  else if(id === 'money') drawMoney();
+  else if(id === 'phillips') drawPhillips();
+  else if(id === 'market') { drawMarket(); buildTicker(); }
+}
+
+// ── SLIDER SYNC ───────────────────────────────────────────
+function syncVal(inputId, valId) {
+  var el = document.getElementById(inputId);
+  var vel = document.getElementById(valId);
+  if(!el || !vel) return;
+  var v = parseFloat(el.value);
+  vel.textContent = (v > 0 ? '+' : '') + v;
+  vel.className = 'ctrl-val' + (v > 0 ? ' positive' : v < 0 ? ' negative' : '');
+}
+
+// ── MARKET: SECTOR DEFINITIONS ────────────────────────────
+var SECTORS = [
+  { name: 'S&P 500',      key:'spy', geo:-0.8, oil:-0.4, fed:-0.5, earn:1.0, haven:-0.2, supply:-0.3 },
+  { name: 'Defense',      key:'def', geo: 1.5, oil: 0.2, fed:-0.2, earn:0.4, haven: 0.3, supply: 0.1 },
+  { name: 'Energy',       key:'nrg', geo: 0.4, oil: 1.8, fed:-0.2, earn:0.5, haven:-0.1, supply:-0.2 },
+  { name: 'Technology',   key:'tec', geo:-1.0, oil:-0.2, fed:-0.9, earn:1.5, haven:-0.5, supply:-1.2 },
+  { name: 'Financials',   key:'fin', geo:-0.7, oil:-0.1, fed: 0.8, earn:0.8, haven:-0.3, supply:-0.3 },
+  { name: 'Gold / XAU',   key:'gld', geo: 1.2, oil: 0.5, fed:-1.0, earn: 0,  haven: 1.8, supply: 0.2 },
+  { name: 'Airlines',     key:'air', geo:-0.6, oil:-2.0, fed:-0.3, earn:0.6, haven:-0.2, supply:-0.5 },
+  { name: 'Healthcare',   key:'hlt', geo:-0.1, oil:-0.1, fed:-0.2, earn:0.6, haven: 0.5, supply:-0.1 },
+  { name: 'Industrials',  key:'ind', geo:-0.5, oil:-0.5, fed:-0.4, earn:0.8, haven:-0.1, supply:-0.8 },
+  { name: 'Cons. Discr.', key:'con', geo:-0.5, oil:-0.6, fed:-0.5, earn:0.9, haven:-0.3, supply:-0.4 },
+  { name: 'USD Index',    key:'dxy', geo: 0.8, oil:-0.3, fed: 1.0, earn:0.1, haven: 1.0, supply: 0.1 },
+  { name: 'US Bonds',     key:'tlt', geo: 0.4, oil:-0.2, fed:-1.2, earn:-0.3,haven: 1.0, supply: 0.1 },
+];
+
+function calcSectorPct(sector, vals) {
+  return (
+    sector.geo    * vals.geo +
+    sector.oil    * vals.oil +
+    sector.fed    * vals.fed +
+    sector.earn   * vals.earn +
+    sector.haven  * vals.haven +
+    sector.supply * vals.supply
+  ) * 2.5;
+}
+
+function getMarketVals() {
+  return {
+    geo:    parseFloat(document.getElementById('mkt-geo').value)    || 0,
+    oil:    parseFloat(document.getElementById('mkt-oil').value)    || 0,
+    fed:    parseFloat(document.getElementById('mkt-fed').value)    || 0,
+    earn:   parseFloat(document.getElementById('mkt-earn').value)   || 0,
+    haven:  parseFloat(document.getElementById('mkt-haven').value)  || 0,
+    supply: parseFloat(document.getElementById('mkt-supply').value) || 0,
+  };
+}
+
+// ── MARKET: DRAW ─────────────────────────────────────────
+function drawMarket(customAnalysis) {
+  var vals = getMarketVals();
+
+  // Sector cards
+  var sgrid = document.getElementById('sector-grid');
+  if(!sgrid) return;
+  var shtml = '';
+  SECTORS.forEach(function(s) {
+    var pct = calcSectorPct(s, vals);
+    var cls = pct > 0.5 ? 'up' : pct < -0.5 ? 'down' : 'flat';
+    var sign = pct > 0 ? '+' : '';
+    shtml += '<div class="sector-card sector-' + cls + '">'
+      + '<div class="sector-name">' + s.name + '</div>'
+      + '<div class="sector-val ' + cls + '">' + sign + pct.toFixed(1) + '%</div>'
+      + '</div>';
+  });
+  sgrid.innerHTML = shtml;
+
+  // S&P chart
+  var canvas = document.getElementById('canvas-market');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, W, H);
+
+  var ox = 54, oy = 36, gw = W - 70, gh = H - 60;
+  var spyPct = calcSectorPct(SECTORS[0], vals);
+
+  // Grid
+  ctx.strokeStyle = '#0e0c04'; ctx.lineWidth = 1;
+  for(var gx = 0; gx <= 10; gx++) {
+    var xp = ox + (gw/10)*gx;
+    ctx.beginPath(); ctx.moveTo(xp,oy); ctx.lineTo(xp,oy+gh); ctx.stroke();
+  }
+  for(var gy = 0; gy <= 8; gy++) {
+    var yp = oy + (gh/8)*gy;
+    ctx.beginPath(); ctx.moveTo(ox,yp); ctx.lineTo(ox+gw,yp); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#2e2710'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(ox,oy+gh); ctx.lineTo(ox+gw,oy+gh); ctx.stroke();
+
+  var maxPct = Math.max(25, Math.abs(spyPct) * 1.6);
+
+  // Y labels
+  ctx.fillStyle = '#5a5030'; ctx.font = '9px "Share Tech Mono"';
+  for(var yi = 0; yi <= 8; yi++) {
+    var yf = 1 - yi/8;
+    var yval = (yf * 2 - 1) * maxPct;
+    ctx.textAlign = 'right';
+    ctx.fillText((yval > 0 ? '+' : '') + yval.toFixed(0) + '%', ox - 4, oy + (gh/8)*yi + 3);
+  }
+  // X labels
+  ctx.textAlign = 'center';
+  ctx.fillText('TIME →  (Days after event)', ox + gw/2, oy+gh+22);
+  ['D0','D1','D3','D5','D10','D20','D30','D60','D90','D120','D180'].forEach(function(d,i) {
+    ctx.fillText(d, ox + (gw/10)*i, oy+gh+12);
+  });
+
+  // Zero line
+  var zeroY = oy + gh/2;
+  ctx.strokeStyle = '#3a3010'; ctx.lineWidth = 1;
+  ctx.setLineDash([4,6]);
+  ctx.beginPath(); ctx.moveTo(ox, zeroY); ctx.lineTo(ox+gw, zeroY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Simulate trajectory
+  var nPts = 60;
+  var prices = [0];
+  for(var pi = 1; pi < nPts; pi++) {
+    var meanRevert = -prices[pi-1] * 0.04;
+    var drift = pi < 10 ? spyPct / 10 : 0;
+    var noise = Math.sin(pi * 3.7 + spyPct * 0.3) * Math.abs(spyPct) * 0.08;
+    prices.push(prices[pi-1] + drift + meanRevert + noise);
+  }
+  var clampMax = maxPct * 0.92;
+  prices = prices.map(function(p) { return Math.max(-clampMax, Math.min(clampMax, p)); });
+
+  // Fill
+  ctx.beginPath();
+  prices.forEach(function(p, pi) {
+    var px = ox + (pi/(nPts-1))*gw;
+    var py = zeroY - (p/maxPct)*(gh/2);
+    if(pi===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  });
+  ctx.lineTo(ox+gw, zeroY); ctx.lineTo(ox, zeroY); ctx.closePath();
+  ctx.fillStyle = spyPct < 0 ? 'rgba(184,48,48,0.07)' : 'rgba(48,128,80,0.07)';
+  ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.lineWidth = 2.5;
+  ctx.strokeStyle = spyPct < -1 ? '#e05050' : spyPct > 1 ? '#50c080' : '#C9A84C';
+  prices.forEach(function(p, pi) {
+    var px = ox + (pi/(nPts-1))*gw;
+    var py = zeroY - (p/maxPct)*(gh/2);
+    if(pi===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  // End dot
+  var endP = prices[nPts-1];
+  var endY = zeroY - (endP/maxPct)*(gh/2);
+  ctx.beginPath(); ctx.arc(ox+gw, endY, 4, 0, Math.PI*2);
+  ctx.fillStyle = spyPct < -1 ? '#e05050' : '#50c080'; ctx.fill();
+
+  // Stats
+  var vix  = Math.round(18 + Math.abs(spyPct)*3.5 + Math.abs(vals.geo)*4);
+  var tenY = +(4.2 - vals.fed*0.4 + vals.geo*0.1).toFixed(1);
+  var oilChg = +(vals.oil*8 + vals.geo*3).toFixed(1);
+
+  var spyEl = document.getElementById('stat-spy');
+  if(spyEl) {
+    spyEl.style.color = spyPct < -0.5 ? '#e05050' : spyPct > 0.5 ? '#50c080' : '#C9A84C';
+    spyEl.innerHTML = (spyPct>0?'+':'') + spyPct.toFixed(1) + '<span class="stat-unit">%</span>';
+  }
+  var vixEl = document.getElementById('stat-vix');
+  if(vixEl) {
+    vixEl.style.color = vix>30 ? '#e05050' : vix>20 ? '#f0a040' : '#50c080';
+    vixEl.innerHTML = vix + '<span class="stat-unit">pts</span>';
+  }
+  var t10El = document.getElementById('stat-10y');
+  if(t10El) t10El.innerHTML = tenY + '<span class="stat-unit">%</span>';
+  var oilEl = document.getElementById('stat-oil');
+  if(oilEl) {
+    oilEl.style.color = oilChg>1 ? '#e05050' : oilChg<-1 ? '#50c080' : '#C9A84C';
+    oilEl.innerHTML = (oilChg>0?'+':'') + oilChg + '<span class="stat-unit">%</span>';
+  }
+
+  buildTicker();
+
+  var txt = customAnalysis || autoMarketAnalysis(vals, spyPct, vix);
+  var mktEl = document.getElementById('market-analysis');
+  if(mktEl) mktEl.innerHTML = txt;
+}
+
+function autoMarketAnalysis(vals, spyPct, vix) {
+  var parts = [];
+  if(vals.geo < -1.5) parts.push('<span class="warn">⚔ HIGH GEOPOLITICAL RISK: Markets pricing in conflict premium. Defense and commodities rotate into favor. Expect elevated VIX for 30-90 days.</span>');
+  else if(vals.geo > 1) parts.push('<span class="good">✓ Geopolitical stability premium: Risk assets benefit. Volatility suppressed.</span>');
+  if(vals.oil > 1.5) parts.push('<span class="warn">⛽ OIL SHOCK: Airlines, transport, consumer discretionary face margin compression. Energy sector rallies. Inflation tail risk rises.</span>');
+  else if(vals.oil < -1) parts.push('<span class="good">✓ Falling energy costs boost consumer spending and corporate margins broadly.</span>');
+  if(vals.haven > 1.5) parts.push('<span class="warn">🏦 SAFE-HAVEN SURGE: Gold, USD, and Treasuries in demand. Capital flowing OUT of equities and EM assets.</span>');
+  if(vals.earn > 1) parts.push('<span class="good">📈 Strong earnings outlook: The most durable bull market fuel. Growth and quality stocks outperform.</span>');
+  else if(vals.earn < -1.5) parts.push('<span class="warn">📉 Earnings recession risk: Multiple compression + earnings cuts is a bear market double punch.</span>');
+  if(vix > 35) parts.push('<span class="warn">⚡ VIX EXTREME: Panic pricing. Historically a contrarian buy signal — but requires patience and strong hands.</span>');
+  else if(vix < 15) parts.push('<span class="good">✓ Low volatility: Market complacency or genuine stability. Watch for vol expansion from small catalysts.</span>');
+  if(spyPct < -15) parts.push('<span class="warn">🔴 BEAR MARKET TERRITORY: &gt;15% drawdown typically precedes recession. Monitor credit spreads for systemic risk.</span>');
+  if(!parts.length) parts.push('<span class="good">✓ Neutral conditions. No dominant shock vector. Markets trading on fundamentals.</span>');
+  return parts.join(' ');
+}
+
+// ── TICKER ────────────────────────────────────────────────
+function buildTicker() {
+  var vals = getMarketVals();
+  var spyPct = calcSectorPct(SECTORS[0], vals) / 100;
+  var tickers = [
+    { sym:'SPY',  base:580, f: 1.0 },
+    { sym:'QQQ',  base:488, f: 1.2 },
+    { sym:'GLD',  base:235, f:-0.5 },
+    { sym:'XOM',  base:118, f:-0.4 },
+    { sym:'LMT',  base:470, f:-0.6 },
+    { sym:'RTX',  base:130, f:-0.55 },
+    { sym:'IEF',  base:96,  f:-0.3 },
+    { sym:'USO',  base:78,  f:-0.7 },
+    { sym:'VIX',  base:18,  f:-0.9 },
+    { sym:'DXY',  base:104, f:-0.25 },
+    { sym:'MSFT', base:415, f: 1.1 },
+    { sym:'NVDA', base:880, f: 1.4 },
+  ];
+  var html = '';
+  tickers.forEach(function(t) {
+    var chgPct = spyPct * t.f * (0.8 + Math.abs(Math.sin(t.base)) * 0.4);
+    var price = t.base * (1 + chgPct);
+    var dir = chgPct >= 0 ? 'up' : 'down';
+    var chgStr = (chgPct*100 > 0 ? '+' : '') + (chgPct*100).toFixed(2) + '%';
+    html += '<span class="ticker-item"><span class="ticker-sym">' + t.sym + '</span>'
+      + '<span class="ticker-price">$' + price.toFixed(2) + '</span>'
+      + '<span class="ticker-chg ' + dir + '">' + chgStr + '</span></span>';
+  });
+  html = html + html; // duplicate for seamless scroll
+  var el = document.getElementById('ticker-inner');
+  if(el) el.innerHTML = html;
+}
+
+// ── MARKET PRESETS ────────────────────────────────────────
+function marketPreset(type) {
+  resetMarket(false);
+  var presets = {
+    'russia-ukraine':  { 'mkt-geo':-3, 'mkt-oil':3, 'mkt-earn':-2, 'mkt-haven':3, 'mkt-supply':-2.5 },
+    'middle-east':     { 'mkt-geo':-2.5, 'mkt-oil':2.5, 'mkt-earn':-1.5, 'mkt-haven':2.5, 'mkt-supply':-1.5 },
+    'taiwan':          { 'mkt-geo':-3, 'mkt-oil':1.5, 'mkt-earn':-3, 'mkt-haven':3, 'mkt-supply':-3, 'mkt-fed':-1 },
+    'us-china-tariff': { 'mkt-geo':-2, 'mkt-earn':-2, 'mkt-supply':-2.5, 'mkt-oil':0.5, 'mkt-haven':1.5 },
+    'nato-article5':   { 'mkt-geo':-2.5, 'mkt-earn':-1.5, 'mkt-fed':-1.5, 'mkt-haven':2, 'mkt-supply':-2, 'mkt-oil':1.5 },
+    'oil-embargo':     { 'mkt-geo':-2.5, 'mkt-oil':3, 'mkt-earn':-2.5, 'mkt-supply':-2, 'mkt-haven':2.5, 'mkt-fed':-1 },
+    'soft-landing':    { 'mkt-geo':0.5, 'mkt-oil':-0.5, 'mkt-earn':2, 'mkt-fed':-1.5, 'mkt-haven':-1, 'mkt-supply':1 },
+    'bull-run':        { 'mkt-earn':3, 'mkt-fed':-1, 'mkt-geo':0.5, 'mkt-oil':-0.5, 'mkt-supply':1.5 },
+  };
+  applyValues(presets[type] || {});
+  drawMarket();
+}
+
+function resetMarket(redraw) {
+  ['mkt-geo','mkt-oil','mkt-fed','mkt-earn','mkt-haven','mkt-supply'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if(el) { el.value = 0; syncVal(id, 'v-' + id); }
+  });
+  document.querySelectorAll('#panel-market .scenario-btn').forEach(function(b) { b.classList.remove('active-scenario'); });
+  if(redraw !== false) drawMarket();
+}
+
+// ── CANVAS UTILS ──────────────────────────────────────────
+function getCtx(id) {
+  var canvas = document.getElementById(id);
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.black;
+  ctx.fillRect(0, 0, W, H);
+  return { ctx: ctx, W: W, H: H };
+}
+
+function drawGrid(ctx, ox, oy, gw, gh, nx, ny) {
+  ctx.strokeStyle = '#0e0c04';
+  ctx.lineWidth = 1;
+  for(var i = 0; i <= nx; i++) {
+    var x = ox + (gw / nx) * i;
+    ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + gh); ctx.stroke();
+  }
+  for(var j = 0; j <= ny; j++) {
+    var y = oy + (gh / ny) * j;
+    ctx.beginPath(); ctx.moveTo(ox, y); ctx.lineTo(ox + gw, y); ctx.stroke();
+  }
+}
+
+function drawAxes(ctx, ox, oy, gw, gh, xLbl, yLbl) {
+  ctx.strokeStyle = '#2e2710';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(ox, oy); ctx.lineTo(ox, oy + gh); ctx.lineTo(ox + gw, oy + gh);
+  ctx.stroke();
+
+  ctx.fillStyle = C.textDim;
+  ctx.font = '10px "Share Tech Mono"';
+  ctx.textAlign = 'center';
+  ctx.fillText(xLbl, ox + gw / 2, oy + gh + 28);
+
+  ctx.save();
+  ctx.translate(ox - 38, oy + gh / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(yLbl, 0, 0);
+  ctx.restore();
+}
+
+function curve(ctx, pts, color, dashed, lw) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw || 2.5;
+  if(dashed) ctx.setLineDash([6,5]);
+  else ctx.setLineDash([]);
+  ctx.beginPath();
+  pts.forEach(function(p, i) { if(i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); });
+  ctx.stroke();
+  ctx.restore();
+}
+
+function label(ctx, txt, x, y, color, size, align) {
+  ctx.fillStyle = color || C.gold;
+  ctx.font = (size || 10) + 'px "Share Tech Mono"';
+  ctx.textAlign = align || 'left';
+  ctx.fillText(txt, x, y);
+}
+
+function eqPoint(ctx, x, y, ox, oy, gh) {
+  ctx.save();
+  ctx.setLineDash([3, 5]);
+  ctx.strokeStyle = 'rgba(201,168,76,0.22)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ox, y); ctx.lineTo(x, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, oy + gh); ctx.lineTo(x, y); ctx.stroke();
+  ctx.setLineDash([]);
+  // Outer ring
+  ctx.strokeStyle = C.goldBr;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI*2); ctx.stroke();
+  // Inner dot
+  ctx.fillStyle = C.gold;
+  ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ── AD-AS DRAW ─────────────────────────────────────────────
+function getADShift() {
+  return (
+    gv('ad-consumer') +
+    gv('ad-gov') +
+    (-gv('ad-rate')) +
+    gv('ad-exports') +
+    gv('ad-invest')
+  ) * 16;
+}
+function getSRASShift() {
+  return (
+    (-gv('sras-wages')) +
+    (-gv('sras-energy')) +
+    (-gv('sras-shock'))
+  ) * 18;
+}
+function getLRASShift() {
+  return (gv('lras-tech') + gv('lras-labor')) * 22;
+}
+function gv(id) {
+  var el = document.getElementById(id);
+  return el ? parseFloat(el.value) : 0;
+}
+
+function drawADAS(customAnalysis) {
+  var adS = getADShift();
+  var srasS = getSRASShift();
+  var lrasS = getLRASShift();
+
+  var r = getCtx('canvas-adas');
+  var ctx = r.ctx, W = r.W, H = r.H;
+  var ox = 64, oy = 18, gw = W - 84, gh = H - 68;
+
+  drawGrid(ctx, ox, oy, gw, gh, 10, 8);
+  drawAxes(ctx, ox, oy, gw, gh, 'REAL GDP  →', 'PRICE LEVEL  ↑');
+
+  // Y-axis labels
+  ctx.fillStyle = C.textDim;
+  ctx.font = '9px "Share Tech Mono"';
+  for(var i = 0; i <= 4; i++) {
+    var yp = oy + gh - (gh / 4) * i;
+    var yval = 70 + i * 20;
+    ctx.textAlign = 'right';
+    ctx.fillText(yval, ox - 6, yp + 3);
+  }
+  // X-axis labels
+  ctx.textAlign = 'center';
+  for(var j = 0; j <= 5; j++) {
+    var xp = ox + (gw / 5) * j;
+    var xval = 70 + j * 20;
+    ctx.fillText(xval, xp, oy + gh + 16);
+  }
+
+  // LRAS
+  var lrasBaseX = ox + gw * 0.5;
+  var lrasX = lrasBaseX + lrasS;
+  if(lrasS !== 0) {
+    curve(ctx, [[lrasBaseX, oy+4],[lrasBaseX, oy+gh]], '#2a2006', true, 1.5);
+  }
+  curve(ctx, [[lrasX, oy+4],[lrasX, oy+gh]], C.gold, false, 2.5);
+  label(ctx, 'LRAS', lrasX + 5, oy + 20, C.gold, 10);
+
+  // AD curve helper
+  function adPts(shift) {
+    var cx = ox + shift;
+    return [
+      [cx + gw*0.06, oy + gh*0.04],
+      [cx + gw*0.28, oy + gh*0.28],
+      [cx + gw*0.52, oy + gh*0.56],
+      [cx + gw*0.76, oy + gh*0.80],
+      [cx + gw*0.92, oy + gh*0.95],
+    ];
+  }
+
+  if(adS !== 0) curve(ctx, adPts(0), '#1a2840', true, 1.5);
+  curve(ctx, adPts(adS), C.blue, false, 2.5);
+  var adEnd = adPts(adS);
+  label(ctx, 'AD', adEnd[4][0] - 20, adEnd[4][1] + 12, C.blue, 10);
+
+  // SRAS curve helper
+  function srasPts(shift) {
+    var cy = oy + shift;
+    return [
+      [ox + gw*0.04, cy + gh*0.95],
+      [ox + gw*0.2,  cy + gh*0.72],
+      [ox + gw*0.42, cy + gh*0.46],
+      [ox + gw*0.65, cy + gh*0.24],
+      [ox + gw*0.88, cy + gh*0.06],
+    ];
+  }
+
+  if(srasS !== 0) curve(ctx, srasPts(0), '#182e20', true, 1.5);
+  curve(ctx, srasPts(srasS), C.sras, false, 2.5);
+  var srasEnd = srasPts(srasS);
+  label(ctx, 'SRAS', srasEnd[4][0] - 36, srasEnd[4][1] - 6, C.sras, 10);
+
+  // Equilibrium
+  var eqX = ox + gw * 0.5 + adS * 0.42 - srasS * 0.06;
+  var eqY = oy + gh * 0.5 - adS * 0.08 - srasS * 0.4;
+  eqX = Math.max(ox+14, Math.min(ox+gw-14, eqX));
+  eqY = Math.max(oy+14, Math.min(oy+gh-14, eqY));
+  eqPoint(ctx, eqX, eqY, ox, oy, gh);
+
+  // Stats
+  var priceIdx = Math.round(100 + ((oy + gh - eqY) / gh - 0.5) * 60);
+  var gdpIdx   = Math.round(100 + ((eqX - ox) / gw - 0.5) * 60);
+  var gapPct   = Math.round((eqX - lrasX) / (gw * 0.01));
+
+  setStatVal('stat-price', priceIdx, 'idx');
+  setStatVal('stat-gdp', gdpIdx, '%');
+  var gapEl = document.getElementById('stat-gap');
+  gapEl.style.color = gapPct > 2 ? C.orange : gapPct < -2 ? C.redBr : C.greenBr;
+  gapEl.innerHTML = (gapPct > 0 ? '+' : '') + gapPct + '<span class="stat-unit">%</span>';
+
+  var txt = customAnalysis;
+  if(!txt) {
+    txt = autoADASAnalysis(adS, srasS, lrasS, gapPct);
+  }
+  document.getElementById('adas-analysis').innerHTML = txt;
+}
+
+function autoADASAnalysis(ad, sras, lras, gap) {
+  var parts = [];
+  if(ad > 10) parts.push('AD shifted <strong>RIGHT</strong> — higher spending pushes prices and output up.');
+  else if(ad < -10) parts.push('AD shifted <strong>LEFT</strong> — demand contraction pulls prices and output down.');
+  if(sras > 10) parts.push('SRAS shifted <strong>RIGHT</strong> — lower costs boost supply. Prices down, GDP up.');
+  else if(sras < -10) parts.push('<span class="warn">SRAS shifted LEFT</span> — cost shock. Stagflation risk: prices rise while output falls.');
+  if(lras > 10) parts.push('<span class="good">LRAS moved right</span> — potential GDP increased. Long-run growth.');
+  else if(lras < -10) parts.push('<span class="warn">LRAS moved left</span> — potential GDP fell.');
+  if(gap > 3) parts.push('<span class="warn">⚡ INFLATIONARY GAP: Output exceeds potential. Expect wage pressure and eventual Fed tightening.</span>');
+  else if(gap < -3) parts.push('<span class="warn">📉 RECESSIONARY GAP: Below potential. Unemployment above natural rate. Case for stimulus.</span>');
+  else parts.push('<span class="good">✓ Near long-run equilibrium.</span>');
+  if(parts.length === 0) return 'Adjust sliders or pick a headline scenario above to see the economy respond.';
+  return parts.join(' ');
+}
+
+// ── MONEY MARKET DRAW ──────────────────────────────────────
+function getMSShift() {
+  return (gv('ms-omo') + gv('ms-qe') + (-gv('ms-reserve')) + (-gv('ms-discount'))) * 22;
+}
+function getMDShift() {
+  return (gv('md-income') + gv('md-price') + gv('md-trans')) * 18;
+}
+
+function drawMoney(customAnalysis) {
+  var msS = getMSShift();
+  var mdS = getMDShift();
+
+  var r = getCtx('canvas-money');
+  var ctx = r.ctx, W = r.W, H = r.H;
+  var ox = 64, oy = 18, gw = W - 84, gh = H - 68;
+
+  drawGrid(ctx, ox, oy, gw, gh, 10, 8);
+  drawAxes(ctx, ox, oy, gw, gh, 'QUANTITY OF MONEY  →', 'INTEREST RATE  ↑');
+
+  // Y-axis labels (interest rates)
+  ctx.fillStyle = C.textDim;
+  ctx.font = '9px "Share Tech Mono"';
+  for(var i = 0; i <= 4; i++) {
+    var yp = oy + gh - (gh / 4) * i;
+    var yval = i * 4;
+    ctx.textAlign = 'right';
+    ctx.fillText(yval + '%', ox - 6, yp + 3);
+  }
+
+  // MS
+  var msBaseX = ox + gw * 0.5;
+  var msX = msBaseX + msS;
+  if(msS !== 0) curve(ctx, [[msBaseX, oy+4],[msBaseX, oy+gh]], '#2a2006', true, 1.5);
+  curve(ctx, [[msX, oy+4],[msX, oy+gh]], C.gold, false, 2.5);
+  label(ctx, 'MS', msX + 5, oy + 20, C.gold, 10);
+
+  // MD curve
+  function mdPts(shift) {
+    var cx = ox + shift;
+    return [
+      [cx + gw*0.06, oy + gh*0.04],
+      [cx + gw*0.22, oy + gh*0.22],
+      [cx + gw*0.44, oy + gh*0.48],
+      [cx + gw*0.68, oy + gh*0.72],
+      [cx + gw*0.92, oy + gh*0.94],
+    ];
+  }
+
+  if(mdS !== 0) curve(ctx, mdPts(0), '#1a2840', true, 1.5);
+  curve(ctx, mdPts(mdS), C.blue, false, 2.5);
+  var mdEnd = mdPts(mdS);
+  label(ctx, 'MD', mdEnd[4][0] + 4, mdEnd[4][1], C.blue, 10);
+
+  // Equilibrium — intersection of vertical MS with MD
+  var relX = (msX - ox) / gw;
+  relX = Math.max(0, Math.min(1, relX));
+  var eqY = oy + gh * (0.04 + relX * 0.90);
+  eqY = Math.max(oy+14, Math.min(oy+gh-14, eqY));
+  eqPoint(ctx, msX, eqY, ox, oy, gh);
+
+  // Stats
+  var rateVal  = 5 + ((oy + gh - eqY) / gh - 0.5) * 14;
+  var msIdx    = Math.round(100 + (msS / (gw * 0.35)) * 35);
+  var rateDelt = rateVal - 5;
+
+  document.getElementById('stat-rate').innerHTML = rateVal.toFixed(1) + '<span class="stat-unit">%</span>';
+  document.getElementById('stat-ms').innerHTML   = msIdx + '<span class="stat-unit">idx</span>';
+  var rdEl = document.getElementById('stat-rdelta');
+  rdEl.style.color = rateDelt < -0.1 ? C.greenBr : rateDelt > 0.1 ? C.redBr : C.gold;
+  rdEl.innerHTML = (rateDelt > 0 ? '+' : '') + rateDelt.toFixed(1) + '<span class="stat-unit">pp</span>';
+
+  var txt = customAnalysis || autoMoneyAnalysis(msS, mdS, rateDelt);
+  document.getElementById('money-analysis').innerHTML = txt;
+}
+
+function autoMoneyAnalysis(ms, md, delta) {
+  var parts = [];
+  if(ms > 15) parts.push('Money supply expanded — Fed injected liquidity.');
+  else if(ms < -15) parts.push('<span class="warn">Money supply contracted — Fed tightened conditions.</span>');
+  if(md > 15) parts.push('Money demand rose — higher income or prices require more cash.');
+  else if(md < -15) parts.push('Money demand fell — economic slowdown reduces transactions.');
+  if(delta < -0.5) parts.push('<span class="good">✓ Lower interest rates stimulate investment and consumption. This shifts AD right in the AD-AS model.</span>');
+  else if(delta > 0.5) parts.push('<span class="warn">⚡ Higher rates cool borrowing. Expect lower investment and AD contraction.</span>');
+  else parts.push('<span class="good">✓ Rate near baseline equilibrium.</span>');
+  return parts.join(' ');
+}
+
+// ── PHILLIPS CURVE DRAW ────────────────────────────────────
+function drawPhillips(customAnalysis) {
+  var expectS = gv('pc-expect') * 18;
+  var shockS  = gv('pc-shock') * 18;
+  var wageS   = gv('pc-wages') * 10;
+  var totalS  = expectS + shockS + wageS;
+  var nairuS  = gv('pc-nairu') * 20;
+  var unemp   = gv('pc-unemp');
+
+  var r = getCtx('canvas-phillips');
+  var ctx = r.ctx, W = r.W, H = r.H;
+  var ox = 64, oy = 18, gw = W - 84, gh = H - 68;
+
+  drawGrid(ctx, ox, oy, gw, gh, 10, 8);
+  drawAxes(ctx, ox, oy, gw, gh, 'UNEMPLOYMENT RATE  →', 'INFLATION RATE  ↑');
+
+  // Axis labels
+  ctx.fillStyle = C.textDim;
+  ctx.font = '9px "Share Tech Mono"';
+  for(var i = 0; i <= 5; i++) {
+    ctx.textAlign = 'center';
+    var xp = ox + (gw / 5) * i;
+    ctx.fillText((i * 3) + '%', xp, oy + gh + 16);
+    var yp = oy + gh - (gh / 5) * i;
+    ctx.textAlign = 'right';
+    ctx.fillText((i * 2.5).toFixed(0) + '%', ox - 6, yp + 3);
+  }
+
+  // LRPC (NAIRU)
+  var nairuBaseX = ox + gw * (5 / 15);
+  var nairuX = nairuBaseX + nairuS;
+  if(nairuS !== 0) curve(ctx, [[nairuBaseX, oy+4],[nairuBaseX, oy+gh]], '#2a2006', true, 1.5);
+  curve(ctx, [[nairuX, oy+4],[nairuX, oy+gh]], C.gold, false, 2.5);
+  label(ctx, 'LRPC', nairuX + 5, oy + 20, C.gold, 10);
+
+  // SRPC
+  function srpcPts(shift) {
+    var cy = oy + shift;
+    return [
+      [ox + gw*0.02, cy + gh*0.01],
+      [ox + gw*0.10, cy + gh*0.14],
+      [ox + gw*0.22, cy + gh*0.30],
+      [ox + gw*0.38, cy + gh*0.50],
+      [ox + gw*0.58, cy + gh*0.68],
+      [ox + gw*0.78, cy + gh*0.84],
+      [ox + gw*0.94, cy + gh*0.96],
+    ];
+  }
+
+  if(totalS !== 0) curve(ctx, srpcPts(0), '#1a2840', true, 1.5);
+  curve(ctx, srpcPts(totalS), C.blue, false, 2.5);
+  label(ctx, 'SRPC', ox + gw*0.04, oy + totalS + 14, C.blue, 10);
+
+  // Current position dot
+  var unempFrac = unemp / 15;
+  unempFrac = Math.max(0.01, Math.min(0.99, unempFrac));
+  var posX = ox + gw * unempFrac;
+  var pts = srpcPts(totalS);
+  var inflY = pts[3][1]; // default mid
+  for(var i2 = 0; i2 < pts.length - 1; i2++) {
+    if(posX >= pts[i2][0] && posX <= pts[i2+1][0]) {
+      var t = (posX - pts[i2][0]) / (pts[i2+1][0] - pts[i2][0]);
+      inflY = pts[i2][1] + t * (pts[i2+1][1] - pts[i2][1]);
+      break;
+    }
+  }
+  inflY = Math.max(oy+10, Math.min(oy+gh-10, inflY));
+
+  // Drop lines
+  ctx.save();
+  ctx.setLineDash([3,5]);
+  ctx.strokeStyle = 'rgba(184,48,48,0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ox, inflY); ctx.lineTo(posX, inflY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(posX, oy+gh); ctx.lineTo(posX, inflY); ctx.stroke();
+  ctx.restore();
+
+  ctx.fillStyle = C.red;
+  ctx.beginPath(); ctx.arc(posX, inflY, 6, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = C.redBr;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(posX, inflY, 10, 0, Math.PI*2); ctx.stroke();
+
+  // Stats
+  var inflPct  = ((oy + gh - inflY) / gh) * 12;
+  var nairuPct = 5 + nairuS / (gw / 15);
+
+  document.getElementById('stat-pc-infl').innerHTML  = inflPct.toFixed(1) + '<span class="stat-unit">%</span>';
+  document.getElementById('stat-pc-unemp').innerHTML = unemp.toFixed(1) + '<span class="stat-unit">%</span>';
+  document.getElementById('stat-pc-nairu').innerHTML = nairuPct.toFixed(1) + '<span class="stat-unit">%</span>';
+
+  var txt = customAnalysis || autoPCAnalysis(unemp, inflPct, nairuPct, totalS);
+  document.getElementById('phillips-analysis').innerHTML = txt;
+}
+
+function autoPCAnalysis(unemp, infl, nairu, shift) {
+  var parts = [];
+  if(unemp < nairu - 0.3) parts.push('<span class="warn">Unemployment BELOW NAIRU — upward wage pressure. Inflation rising.</span>');
+  else if(unemp > nairu + 0.3) parts.push('<span class="good">Unemployment ABOVE NAIRU — labor market slack. Disinflationary pressure.</span>');
+  else parts.push('<span class="good">✓ Near natural rate — stable long-run equilibrium.</span>');
+  if(shift < -12) parts.push('<span class="good">Curve shifted DOWN — lower expectations or positive supply shock. Favorable conditions.</span>');
+  else if(shift > 12) parts.push('<span class="warn">Curve shifted UP — higher expectations or supply shock. Stagflation risk.</span>');
+  if(infl > 6) parts.push('<span class="warn">⚡ HIGH INFLATION: Fed may tighten — pushing unemployment up to cool prices.</span>');
+  else if(unemp > 8) parts.push('<span class="warn">📉 HIGH UNEMPLOYMENT: Stimulus warranted — lower rates or fiscal expansion.</span>');
+  return parts.join(' ');
+}
+
+// ── STAT DISPLAY HELPER ────────────────────────────────────
+function setStatVal(id, val, unit) {
+  document.getElementById(id).innerHTML = val + '<span class="stat-unit">' + unit + '</span>';
+}
+
+// ── RESETS ─────────────────────────────────────────────────
+function resetADAS(redraw) {
+  ['ad-consumer','ad-gov','ad-rate','ad-exports','ad-invest',
+   'sras-wages','sras-energy','sras-shock','lras-tech','lras-labor'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if(el) { el.value = 0; syncVal(id, 'v-' + id); }
+  });
+  document.querySelectorAll('#panel-adas .scenario-btn').forEach(function(b) { b.classList.remove('active-scenario'); });
+  if(redraw !== false) drawADAS();
+}
+
+function resetMoney(redraw) {
+  ['ms-omo','ms-reserve','ms-discount','ms-qe','md-income','md-price','md-trans'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if(el) { el.value = 0; syncVal(id, 'v-' + id); }
+  });
+  document.querySelectorAll('#panel-money .scenario-btn').forEach(function(b) { b.classList.remove('active-scenario'); });
+  if(redraw !== false) drawMoney();
+}
+
+function resetPhillips(redraw) {
+  ['pc-expect','pc-shock','pc-wages','pc-nairu'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if(el) { el.value = 0; syncVal(id, 'v-' + id); }
+  });
+  var punEl = document.getElementById('pc-unemp');
+  if(punEl) { punEl.value = 5; document.getElementById('v-pc-unemp').textContent = '5%'; }
+  document.querySelectorAll('#panel-phillips .scenario-btn').forEach(function(b) { b.classList.remove('active-scenario'); });
+  if(redraw !== false) drawPhillips();
+}
+
+// ── TECHNICAL PRESETS ──────────────────────────────────────
+function techPresetADAS(type) {
+  resetADAS(false);
+  var presets = {
+    'expansion':    { 'ad-gov': 2.5, 'ad-consumer': 1, 'ad-invest': 1 },
+    'contraction':  { 'ad-gov': -2, 'ad-rate': 2, 'ad-consumer': -1 },
+    'neg-supply':   { 'sras-energy': -2.5, 'sras-shock': -1.5 },
+    'tech-boom':    { 'lras-tech': 2, 'lras-labor': 1, 'sras-shock': 1.5, 'ad-invest': 2 },
+    'stagflation':  { 'sras-energy': -2.5, 'sras-shock': -1.5, 'ad-gov': 1.5 },
+  };
+  applyValues(presets[type] || {});
+  drawADAS();
+}
+
+function techPresetMoney(type) {
+  resetMoney(false);
+  var presets = {
+    'rate-hike': { 'ms-omo': -2.5, 'ms-reserve': 1, 'ms-discount': 1.5 },
+    'rate-cut':  { 'ms-omo': 2.5, 'ms-reserve': -1, 'ms-discount': -1.5 },
+    'qe':        { 'ms-qe': 3, 'ms-omo': 1.5 },
+    'qt':        { 'ms-qe': -3, 'ms-omo': -2 },
+  };
+  applyValues(presets[type] || {});
+  drawMoney();
+}
+
+function techPresetPC(type) {
+  resetPhillips(false);
+  var presets = {
+    'volcker':    { 'pc-unemp': 10, 'pc-expect': -1.5 },
+    'stagflation':{ 'pc-expect': 2.5, 'pc-shock': 2, 'pc-unemp': 7, 'pc-wages': 1 },
+    'goldilocks': { 'pc-unemp': 4.5, 'pc-expect': -1, 'pc-shock': -0.5 },
+    'pandemic':   { 'pc-expect': 2, 'pc-shock': 2.5, 'pc-unemp': 3.5, 'pc-nairu': 0.5, 'pc-wages': 1.5 },
+  };
+  var vals = presets[type] || {};
+  applyValues(vals);
+  if(vals['pc-unemp']) document.getElementById('v-pc-unemp').textContent = vals['pc-unemp'] + '%';
+  drawPhillips();
+}
+
+// ── INIT ──────────────────────────────────────────────────
+renderScenarios();
+drawADAS();
+</script>
+</body>
+</html>
