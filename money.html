@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Market Mechanics 101 — AXIUM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --gold-dim: #7a6228;
+      --black: #050505;
+      --black-card: #0e0e07;
+      --black-border: #222210;
+      --text: #e8dfc0;
+      --text-dim: #9a8f6a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    #starCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0;
+      background: rgba(5,5,5,0.94);
+      border-bottom: 1px solid var(--gold-dim);
+      z-index: 500;
+      backdrop-filter: blur(10px);
+    }
+    .nav-inner {
+      max-width: 1080px; margin: 0 auto;
+      padding: 0.7rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.35em; color: var(--gold); text-transform: uppercase; }
+    .nav-links { display: flex; gap: 1.8rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--text-dim); font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 4rem 2rem 3rem;
+      border-bottom: 1px solid var(--black-border);
+    }
+    .hero-eye { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.45em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 0.8rem; }
+    .hero h1 { font-family: 'Cinzel', serif; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; color: var(--gold-light); letter-spacing: 0.06em; text-shadow: 0 0 40px rgba(201,168,76,0.25); margin-bottom: 0.6rem; }
+    .hero-sub { font-size: 1rem; color: var(--text-dim); font-style: italic; max-width: 540px; margin: 0 auto 1.6rem; }
+    .hero-rule { width: 140px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 0 auto 1.6rem; }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; }
+    .btn { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; padding: 0.7rem 2rem; border: none; cursor: pointer; transition: all 0.25s; text-decoration: none; display: inline-block; }
+    .btn-primary { background: var(--gold); color: var(--black); font-weight: 700; }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(201,168,76,0.25); }
+    .btn-outline { background: transparent; border: 1px solid var(--gold-dim); color: var(--gold); }
+    .btn-outline:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); transform: translateY(-2px); }
+
+    /* MAIN */
+    .main { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+    /* CHAPTER ACCORDION */
+    .chapter { border-bottom: 1px solid var(--black-border); padding: 0; }
+    .chapter-header {
+      display: flex; align-items: center; gap: 1.2rem;
+      cursor: pointer; user-select: none;
+      padding: 1.6rem 0;
+    }
+    .chapter-header:hover .chapter-title { color: var(--gold-light); }
+    .chapter-num { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.3em; color: var(--gold-dim); text-transform: uppercase; min-width: 65px; }
+    .chapter-title { font-family: 'Cinzel', serif; font-size: 1.05rem; color: var(--gold); letter-spacing: 0.06em; font-weight: 600; flex: 1; transition: color 0.2s; }
+    .chapter-eye { font-style: italic; color: var(--text-dim); font-size: 0.88rem; flex: 1.5; }
+    .chev { color: var(--gold-dim); font-size: 0.8rem; transition: transform 0.3s; }
+    .chapter.open .chev { transform: rotate(180deg); }
+    .chapter-body { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1); }
+    .chapter.open .chapter-body { max-height: 9999px; }
+    .chapter-content { padding: 0.5rem 0 1.5rem 5.2rem; }
+
+    /* SUB ACCORDION */
+    .sub { border: 1px solid var(--black-border); background: var(--black-card); margin-bottom: 0.5rem; }
+    .sub-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 1.2rem; cursor: pointer; user-select: none; transition: background 0.2s;
+    }
+    .sub-hdr:hover { background: rgba(201,168,76,0.04); }
+    .sub-title { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; }
+    .sub-chev { color: var(--gold-dim); font-size: 0.7rem; transition: transform 0.25s; }
+    .sub.open .sub-chev { transform: rotate(180deg); }
+    .sub-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .sub.open .sub-body { max-height: 2000px; }
+    .sub-inner { padding: 1.1rem 1.4rem 1.3rem; border-top: 1px solid var(--black-border); }
+    .sub-inner p, .sub-inner li { font-size: 0.92rem; color: var(--text); line-height: 1.7; }
+    .sub-inner ul { padding-left: 1.3rem; }
+    .sub-inner li { margin-bottom: 0.3rem; }
+    .sub-inner strong { color: var(--gold); }
+    .sub-inner em { color: var(--text-dim); }
+
+    /* SLIDER */
+    .slider-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem; }
+    .slider-lbl { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; min-width: 68px; }
+    .slider-val { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold-light); min-width: 44px; text-align: right; }
+    input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: var(--black-border); outline: none; cursor: pointer; flex: 1; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--gold); cursor: pointer; box-shadow: 0 0 8px rgba(201,168,76,0.5); }
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .result-item { background: rgba(0,0,0,0.4); border: 1px solid var(--black-border); padding: 0.75rem 0.9rem; transition: border-color 0.3s; }
+    .result-lbl { font-family: 'Cinzel', serif; font-size: 0.56rem; letter-spacing: 0.18em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .result-val { font-size: 0.86rem; color: var(--text); transition: color 0.3s; }
+    .result-item.up { border-color: #2a5c1a; } .result-item.up .result-val { color: #6db85a; }
+    .result-item.down { border-color: #5c1a1a; } .result-item.down .result-val { color: #c05050; }
+    .result-item.neutral { border-color: #4a3a10; } .result-item.neutral .result-val { color: var(--gold); }
+    .war-sum { font-size: 0.83rem; color: var(--text-dim); font-style: italic; margin-top: 0.9rem; }
+
+    /* TABLE */
+    .axium-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+    .axium-table th { background: rgba(201,168,76,0.07); color: var(--gold); font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--gold-dim); }
+    .axium-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--black-border); color: var(--text); font-size: 0.88rem; }
+    .axium-table tr:last-child td { border-bottom: none; }
+    .axium-table tr:hover td { background: rgba(201,168,76,0.025); }
+
+    /* SCENARIO */
+    .sc-row { display: flex; gap: 0.6rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+    .sc-btn { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.55rem 1.1rem; border: 1px solid var(--black-border); background: var(--black-card); color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+    .sc-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+    .sc-btn.active { border-color: var(--gold); background: rgba(201,168,76,0.07); color: var(--gold-light); }
+    #scenarioOut { background: var(--black-card); border: 1px solid var(--black-border); padding: 1.4rem; min-height: 120px; }
+    .sc-title { font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--gold); margin-bottom: 0.7rem; }
+    .sc-assets { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap: 0.6rem; margin-top: 0.8rem; }
+    .sc-asset { padding: 0.75rem; border: 1px solid var(--black-border); }
+    .sc-name { font-family: 'Cinzel', serif; font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.25rem; }
+    .sc-move { font-size: 0.92rem; font-weight: 600; }
+    .sc-why { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.2rem; }
+    .asset-up .sc-move { color: #6db85a; }
+    .asset-down .sc-move { color: #c05050; }
+    .asset-mixed .sc-move { color: var(--gold); }
+
+    /* GLOSSARY */
+    .gloss-filter { display: flex; gap: 0.45rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .f-btn { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.9rem; border: 1px solid var(--black-border); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+    .f-btn.active, .f-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.05); }
+    .gloss-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 0.5rem; }
+    .gi { background: var(--black-card); border: 1px solid var(--black-border); padding: 0 1.1rem; transition: border-color 0.2s; cursor: pointer; }
+    .gi:hover { border-color: var(--gold-dim); }
+    .gi-hdr { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; }
+    .gi-term { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; }
+    .gi-chev { color: var(--gold-dim); font-size: 0.65rem; transition: transform 0.25s; }
+    .gi.open .gi-chev { transform: rotate(180deg); }
+    .gi-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .gi.open .gi-body { max-height: 300px; }
+    .gi-inner { padding: 0 0 0.9rem; border-top: 1px solid var(--black-border); padding-top: 0.7rem; }
+    .gi-simple { font-size: 0.86rem; color: var(--gold-dim); font-style: italic; margin-bottom: 0.45rem; border-left: 2px solid var(--gold-dim); padding-left: 0.65rem; }
+    .gi-full { font-size: 0.86rem; color: var(--text); line-height: 1.6; }
+
+    /* QUIZ */
+    .quiz-block { background: var(--black-card); border: 1px solid var(--black-border); padding: 1.3rem; margin-bottom: 0.5rem; }
+    .quiz-q { font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--gold-light); margin-bottom: 0.9rem; line-height: 1.5; }
+    .quiz-opts { display: flex; flex-direction: column; gap: 0.45rem; }
+    .opt-btn { text-align: left; padding: 0.6rem 1rem; background: rgba(0,0,0,0.3); border: 1px solid var(--black-border); color: var(--text); font-family: 'Crimson Pro', serif; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; }
+    .opt-btn:hover:not(:disabled) { border-color: var(--gold-dim); background: rgba(201,168,76,0.04); }
+    .opt-btn.correct { border-color: #3a8a2a; background: rgba(58,138,42,0.1); color: #8de870; }
+    .opt-btn.wrong { border-color: #8a2a2a; background: rgba(138,42,42,0.1); color: #e87070; }
+    .opt-btn:disabled { cursor: default; }
+    .quiz-fb { margin-top: 0.65rem; font-size: 0.85rem; color: var(--text-dim); font-style: italic; }
+
+    /* FOOTER */
+    footer { position: relative; z-index: 1; border-top: 1px solid var(--black-border); padding: 2.5rem 2rem; text-align: center; }
+    .footer-logo { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.4em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 0.4rem; }
+    footer p { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .result-grid { grid-template-columns: 1fr; }
+      .chapter-content { padding-left: 0; }
+      .chapter-eye { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="starCanvas"></canvas>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">⬡ Axium</div>
+    <ul class="nav-links">
+      <li><a href="#chapters">Chapters</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+      <li><a href="#practice">Practice</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-eye">Axium Financial Canon — Vol. I</div>
+  <h1>Market Mechanics 101</h1>
+  <p class="hero-sub">Oil, war risk, the Fed, stocks, bonds, and crypto — decoded.</p>
+  <div class="hero-rule"></div>
+  <div class="hero-btns">
+    <button class="btn btn-primary" onclick="window.location.href='econ.html'">Dive Deeper</button>
+    <button class="btn btn-outline" onclick="document.getElementById('glossary').scrollIntoView({behavior:'smooth'})">Glossary</button>
+  </div>
+</section>
+
+<div class="main" id="chapters">
+
+  <!-- I. OIL -->
+  <div class="chapter" id="ch-oil">
+    <div class="chapter-header" onclick="toggleCh(this)">
+      <span class="chapter-num">Chapter I</span>
+      <span class="chapter-title">Oil & Geopolitics</span>
+      <span class="chapter-eye">War premiums, price cascades, and the fear economy</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="chapter-body"><div class="chapter-content">
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">The War Premium Explained</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <p>When conflict flares near oil-producing regions, traders add a <em>war premium</em> to oil prices — not because supply has actually dropped, but because it <em>might</em>.</p><br>
+          <ul>
+            <li><strong>Oil spikes</strong> → higher inflation → Fed stays aggressive → risk assets (tech, crypto) sell off</li>
+            <li><strong>Oil stabilizes</strong> → inflation risk fades → Fed can ease → risk assets bounce</li>
+            <li><strong>War risk drops</strong> → war premium evaporates → oil falls fast even if nothing changed on the ground</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Five-Year-Old Version</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <p><em>Your class needs crayons from a faraway store. If someone says "the road might be blocked," everyone panics and pays extra for crayons NOW, just in case. That extra cost is the war premium. When the road turns out to be fine, crayon prices drop — because the scare was the price, not the crayons.</em></p>
+        </div></div>
+      </div>
+
+      <div class="sub open">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">⚔ War Risk Simulator</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <div class="slider-row">
+            <span class="slider-lbl">War Risk</span>
+            <input type="range" id="warSlider" min="0" max="100" value="60">
+            <span class="slider-val" id="warVal">60%</span>
+          </div>
+          <div class="result-grid">
+            <div class="result-item down" id="r-oil"><div class="result-lbl">🛢 Oil</div><div class="result-val" id="rv-oil">High — war premium active</div></div>
+            <div class="result-item down" id="r-eq"><div class="result-lbl">📈 Equities</div><div class="result-val" id="rv-eq">Mixed — risk-on under pressure</div></div>
+            <div class="result-item down" id="r-bond"><div class="result-lbl">🏛 Bonds</div><div class="result-val" id="rv-bond">Yields rising — prices fall</div></div>
+            <div class="result-item down" id="r-btc"><div class="result-lbl">₿ Crypto</div><div class="result-val" id="rv-btc">Under pressure — sell risk</div></div>
+          </div>
+          <p class="war-sum" id="warSum">Moderate war risk: all risk assets feel the squeeze. The Fed won't pivot until oil cools.</p>
+        </div></div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- II. STOCKS -->
+  <div class="chapter" id="ch-stocks">
+    <div class="chapter-header" onclick="toggleCh(this)">
+      <span class="chapter-num">Chapter II</span>
+      <span class="chapter-title">Stocks & Indices</span>
+      <span class="chapter-eye">What the S&P 500, Nasdaq, and Dow Jones actually measure</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="chapter-body"><div class="chapter-content">
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">S&P 500 — The Broad Dashboard</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <p>500 large U.S. companies. The most-watched barometer of American economic health. Reacts to inflation, Fed policy, oil shocks, and corporate earnings.</p>
+          <br><p><em>Five-year-old: The whole school's report card, averaged together.</em></p>
+        </div></div>
+      </div>
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Nasdaq — The Tech-Growth Barometer</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <p>Dominated by big tech, semiconductors, cloud, and high-growth companies. Extremely sensitive to real interest rates. When the Fed hikes, Nasdaq feels it hardest. When the Fed cuts, Nasdaq flies highest.</p>
+          <br><p><em>Five-year-old: The report card for kids who build robots — the most exciting, but the first to crash if the teacher gets strict.</em></p>
+        </div></div>
+      </div>
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Dow Jones — The Blue-Chip Old Guard</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <p>Just 30 companies — large, established, industrial, financial, consumer. A better signal for traditional economic stress. When people want "safe," they rotate toward Dow stocks.</p>
+          <br><p><em>Five-year-old: The report card for the 30 most boring, most trusted shops in town — they don't grow fast, but they don't disappear either.</em></p>
+        </div></div>
+      </div>
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Comparison Table</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <table class="axium-table">
+            <thead><tr><th>Index</th><th>Personality</th><th>Reacts To</th></tr></thead>
+            <tbody>
+              <tr><td><strong>S&P 500</strong></td><td>Broad U.S. equity health</td><td>Inflation, Fed, war, earnings</td></tr>
+              <tr><td><strong>Nasdaq</strong></td><td>High-beta growth & tech</td><td>Real-rate risk, innovation cycle</td></tr>
+              <tr><td><strong>Dow Jones</strong></td><td>Legacy blue-chip stability</td><td>Industrial stress, defensive rotation</td></tr>
+            </tbody>
+          </table>
+        </div></div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- III. BONDS -->
+  <div class="chapter" id="ch-bonds">
+    <div class="chapter-header" onclick="toggleCh(this)">
+      <span class="chapter-num">Chapter III</span>
+      <span class="chapter-title">Bonds & Rates</span>
+      <span class="chapter-eye">The inverse relationship and why everything can sell at once</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="chapter-body"><div class="chapter-content">
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">The Core Inverse Relationship</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <ul>
+            <li><strong>Bond prices ↑</strong> = Yields ↓ (more demand, safer times)</li>
+            <li><strong>Bond prices ↓</strong> = Yields ↑ (less demand, inflation fear)</li>
+            <li>War + oil spikes → Fed hawkish → yields rise → bonds fall</li>
+            <li>Fed cuts expected → bonds rally → yields fall → tech often follows</li>
+          </ul>
+          <br><p><em>Five-year-old: You promise to give your friend $100 next year for $90 now. If prices go up a lot, your $100 next year isn't worth as much — so nobody wants to buy your promise. The promise gets cheaper.</em></p>
+        </div></div>
+      </div>
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Why Everything Sells at Once</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <ul>
+            <li>War risk eases → oil drops → energy stocks fall</li>
+            <li>Inflation stays elevated → Fed remains hawkish → tech still crushed by high real rates</li>
+            <li>Bond market still fears long-term inflation → bonds still fall</li>
+            <li>Traders de-risk broadly rather than rotating neatly into safety</li>
+          </ul>
+          <br><p><em>The market doesn't always have a safe place to run. Sometimes everything drops together on the way to clarity.</em></p>
+        </div></div>
+      </div>
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Top Bond ETF Tickers</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <table class="axium-table">
+            <thead><tr><th>Ticker</th><th>Name</th><th>Type</th><th>Focus</th></tr></thead>
+            <tbody>
+              <tr><td><strong>BND</strong></td><td>Vanguard Total Bond Market</td><td>Broad</td><td>All investment-grade U.S. bonds</td></tr>
+              <tr><td><strong>AGG</strong></td><td>iShares Core US Aggregate</td><td>Broad</td><td>Investment-grade U.S. bonds</td></tr>
+              <tr><td><strong>IEF</strong></td><td>iShares 7-10 Year Treasury</td><td>Treasury</td><td>Medium-term U.S. government</td></tr>
+              <tr><td><strong>TIP</strong></td><td>iShares TIPS Bond</td><td>Inflation</td><td>Inflation-protected securities</td></tr>
+              <tr><td><strong>LQD</strong></td><td>iShares IG Corporate</td><td>Corporate</td><td>High-quality company bonds</td></tr>
+              <tr><td><strong>HYG</strong></td><td>iShares High Yield</td><td>High Yield</td><td>Riskier bonds, higher return</td></tr>
+              <tr><td><strong>VTEB</strong></td><td>Vanguard Tax-Exempt</td><td>Municipal</td><td>State/city bonds, tax-free income</td></tr>
+            </tbody>
+          </table>
+        </div></div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- IV. CRYPTO -->
+  <div class="chapter" id="ch-crypto">
+    <div class="chapter-header" onclick="toggleCh(this)">
+      <span class="chapter-num">Chapter IV</span>
+      <span class="chapter-title">Crypto & Risk-On / Risk-Off</span>
+      <span class="chapter-eye">Why Bitcoin trades like a tech stock, not digital gold</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="chapter-body"><div class="chapter-content">
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">The Oil → Inflation → Crypto Chain</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <ul>
+            <li>Oil rises → inflation fears → Fed holds rates high → liquidity tightens → crypto sold first</li>
+            <li>Oil falls → inflation cools → Fed pivot expected → liquidity loosens → crypto often leads the bounce</li>
+            <li>High real rates = bad for long-duration assets. Bitcoin is arguably the longest-duration asset in existence.</li>
+          </ul>
+          <br><p><em>Five-year-old: Bitcoin is like the most popular toy at school. When everyone has money, they buy it first. When everyone's scared, they sell it first.</em></p>
+        </div></div>
+      </div>
+
+      <div class="sub">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Bearish Consolidation Explained</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <p>When the market can't decide — oil elevated, Fed not signaling cuts, war risk unresolved — crypto enters a <em>bearish consolidation</em>: sideways with high volatility, slowly grinding lower. Not a crash. Not a rally. A waiting pattern.</p>
+          <br><p><em>Smart money sits on hands. Position sizes shrink. Every spike gets sold. Every dip gets caught — then released.</em></p>
+        </div></div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- V. SYNTHESIS -->
+  <div class="chapter" id="ch-all">
+    <div class="chapter-header" onclick="toggleCh(this)">
+      <span class="chapter-num">Chapter V</span>
+      <span class="chapter-title">Synthesis — Scenarios</span>
+      <span class="chapter-eye">How all forces move together in real-world situations</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="chapter-body"><div class="chapter-content">
+
+      <div class="sc-row">
+        <button class="sc-btn" onclick="runSc('war',this)">I: War Escalates</button>
+        <button class="sc-btn" onclick="runSc('pause',this)">II: War Pauses</button>
+        <button class="sc-btn" onclick="runSc('peace',this)">III: Peace</button>
+        <button class="sc-btn" onclick="runSc('fed',this)">IV: Fed Cuts</button>
+      </div>
+      <div id="scenarioOut"><p style="color:var(--text-dim);font-style:italic;">Select a scenario to see the full market cascade.</p></div>
+
+      <div class="sub" style="margin-top:0.8rem;">
+        <div class="sub-hdr" onclick="toggleSub(this)"><span class="sub-title">Why Do Tech, Energy & Bonds All Drop Together?</span><span class="sub-chev">▼</span></div>
+        <div class="sub-body"><div class="sub-inner">
+          <p>A partial peace removes the war premium from oil — hurting energy stocks. But inflation and Fed-hike fear remain. Tech is still crushed by high real rates. Bonds still price in inflation. Traders de-risk everything at once rather than rotating neatly.</p>
+          <br><p><em>There is no safe harbor when the whole system is repricing. Sometimes the answer to "where do I go?" is: nowhere. You wait.</em></p>
+        </div></div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- VI. GLOSSARY -->
+  <div class="chapter" id="glossary">
+    <div class="chapter-header" onclick="toggleCh(this)">
+      <span class="chapter-num">Chapter VI</span>
+      <span class="chapter-title">The Axium Glossary</span>
+      <span class="chapter-eye">Every term decoded — real definition + five-year-old version</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="chapter-body"><div class="chapter-content">
+      <div class="gloss-filter">
+        <button class="f-btn active" onclick="fGloss('all',this)">All</button>
+        <button class="f-btn" onclick="fGloss('macro',this)">Macro</button>
+        <button class="f-btn" onclick="fGloss('equity',this)">Equities</button>
+        <button class="f-btn" onclick="fGloss('bonds',this)">Bonds</button>
+        <button class="f-btn" onclick="fGloss('crypto',this)">Crypto</button>
+        <button class="f-btn" onclick="fGloss('fed',this)">Fed & Policy</button>
+        <button class="f-btn" onclick="fGloss('risk',this)">Risk</button>
+      </div>
+      <div class="gloss-grid" id="glossGrid"></div>
+    </div></div>
+  </div>
+
+  <!-- VII. PRACTICE -->
+  <div class="chapter" id="practice">
+    <div class="chapter-header" onclick="toggleCh(this)">
+      <span class="chapter-num">Chapter VII</span>
+      <span class="chapter-title">Practice Questions</span>
+      <span class="chapter-eye">Apply what you've learned — one right answer with full explanation</span>
+      <span class="chev">▼</span>
+    </div>
+    <div class="chapter-body"><div class="chapter-content">
+      <div id="quizContainer"></div>
+    </div></div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">⬡ Axium.Church</div>
+  <p>Market Mechanics 101 — Financial Canon Vol. I</p>
+  <p style="margin-top:0.4rem;font-size:0.75rem;">Not financial advice. Trade with your mind, not your fear.</p>
+</footer>
+
+<script>
+// ═══════════════════════════════
+// CANVAS: PARTICLES + SHOOTING STARS
+// ═══════════════════════════════
+(function(){
+  const c = document.getElementById('starCanvas');
+  const ctx = c.getContext('2d');
+  let W, H;
+  function resize(){ W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // static particles
+  const pts = Array.from({length:180}, () => ({
+    x: Math.random() * screen.width,
+    y: Math.random() * screen.height,
+    r: Math.random() * 1.1 + 0.15,
+    a: Math.random() * 0.55 + 0.08,
+    ts: Math.random() * 0.012 + 0.004,
+    tp: Math.random() * Math.PI * 2,
+    dx: (Math.random() - 0.5) * 0.06,
+    dy: Math.random() * 0.05 + 0.008,
+    gold: Math.random() < 0.16
+  }));
+
+  // shooting stars pool
+  const shots = [];
+  function spawn(){
+    const top = Math.random() < 0.65;
+    const sx = top ? Math.random() * W * 1.3 - W * 0.15 : W + 15;
+    const sy = top ? -15 : Math.random() * H * 0.45;
+    const angle = top ? 0.22 + Math.random() * 0.3 : 2.6 + Math.random() * 0.3;
+    const spd = Math.random() * 7 + 4.5;
+    shots.push({
+      x: sx, y: sy,
+      vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd,
+      len: Math.random() * 200 + 70,
+      life: 1,
+      gold: Math.random() < 0.35,
+      maxA: Math.random() * 0.55 + 0.35
+    });
+  }
+
+  let stTimer = 0, last = 0;
+  function draw(ts){
+    const dt = ts - last; last = ts;
+    ctx.clearRect(0,0,W,H);
+
+    // particles
+    pts.forEach(p => {
+      p.tp += p.ts;
+      p.x += p.dx; p.y += p.dy;
+      if(p.y > H+4) p.y = -4;
+      if(p.x > W+4) p.x = -4;
+      if(p.x < -4) p.x = W+4;
+      const a = p.a * (0.55 + 0.45 * Math.sin(p.tp));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      if(p.gold){
+        ctx.fillStyle = `rgba(201,168,76,${a})`;
+      } else {
+        const b = 170 + Math.floor(p.a * 80);
+        ctx.fillStyle = `rgba(${b},${b},${Math.floor(b*0.9)},${a})`;
+      }
+      ctx.fill();
+    });
+
+    // spawn shooting stars
+    stTimer += dt;
+    if(stTimer > 1200 + Math.random()*1500){ spawn(); stTimer = 0; }
+
+    // draw shooting stars
+    for(let i = shots.length-1; i >= 0; i--){
+      const s = shots[i];
+      s.life -= 0.022;
+      if(s.life <= 0){ shots.splice(i,1); continue; }
+      s.x += s.vx; s.y += s.vy;
+
+      const ang = Math.atan2(s.vy, s.vx);
+      const tailLen = s.len * Math.min(1, (1 - s.life) * 3 + 0.3);
+      const tx = s.x - Math.cos(ang) * tailLen;
+      const ty = s.y - Math.sin(ang) * tailLen;
+
+      const g = ctx.createLinearGradient(tx, ty, s.x, s.y);
+      const a = s.life * s.maxA;
+      if(s.gold){
+        g.addColorStop(0, 'rgba(201,168,76,0)');
+        g.addColorStop(0.65, `rgba(230,190,100,${a*0.55})`);
+        g.addColorStop(1, `rgba(255,235,160,${a})`);
+      } else {
+        g.addColorStop(0, 'rgba(180,180,160,0)');
+        g.addColorStop(0.65, `rgba(210,210,190,${a*0.5})`);
+        g.addColorStop(1, `rgba(250,250,235,${a})`);
+      }
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = s.life * 1.6;
+      ctx.stroke();
+
+      // head
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.life * 2.2, 0, Math.PI*2);
+      ctx.fillStyle = s.gold ? `rgba(240,210,120,${s.life*0.75})` : `rgba(255,255,230,${s.life*0.65})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+// ═══════════════════════════════
+// ACCORDION
+// ═══════════════════════════════
+function toggleCh(hdr){ hdr.closest('.chapter').classList.toggle('open'); }
+function toggleSub(hdr){ hdr.closest('.sub').classList.toggle('open'); }
+
+// ═══════════════════════════════
+// WAR RISK SLIDER
+// ═══════════════════════════════
+document.getElementById('warSlider').addEventListener('input', function(){ updateWar(+this.value); });
+
+function setR(id, cls, val){
+  document.getElementById('r-'+id).className = 'result-item '+cls;
+  document.getElementById('rv-'+id).textContent = val;
+}
+function updateWar(v){
+  document.getElementById('warVal').textContent = v+'%';
+  if(v < 20){
+    setR('oil','up','Low — no war premium');
+    setR('eq','up','Positive — risk-on mode');
+    setR('bond','neutral','Stable — moderate yields');
+    setR('btc','up','Bouncing — liquidity returns');
+    document.getElementById('warSum').textContent = 'Low war risk: the premium is gone. Risk assets breathe. Fed has room to ease.';
+  } else if(v < 45){
+    setR('oil','neutral','Slightly elevated — minor premium');
+    setR('eq','neutral','Cautious — mixed signals');
+    setR('bond','neutral','Yields ticking up slightly');
+    setR('btc','neutral','Sideways — waiting for clarity');
+    document.getElementById('warSum').textContent = 'Low-moderate risk: markets in a wait-and-see phase. No strong directional move.';
+  } else if(v < 72){
+    setR('oil','down','High — war premium active');
+    setR('eq','down','Mixed — risk-on under pressure');
+    setR('bond','down','Yields rising — prices falling');
+    setR('btc','down','Under pressure — sell risk');
+    document.getElementById('warSum').textContent = "Moderate-high war risk: all risk assets feel the squeeze. The Fed won't pivot until oil cools.";
+  } else {
+    setR('oil','down','Spiking — maximum war premium');
+    setR('eq','down','Selling off — broad panic');
+    setR('bond','down','Yields surging — inflation peak');
+    setR('btc','down','Dumping — liquidated first in crisis');
+    document.getElementById('warSum').textContent = 'Full crisis mode: every asset class under stress. Cash and commodities are the only refuge.';
+  }
+}
+
+// ═══════════════════════════════
+// SCENARIOS
+// ═══════════════════════════════
+const SC = {
+  war:{title:'Case I — War Escalates',sum:'Major conflict erupts near oil infrastructure. Markets price in maximum disruption.',assets:[
+    {n:'Oil',m:'↑ Spikes hard',w:'War premium maxes out. Supply disruption feared.',c:'asset-up'},
+    {n:'Energy Stocks',m:'↑ Rally',w:'Higher oil = higher margins for energy companies.',c:'asset-up'},
+    {n:'S&P 500',m:'↓ Sells off',w:'Inflation fear + uncertainty = broad equity selling.',c:'asset-down'},
+    {n:'Nasdaq',m:'↓↓ Drops hard',w:'High real rates crush growth assets fastest.',c:'asset-down'},
+    {n:'Bonds',m:'↓ Falls',w:'Inflation spikes → Fed hawkish → yields rise → prices fall.',c:'asset-down'},
+    {n:'Bitcoin',m:'↓ Sold off',w:'Risk-off mode. Crypto liquidated first.',c:'asset-down'},
+    {n:'Gold',m:'↑ Safe haven bid',w:'Classic flight to safety during geopolitical crisis.',c:'asset-up'},
+  ]},
+  pause:{title:'Case II — War Pauses',sum:'War risk eases. Oil premium bleeds out. But inflation and Fed uncertainty remain.',assets:[
+    {n:'Oil',m:'↓ Drops fast',w:'War premium evaporates. Supply fear gone.',c:'asset-down'},
+    {n:'Energy Stocks',m:'↓ Fall',w:'Lower oil = lower revenue expectations.',c:'asset-down'},
+    {n:'S&P 500',m:'⟷ Mixed',w:'Relief rally offset by lingering inflation fear.',c:'asset-mixed'},
+    {n:'Nasdaq',m:'⟷ Slight bounce',w:'Some relief, but rates still high. Still pressured.',c:'asset-mixed'},
+    {n:'Bonds',m:'↓ Still weak',w:"Inflation unresolved. Fed still hawkish.",c:'asset-down'},
+    {n:'Bitcoin',m:'⟷ Volatile sideways',w:'Bearish consolidation. No clear buy signal.',c:'asset-mixed'},
+    {n:'Gold',m:'↓ Slight pullback',w:'Crisis fear easing. Safe haven bid reduces.',c:'asset-down'},
+  ]},
+  peace:{title:'Case III — Peace / Normalization',sum:'Conflict resolved. Oil normalized. Fed signals rate cuts. Risk appetite returns.',assets:[
+    {n:'Oil',m:'↓ Normalizes',w:'War premium fully gone. Supply returns to normal.',c:'asset-down'},
+    {n:'Energy Stocks',m:'↓ Retreat',w:'Lower oil prices = lower margins.',c:'asset-down'},
+    {n:'S&P 500',m:'↑ Rallies',w:'Inflation easing + Fed pivot = broad bull signal.',c:'asset-up'},
+    {n:'Nasdaq',m:'↑↑ Surges',w:'Rate cut expectations = massive tailwind for growth.',c:'asset-up'},
+    {n:'Bonds',m:'↑ Rally',w:'Fed pivot → yields fall → bond prices rise.',c:'asset-up'},
+    {n:'Bitcoin',m:'↑ Leads the rally',w:'Crypto often leads risk-on when liquidity returns.',c:'asset-up'},
+    {n:'Gold',m:'⟷ Neutral',w:'Risk-on reduces safe-haven demand.',c:'asset-mixed'},
+  ]},
+  fed:{title:'Case IV — Fed Cuts Rates',sum:'The Federal Reserve delivers a rate cut. Cheap money floods back into the system.',assets:[
+    {n:'Oil',m:'⟷ Slight rise',w:'Cheaper money = more economic activity = more demand.',c:'asset-mixed'},
+    {n:'Energy Stocks',m:'↑ Mild rally',w:'Better economic outlook = more energy consumption.',c:'asset-up'},
+    {n:'S&P 500',m:'↑ Rallies',w:'Lower borrowing costs = companies more profitable.',c:'asset-up'},
+    {n:'Nasdaq',m:'↑↑ Surges hard',w:'Tech borrows to grow. Cheap money = massive tailwind.',c:'asset-up'},
+    {n:'Bonds',m:'↑ Rally strongly',w:'Lower rates = higher bond prices.',c:'asset-up'},
+    {n:'Bitcoin',m:'↑↑ Pumps',w:'Liquidity returning = speculative assets lead.',c:'asset-up'},
+    {n:'Gold',m:'↑ Rises',w:'Lower real rates reduce the cost of holding gold.',c:'asset-up'},
+  ]}
+};
+function runSc(k, btn){
+  document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const s = SC[k];
+  document.getElementById('scenarioOut').innerHTML = `
+    <div class="sc-title">${s.title}</div>
+    <p style="color:var(--text-dim);font-style:italic;font-size:0.88rem;margin-bottom:0.8rem;">${s.sum}</p>
+    <div class="sc-assets">${s.assets.map(a=>`
+      <div class="sc-asset ${a.c}">
+        <div class="sc-name">${a.n}</div>
+        <div class="sc-move">${a.m}</div>
+        <div class="sc-why">${a.w}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════
+// GLOSSARY
+// ═══════════════════════════════
+const GD = [
+  {t:'Stock',c:'equity',s:"A tiny piece of ownership in a company — like owning one brick of a big building.",f:"When you buy a stock, you own a small fraction of that company. If it grows, your piece is worth more. If it shrinks, you lose value."},
+  {t:'Bond',c:'bonds',s:"A loan you give to a government or company. They pay you back with interest — like lending a friend $10 and getting $11 back next year.",f:"Bonds are debt instruments. The issuer borrows from you and promises to repay with interest at a set date. Lower risk than stocks, lower reward."},
+  {t:'S&P 500',c:'equity',s:"500 big companies averaged together — like a school grade based on everyone's scores.",f:"The S&P 500 tracks 500 large U.S. companies weighted by market cap. The most-used benchmark for the overall U.S. stock market."},
+  {t:'Nasdaq',c:'equity',s:"The score for all the tech companies — like the grade for the kids who build robots.",f:"A stock exchange dominated by technology companies. The Nasdaq Composite tracks all stocks; the Nasdaq 100 tracks the 100 largest non-financial companies."},
+  {t:'Dow Jones',c:'equity',s:"A score for 30 really old, really big companies — like the report card for the 30 most famous shops in town.",f:"The Dow Jones Industrial Average tracks 30 large, established U.S. companies. The oldest major stock index, dating to 1896."},
+  {t:'Yield',c:'bonds',s:"How much money a bond pays you back every year as a percentage — like interest on a savings account.",f:"Bond yield is the annual return on a bond as a percentage of its price. When bond prices fall, yields rise — they always move opposite."},
+  {t:'The Fed',c:'fed',s:"The people who decide how expensive it is to borrow money in America — like the referee of the whole money game.",f:"The Federal Reserve is the U.S. central bank. It sets interest rates, controls money supply, and manages inflation. Its decisions ripple through every asset class globally."},
+  {t:'Interest Rate',c:'fed',s:"The price of borrowing money — like a fee you pay to use a friend's toy.",f:"When the Fed raises rates, borrowing becomes expensive, spending slows, inflation cools. When rates fall, borrowing is cheap and risk assets tend to rally."},
+  {t:'Inflation',c:'macro',s:"When things cost more money than they used to — like your favorite candy going from $1 to $2.",f:"Inflation is the rate at which prices rise over time. High inflation erodes purchasing power and forces the Fed to raise interest rates, pressuring most asset classes."},
+  {t:'War Premium',c:'macro',s:"Extra money people pay for oil because they're scared a war might stop the supply — like paying extra for snacks before a snowstorm, just in case.",f:"A war premium is the extra cost built into oil prices due to geopolitical fear — not actual supply disruption. When the fear passes, the premium evaporates rapidly."},
+  {t:'Risk-On',c:'risk',s:"When everyone feels good and buys exciting, risky stuff — like kids running to the swings instead of sitting on the safe bench.",f:"Risk-on describes a market environment where investors are confident and buying higher-risk, higher-reward assets: tech stocks, crypto, emerging markets, high-yield bonds."},
+  {t:'Risk-Off',c:'risk',s:"When everyone's scared and buys safe, boring stuff — like running inside when it looks like rain.",f:"Risk-off describes a market environment where investors sell risky assets and move into safety: U.S. Treasuries, gold, cash, defensive stocks."},
+  {t:'Bitcoin',c:'crypto',s:"Digital money that nobody controls — like gold coins that live on the internet instead of in a vault.",f:"Bitcoin is a decentralized digital currency. Short term, it trades like a high-beta risk asset. Long term, often viewed as a hedge against currency debasement."},
+  {t:'ETF',c:'equity',s:"A basket of many stocks or bonds you can buy all at once — like buying a whole fruit bowl instead of one fruit at a time.",f:"Exchange-Traded Fund. A fund holding a collection of assets that trades on an exchange like a single stock. Provides diversification at low cost."},
+  {t:'Market Cap',c:'equity',s:"How much a whole company is worth if you bought every single piece of it — like the total price tag on the whole building.",f:"Market capitalization = share price × total shares outstanding. Large-cap (over $10B), mid-cap ($2B-$10B), small-cap (under $2B)."},
+  {t:'Bull Market',c:'risk',s:"When prices keep going up for a long time — like a hill that just keeps getting steeper.",f:"A bull market is a sustained period of rising prices (20%+ gain from recent lows). Associated with economic growth, low unemployment, and investor optimism."},
+  {t:'Bear Market',c:'risk',s:"When prices keep falling for a long time — like a slide you didn't choose to get on.",f:"A bear market is a sustained period of falling prices (20%+ decline from recent highs). Associated with economic slowdown, rising unemployment, or financial crisis."},
+  {t:'Hawkish',c:'fed',s:"When the Fed wants to raise rates to slow things down — like a teacher making everyone walk, not run.",f:"Hawkish describes a central bank stance focused on fighting inflation by raising interest rates. Bad for stocks and crypto in the short term."},
+  {t:'Dovish',c:'fed',s:"When the Fed wants to lower rates to speed things up — like a teacher saying 'run, we're late!'",f:"Dovish describes a central bank stance focused on stimulating growth by lowering interest rates. Generally positive for stocks, crypto, and bonds."},
+  {t:'Liquidity',c:'macro',s:"How easy it is to buy or sell something quickly without losing money — like how easy it is to sell lemonade on a hot day vs. a cold one.",f:"Liquidity refers to how quickly and easily an asset can be converted to cash without significantly moving its price. High liquidity = easy to trade."},
+  {t:'Volatility',c:'risk',s:"How much a price jumps up and down — like a ball bouncing high vs. one that barely moves.",f:"Volatility measures the degree of price variation over time. High volatility = large swings, more risk, more opportunity. Often measured by the VIX index ('the fear gauge')."},
+  {t:'Diversification',c:'risk',s:"Not putting all your eggs in one basket — spreading money so one bad investment doesn't ruin everything.",f:"Diversification is the strategy of spreading investments across different asset classes, sectors, and geographies to reduce risk."},
+  {t:'Dividend',c:'equity',s:"Money a company pays you just for owning their stock — like getting a gift card every year for shopping at the same store.",f:"A dividend is a regular payment made by a company to its shareholders from its profits. Most growth tech companies reinvest instead of paying dividends."},
+  {t:'Short Selling',c:'equity',s:"Betting that a price will go DOWN — like borrowing a toy to sell it, then buying it back cheaper and keeping the difference.",f:"Short selling involves borrowing shares, selling them, and hoping to buy back at a lower price. Extremely risky — losses can theoretically be unlimited."},
+  {t:'TIPS',c:'bonds',s:"Bonds that grow with inflation — like a savings account that automatically adjusts so prices can't eat your money.",f:"Treasury Inflation-Protected Securities. U.S. government bonds whose principal adjusts with inflation. Popular during inflationary periods as a hedge."},
+  {t:'Real Rate',c:'fed',s:"The interest rate after you subtract inflation — what you actually earn in real life after prices go up.",f:"Real interest rate = nominal rate - inflation. High real rates are particularly damaging to growth stocks and Bitcoin because they raise the cost of holding risky assets."},
+  {t:'De-risking',c:'risk',s:"Selling risky stuff to feel safer — like putting your best toys away before a big storm.",f:"De-risking is reducing exposure to high-risk assets. In market stress events, traders de-risk broadly — selling stocks, crypto, and sometimes even bonds all at once."},
+  {t:'Bearish Consolidation',c:'crypto',s:"When a price stops falling but doesn't go up either — like a ball that stopped bouncing but isn't resting yet.",f:"Bearish consolidation is sideways price movement with a downward bias — lower highs, high volatility, no strong buy signal. A waiting pattern before the next move."},
+  {t:'Index',c:'equity',s:"A scoreboard that tracks a group of stocks — like averaging all the test scores in a class into one number.",f:"A stock market index tracks a group of stocks to measure market performance. The S&P 500, Nasdaq, and Dow Jones are the three most famous U.S. indexes."},
+  {t:'Portfolio',c:'risk',s:"All the different things you own — like your whole collection of toys, not just one.",f:"A portfolio is the complete collection of investments owned by a person or fund. Diversified portfolios spread risk across stocks, bonds, real estate, crypto, and cash."}
+];
+
+function fGloss(cat, btn){
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const list = cat==='all' ? GD : GD.filter(g=>g.c===cat);
+  document.getElementById('glossGrid').innerHTML = list.map(g=>`
+    <div class="gi" onclick="this.classList.toggle('open')">
+      <div class="gi-hdr">
+        <span class="gi-term">${g.t}</span>
+        <span class="gi-chev">▼</span>
+      </div>
+      <div class="gi-body"><div class="gi-inner">
+        <div class="gi-simple">${g.s}</div>
+        <div class="gi-full">${g.f}</div>
+      </div></div>
+    </div>`).join('');
+}
+fGloss('all', document.querySelector('.f-btn'));
+
+// ═══════════════════════════════
+// QUIZ
+// ═══════════════════════════════
+const QD = [
+  {q:'Oil spikes due to war. What typically happens to Nasdaq?',o:['Rallies — oil is good for tech','Sells off — high inflation keeps Fed rates high','Nothing changes','Moves with energy stocks'],a:1,e:'Oil spikes → inflation → Fed keeps rates high → high real rates crush long-duration growth assets. The chain runs directly from oil to your Nasdaq holdings.'},
+  {q:'When bond prices fall, what happens to yields?',o:['Yields fall too','Yields rise — they always move opposite','Yields stay the same','Yields double'],a:1,e:'Bond prices and yields have an inverse relationship. When price falls, the fixed payment becomes a larger percentage — so yield rises. Always opposite.'},
+  {q:'What is the "war premium" in oil prices?',o:['Extra tax governments charge during wars','Extra cost from fear of supply disruption — even if nothing has actually changed','The discount oil gets when wars end','Price of military oil reserves'],a:1,e:'The war premium is psychological — fear pricing. The market pays extra because supply might drop. When fear passes, the premium evaporates fast.'},
+  {q:'The Fed announces a rate CUT. What usually happens to Nasdaq?',o:['Sells off — rates are bad for tech','Rallies — cheaper borrowing is a massive tailwind for growth','No effect','No relationship'],a:1,e:'Tech companies are valued on future cash flows. Lower rates make those future earnings worth more today. Rate cuts are rocket fuel for growth stocks.'},
+  {q:'War ends and oil drops. But tech stocks ALSO drop. Why?',o:["Impossible — tech always rallies when oil drops","Inflation and Fed fears haven't resolved — broad de-risking continues",'Tech tracks oil directly','Traders celebrate by selling'],a:1,e:"Partial peace removes the war premium from oil — hurting energy. But if inflation and Fed hawkishness remain, tech stays pressured. Everything can fall together during broad de-risking."},
+  {q:'Bitcoin drops when the Fed signals higher rates. Why?',o:['Mining requires oil, so rates affect energy costs','High real rates raise the cost of holding non-yielding risky assets — crypto gets sold first','The Fed controls Bitcoin prices','This never happens'],a:1,e:"Bitcoin is a high-duration, non-yielding risk asset. High real rates make safer assets comparatively attractive, so crypto gets liquidated first when the Fed turns hawkish."}
+];
+
+document.getElementById('quizContainer').innerHTML = QD.map((q,qi)=>`
+  <div class="quiz-block">
+    <div class="quiz-q">Q${qi+1}: ${q.q}</div>
+    <div class="quiz-opts">${q.o.map((o,oi)=>`
+      <button class="opt-btn" onclick="checkQ(${qi},${oi},this)">${o}</button>`).join('')}
+    </div>
+    <div class="quiz-fb" id="qfb${qi}"></div>
+  </div>`).join('');
+
+function checkQ(qi, oi, btn){
+  const q = QD[qi];
+  const btns = btn.closest('.quiz-opts').querySelectorAll('.opt-btn');
+  btns.forEach(b=>b.disabled=true);
+  const fb = document.getElementById('qfb'+qi);
+  if(oi===q.a){
+    btn.classList.add('correct');
+    fb.textContent = '✓ Correct — '+q.e;
+    fb.style.color = '#6db85a';
+  } else {
+    btn.classList.add('wrong');
+    btns[q.a].classList.add('correct');
+    fb.textContent = '✗ Not quite — '+q.e;
+    fb.style.color = '#c05050';
+  }
+}
+
+// nav active
+const navAs = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', ()=>{
+  let cur='';
+  document.querySelectorAll('[id]').forEach(s=>{ if(window.scrollY >= s.offsetTop-130) cur=s.id; });
+  navAs.forEach(a=>{ a.classList.remove('active'); if(a.getAttribute('href')==='#'+cur) a.classList.add('active'); });
+});
+</script>
+</body>
+</html>
