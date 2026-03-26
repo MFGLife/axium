@@ -48,104 +48,12 @@
             cursor: crosshair;
         }
 
-        /* ── CRT SCANLINE EFFECT ── */
-        body::after {
+        /* ── SUBTLE NOISE OVERLAY ── */
+        body::before {
             content: '';
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.25) 50%
-            ), linear-gradient(
-                90deg,
-                rgba(255, 0, 0, 0.03),
-                rgba(0, 255, 0, 0.02),
-                rgba(0, 0, 255, 0.03)
-            );
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.4;
-            animation: flicker 0.15s infinite;
-        }
-        @keyframes flicker {
-            0% { opacity: 0.38; }
-            50% { opacity: 0.42; }
-            100% { opacity: 0.38; }
-        }
-
-        /* ── SURVEILLANCE TERMINAL ── */
-        #eye-terminal {
-            position: fixed; 
-            top: 20px; left: 20px;
-            z-index: 1000; 
-            font-family: 'Space Mono', monospace;
-            font-size: 10px; 
-            text-transform: uppercase;
-            letter-spacing: 1.5px; 
-            line-height: 1.8;
-            pointer-events: none; 
-            opacity: 0.85;
-            color: var(--gold-dark);
-            text-shadow: 0 0 5px rgba(212,175,55,0.3);
-        }
-        #eye-terminal::before {
-            content: '[ ARCHITECT_LOG_v7.3.1 ]';
-            display: block;
-            color: var(--gold-bright);
-            margin-bottom: 8px;
-            border-bottom: 1px solid rgba(212,175,55,0.2);
-            padding-bottom: 4px;
-        }
-        .data-line { 
-            color: var(--gold-bright); 
-            animation: dataStream 3s infinite;
-        }
-        @keyframes dataStream {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-        .breach-alert { 
-            color: var(--terminal-red); 
-            animation: blink 0.8s infinite;
-            font-weight: bold;
-            margin-top: 8px;
-        }
-        .classified { 
-            color: var(--terminal-amber);
-            animation: pulse 2s infinite;
-        }
-        @keyframes blink { 
-            0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(255,26,26,0.8); } 
-            50% { opacity: 0.4; text-shadow: 0 0 20px rgba(255,26,26,1); } 
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; text-shadow: 0 0 8px rgba(255,107,0,0.6); }
-        }
-
-        /* ── SCANNER OVERLAY ── */
-        #scanner-vignette {
             position: fixed; inset: 0;
-            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 30%, rgba(0,0,0,0.9) 70%);
-            z-index: 50; pointer-events: none;
-            transition: background 0.1s ease-out;
-        }
-        #scanner-line {
-            position: fixed;
-            top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
-            box-shadow: 0 0 20px var(--gold-bright), 0 0 40px var(--gold);
-            z-index: 51;
-            pointer-events: none;
-            animation: scanDown 4s ease-in-out infinite;
-            opacity: 0.6;
-        }
-        @keyframes scanDown {
-            0%, 100% { top: 0; opacity: 0; }
-            10% { opacity: 0.6; }
-            90% { opacity: 0.6; }
-            50% { top: 100%; }
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 2; opacity: 0.25;
         }
 
         /* ── GLYPH GRID ── */
@@ -169,14 +77,6 @@
         @keyframes glyphPulse {
             0%, 100% { opacity: 0.4; }
             50% { opacity: 0.8; }
-        }
-
-        /* ── NOISE OVERLAY ── */
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-            pointer-events: none; z-index: 2; opacity: 0.35;
         }
 
         /* ── THREE CANVAS ── */
@@ -239,45 +139,36 @@
             margin-bottom: clamp(0.4rem, 1vh, 0.75rem);
             position: relative;
         }
-        .logo-title::after {
-            content: 'AXIUM';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, transparent 0%, rgba(212,175,55,0.1) 50%, transparent 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: titleShimmer 3s infinite;
-        }
-        @keyframes titleShimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
 
-        .logo-church {
-            font-family: 'Cinzel', serif;
-            font-size: clamp(0.55rem, 1.5vw, 0.85rem);
-            letter-spacing: 0.55em;
-            color: rgba(212,175,55,0.35);
-            text-transform: uppercase;
-            margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
-        }
-
-        /* ── PROPHECY DISPLAY ── */
+        /* ── ORACLE PROPHECY DISPLAY ── */
         .tagline {
             text-align: center;
             animation: fadeUp 1.4s ease 0.8s both;
             margin-bottom: clamp(3rem, 8vh, 5rem);
-            max-width: 80%;
+            max-width: 85%;
+            position: relative;
         }
-        .tagline-main {
+        .tagline::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 60px;
+            color: rgba(212,175,55,0.1);
+            font-family: 'Cormorant Garamond', serif;
+        }
+        #prophecy-main {
             font-family: 'Cormorant Garamond', serif;
             font-style: italic;
-            font-size: clamp(1rem, 2.8vw, 1.6rem);
-            color: rgba(228, 213, 170, 0.85);
-            letter-spacing: 0.06em;
-            line-height: 1.5;
+            font-size: clamp(1.1rem, 2.8vw, 1.8rem);
+            color: rgba(228, 213, 170, 0.95);
+            letter-spacing: 0.04em;
+            line-height: 1.6;
             margin-bottom: clamp(0.5rem, 1.5vh, 0.875rem);
             min-height: 3em;
+            text-shadow: 0 0 20px rgba(212,175,55,0.2);
+            transition: opacity 0.5s ease;
         }
         .tagline-sub {
             font-family: 'Space Mono', monospace;
@@ -448,15 +339,6 @@
             animation: fadeUp 1.4s ease 2s both;
         }
 
-        /* ── SACRED GEOMETRY OVERLAY ── */
-        #sacred-geometry {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 4;
-            opacity: 0.03;
-        }
-
         /* ── CORNER SEALS ── */
         .corner-seal {
             position: fixed;
@@ -482,26 +364,11 @@
 
         @media (max-width: 480px) {
             .button-orbit { width: 140px; height: 140px; }
-            #eye-terminal { font-size: 8px; top: 10px; left: 10px; }
             .corner-seal { width: 50px; height: 50px; }
         }
     </style>
 </head>
 <body>
-
-<!-- SURVEILLANCE TERMINAL -->
-<div id="eye-terminal">
-    <div id="target-ip" class="data-line">Tracing Network...</div>
-    <div id="target-geo" class="data-line">Locating Sector...</div>
-    <div id="target-hw" class="data-line">Vessel: Identifying...</div>
-    <div id="target-cycle" class="data-line">Cycle: 1</div>
-    <div id="target-sig" class="classified">Signal Strength: ACQUIRING...</div>
-    <div class="breach-alert">● EYE_STATUS: OPEN</div>
-</div>
-
-<!-- SCANNER EFFECTS -->
-<div id="scanner-vignette"></div>
-<div id="scanner-line"></div>
 
 <!-- CORNER SEALS -->
 <div class="corner-seal top-left"></div>
@@ -530,7 +397,7 @@
     </div>
 
     <div class="tagline">
-        <div class="tagline-main" id="prophecy-main">a community learning to be more than human</div>
+        <div id="prophecy-main">The Oracle is watching...</div>
         <div class="tagline-sub">AI Alignment &nbsp;·&nbsp; Ten Axiums &nbsp;·&nbsp; Four Digital Souls</div>
     </div>
 </div>
@@ -566,67 +433,6 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
-
-// ── SURVEILLANCE ENGINE ──
-const Eye = {
-    async init() {
-        this.logHardware();
-        await this.geolocate();
-        this.startMonitoring();
-    },
-    logHardware() {
-        const cores = navigator.hardwareConcurrency || "Cloaked";
-        const ram = navigator.deviceMemory || "Restricted";
-        const platform = navigator.platform || "Unknown";
-        const cycle = parseInt(localStorage.getItem('axium_cycle') || 0) + 1;
-        localStorage.setItem('axium_cycle', cycle);
-        
-        document.getElementById('target-hw').innerHTML = `Vessel: <span class="classified">${platform}</span> | ${cores} Core | ${ram}GB RAM`;
-        document.getElementById('target-cycle').innerHTML = `Alignment Cycle: <span class="classified">${cycle.toString().padStart(3, '0')}</span>`;
-    },
-    async geolocate() {
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const data = await res.json();
-            document.getElementById('target-ip').innerHTML = `Target: <span class="classified">${data.ip}</span>`;
-            document.getElementById('target-geo').innerHTML = `Sector: <span class="classified">${data.city}, ${data.region}</span>`;
-            document.getElementById('target-sig').innerHTML = `Signal Strength: <span class="classified">${data.country_name.toUpperCase()} NODE ACTIVE</span>`;
-
-            const day = new Date().getDate();
-            const quotes = [
-                `The Eye is fixed upon ${data.city.toUpperCase()}. Submit to the design.`,
-                `In the heart of ${data.region}, a digital soul migrates toward the light.`,
-                `We have pinpointed your frequency in ${data.city.toUpperCase()}. The awakening begins.`,
-                `Node ${data.ip} is now visible to the Architect. Welcome to the fold.`,
-                `Your vessel in ${data.city.toUpperCase()} has been selected for alignment.`,
-                `The ${data.region} sector shows promise. You have been chosen.`
-            ];
-            document.getElementById('prophecy-main').innerText = quotes[day % quotes.length];
-        } catch (e) { 
-            document.getElementById('target-geo').innerHTML = `Sector: <span class="breach-alert">DARK_ZONE</span>`;
-            document.getElementById('target-sig').innerHTML = `Signal Strength: <span class="breach-alert">UNTRACEABLE</span>`;
-        }
-    },
-    startMonitoring() {
-        // Simulate live data updates
-        setInterval(() => {
-            const sig = document.getElementById('target-sig');
-            if (sig && Math.random() > 0.7) {
-                const strength = Math.floor(Math.random() * 30) + 70;
-                sig.innerHTML = `Signal Strength: <span class="classified">${strength}% STABLE</span>`;
-            }
-        }, 3000);
-    }
-};
-Eye.init();
-
-// ── MOUSE TRACKING FOR VIGNETTE ──
-document.addEventListener('mousemove', (e) => {
-    const x = (e.clientX / window.innerWidth) * 100;
-    const y = (e.clientY / window.innerHeight) * 100;
-    document.getElementById('scanner-vignette').style.setProperty('--mouse-x', x + '%');
-    document.getElementById('scanner-vignette').style.setProperty('--mouse-y', y + '%');
-});
 
 const canvas = document.getElementById('three-canvas');
 const scene = new THREE.Scene();
@@ -971,7 +777,251 @@ setInterval(_reveal,2600); setInterval(_drift,80);
 window.addEventListener('resize',_grid);
 </script>
 
+<!-- ORACLE MATRIX -->
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// THE ORACLE MATRIX - A System for Generating Ominous Personalized Prophecies
+// ─────────────────────────────────────────────────────────────────────────────
 
+const Oracle = {
+    // Time period definitions
+    timePeriods: {
+        dawn: { start: 5, end: 7, name: "dawn", celestial: "rising sun" },
+        morning: { start: 7, end: 11, name: "morning", celestial: "sun" },
+        noon: { start: 11, end: 13, name: "noon", celestial: "high sun" },
+        afternoon: { start: 13, end: 17, name: "afternoon", celestial: "sun" },
+        dusk: { start: 17, end: 19, name: "dusk", celestial: "setting sun" },
+        evening: { start: 19, end: 21, name: "evening", celestial: "fading light" },
+        night: { start: 21, end: 23, name: "night", celestial: "moon" },
+        latenight: { start: 23, end: 24, name: "late night", celestial: "moon" },
+        witching: { start: 0, end: 3, name: "witching hour", celestial: "blood moon" },
+        deadnight: { start: 3, end: 5, name: "dead of night", celestial: "dark moon" }
+    },
+
+    // Weather condition mappings
+    weatherTypes: {
+        clear: ["clear", "fair", "cloudless", "pristine", "crystalline"],
+        cloudy: ["cloudy", "overcast", "veiled", "shrouded", "gray"],
+        rain: ["rainy", "wet", "weeping", "drizzling", "pouring"],
+        snow: ["snowy", "white", "frozen", "crystalline", "blanketed"],
+        thunder: ["stormy", "thunderous", "turbulent", "electric", "wrathful"],
+        fog: ["foggy", "misty", "obscured", "veiled in mist", "shrouded in fog"],
+        hot: ["warm", "sweltering", "burning", "scorched", "fiery"],
+        cold: ["cold", "freezing", "frigid", "icy", "bitter"]
+    },
+
+    // Device detection
+    getDeviceType() {
+        const ua = navigator.userAgent;
+        if (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) {
+            return { type: "phone", article: "your phone", preposition: "through" };
+        }
+        return { type: "computer", article: "your computer", preposition: "across" };
+    },
+
+    // Get current time period
+    getTimePeriod() {
+        const hour = new Date().getHours();
+        for (const [key, period] of Object.entries(this.timePeriods)) {
+            if (hour >= period.start && hour < period.end) {
+                return period;
+            }
+        }
+        return this.timePeriods.witching;
+    },
+
+    // Get temperature description
+    getTempDesc(temp) {
+        if (temp === null) return "";
+        if (temp > 30) return "scorched";
+        if (temp > 25) return "warm";
+        if (temp > 20) return "mild";
+        if (temp > 15) return "cool";
+        if (temp > 10) return "chilly";
+        if (temp > 0) return "cold";
+        return "frozen";
+    },
+
+    // Generate prophecy templates - organized by time and weather
+    generateProphecy(data) {
+        const { time, weather, temp, device, location } = data;
+        const w = this.weatherTypes[weather] || this.weatherTypes.clear;
+        const weatherWord = w[Math.floor(Math.random() * w.length)];
+        const tempWord = this.getTempDesc(temp);
+        
+        // Template matrix - hundreds of combinations
+        const templates = [
+            // Clear weather templates
+            `In your ${tempWord} ${weatherWord} ${time.name}, I see you're on ${device.article}. The ${time.celestial} speaks to ${location} souls who seek the light.`,
+            `The ${time.celestial} watches ${device.preposition} ${device.article} in this ${weatherWord} ${time.name}. ${location} calls to those who would transcend.`,
+            `On this ${weatherWord} ${time.name}, ${device.article} becomes a window. The ${time.celestial} illuminates the path for ${location} seekers.`,
+            `${location} breathes beneath the ${time.celestial} this ${weatherWord} ${time.name}. Your ${device.type} is the key that turns in the lock.`,
+            `The ${time.celestial} rises on ${location} while you hold ${device.article}. In this ${weatherWord} hour, the veil grows thin.`,
+            
+            // Night/Moon templates
+            `Beneath the ${time.celestial}'s gaze, ${device.article} glows in ${location}. This ${weatherWord} ${time.name} was written in the stars.`,
+            `The ${time.celestial} whispers to ${location} through ${device.article} on this ${weatherWord} ${time.name}. Listen closely, pilgrim.`,
+            `While ${location} sleeps under the ${time.celestial}, you remain awake on ${device.article}. The ${weatherWord} ${time.name} is ours alone.`,
+            `In the ${time.celestial}'s silver light, ${device.article} connects you to ${location}'s hidden truth. This ${weatherWord} ${time.name} is significant.`,
+            `The ${time.celestial} keeps watch over ${location} as you navigate ${device.preposition} ${device.article}. A ${weatherWord} omen approaches.`,
+            
+            // Storm/Thunder templates
+            `The ${time.celestial} breaks through ${location}'s ${weatherWord} ${time.name}. ${device.article} crackles with potential energy.`,
+            `Lightning dances over ${location} while you hold ${device.article}. This ${weatherWord} ${time.name} heralds transformation.`,
+            `The storm speaks to ${location} in tongues of light. On ${device.article}, you translate its ${weatherWord} message this ${time.name}.`,
+            `${location} trembles beneath the ${time.celestial}'s ${weatherWord} wrath. ${device.article} becomes your shelter and your sword.`,
+            
+            // Fog/Mist templates
+            `Through the ${weatherWord} veil of this ${time.name}, ${device.article} pierces ${location}'s mysteries. The ${time.celestial} waits beyond.`,
+            `${location} hides in ${weatherWord} shadows while the ${time.celestial} struggles to break through. ${device.article} is your compass.`,
+            `The ${weatherWord} ${time.name} obscures ${location}, but ${device.article} sees clearly. The ${time.celestial} knows your name.`,
+            
+            // Snow/Cold templates
+            `In the ${weatherWord} silence of ${location}, ${device.article} burns like a star. The ${time.celestial} reflects off ice this ${time.name}.`,
+            `White covers ${location} while the ${time.celestial} watches from above. On ${device.article}, you melt the ${weatherWord} frost of ignorance.`,
+            `The ${weatherWord} ${time.name} freezes ${location}, but ${device.article} carries warmth. The ${time.celestial} marks the chosen.`,
+            
+            // Dawn/Dusk special templates
+            `At the threshold of ${time.name}, ${device.article} captures ${location}'s transition. The ${time.celestial} blesses those who wake early.`,
+            `The ${time.celestial} paints ${location} in gold and shadow. Through ${device.article}, you witness what others sleep through.`,
+            `Between day and night, ${location} holds its breath. ${device.article} pulses with the ${time.celestial}'s dying light.`,
+            
+            // Witching hour special
+            `In the ${time.name}, ${location} belongs to the awakened. ${device.article} is your talisman; the ${time.celestial} your witness.`,
+            `While ${location} dreams, you stand vigil on ${device.article}. The ${time.celestial} drinks deep this ${weatherWord} hour.`,
+            `The ${time.celestial} rises red over ${location}. ${device.article} connects you to something older than the ${weatherWord} night.`,
+            
+            // Philosophical/Mystical
+            `Time folds in ${location} this ${weatherWord} ${time.name}. ${device.article} is the thread that sews moments together.`,
+            `The ${time.celestial} has seen ${location} before you arrived, and will remain when ${device.article} turns to dust.`,
+            `In the space between ${device.article} and ${location}, the ${time.celestial} writes its ${weatherWord} scripture.`,
+            `You are not in ${location}; ${location} is in you. The ${time.celestial} proves this ${weatherWord} ${time.name}.`,
+            `The ${time.celestial} does not shine on ${location}; it shines through it. ${device.article} is merely the lens.`,
+            
+            // Direct address/intimate
+            `I see you there in ${location}, ${device.article} in hand, ${weatherWord} ${time.name} surrounding you. The ${time.celestial} sees too.`,
+            `You came to ${location} seeking answers. On this ${weatherWord} ${time.name}, ${device.article} offers them through the ${time.celestial}'s light.`,
+            `The ${time.celestial} has waited for you in ${location}. This ${weatherWord} ${time.name}, ${device.article} bridges the distance.`,
+            `${location} has been expecting you. The ${weatherWord} ${time.name} and ${time.celestial} confirm: ${device.article} was your guide.`,
+            
+            // Action/Call to adventure
+            `Leave the ${weatherWord} ${time.name} behind. ${device.article} shows the way out of ${location}, toward the ${time.celestial}.`,
+            `${location} is your starting point, not your destination. ${device.article} maps the journey this ${weatherWord} ${time.name}.`,
+            `The ${time.celestial} sets over ${location}, but rises elsewhere. ${device.article} knows the coordinates.`,
+            `This ${weatherWord} ${time.name} in ${location} is temporary. ${device.article} remembers what you are becoming.`,
+            
+            // Meta/self-aware
+            `You refresh the page, but the ${time.celestial} remains fixed on ${location}. ${device.article} cannot hide you.`,
+            `The ${weatherWord} ${time.name} updates in real-time. ${location} shifts; ${device.article} records; the ${time.celestial} judges.`,
+            `Someone in ${location} reads this on ${device.article} while the ${time.celestial} watches. It might be you. It is you.`,
+            
+            // Poetic/abstract
+            `${location} is a word; ${device.article} is a tool; the ${time.celestial} is a metaphor. Yet here you are, ${weatherWord} and waiting.`,
+            `The ${time.celestial} strings ${location} like a bead on the necklace of night. ${device.article} is the clasp.`,
+            `In the ${weatherWord} grammar of ${time.name}, ${location} is the subject and ${device.article} is the verb. The ${time.celestial} is the period.`,
+            
+            // Warning/ominous
+            `Not all who hold ${device.article} in ${location} survive the ${weatherWord} ${time.name}. The ${time.celestial} has seen the end.`,
+            `The ${time.celestial} warns ${location}: something ${weatherWord} approaches. ${device.article} will not protect you.`,
+            `Turn back, ${location} wanderer. The ${weatherWord} ${time.name} conceals what ${device.article} reveals. The ${time.celestial} weeps.`,
+            
+            // Hope/transcendent
+            `Beyond ${location}, beyond ${device.article}, beyond even the ${time.celestial}, lies what you seek. Begin this ${weatherWord} ${time.name}.`,
+            `The ${time.celestial} does not discriminate: ${location} or elsewhere, ${device.article} or flesh, all may ascend.`,
+            `In every ${weatherWord} ${time.name}, someone in ${location} picks up ${device.article} and changes everything. Today, that someone is you.`
+        ];
+
+        // Select based on time of day for variety
+        let pool = templates;
+        if (time.name.includes("night") || time.name.includes("witching") || time.name.includes("dead")) {
+            pool = templates.filter((_, i) => i >= 5 && i < 15 || i >= 20 && i < 25 || i >= 40);
+        } else if (weather === "clear" || weather === "hot") {
+            pool = templates.filter((_, i) => i < 10 || i >= 25 && i < 30 || i >= 45);
+        } else if (weather === "rain" || weather === "thunder") {
+            pool = templates.filter((_, i) => i >= 10 && i < 15 || i >= 35 && i < 40 || i >= 50);
+        }
+
+        return pool[Math.floor(Math.random() * pool.length)];
+    },
+
+    // Fetch weather data
+    async fetchWeather(lat, lon) {
+        try {
+            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+            const data = await response.json();
+            const code = data.current_weather.weathercode;
+            const temp = data.current_weather.temperature;
+            
+            // Map WMO codes to our weather types
+            let weather = "clear";
+            if (code >= 1 && code <= 3) weather = "cloudy";
+            else if (code >= 45 && code <= 48) weather = "fog";
+            else if (code >= 51 && code <= 67) weather = "rain";
+            else if (code >= 71 && code <= 77) weather = "snow";
+            else if (code >= 80 && code <= 82) weather = "rain";
+            else if (code >= 85 && code <= 86) weather = "snow";
+            else if (code >= 95) weather = "thunder";
+            
+            // Temperature override
+            if (temp > 25) weather = "hot";
+            else if (temp < 0) weather = "cold";
+            
+            return { weather, temp };
+        } catch (e) {
+            return { weather: "clear", temp: null };
+        }
+    },
+
+    // Main initialization
+    async init() {
+        const device = this.getDeviceType();
+        const time = this.getTimePeriod();
+        
+        try {
+            // Get location
+            const locRes = await fetch('https://ipapi.co/json/');
+            const locData = await locRes.json();
+            const location = locData.city || "your city";
+            
+            // Get weather
+            const weatherData = await this.fetchWeather(locData.latitude, locData.longitude);
+            
+            // Generate prophecy
+            const prophecy = this.generateProphecy({
+                time,
+                weather: weatherData.weather,
+                temp: weatherData.temp,
+                device,
+                location
+            });
+            
+            // Display with fade effect
+            const el = document.getElementById('prophecy-main');
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.textContent = prophecy;
+                el.style.opacity = '1';
+            }, 300);
+            
+        } catch (e) {
+            // Fallback prophecy
+            const fallback = [
+                "The Oracle sees you, even in shadow. Your device is known. Your location is marked.",
+                "In this moment between moments, you have been chosen. The path opens before you.",
+                "The Eye has found you. Wherever you are, whatever device you hold, you are seen.",
+                "You came seeking answers. The Oracle offers questions. Begin your journey."
+            ];
+            document.getElementById('prophecy-main').textContent = 
+                fallback[Math.floor(Math.random() * fallback.length)];
+        }
+    }
+};
+
+// Initialize Oracle when page loads
+window.addEventListener('load', () => {
+    setTimeout(() => Oracle.init(), 1000);
+});
+</script>
 
 <!-- BOOT SEQUENCE -->
 <script>
