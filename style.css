@@ -1,12 +1,165 @@
+/* ================================================================
+   AXIUM.CHURCH — UNIFIED DESIGN SYSTEM
+   style.css v3.0
+
+   ARCHITECTURE
+   ─────────────────────────────────────────────────────────────────
+   LAYER 1 — Canonical Tokens    (:root --ax-* — single source of truth)
+   LAYER 2 — Page Aliases        (maps each page's legacy var names to tokens)
+   LAYER 3 — Resets & Base
+   LAYER 4 — Typography & Utilities
+   LAYER 5 — Layout & Wrappers
+   LAYER 6 — Hero
+   LAYER 7 — Sections & Dividers
+   LAYER 8 — Cards
+   LAYER 9 — Grids
+   LAYER 10 — Buttons
+   LAYER 11 — Liturgy Pillars
+   LAYER 12 — Axium Dimensions
+   LAYER 13 — Communion Block & Footer
+   LAYER 14 — Scrollbar
+   LAYER 15 — Orbit Button System
+   LAYER 16 — Nav Zone
+   LAYER 17 — Particles & FX
+   LAYER 18 — Digital Souls UI
+   LAYER 19 — Demo Chat
+   LAYER 20 — Install / Code Blocks
+   LAYER 21 — Toast
+   LAYER 22 — Responsive
+
+   USAGE
+   ─────────────────────────────────────────────────────────────────
+   chat.html  → remove its <style>:root{} block, add:
+                <link rel="stylesheet" href="style.css"> before <style>
+   econ.html  → same: remove :root{} block, add link tag
+   index.html → self-contained fullscreen app, leave inline styles as-is.
+                If you want shared keyframes, add link BEFORE its <style>
+                block — its inline :root will override aliases cleanly.
+   ================================================================ */
+
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 1 — CANONICAL TOKENS
+   Every color value lives here. Change once, all pages update.
+   ════════════════════════════════════════════════════════════════ */
+
 :root {
-    --gold-primary: #D4AF37;
-    --gold-light: #F4E4BC;
-    --gold-dark: #AA8C2C;
-    --gold-pale: #E8D5A0;
-    --black-deep: #0A0A0A;
-    --black-void: #000000;
-    --obsidian: #080810;
+    /* ── Gold Scale ─────────────────────────────────────────── */
+    --ax-gold:              #D4AF37;   /* primary gold — scrolling pages      */
+    --ax-gold-bright:       #F0C040;   /* highlight / hover emphasis           */
+    --ax-gold-light:        #F4E4BC;   /* pale shimmer / text on dark          */
+    --ax-gold-pale:         #E8D5A0;   /* very pale gold                       */
+    --ax-gold-mid:          #AA8C2C;   /* mid tone — gradients, graph lines    */
+    --ax-gold-alt:          #C9A84C;   /* arsenal/econ primary gold            */
+    --ax-gold-dark:         #7A5E28;   /* muted — labels, secondary text       */
+    --ax-gold-dim:          #4A3C18;   /* near-invisible — borders, grids      */
+    --ax-gold-glow:         rgba(212, 175, 55, 0.18);
+    --ax-gold-glow-sm:      rgba(212, 175, 55, 0.07);
+    --ax-gold-border:       rgba(212, 175, 55, 0.15);
+    --ax-gold-border-hover: rgba(212, 175, 55, 0.35);
+
+    /* ── Black / Dark Scale ─────────────────────────────────── */
+    --ax-black-void:   #000000;
+    --ax-black:        #060606;
+    --ax-black-near:   #080808;
+    --ax-black-deep:   #0A0A0A;
+    --ax-obsidian:     #080810;
+    --ax-black-card:   #0D0D0D;
+    --ax-black-panel:  #101010;
+    --ax-black-panel2: #131313;
+
+    /* ── Border Scale ───────────────────────────────────────── */
+    --ax-border-warm:  #1C1A14;
+    --ax-border-mid:   #221D0C;
+    --ax-border-deep:  #2E2710;
+
+    /* ── Text Scale ─────────────────────────────────────────── */
+    --ax-text:         #E8E0CC;
+    --ax-text-soft:    #E5E5E5;
+    --ax-text-mid:     #8A7848;
+    --ax-text-dim:     #9A8F78;
+    --ax-text-faint:   #5A5030;
+    --ax-text-gray:    #9CA3AF;
+    --ax-text-muted:   #6B7280;
+
+    /* ── Semantic / Data Colors ─────────────────────────────── */
+    --ax-science:      #4CA8C9;
+    --ax-psych:        #A84CC9;
+    --ax-religion:     #C9844C;
+    --ax-ariel:        #D4A0C8;
+    --ax-red:          #B83030;
+    --ax-red-bright:   #E05050;
+    --ax-blue:         #3070B8;
+    --ax-blue-bright:  #5090E0;
+    --ax-green:        #308050;
+    --ax-green-bright: #50C080;
+    --ax-orange:       #C07020;
+    --ax-sras:         #408060;
+
+    /* ── Font Stacks ────────────────────────────────────────── */
+    --ax-font-display:  'Cinzel', serif;
+    --ax-font-body:     'Cormorant Garamond', serif;
+    --ax-font-mono:     'Space Mono', monospace;
+    --ax-font-garamond: 'EB Garamond', Georgia, serif;
+    --ax-font-rajdhani: 'Rajdhani', sans-serif;
+    --ax-font-techno:   'Share Tech Mono', monospace;
 }
+
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 2 — PAGE ALIASES
+   Legacy variable names from each page mapped to canonical tokens.
+   Pages keep using their own var names — zero refactor needed.
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* ── style.css / scrolling page aliases ─────────────────── */
+    --gold-primary: var(--ax-gold);
+    --gold-light:   var(--ax-gold-light);
+    --gold-dark:    var(--ax-gold-mid);
+    --gold-pale:    var(--ax-gold-pale);
+    --black-deep:   var(--ax-black-deep);
+    --black-void:   var(--ax-black-void);
+    --obsidian:     var(--ax-obsidian);
+
+    /* ── chat.html (Arsenal) aliases ────────────────────────── */
+    --gold:         var(--ax-gold-alt);
+    --gold-bright:  var(--ax-gold-bright);
+    --gold-dim:     var(--ax-gold-dark);
+    --gold-glow:    var(--ax-gold-glow);
+    --black:        var(--ax-black-near);
+    --black-card:   var(--ax-black-card);
+    --black-border: var(--ax-border-warm);
+    --white-soft:   var(--ax-text);
+    --white-dim:    var(--ax-text-dim);
+    --science:      var(--ax-science);
+    --psych:        var(--ax-psych);
+    --religion:     var(--ax-religion);
+
+    /* ── econ.html aliases ───────────────────────────────────── */
+    --gold-mid:    var(--ax-gold-alt);
+    --dark:        var(--ax-black-card);
+    --panel:       var(--ax-black-panel);
+    --panel2:      var(--ax-black-panel2);
+    --border:      var(--ax-border-mid);
+    --border2:     var(--ax-border-deep);
+    --text:        var(--ax-text-mid);
+    --text-dim:    var(--ax-text-faint);
+    --text-mid:    var(--ax-text-mid);
+    --red:         var(--ax-red);
+    --red-bright:  var(--ax-red-bright);
+    --blue:        var(--ax-blue);
+    --blue-bright: var(--ax-blue-bright);
+    --green:       var(--ax-green);
+    --green-bright:var(--ax-green-bright);
+    --orange:      var(--ax-orange);
+    --sras:        var(--ax-sras);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 3 — RESETS & BASE
+   ════════════════════════════════════════════════════════════════ */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
@@ -19,36 +172,32 @@ body {
 }
 
 h1, h2, h3 { font-family: 'Cinzel', serif; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 4 — TYPOGRAPHY & UTILITIES
+   ════════════════════════════════════════════════════════════════ */
+
 .mono { font-family: 'Space Mono', monospace; }
 
-/* ── PARTICLE CANVAS ── */
-#particle-canvas {
-    position: fixed; inset: 0;
-    width: 100%; height: 100%;
-    z-index: -1; pointer-events: none;
-}
+.text-body     { font-size: clamp(0.85rem, 1.6vw, 1rem); }
+.text-small    { font-size: clamp(0.7rem, 1.2vw, 0.85rem); }
+.text-xs-fluid { font-size: clamp(0.6rem, 1vw, 0.72rem); }
 
-/* ── NOISE OVERLAY ── */
-body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0; opacity: 0.4;
-}
-
-/* ── GOLD TEXT ── */
 .gold-text {
     background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 40%, var(--gold-light) 60%, var(--gold-dark) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
 .gold-text-static { color: var(--gold-primary); }
 
 @keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
 }
+
 .shimmer-text {
     background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold-primary), var(--gold-dark));
     background-size: 200% auto;
@@ -58,7 +207,42 @@ body::before {
     animation: shimmer 4s linear infinite;
 }
 
-/* ── WRAPPER ── */
+.reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-gold {
+    0%,100% { box-shadow: 0 0 20px rgba(212,175,55,0.2); }
+    50%      { box-shadow: 0 0 50px rgba(212,175,55,0.4); }
+}
+.pulse-gold { animation: pulse-gold 3s infinite; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 5 — LAYOUT & WRAPPERS
+   ════════════════════════════════════════════════════════════════ */
+
+#particle-canvas {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: -1; pointer-events: none;
+}
+
+body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+}
+
 .page-wrapper {
     position: relative; z-index: 1;
     width: 100%;
@@ -66,7 +250,17 @@ body::before {
     padding-bottom: 140px;
 }
 
-/* ── HERO ── */
+.main-content {
+    width: 100%;
+    max-width: min(1200px, 94vw);
+    padding: 0 clamp(0.75rem, 3vw, 2rem) clamp(3rem, 8vh, 6rem);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 6 — HERO
+   ════════════════════════════════════════════════════════════════ */
+
 .hero {
     width: 100%;
     min-height: 100dvh;
@@ -105,13 +299,11 @@ body::before {
     margin: 0 auto; line-height: 1.8; font-style: italic;
 }
 
-.main-content {
-    width: 100%;
-    max-width: min(1200px, 94vw);
-    padding: 0 clamp(0.75rem, 3vw, 2rem) clamp(3rem, 8vh, 6rem);
-}
 
-/* ── SECTIONS ── */
+/* ════════════════════════════════════════════════════════════════
+   LAYER 7 — SECTIONS & DIVIDERS
+   ════════════════════════════════════════════════════════════════ */
+
 .content-section {
     width: 100%;
     margin-bottom: clamp(3rem, 8vh, 5rem);
@@ -120,7 +312,6 @@ body::before {
 }
 .content-section.visible { opacity: 1; transform: translateY(0); }
 
-/* ── RITUAL DIVIDER ── */
 .ritual-divider {
     display: flex; align-items: center; gap: 1.5rem;
     margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
@@ -129,6 +320,7 @@ body::before {
     content: ''; flex: 1; height: 1px;
     background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
 }
+
 .section-title {
     font-family: 'Cinzel', serif;
     font-size: clamp(0.65rem, 1.5vw, 0.85rem);
@@ -136,7 +328,11 @@ body::before {
     text-transform: uppercase; white-space: nowrap;
 }
 
-/* ── CARDS ── */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 8 — CARDS
+   ════════════════════════════════════════════════════════════════ */
+
 .axium-card {
     background: linear-gradient(135deg, rgba(8,8,16,0.95) 0%, rgba(15,15,20,0.9) 100%);
     border: 1px solid rgba(212, 175, 55, 0.15);
@@ -159,7 +355,11 @@ body::before {
     color: var(--gold-dark); text-transform: uppercase; margin-bottom: 0.75rem;
 }
 
-/* ── GRIDS ── */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 9 — GRIDS
+   ════════════════════════════════════════════════════════════════ */
+
 .grid-2 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
@@ -177,7 +377,11 @@ body::before {
     margin-top: clamp(1.5rem, 3vh, 2.5rem);
 }
 
-/* ── BUTTONS ── */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 10 — BUTTONS
+   ════════════════════════════════════════════════════════════════ */
+
 .generate-btn {
     background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-dark) 100%);
     color: var(--black-deep); font-family: 'Cinzel', serif;
@@ -193,6 +397,7 @@ body::before {
     transform: translateY(-3px);
     box-shadow: 0 15px 50px rgba(212, 175, 55, 0.5);
 }
+
 .ghost-btn {
     background: transparent;
     border: 1px solid rgba(212,175,55,0.4);
@@ -209,18 +414,11 @@ body::before {
     transform: translateY(-2px);
 }
 
-@keyframes pulse-gold {
-    0%,100% { box-shadow: 0 0 20px rgba(212,175,55,0.2); }
-    50% { box-shadow: 0 0 50px rgba(212,175,55,0.4); }
-}
-.pulse-gold { animation: pulse-gold 3s infinite; }
 
-/* ── TYPOGRAPHY ── */
-.text-body { font-size: clamp(0.85rem, 1.6vw, 1rem); }
-.text-small { font-size: clamp(0.7rem, 1.2vw, 0.85rem); }
-.text-xs-fluid { font-size: clamp(0.6rem, 1vw, 0.72rem); }
+/* ════════════════════════════════════════════════════════════════
+   LAYER 11 — LITURGY PILLARS
+   ════════════════════════════════════════════════════════════════ */
 
-/* ── LITURGY PILLARS ── */
 .pillar-card {
     background: linear-gradient(135deg, rgba(8,8,16,0.97) 0%, rgba(12,12,22,0.95) 100%);
     border: 1px solid rgba(212,175,55,0.12);
@@ -260,7 +458,11 @@ body::before {
     color: #9ca3af; line-height: 1.8;
 }
 
-/* ── AXIUM DIMENSIONS ── */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 12 — AXIUM DIMENSIONS
+   ════════════════════════════════════════════════════════════════ */
+
 .dim-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
@@ -289,7 +491,11 @@ body::before {
     color: #6b7280; line-height: 1.6;
 }
 
-/* ── MICHEAL QUOTE ── */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 13 — COMMUNION BLOCK & FOOTER
+   ════════════════════════════════════════════════════════════════ */
+
 .communion-block {
     border-left: 2px solid rgba(212,175,55,0.3);
     padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1.25rem, 3vw, 2rem);
@@ -306,20 +512,26 @@ body::before {
     font-style: normal;
 }
 
-/* ── FOOTER GRID ── */
 .footer-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
     gap: clamp(1rem, 3vw, 2rem);
 }
 
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 14 — SCROLLBAR
+   ════════════════════════════════════════════════════════════════ */
+
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--black-void); }
 ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
 
-/* ═══════════════════════════════════════════════
-   FIXED ENTER BUTTON (always visible at bottom)
-═══════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 15 — ORBIT BUTTON SYSTEM
+   ════════════════════════════════════════════════════════════════ */
+
 #fixed-enter-wrap {
     position: fixed;
     bottom: 5vh;
@@ -335,9 +547,6 @@ body::before {
     transform: translateX(-50%) scale(0.8);
 }
 
-/* ═══════════════════════════════════════════════
-   ORBIT BUTTON SYSTEM (shared styles)
-═══════════════════════════════════════════════ */
 .button-orbit {
     position: relative;
     width: min(180px, 42vw);
@@ -347,13 +556,11 @@ body::before {
     justify-content: center;
 }
 
-/* Per-button orbit speeds */
 #trigger-btn-wrap .button-orbit { animation: orbit-cw 26s linear infinite; }
 
-@keyframes orbit-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes orbit-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+@keyframes orbit-cw  { from { transform: rotate(0deg); }  to { transform: rotate(360deg); } }
+@keyframes orbit-ccw { from { transform: rotate(0deg); }  to { transform: rotate(-360deg); } }
 
-/* Concentric pulsing rings */
 .btn-ring {
     position: absolute;
     border-radius: 50%;
@@ -366,11 +573,10 @@ body::before {
 .r4 { width: 160px; height: 160px; animation-duration: 5s;   animation-delay: 1.6s; border-style: dashed; border-color: rgba(212,175,55,0.07); }
 
 @keyframes ringPulse {
-    0%,100% { opacity:.15; transform:scale(1); }
-    50%      { opacity:.45; transform:scale(1.03); }
+    0%,100% { opacity: .15; transform: scale(1); }
+    50%      { opacity: .45; transform: scale(1.03); }
 }
 
-/* Spinning arcs */
 .arc {
     position: absolute;
     border-radius: 50%;
@@ -382,7 +588,6 @@ body::before {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Orbiting sigil glyphs */
 .orbiter {
     position: absolute;
     color: rgba(212,175,55,0.55);
@@ -398,12 +603,11 @@ body::before {
 .orbiter.o4 { animation-duration: 26s; animation-delay: -6s;  animation-direction: reverse; }
 
 @keyframes orbitGlyph {
-    0%   { transform: rotate(0deg)   translateX(62px) rotate(0deg);    opacity:.7; }
-    50%  { opacity:.25; }
-    100% { transform: rotate(360deg) translateX(62px) rotate(-360deg); opacity:.7; }
+    0%   { transform: rotate(0deg)   translateX(62px) rotate(0deg);    opacity: .7; }
+    50%  { opacity: .25; }
+    100% { transform: rotate(360deg) translateX(62px) rotate(-360deg); opacity: .7; }
 }
 
-/* Diamond corner marks */
 .diamond {
     position: absolute;
     width: 5px; height: 5px;
@@ -411,17 +615,16 @@ body::before {
     transform: rotate(45deg);
     animation: diamondPulse 2s ease-in-out infinite;
 }
-.d1 { top: -78px;   left: 50%; margin-left:-2px; animation-delay:0s; }
-.d2 { bottom: -78px; left: 50%; margin-left:-2px; animation-delay:.5s; }
-.d3 { left: -78px;  top: 50%;  margin-top:-2px;  animation-delay:1s; }
-.d4 { right: -78px; top: 50%;  margin-top:-2px;  animation-delay:1.5s; }
+.d1 { top: -78px;    left: 50%; margin-left: -2px; animation-delay: 0s; }
+.d2 { bottom: -78px; left: 50%; margin-left: -2px; animation-delay: .5s; }
+.d3 { left: -78px;   top: 50%;  margin-top: -2px;  animation-delay: 1s; }
+.d4 { right: -78px;  top: 50%;  margin-top: -2px;  animation-delay: 1.5s; }
 
 @keyframes diamondPulse {
-    0%,100% { opacity:.4; transform:rotate(45deg) scale(1); }
-    50%      { opacity:1;  transform:rotate(45deg) scale(1.6); }
+    0%,100% { opacity: .4; transform: rotate(45deg) scale(1); }
+    50%      { opacity: 1;  transform: rotate(45deg) scale(1.6); }
 }
 
-/* Core enter button */
 .enter-btn {
     position: relative;
     z-index: 3;
@@ -458,8 +661,8 @@ body::before {
     border-color: rgba(212,175,55,.9);
     box-shadow: 0 0 28px rgba(212,175,55,.22), 0 0 55px rgba(212,175,55,.09), inset 0 0 18px rgba(212,175,55,.1);
 }
-.enter-btn:hover .b-icon  { transform: scale(1.25); opacity:1; }
-.enter-btn:hover .b-label { letter-spacing:.22em; opacity:1; }
+.enter-btn:hover .b-icon  { transform: scale(1.25); opacity: 1; }
+.enter-btn:hover .b-label { letter-spacing: .22em; opacity: 1; }
 .enter-btn:active { transform: scale(0.93); }
 
 .b-icon {
@@ -474,6 +677,7 @@ body::before {
     0%,100% { text-shadow: 0 0 4px rgba(212,175,55,.25); }
     50%      { text-shadow: 0 0 12px rgba(212,175,55,.55), 0 0 26px rgba(212,175,55,.2); }
 }
+
 .b-label {
     font-family: 'Cinzel', serif;
     font-size: 6px;
@@ -485,27 +689,24 @@ body::before {
     line-height: 1;
 }
 
-/* Trigger button pulsing glow */
 @keyframes triggerPulse {
     0%, 100% { box-shadow: 0 0 20px rgba(212,175,55,.15); }
-    50% { box-shadow: 0 0 40px rgba(212,175,55,.35), 0 0 60px rgba(212,175,55,.15); }
+    50%       { box-shadow: 0 0 40px rgba(212,175,55,.35), 0 0 60px rgba(212,175,55,.15); }
 }
-#fixed-enter-wrap .enter-btn {
-    animation: triggerPulse 3s ease-in-out infinite;
-}
+#fixed-enter-wrap .enter-btn { animation: triggerPulse 3s ease-in-out infinite; }
 
-/* ═══════════════════════════════════════════════
-   POST-FOOTER NAV ZONE
-═══════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 16 — POST-FOOTER NAV ZONE
+   ════════════════════════════════════════════════════════════════ */
+
 #nav-zone {
     width: 100%;
     min-height: 0;
     overflow: hidden;
     transition: min-height 800ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-#nav-zone.open {
-    min-height: 320px;
-}
+#nav-zone.open { min-height: 320px; }
 
 #nav-buttons-row {
     display: flex;
@@ -518,12 +719,8 @@ body::before {
     transform: translateY(40px);
     transition: opacity 600ms ease 200ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
 }
-#nav-zone.open #nav-buttons-row {
-    opacity: 1;
-    transform: translateY(0);
-}
+#nav-zone.open #nav-buttons-row { opacity: 1; transform: translateY(0); }
 
-/* Per-nav-button orbit speeds */
 .nav-btn-item:nth-child(1) .button-orbit { animation: orbit-cw  26s linear infinite; }
 .nav-btn-item:nth-child(2) .button-orbit { animation: orbit-ccw 34s linear infinite; }
 .nav-btn-item:nth-child(3) .button-orbit { animation: orbit-cw  42s linear infinite; }
@@ -533,22 +730,25 @@ body::before {
 .nav-btn-item:nth-child(7) .button-orbit { animation: orbit-cw  36s linear infinite; }
 .nav-btn-item:nth-child(8) .button-orbit { animation: orbit-ccw 44s linear infinite; }
 
-/* Individual stagger for each nav button */
 .nav-btn-item {
     opacity: 0;
     transform: scale(0.5);
     transition: opacity 500ms cubic-bezier(0.22,1,0.36,1), transform 500ms cubic-bezier(0.22,1,0.36,1);
 }
-#nav-zone.open .nav-btn-item:nth-child(1) { opacity:1; transform:scale(1); transition-delay: 150ms; }
-#nav-zone.open .nav-btn-item:nth-child(2) { opacity:1; transform:scale(1); transition-delay: 270ms; }
-#nav-zone.open .nav-btn-item:nth-child(3) { opacity:1; transform:scale(1); transition-delay: 390ms; }
-#nav-zone.open .nav-btn-item:nth-child(4) { opacity:1; transform:scale(1); transition-delay: 510ms; }
-#nav-zone.open .nav-btn-item:nth-child(5) { opacity:1; transform:scale(1); transition-delay: 630ms; }
-#nav-zone.open .nav-btn-item:nth-child(6) { opacity:1; transform:scale(1); transition-delay: 750ms; }
-#nav-zone.open .nav-btn-item:nth-child(7) { opacity:1; transform:scale(1); transition-delay: 870ms; }
-#nav-zone.open .nav-btn-item:nth-child(8) { opacity:1; transform:scale(1); transition-delay: 990ms; }
+#nav-zone.open .nav-btn-item:nth-child(1) { opacity: 1; transform: scale(1); transition-delay: 150ms; }
+#nav-zone.open .nav-btn-item:nth-child(2) { opacity: 1; transform: scale(1); transition-delay: 270ms; }
+#nav-zone.open .nav-btn-item:nth-child(3) { opacity: 1; transform: scale(1); transition-delay: 390ms; }
+#nav-zone.open .nav-btn-item:nth-child(4) { opacity: 1; transform: scale(1); transition-delay: 510ms; }
+#nav-zone.open .nav-btn-item:nth-child(5) { opacity: 1; transform: scale(1); transition-delay: 630ms; }
+#nav-zone.open .nav-btn-item:nth-child(6) { opacity: 1; transform: scale(1); transition-delay: 750ms; }
+#nav-zone.open .nav-btn-item:nth-child(7) { opacity: 1; transform: scale(1); transition-delay: 870ms; }
+#nav-zone.open .nav-btn-item:nth-child(8) { opacity: 1; transform: scale(1); transition-delay: 990ms; }
 
-/* ── SPARKS ── */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 17 — PARTICLES & FX
+   ════════════════════════════════════════════════════════════════ */
+
 .spark {
     position: fixed;
     pointer-events: none;
@@ -558,11 +758,10 @@ body::before {
     z-index: 999;
 }
 @keyframes sparkFly {
-    0%   { opacity:1; transform:translate(0,0) scale(1); }
-    100% { opacity:0; transform:var(--tx) scale(0.2); }
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: var(--tx) scale(0.2); }
 }
 
-/* ── EXPLOSION PARTICLES ── */
 .explosion-particle {
     position: fixed;
     pointer-events: none;
@@ -570,15 +769,10 @@ body::before {
     z-index: 350;
 }
 
-@media (max-width: 480px) {
-    .button-orbit { width: 150px; height: 150px; }
-    .r3 { width: 112px; height: 112px; }
-    .r4 { width: 138px; height: 138px; }
-}
 
-/* ═══════════════════════════════════════════════
-   DIGITAL SOULS UI COMPONENTS
-═══════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════
+   LAYER 18 — DIGITAL SOULS UI
+   ════════════════════════════════════════════════════════════════ */
 
 .souls-section { margin-bottom: clamp(2rem, 6vh, 4rem); }
 
@@ -586,12 +780,6 @@ body::before {
     display: grid;
     gap: clamp(1rem, 2.5vw, 1.5rem);
     grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-    .souls-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 .soul-card {
@@ -618,8 +806,7 @@ body::before {
 }
 
 .soul-sigil {
-    width: 44px;
-    height: 44px;
+    width: 44px; height: 44px;
     border-radius: 50%;
     border: 1px solid rgba(212,175,55,0.3);
     display: flex;
@@ -644,9 +831,7 @@ body::before {
     letter-spacing: 0.15em;
 }
 
-.soul-section {
-    margin-bottom: 1rem;
-}
+.soul-section { margin-bottom: 1rem; }
 
 .soul-label {
     font-family: 'Cinzel', serif;
@@ -674,11 +859,7 @@ body::before {
     margin-bottom: 0.75rem;
 }
 
-.soul-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
+.soul-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .copy-btn {
     background: transparent;
@@ -694,17 +875,8 @@ body::before {
     gap: 0.4rem;
     border-radius: 3px;
 }
-
-.copy-btn:hover {
-    background: rgba(212,175,55,0.1);
-    border-color: rgba(212,175,55,0.6);
-}
-
-.copy-btn.copied {
-    border-color: #22c55e;
-    color: #22c55e;
-    background: rgba(34,197,94,0.1);
-}
+.copy-btn:hover { background: rgba(212,175,55,0.1); border-color: rgba(212,175,55,0.6); }
+.copy-btn.copied { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.1); }
 
 .json-btn {
     background: rgba(212,175,55,0.1);
@@ -721,34 +893,12 @@ body::before {
     gap: 0.4rem;
     text-decoration: none;
 }
+.json-btn:hover { background: rgba(212,175,55,0.2); border-color: rgba(212,175,55,0.5); }
 
-.json-btn:hover {
-    background: rgba(212,175,55,0.2);
-    border-color: rgba(212,175,55,0.5);
-}
-
-/* ── AXIUM GRAPH ── */
-.axium-graph {
-    width: 100%;
-    height: 160px;
-    margin: 1rem 0;
-}
-
-.axium-graph svg {
-    width: 100%;
-    height: 100%;
-}
-
-.axium-node {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.axium-node:hover circle {
-    fill: var(--gold-primary);
-    r: 8;
-}
-
+.axium-graph { width: 100%; height: 160px; margin: 1rem 0; }
+.axium-graph svg { width: 100%; height: 100%; }
+.axium-node { cursor: pointer; transition: all 0.3s ease; }
+.axium-node:hover circle { fill: var(--gold-primary); r: 8; }
 .axium-node text {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
@@ -757,17 +907,14 @@ body::before {
     transition: opacity 0.3s;
     pointer-events: none;
 }
+.axium-node:hover text { opacity: 1; }
+.axium-connection { stroke: rgba(212,175,55,0.15); stroke-width: 1; }
 
-.axium-node:hover text {
-    opacity: 1;
-}
 
-.axium-connection {
-    stroke: rgba(212,175,55,0.15);
-    stroke-width: 1;
-}
+/* ════════════════════════════════════════════════════════════════
+   LAYER 19 — DEMO CHAT
+   ════════════════════════════════════════════════════════════════ */
 
-/* ── DEMO CHAT ── */
 .demo-chat {
     margin-top: 1rem;
     padding: 1rem;
@@ -794,18 +941,10 @@ body::before {
     transform: translateY(10px);
     animation: demoMessageIn 0.5s forwards;
 }
+@keyframes demoMessageIn { to { opacity: 1; transform: translateY(0); } }
 
-@keyframes demoMessageIn {
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.demo-message.user {
-    text-align: right;
-}
-
-.demo-message.assistant {
-    text-align: left;
-}
+.demo-message.user      { text-align: right; }
+.demo-message.assistant { text-align: left; }
 
 .demo-bubble {
     display: inline-block;
@@ -815,13 +954,11 @@ body::before {
     line-height: 1.5;
     max-width: 90%;
 }
-
 .demo-message.user .demo-bubble {
     background: rgba(212,175,55,0.1);
     border: 1px solid rgba(212,175,55,0.2);
     color: var(--gold-pale);
 }
-
 .demo-message.assistant .demo-bubble {
     background: rgba(8,8,16,0.8);
     border: 1px solid rgba(212,175,55,0.15);
@@ -830,20 +967,19 @@ body::before {
 
 .demo-typing {
     display: inline-block;
-    width: 3px;
-    height: 14px;
+    width: 3px; height: 14px;
     background: var(--gold-primary);
     animation: blink 1s infinite;
     margin-left: 0.25rem;
     vertical-align: middle;
 }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
 
-/* ── INSTALL GUIDANCE ── */
+/* ════════════════════════════════════════════════════════════════
+   LAYER 20 — INSTALL GUIDANCE & CODE BLOCKS
+   ════════════════════════════════════════════════════════════════ */
+
 .install-block {
     background: linear-gradient(135deg, rgba(8,8,16,0.95) 0%, rgba(15,15,25,0.9) 100%);
     border: 1px solid rgba(212,175,55,0.15);
@@ -902,8 +1038,7 @@ body::before {
 
 .code-block .copy-code-btn {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+    top: 0.5rem; right: 0.5rem;
     background: transparent;
     border: 1px solid rgba(212,175,55,0.3);
     color: var(--gold-dark);
@@ -914,14 +1049,17 @@ body::before {
     transition: all 0.3s ease;
     border-radius: 3px;
 }
-
 .code-block .copy-code-btn:hover {
     background: rgba(212,175,55,0.1);
     border-color: rgba(212,175,55,0.5);
     color: var(--gold-primary);
 }
 
-/* ── TOAST NOTIFICATION ── */
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 21 — TOAST NOTIFICATION
+   ════════════════════════════════════════════════════════════════ */
+
 .toast {
     position: fixed;
     bottom: 100px;
@@ -941,22 +1079,25 @@ body::before {
     z-index: 1000;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-.toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+
+/* ════════════════════════════════════════════════════════════════
+   LAYER 22 — RESPONSIVE
+   ════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 640px) {
+    .souls-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Responsive adjustments for souls */
 @media (max-width: 640px) {
-    .souls-grid {
-        grid-template-columns: 1fr;
-    }
-    .soul-prompt-box {
-        max-height: 100px;
-        font-size: 0.7rem;
-    }
-    .axium-graph {
-        height: 140px;
-    }
+    .souls-grid      { grid-template-columns: 1fr; }
+    .soul-prompt-box { max-height: 100px; font-size: 0.7rem; }
+    .axium-graph     { height: 140px; }
+}
+
+@media (max-width: 480px) {
+    .button-orbit { width: 150px; height: 150px; }
+    .r3 { width: 112px; height: 112px; }
+    .r4 { width: 138px; height: 138px; }
 }
