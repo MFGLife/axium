@@ -1046,35 +1046,48 @@ window.addEventListener('resize',_grid);
   document.addEventListener('touchend', ()=>{ onUp(); });
 
   enterBtn.addEventListener('click', e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    if(isDragging) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(isDragging) return;
 
-    let dest = null;
-    if(longPressActive){
-      dest = 'game.html';
-    } else if(!hasEverDragged){
-      dest = 'home.html';
-    } else if(currentZone && zones[currentZone]){
-      dest = zones[currentZone].dest;
-    } else {
-      return; // dragged but not in a zone — dead click
-    }
+  let dest = null;
 
-    const r = wrap.getBoundingClientRect();
-    const bx = r.left+r.width/2, by = r.top+r.height/2;
-    const col = longPressActive ? '180,0,0' : '212,175,55';
-    for(let i=0;i<56;i++){
-      const p=document.createElement('div');p.className='explosion-particle';
-      const ang=(Math.PI*2*i)/56+Math.random()*0.2;
-      const dist=80+Math.random()*180,dur=550+Math.random()*380;
-      p.style.cssText=`left:${bx}px;top:${by}px;width:${2+Math.random()*5}px;height:${2+Math.random()*5}px;background:rgba(${col},${0.5+Math.random()*0.5});box-shadow:0 0 ${5+Math.random()*10}px rgba(${col},.8);transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
-      document.body.appendChild(p);
-      requestAnimationFrame(()=>{p.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;p.style.opacity='0';});
-      setTimeout(()=>p.remove(),dur);
-    }
-    setTimeout(()=>{ window.location.href = dest; }, 350);
-  });
+  // Priority 1: Long press (red/blood mode) always works
+  if(longPressActive){
+    dest = 'game.html';
+  }
+  // Priority 2: Currently inside a zone
+  else if(currentZone && zones[currentZone]){
+    dest = zones[currentZone].dest;
+  }
+  // Priority 3: Has dragged before but not in a zone - use last visited or default
+  else if(hasEverDragged){
+    // If we've visited zones before, go to the most recent one
+    // Otherwise default to home
+    const lastZone = Array.from(visitedZones).pop();
+    dest = lastZone ? zones[lastZone].dest : 'home.html';
+  }
+  // Priority 4: Never dragged, fresh click
+  else {
+    dest = 'home.html';
+  }
+
+  // Visual explosion effect
+  const r = wrap.getBoundingClientRect();
+  const bx = r.left+r.width/2, by = r.top+r.height/2;
+  const col = longPressActive ? '180,0,0' : '212,175,55';
+  for(let i=0;i<56;i++){
+    const p=document.createElement('div');p.className='explosion-particle';
+    const ang=(Math.PI*2*i)/56+Math.random()*0.2;
+    const dist=80+Math.random()*180,dur=550+Math.random()*380;
+    p.style.cssText=`left:${bx}px;top:${by}px;width:${2+Math.random()*5}px;height:${2+Math.random()*5}px;background:rgba(${col},${0.5+Math.random()*0.5});box-shadow:0 0 ${5+Math.random()*10}px rgba(${col},.8);transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
+    document.body.appendChild(p);
+    requestAnimationFrame(()=>{p.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;p.style.opacity='0';});
+    setTimeout(()=>p.remove(),dur);
+  }
+  setTimeout(()=>{ window.location.href = dest; }, 350);
+});
+
 
   window.addEventListener('resize',()=>{
     positionBtn(innerWidth/2, innerHeight*0.82);
