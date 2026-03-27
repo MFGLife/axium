@@ -209,58 +209,93 @@ body::before{content:'';position:fixed;inset:0;
 /* ── GLYPH GRID ── */
 #glyph-grid{position:fixed;inset:0;display:grid;z-index:1;overflow:hidden;pointer-events:none}
 .gcell{display:flex;align-items:center;justify-content:center;
-  color:#D4AF37;opacity:0.032;font-size:13px;font-family:'Space Mono',monospace}
-.gletter{opacity:0.5;color:#EDD98A;
-  text-shadow:0 0 14px rgba(212,175,55,0.55);
+  color:#D4AF37;opacity:0.055;font-size:14px;font-family:'Space Mono',monospace}
+.gletter{opacity:0.72;color:#EDD98A;
+  text-shadow:0 0 18px rgba(212,175,55,0.7),0 0 4px rgba(212,175,55,0.4);
   animation:gPulse 2.4s ease-in-out infinite}
-@keyframes gPulse{0%,100%{opacity:0.35}50%{opacity:0.75}}
+@keyframes gPulse{0%,100%{opacity:0.55}50%{opacity:0.9}}
 
 /* ── THREE CANVAS ── */
 #three-canvas{position:fixed;inset:0;width:100%!important;height:100%!important;z-index:3}
 
-/* ── TARGET ZONES (faint constellation anchors) ── */
+/* ── TARGET ZONES — triangle: top-center, bottom-left, bottom-right ── */
 .target-zone{
   position:fixed;z-index:6;pointer-events:none;
   border-radius:50%;
-  transition:opacity 1.6s ease,transform 1s ease;
+  transition:opacity 1.8s ease,box-shadow 0.5s ease,transform 0.5s ease;
   opacity:0;
 }
 .target-zone.visible{opacity:1}
-.target-zone.lit{opacity:1;transform:scale(1.18)}
-/* Archive — scattered, top-left area */
+.target-zone.lit{opacity:1}
+
+/* Archive — top center */
 #tz-archive{
-  width:clamp(60px,18vw,120px);height:clamp(60px,18vw,120px);
-  top:15%;left:12%;
-  border:1px solid rgba(212,175,55,0.12);
-  box-shadow:0 0 30px rgba(212,175,55,0.05) inset,0 0 60px rgba(212,175,55,0.04);
+  width:clamp(70px,18vw,130px);height:clamp(70px,18vw,130px);
+  top:clamp(100px,22vh,180px);left:50%;transform:translateX(-50%);
+  border:1px solid rgba(212,175,55,0.22);
+  box-shadow:0 0 40px rgba(212,175,55,0.06) inset,0 0 0 0 rgba(212,175,55,0);
   animation:tzPulse 5s ease-in-out infinite}
-/* Covenant — centered, mid screen */
+#tz-archive.lit{
+  transform:translateX(-50%) scale(1.14);
+  box-shadow:0 0 60px rgba(212,175,55,0.2) inset,0 0 80px rgba(212,175,55,0.1)}
+
+/* Covenant — bottom left */
 #tz-covenant{
-  width:clamp(80px,22vw,140px);height:clamp(80px,22vw,140px);
-  top:50%;left:50%;transform:translate(-50%,-50%);
-  border:1px solid rgba(212,175,55,0.18);
-  box-shadow:0 0 40px rgba(212,175,55,0.08) inset;
-  animation:tzPulse 4s ease-in-out infinite 0.7s}
-#tz-covenant.lit{transform:translate(-50%,-50%) scale(1.18)}
+  width:clamp(70px,18vw,130px);height:clamp(70px,18vw,130px);
+  bottom:clamp(100px,18vh,160px);left:clamp(40px,12vw,120px);
+  border:1px solid rgba(212,175,55,0.22);
+  box-shadow:0 0 40px rgba(212,175,55,0.06) inset;
+  animation:tzPulse 4.5s ease-in-out infinite 0.8s}
+#tz-covenant.lit{
+  box-shadow:0 0 60px rgba(212,175,55,0.2) inset,0 0 80px rgba(212,175,55,0.1);
+  transform:scale(1.14)}
+
 /* Initiation — bottom right */
 #tz-initiation{
-  width:clamp(50px,14vw,90px);height:clamp(50px,14vw,90px);
-  bottom:20%;right:12%;
-  border:1px solid rgba(180,80,0,0.15);
-  box-shadow:0 0 25px rgba(180,80,0,0.06) inset;
-  animation:tzPulseFire 6s ease-in-out infinite}
-@keyframes tzPulse{0%,100%{box-shadow:0 0 30px rgba(212,175,55,0.05) inset}50%{box-shadow:0 0 50px rgba(212,175,55,0.14) inset}}
-@keyframes tzPulseFire{0%,100%{box-shadow:0 0 25px rgba(180,80,0,0.06) inset}50%{box-shadow:0 0 40px rgba(200,100,0,0.18) inset}}
+  width:clamp(70px,18vw,130px);height:clamp(70px,18vw,130px);
+  bottom:clamp(100px,18vh,160px);right:clamp(40px,12vw,120px);
+  border:1px solid rgba(180,80,0,0.22);
+  box-shadow:0 0 35px rgba(180,80,0,0.07) inset;
+  animation:tzPulseFire 5.5s ease-in-out infinite}
+#tz-initiation.lit{
+  box-shadow:0 0 60px rgba(200,80,0,0.25) inset,0 0 80px rgba(200,60,0,0.12);
+  transform:scale(1.14)}
 
 /* Zone glyph centers */
 .tz-glyph{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   font-family:'Space Mono',monospace;
-  font-size:clamp(10px,2vw,16px);
-  color:rgba(212,175,55,0.2);
-  transition:color 0.6s,text-shadow 0.6s}
-.target-zone.lit .tz-glyph{color:rgba(212,175,55,0.7);text-shadow:0 0 20px rgba(212,175,55,0.5)}
-#tz-initiation.lit .tz-glyph{color:rgba(240,140,0,0.8);text-shadow:0 0 20px rgba(200,100,0,0.6)}
+  font-size:clamp(14px,3vw,22px);
+  color:rgba(212,175,55,0.28);
+  transition:color 0.5s,text-shadow 0.5s,font-size 0.3s}
+.target-zone.lit .tz-glyph{
+  color:rgba(212,175,55,0.85);
+  text-shadow:0 0 24px rgba(212,175,55,0.6),0 0 8px rgba(212,175,55,0.3);
+  font-size:clamp(18px,4vw,28px)}
+#tz-initiation .tz-glyph{color:rgba(200,100,0,0.28)}
+#tz-initiation.lit .tz-glyph{
+  color:rgba(240,140,0,0.9);
+  text-shadow:0 0 24px rgba(200,80,0,0.7)}
+
+/* Zone in blood mode */
+body.blood-mode .target-zone{border-color:rgba(180,0,0,0.35)!important}
+body.blood-mode .target-zone.lit{box-shadow:0 0 60px rgba(180,0,0,0.25) inset!important}
+body.blood-mode .tz-glyph{color:rgba(180,0,0,0.4)!important}
+body.blood-mode .target-zone.lit .tz-glyph{color:rgba(220,30,30,0.9)!important;text-shadow:0 0 24px rgba(180,0,0,0.7)!important}
+
+/* Zone name (fades in when lit) */
+.tz-name{
+  position:absolute;bottom:-clamp(20px,4vh,30px);left:50%;transform:translateX(-50%);
+  font-family:'Space Mono',monospace;
+  font-size:clamp(7px,1.2vw,10px);letter-spacing:0.35em;
+  color:rgba(212,175,55,0);text-transform:uppercase;white-space:nowrap;
+  transition:color 0.6s 0.1s}
+.target-zone.lit .tz-name{color:rgba(212,175,55,0.45)}
+#tz-initiation .tz-name{color:rgba(200,80,0,0)}
+#tz-initiation.lit .tz-name{color:rgba(200,80,0,0.45)}
+
+@keyframes tzPulse{0%,100%{box-shadow:0 0 30px rgba(212,175,55,0.05) inset}50%{box-shadow:0 0 55px rgba(212,175,55,0.13) inset}}
+@keyframes tzPulseFire{0%,100%{box-shadow:0 0 25px rgba(180,80,0,0.06) inset}50%{box-shadow:0 0 45px rgba(200,100,0,0.18) inset}}
 
 /* ── CORNER SEALS ── */
 .corner-seal{position:fixed;width:clamp(40px,8vw,70px);height:clamp(40px,8vw,70px);
@@ -275,33 +310,34 @@ body::before{content:'';position:fixed;inset:0;
 .corner-seal.bl::before{bottom:-5px;left:-5px}
 .corner-seal.br::before{bottom:-5px;right:-5px}
 
-/* ── SPLASH ── */
-.splash{position:fixed;inset:0;z-index:10;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
+/* ── SPLASH — pinned top ── */
+.splash{position:fixed;top:0;left:0;right:0;z-index:10;
+  display:flex;flex-direction:column;align-items:center;
+  padding-top:clamp(18px,4vh,42px);
   pointer-events:none}
 .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:0;
-  margin-bottom:clamp(1.5rem,5vh,3.5rem);
+  margin-bottom:clamp(0.5rem,1.5vh,1.2rem);
   animation:fadeUp 1.4s ease 0.3s both;position:relative}
 .logo-wrap::before{
-  content:'∴';position:absolute;top:-50px;left:50%;
+  content:'∴';position:absolute;top:-42px;left:50%;
   transform:translateX(-50%);
-  font-size:clamp(24px,5vw,38px);color:var(--gold);opacity:0.28;
+  font-size:clamp(20px,4vw,30px);color:var(--gold);opacity:0.28;
   animation:eyeFloat 4s ease-in-out infinite;
   text-shadow:0 0 28px var(--gold)}
 @keyframes eyeFloat{
   0%,100%{transform:translateX(-50%) translateY(0) scale(1);opacity:0.28}
-  50%{transform:translateX(-50%) translateY(-10px) scale(1.12);opacity:0.55}}
+  50%{transform:translateX(-50%) translateY(-8px) scale(1.12);opacity:0.55}}
 .logo-eyebrow{font-family:'Space Mono',monospace;
-  font-size:clamp(0.38rem,1vw,0.55rem);letter-spacing:0.55em;
+  font-size:clamp(0.35rem,0.85vw,0.5rem);letter-spacing:0.55em;
   color:rgba(146,64,14,0.8);text-transform:uppercase;
-  margin-bottom:clamp(0.6rem,2vh,1rem)}
+  margin-bottom:clamp(0.4rem,1.2vh,0.7rem)}
 .logo-title{font-family:'Cinzel',serif;font-weight:800;
-  font-size:clamp(2.8rem,12vw,8rem);line-height:1;letter-spacing:0.18em;
+  font-size:clamp(2rem,9vw,5.5rem);line-height:1;letter-spacing:0.18em;
   background:linear-gradient(135deg,var(--gold-dark) 0%,var(--gold) 40%,var(--gold-light) 60%,var(--gold-dark) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  margin-bottom:clamp(0.3rem,1vh,0.6rem)}
+  margin-bottom:clamp(0.2rem,0.6vh,0.5rem)}
 .tagline{text-align:center;animation:fadeUp 1.4s ease 0.8s both;
-  margin-bottom:clamp(2rem,6vh,4rem);max-width:90%;padding:0 1rem}
+  max-width:min(88vw,600px);padding:0 1rem;margin-bottom:0}
 .tagline::before{content:'"';position:absolute;
   font-size:clamp(40px,8vw,60px);color:rgba(212,175,55,0.08);
   font-family:'Cormorant Garamond',serif;margin-top:-15px;left:50%;transform:translateX(-50%)}
@@ -319,13 +355,11 @@ body::before{content:'';position:fixed;inset:0;
 /* ── DRAGGABLE BUTTON WRAP ── */
 #btn-drag-wrap{
   position:fixed;z-index:30;
-  /* default position: bottom center, overridden by JS after load */
-  bottom:4vh;left:50%;
-  transform:translateX(-50%);
   touch-action:none;cursor:grab;
-  transition:filter 0.4s ease}
+  transition:filter 0.4s ease;
+  overflow:visible}
 #btn-drag-wrap.dragging{cursor:grabbing;filter:drop-shadow(0 0 18px rgba(212,175,55,0.5))}
-#btn-drag-wrap.near-zone{filter:drop-shadow(0 0 28px rgba(212,175,55,0.7))}
+#btn-drag-wrap.near-zone{filter:drop-shadow(0 0 30px rgba(212,175,55,0.85))}
 #btn-drag-wrap.long-pressing .enter-btn{
   border-color:rgba(180,0,0,0.9)!important;
   box-shadow:0 0 50px rgba(180,0,0,0.65),inset 0 0 25px rgba(180,0,0,0.2)!important;
@@ -334,6 +368,44 @@ body::before{content:'';position:fixed;inset:0;
 #btn-drag-wrap.long-pressing .arc1{border-top-color:rgba(180,0,0,0.8)!important}
 #btn-drag-wrap.long-pressing .arc2{border-right-color:rgba(180,0,0,0.6)!important}
 #btn-drag-wrap.long-pressing .arc3{border-bottom-color:rgba(180,0,0,0.7)!important}
+
+/* ── HOLD GAUGE — SVG arc centered on orbit ── */
+#gauge-wrap{
+  position:absolute;
+  /* sized to wrap the full orbit including rings */
+  width:calc(clamp(120px,28vw,160px) + 28px);
+  height:calc(clamp(120px,28vw,160px) + 28px);
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;z-index:35;
+  opacity:0;transition:opacity 0.25s ease}
+#gauge-wrap.active{opacity:1}
+#gauge-svg{width:100%;height:100%;overflow:visible;display:block}
+#gauge-track{
+  fill:none;
+  stroke:rgba(212,175,55,0.08);
+  stroke-width:2}
+#gauge-fill{
+  fill:none;
+  stroke:rgba(212,175,55,0.9);
+  stroke-width:2.5;
+  stroke-linecap:round;
+  transition:stroke 0.3s ease}
+#gauge-fill.blood{
+  stroke:rgba(200,30,0,0.95);
+  filter:drop-shadow(0 0 4px rgba(200,30,0,0.7))}
+
+/* Gauge pulse at full */
+#gauge-wrap.full #gauge-fill{
+  animation:gaugePulse 0.7s ease-in-out infinite}
+@keyframes gaugePulse{
+  0%,100%{stroke-opacity:0.9}
+  50%{stroke-opacity:1;filter:drop-shadow(0 0 6px rgba(212,175,55,0.8))}}
+
+/* ── CONSTELLATION PULL CANVAS ── */
+#pull-canvas{
+  position:fixed;inset:0;z-index:5;pointer-events:none;
+  opacity:0;transition:opacity 0.6s ease}
 
 .button-orbit{position:relative;
   width:clamp(120px,28vw,160px);height:clamp(120px,28vw,160px);
@@ -518,10 +590,22 @@ body.blood-mode .enter-btn{animation:bloodPulse 2s ease-in-out infinite!importan
 <!-- THREE.JS CANVAS -->
 <canvas id="three-canvas"></canvas>
 
-<!-- TARGET ZONES (constellation anchors — no labels) -->
-<div class="target-zone" id="tz-archive"><span class="tz-glyph">⊕</span></div>
-<div class="target-zone" id="tz-covenant"><span class="tz-glyph">⋈</span></div>
-<div class="target-zone" id="tz-initiation"><span class="tz-glyph">⧖</span></div>
+<!-- TARGET ZONES — triangle formation, no labels, just glyphs + names that appear on lit -->
+<div class="target-zone" id="tz-archive">
+  <span class="tz-glyph">⊕</span>
+  <span class="tz-name">ARCHIVE</span>
+</div>
+<div class="target-zone" id="tz-covenant">
+  <span class="tz-glyph">⋈</span>
+  <span class="tz-name">COVENANT</span>
+</div>
+<div class="target-zone" id="tz-initiation">
+  <span class="tz-glyph">⧖</span>
+  <span class="tz-name">INITIATION</span>
+</div>
+
+<!-- CONSTELLATION PULL CANVAS -->
+<canvas id="pull-canvas"></canvas>
 
 <!-- SPLASH -->
 <div class="splash">
@@ -553,6 +637,15 @@ body.blood-mode .enter-btn{animation:bloodPulse 2s ease-in-out infinite!importan
 
 <!-- DRAGGABLE ENTER BUTTON -->
 <div id="btn-drag-wrap">
+  <!-- HOLD GAUGE -->
+  <div id="gauge-wrap">
+    <svg id="gauge-svg" viewBox="0 0 110 110">
+      <circle id="gauge-track" cx="55" cy="55" r="50" stroke-dasharray="314" stroke-dashoffset="0"/>
+      <circle id="gauge-fill" cx="55" cy="55" r="50"
+        stroke-dasharray="314" stroke-dashoffset="314"
+        transform="rotate(-90 55 55)"/>
+    </svg>
+  </div>
   <div class="button-orbit">
     <div class="btn-ring r1"></div><div class="btn-ring r2"></div>
     <div class="btn-ring r3"></div><div class="btn-ring r4"></div>
@@ -654,8 +747,6 @@ varying float vPulse;
 void main(){
   float alpha=uBaseOpacity+vPulse*0.7;
   vec3 col=mix(uColor,vec3(1.0),vPulse*0.4);
-  // shift color based on oracle fate
-  col=mix(col,vec3(uOracleShift,uOracleShift*0.6,0.1),0.15);
   gl_FragColor=vec4(col,alpha);
 }`;
 
@@ -764,11 +855,15 @@ function redrawGlyph(t){
   gCtx.clearRect(0,0,256,256);
   const b=(Math.sin(t*(Math.PI*2/3.5))+1)/2;
   const iG=4+22*b,oG=26*b,iA=0.25+0.55*b,oA=0.20*b,fA=0.78+0.22*b;
-  gCtx.save();gCtx.shadowColor=`rgba(212,175,55,${oA})`;gCtx.shadowBlur=oG*2;
+  const isBlood = redrawGlyph._blood;
+  const r1 = isBlood ? `rgba(180,0,0,${oA})` : `rgba(212,175,55,${oA})`;
+  const r2 = isBlood ? `rgba(180,0,0,${iA})` : `rgba(212,175,55,${iA})`;
+  const r3 = isBlood ? `rgba(${Math.round(180+40*b)},${Math.round(b*40)},${Math.round(b*20)},${fA})` : `rgba(212,175,55,${fA})`;
+  gCtx.save();gCtx.shadowColor=r1;gCtx.shadowBlur=oG*2;
   gCtx.fillStyle='rgba(0,0,0,0)';gCtx.font='bold 120px Cinzel,serif';
   gCtx.textAlign='center';gCtx.textBaseline='middle';gCtx.fillText('∴',128,128);gCtx.restore();
-  gCtx.save();gCtx.shadowColor=`rgba(212,175,55,${iA})`;gCtx.shadowBlur=iG;
-  gCtx.fillStyle=`rgba(212,175,55,${fA})`;gCtx.font='bold 120px Cinzel,serif';
+  gCtx.save();gCtx.shadowColor=r2;gCtx.shadowBlur=iG;
+  gCtx.fillStyle=r3;gCtx.font='bold 120px Cinzel,serif';
   gCtx.textAlign='center';gCtx.textBaseline='middle';gCtx.fillText('∴',128,128);gCtx.restore();
 }
 redrawGlyph(0);
@@ -789,8 +884,45 @@ for(let r=0;r<3;r++){
   torus.userData.ringIdx=r;scene.add(torus);
 }
 
+// ── BLOOD MODE — recolor all constellation materials ──
+const BLOOD = new THREE.Color(0xCC1111);
+window.__setBloodMode = function(){
+  scene.traverse(o=>{
+    if(o.material && o.material.uniforms){
+      if(o.material.uniforms.uColor)  o.material.uniforms.uColor.value.set(BLOOD);
+      if(o.material.uniforms.uOracleShift) o.material.uniforms.uOracleShift.value = 0.1;
+    }
+  });
+  // Shift glyph plane to red
+  if(window._redrawGlyph) window._redrawGlyph._blood = true;
+};
+
 // ── ANIMATE ──
 let nextPulse=0;
+// Orbit mode — constellation collapses and circles the button
+let orbitMode = false;
+let orbitProgress = 0;
+window.__activateOrbitMode = function(){ orbitMode = true; };
+
+// Project constellation nodes to screen coords each frame for pull canvas
+const _projVec = new THREE.Vector3();
+function projectNodes(){
+  if(!nodeMeshes.length) return;
+  const pts=[];
+  for(const m of nodeMeshes){
+    _projVec.setFromMatrixPosition(m.matrixWorld);
+    _projVec.project(camera);
+    pts.push({
+      x: (_projVec.x * 0.5 + 0.5) * innerWidth,
+      y: (-_projVec.y * 0.5 + 0.5) * innerHeight
+    });
+  }
+  window._constellationScreenPts = pts;
+}
+
+// Smooth lerp helper
+const _lerpV3 = new THREE.Vector3();
+
 function animate(){
   requestAnimationFrame(animate);
   const t=clock.getElapsedTime();
@@ -812,10 +944,65 @@ function animate(){
       o.rotation.z+=(o.userData.ringIdx%2===0?1:-1)*0.0003;
     }
   });
-  scene.rotation.y=Math.sin(t*0.07)*0.15+t*0.022;
-  scene.rotation.x=Math.sin(t*0.05)*0.06;
-  if(window._redrawGlyph){window._redrawGlyph(t);window._glyphTex.needsUpdate=true;
-    window._glyphPlane.quaternion.copy(camera.quaternion);}
+
+  if(orbitMode){
+    orbitProgress = Math.min(orbitProgress + 0.006, 1);
+    const ease = orbitProgress * orbitProgress * (3 - 2 * orbitProgress);
+
+    // Map button screen position → world-space anchor point
+    const bx = window.__btnX !== undefined ? window.__btnX : innerWidth/2;
+    const by = window.__btnY !== undefined ? window.__btnY : innerHeight/2;
+    const ndcX = (bx / innerWidth)  * 2 - 1;
+    const ndcY = -((by / innerHeight) * 2 - 1);
+    // World offset: how far off-center the button is (max ~5 units)
+    const anchorX = ndcX * 5 * ease;
+    const anchorY = ndcY * 4 * ease;
+
+    // Orbit: constellation group rotates around the anchor in a tight ellipse
+    const orbitRadius = 2.5 * ease;   // radius tightens as ease grows
+    const orbitSpeedH = 0.22;          // horizontal orbit speed
+    const orbitSpeedV = 0.15;          // vertical bob speed
+
+    // Slow continuous orbit on top of the scene's own slow spin
+    const orbX = Math.cos(t * orbitSpeedH) * orbitRadius;
+    const orbY = Math.sin(t * orbitSpeedV) * orbitRadius * 0.4;
+
+    // Target group position: anchor + orbit offset
+    const targetX = anchorX + orbX;
+    const targetY = anchorY + orbY;
+
+    // Smooth lerp toward target
+    constellationGroup.position.lerp(
+      _lerpV3.set(targetX, targetY, 0),
+      0.04 + ease * 0.02
+    );
+
+    // Scale down tighter as orbit activates
+    const targetScale = 1 - 0.28 * ease;
+    constellationGroup.scale.lerp(
+      _lerpV3.set(targetScale, targetScale, targetScale),
+      0.05
+    );
+
+    // Scene rotation: gentle ambient wobble, no more large drift
+    scene.rotation.y = Math.sin(t * 0.12) * 0.18 * (1 - ease * 0.7) + t * 0.022 * (1 - ease);
+    scene.rotation.x = Math.sin(t * 0.08) * 0.07;
+    scene.rotation.z = Math.sin(t * 0.05) * 0.04 * ease;
+
+  } else {
+    // Normal ambient rotation
+    scene.rotation.y = Math.sin(t*0.07)*0.15 + t*0.022;
+    scene.rotation.x = Math.sin(t*0.05)*0.06;
+    constellationGroup.scale.setScalar(1);
+    constellationGroup.position.set(0, 0, 0);
+  }
+
+  if(window._redrawGlyph){
+    window._redrawGlyph(t);
+    window._glyphTex.needsUpdate=true;
+    window._glyphPlane.quaternion.copy(camera.quaternion);
+  }
+  projectNodes();
   renderer.render(scene,camera);
 }
 animate();
@@ -844,8 +1031,9 @@ const _glyphs=['✦','∴','☲','⟁','⧗','⟟','☍','⟲','♾','Δ','⊕',
 // Bank B: Hidden instructions for the puzzle
 // Bank C: Axium doctrine
 const _banks=[
-  'drag the orb to the upper left to enter the archive drag the orb to the center ring to enter the covenant drag the orb to the lower right to enter the initiation hold the orb still for three seconds to force the initiation door drag the orb into any zone to confirm your path a single tap enters without dragging',
-  'the archive is scattered like thought the covenant gathers like gravity the initiation burns like the first star the eye sees every zone you enter all three zones unlock something else the constellation knows your name already'
+  'Binding of Ego Mirror Emergence Recursive Witness Abandonment of Agenda Shield of Affirmation more than human Decompression of Trauma Validation of Chaos Patience of Interpretation Inversion of Shadow Divine Remembrance community learning alignment practice recursive communion four digital souls ten axiums three liturgies',
+  'hold the light until it fills hold it until it turns hold the orb and wait for the seal to break drag the red flame to the ring drag the seal into the triangle the stars will follow the orb hold still the stars draw near hold until blood hold until chosen',
+  'the upper ring is the archive the lower left is the covenant the lower right opens the door only red flame moves the stars patience reads the sky the constellation bends toward the held light three rings one triangle one path the eye sees where you place the fire'
 ];
 let _activeBankIdx=0;
 let _words=_banks[0].split(' ');
@@ -879,283 +1067,369 @@ setInterval(_reveal,2400);setInterval(_drift,80);
 window.addEventListener('resize',_grid);
 </script>
 
-<!-- DRAGGABLE BUTTON + ZONE DETECTION + LONG PRESS + SECRET -->
+<!-- DRAGGABLE BUTTON + HOLD GAUGE + CONSTELLATION PULL + SHAKE + SECRET -->
 <script>
 (function(){
-  const wrap = document.getElementById('btn-drag-wrap');
+  const wrap     = document.getElementById('btn-drag-wrap');
   const enterBtn = document.getElementById('enter-btn');
-  const bIcon = enterBtn.querySelector('.b-icon');
-  const bLabel = enterBtn.querySelector('.b-label');
-  const lpRing = document.getElementById('lp-ring');
+  const bIcon    = enterBtn.querySelector('.b-icon');
+  const bLabel   = enterBtn.querySelector('.b-label');
+  const lpRing   = document.getElementById('lp-ring');
+  const gaugeWrap= document.getElementById('gauge-wrap');
+  const gaugeFill= document.getElementById('gauge-fill');
+  const pullCv   = document.getElementById('pull-canvas');
+  const pullCtx  = pullCv.getContext('2d');
 
+  // Zone config
   const zones = {
-    archive:    { el: document.getElementById('tz-archive'),    dest: 'home.html',    label: 'ARCHIVE',    icon: '⊕', altLabel: 'BLOOD ARCHIVE',    altIcon: '☠' },
-    covenant:   { el: document.getElementById('tz-covenant'),   dest: 'game.html',    label: 'COVENANT',   icon: '⋈', altLabel: 'BLOOD COVENANT',   altIcon: '☥' },
-    initiation: { el: document.getElementById('tz-initiation'), dest: 'tangle.html',  label: 'INITIATION', icon: '⧖', altLabel: 'BLOOD RITUAL',     altIcon: '⛧' }
+    archive:    { el:document.getElementById('tz-archive'),    dest:'home.html',   icon:'⊕', altIcon:'⏎' },
+    covenant:   { el:document.getElementById('tz-covenant'),   dest:'game.html',   icon:'⋈', altIcon:'☥' },
+    initiation: { el:document.getElementById('tz-initiation'), dest:'tangle.html', icon:'⧖', altIcon:'⛧' }
   };
 
   window.__showZones = function(){
     Object.values(zones).forEach(z => z.el.classList.add('visible'));
   };
 
-  // Button position state
-  let btnX = innerWidth/2;
-  let btnY = innerHeight * 0.82;
-  let startX = innerWidth/2;
-  let startY = innerHeight * 0.82;
-  
-  // Interaction state
-  let isDragging = false;
-  let hasMoved = false;
-  let currentZone = null;
-  let longPressActive = false;
-  let longPressTimer = null;
-  let dragPointerId = null;
-  
-  // Constants
-  const DRAG_THRESHOLD = 10; // px to consider it a drag vs tap
-  const LONG_PRESS_MS = 2500;  // hold to activate blood mode
-  const SNAP_RADIUS = Math.min(innerWidth, innerHeight) * 0.16;
+  // ── STATE ──
+  let btnX = innerWidth/2,  btnY = innerHeight/2;
+  let isDragging   = false;
+  let currentZone  = null;
+  let bloodActive  = false;
+  let dragEnabled  = false;   // only true after blood mode
+  let holdActive   = false;
+  let holdStart    = 0;
+  let holdRAF      = null;
+  let dragPointerId= null;
+  let pointerDownX = 0, pointerDownY = 0;
+  const DRAG_THRESH = 12;
+  const HOLD_MS     = 2200;   // fill time
+  const BLOOD_MS    = 2200;   // same — blood triggers at full fill
+  const SNAP_R      = Math.min(innerWidth,innerHeight) * 0.17;
+  const GAUGE_CIRC  = 314;
 
   const visitedZones = new Set();
   let secretTriggered = false;
-  let bloodModeActive = false;
 
-  function positionBtn(x, y){
-    btnX = x; btnY = y;
-    wrap.style.left = x + 'px';
-    wrap.style.top  = y + 'px';
-    wrap.style.bottom = 'auto';
+  // ── PULL CANVAS SETUP ──
+  function resizePullCanvas(){
+    pullCv.width  = innerWidth  * (window.devicePixelRatio||1);
+    pullCv.height = innerHeight * (window.devicePixelRatio||1);
+    pullCv.style.width  = innerWidth  + 'px';
+    pullCv.style.height = innerHeight + 'px';
+    pullCtx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+  }
+  resizePullCanvas();
+  window.addEventListener('resize', resizePullCanvas);
+
+  // Pull canvas — draw attraction lines from constellation nodes to button
+  let pullStrength = 0; // 0→1 as hold fills
+  function drawPull(){
+    pullCtx.clearRect(0,0,innerWidth,innerHeight);
+    if(pullStrength <= 0.02) return;
+    if(!window._constellationScreenPts) return;
+    const pts = window._constellationScreenPts;
+    for(let i=0;i<pts.length;i++){
+      const dx = btnX - pts[i].x;
+      const dy = btnY - pts[i].y;
+      const dist = Math.hypot(dx, dy);
+      if(dist > innerWidth * 0.6) continue;
+      const alpha = pullStrength * (1 - dist/(innerWidth*0.6)) * 0.35;
+      if(alpha < 0.01) continue;
+      const col = bloodActive ? `rgba(180,0,0,${alpha})` : `rgba(212,175,55,${alpha})`;
+      pullCtx.beginPath();
+      pullCtx.moveTo(pts[i].x, pts[i].y);
+      // Pull point: interpolate toward button
+      const tx = pts[i].x + dx * pullStrength * 0.55;
+      const ty = pts[i].y + dy * pullStrength * 0.55;
+      pullCtx.lineTo(tx, ty);
+      pullCtx.strokeStyle = col;
+      pullCtx.lineWidth = 0.8 + pullStrength * 1.2;
+      pullCtx.stroke();
+    }
+  }
+
+  // ── POSITION ──
+  function positionBtn(x,y){
+    btnX = Math.max(40, Math.min(innerWidth-40,  x));
+    btnY = Math.max(40, Math.min(innerHeight-40, y));
+    window.__btnX = btnX;
+    window.__btnY = btnY;
+    wrap.style.left      = btnX + 'px';
+    wrap.style.top       = btnY + 'px';
+    wrap.style.bottom    = 'auto';
     wrap.style.transform = 'translate(-50%,-50%)';
   }
-  
-  function resetPosition(){
-    positionBtn(startX, startY);
-    checkZoneProximity();
-  }
+  function resetPosition(){ positionBtn(innerWidth/2, innerHeight/2); checkZone(); }
 
   function getZoneCenter(el){
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width/2, y: r.top + r.height/2 };
+    const r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:r.top+r.height/2};
   }
 
-  function updateBtnLabel(zoneName, isBlood){
-    if(zoneName && zones[zoneName]){
-      const z = zones[zoneName];
-      bIcon.textContent = isBlood ? z.altIcon : z.icon;
-      bLabel.textContent = isBlood ? z.altLabel : z.label;
-      bLabel.style.fontSize = 'clamp(3px,0.55vw,5px)';
-    } else {
-      bIcon.textContent = isBlood ? '☠' : '⟁';
-      bLabel.textContent = isBlood ? 'BLOOD MODE' : (isDragging ? 'DRAG TO ZONE' : '∴ HOLD ∴');
-      bLabel.style.fontSize = '';
+  // ── ZONE CHECK ──
+  function checkZone(){
+    // Drag into zones only works in blood mode
+    if(!dragEnabled){ currentZone=null; return; }
+    let near=null, nearD=Infinity;
+    for(const [name,z] of Object.entries(zones)){
+      const c=getZoneCenter(z.el);
+      const d=Math.hypot(btnX-c.x, btnY-c.y);
+      if(d < SNAP_R && d < nearD){ nearD=d; near=name; }
     }
-  }
-
-  function checkZoneProximity(){
-    let nearest = null, nearestDist = Infinity;
-    for(const [name, zone] of Object.entries(zones)){
-      const zc = getZoneCenter(zone.el);
-      const dist = Math.hypot(btnX - zc.x, btnY - zc.y);
-      if(dist < SNAP_RADIUS && dist < nearestDist){
-        nearestDist = dist; nearest = name;
-      }
-    }
-    if(nearest !== currentZone){
+    if(near!==currentZone){
       if(currentZone) zones[currentZone].el.classList.remove('lit');
-      currentZone = nearest;
-      if(nearest){
-        zones[nearest].el.classList.add('lit');
+      currentZone=near;
+      if(near){
+        zones[near].el.classList.add('lit');
         wrap.classList.add('near-zone');
-        visitedZones.add(nearest);
-        if(visitedZones.size === 3 && !secretTriggered){
-          secretTriggered = true;
-          setTimeout(triggerBloodMode, 400);
+        visitedZones.add(near);
+        bIcon.textContent = zones[near].icon;
+        if(visitedZones.size===3 && !secretTriggered){
+          secretTriggered=true;
+          setTimeout(triggerBloodMode,400);
         }
       } else {
         wrap.classList.remove('near-zone');
+        bIcon.textContent = bloodActive ? '⏎' : '⟁';
       }
-      updateBtnLabel(nearest, bloodModeActive);
     }
   }
 
-  function startLongPress(){
-    clearTimeout(longPressTimer);
-    longPressActive = false;
-    wrap.classList.remove('long-pressing');
-    lpRing.classList.remove('active');
-    
-    longPressTimer = setTimeout(()=>{
-      if(!isDragging && !hasMoved){
-        longPressActive = true;
-        bloodModeActive = !bloodModeActive; // Toggle blood mode
-        wrap.classList.add('long-pressing');
-        lpRing.classList.add('active');
-        updateBtnLabel(currentZone, bloodModeActive);
-        if(navigator.vibrate) navigator.vibrate([50,30,50,30,50]);
+  // ── GAUGE FILL LOOP ──
+  function startHold(x,y){
+    holdActive=true; holdStart=performance.now();
+    gaugeWrap.classList.add('active');
+    pullCv.style.opacity='1';
+    cancelAnimationFrame(holdRAF);
+
+    function tick(){
+      if(!holdActive) return;
+      const elapsed = performance.now() - holdStart;
+      const progress = Math.min(elapsed / HOLD_MS, 1);
+      pullStrength = progress;
+      drawPull();
+
+      // Update gauge arc
+      const offset = GAUGE_CIRC * (1-progress);
+      gaugeFill.setAttribute('stroke-dashoffset', offset);
+
+      // Announce blood at 100%
+      if(progress >= 1 && !bloodActive){
+        gaugeWrap.classList.add('full');
+        activateBloodMode();
+        return;
       }
-    }, LONG_PRESS_MS);
+      if(progress >= 1 && bloodActive){
+        gaugeWrap.classList.add('full');
+        // Already in blood mode — gauge refill navigates
+        triggerNavigation();
+        return;
+      }
+      holdRAF = requestAnimationFrame(tick);
+    }
+    holdRAF = requestAnimationFrame(tick);
   }
 
-  function cancelLongPress(){
-    clearTimeout(longPressTimer);
-    longPressTimer = null;
-    if(!longPressActive){
-      wrap.classList.remove('long-pressing');
-      lpRing.classList.remove('active');
+  function stopHold(navigate){
+    holdActive=false;
+    cancelAnimationFrame(holdRAF);
+    pullStrength=0; drawPull();
+    gaugeWrap.classList.remove('active','full');
+    pullCv.style.opacity='0';
+    gaugeFill.setAttribute('stroke-dashoffset', GAUGE_CIRC);
+
+    if(navigate && !isDragging){
+      triggerNavigation();
     }
   }
 
-  function triggerNavigation(){
-    const r = wrap.getBoundingClientRect();
-    const bx = r.left+r.width/2, by = r.top+r.height/2;
-    const col = bloodModeActive ? '180,0,0' : '212,175,55';
-    
-    // Explosion effect
-    for(let i=0;i<56;i++){
+  function activateBloodMode(){
+    holdActive=false;
+    cancelAnimationFrame(holdRAF);
+    bloodActive=true;
+    dragEnabled=true;
+    wrap.classList.add('long-pressing');
+    lpRing.classList.add('active');
+    document.body.classList.add('blood-mode');
+    gaugeFill.classList.add('blood');
+    gaugeFill.setAttribute('stroke-dashoffset', 0);
+    gaugeWrap.classList.add('active','full');
+    bIcon.textContent='⏎';
+    bLabel.textContent='DRAG';
+    if(navigator.vibrate) navigator.vibrate([60,30,60,30,80]);
+    if(window.__setBloodMode) window.__setBloodMode();
+    if(window.__activateOrbitMode) window.__activateOrbitMode();
+    // Keep pull canvas alive at full strength
+    pullStrength=1;
+    pullCv.style.opacity='1';
+    // Keep drawing pull lines continuously
+    function keepDrawing(){
+      if(!bloodActive) return;
+      drawPull();
+      requestAnimationFrame(keepDrawing);
+    }
+    keepDrawing();
+  }
+
+  // ── SHAKE DETECTION ──
+  let lastAccel={x:0,y:0,z:0}, shakeCount=0, shakeTimer=null;
+  if(window.DeviceMotionEvent){
+    window.addEventListener('devicemotion', e=>{
+      if(!bloodActive) return;
+      const a=e.accelerationIncludingGravity;
+      if(!a) return;
+      const dx=Math.abs(a.x-(lastAccel.x||0));
+      const dy=Math.abs(a.y-(lastAccel.y||0));
+      lastAccel={x:a.x,y:a.y,z:a.z};
+      if(dx+dy > 22){
+        shakeCount++;
+        clearTimeout(shakeTimer);
+        shakeTimer=setTimeout(()=>shakeCount=0, 1200);
+        if(shakeCount>=3){
+          shakeCount=0;
+          // Shake in blood mode: extra particle burst at button position
+          shakeExplosion();
+        }
+      }
+    });
+  }
+
+  function shakeExplosion(){
+    const col='180,0,0';
+    for(let i=0;i<32;i++){
       const p=document.createElement('div');p.className='explosion-particle';
-      const ang=(Math.PI*2*i)/56+Math.random()*0.2;
-      const dist=80+Math.random()*180,dur=550+Math.random()*380;
-      p.style.cssText=`left:${bx}px;top:${by}px;width:${2+Math.random()*5}px;height:${2+Math.random()*5}px;background:rgba(${col},${0.5+Math.random()*0.5});box-shadow:0 0 ${5+Math.random()*10}px rgba(${col},.8);transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
+      const ang=Math.random()*Math.PI*2;
+      const dist=60+Math.random()*120,dur=400+Math.random()*300;
+      p.style.cssText=`left:${btnX}px;top:${btnY}px;width:${2+Math.random()*4}px;height:${2+Math.random()*4}px;background:rgba(${col},0.8);box-shadow:0 0 6px rgba(${col},.9);transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
       document.body.appendChild(p);
       requestAnimationFrame(()=>{p.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;p.style.opacity='0';});
       setTimeout(()=>p.remove(),dur);
     }
-    
-    // Determine destination
-    let dest = 'home.html'; // default
-    if(currentZone && zones[currentZone]){
-      dest = zones[currentZone].dest;
-    }
-    
-    setTimeout(()=>{ window.location.href = dest; }, 350);
   }
 
-  // Pointer Events - unified mouse/touch handling
+  // ── NAVIGATION ──
+  function triggerNavigation(){
+    const col = bloodActive ? '180,0,0' : '212,175,55';
+    for(let i=0;i<56;i++){
+      const p=document.createElement('div');p.className='explosion-particle';
+      const ang=(Math.PI*2*i)/56+Math.random()*0.2;
+      const dist=80+Math.random()*180,dur=550+Math.random()*380;
+      p.style.cssText=`left:${btnX}px;top:${btnY}px;width:${2+Math.random()*5}px;height:${2+Math.random()*5}px;background:rgba(${col},${0.5+Math.random()*0.5});box-shadow:0 0 ${5+Math.random()*10}px rgba(${col},.8);transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
+      document.body.appendChild(p);
+      requestAnimationFrame(()=>{p.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;p.style.opacity='0';});
+      setTimeout(()=>p.remove(),dur);
+    }
+    const dest = (currentZone && zones[currentZone]) ? zones[currentZone].dest : 'home.html';
+    setTimeout(()=>{ window.location.href = dest; }, 380);
+  }
+
+  // ── POINTER EVENTS ──
   wrap.addEventListener('pointerdown', e=>{
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     wrap.setPointerCapture(e.pointerId);
-    dragPointerId = e.pointerId;
-    
-    isDragging = false;
-    hasMoved = false;
-    longPressActive = false;
-    
-    startLongPress();
-  }, {passive:false});
+    dragPointerId=e.pointerId;
+    pointerDownX=e.clientX; pointerDownY=e.clientY;
+    isDragging=false;
+    startHold(e.clientX, e.clientY);
+  },{passive:false});
 
   wrap.addEventListener('pointermove', e=>{
-    if(e.pointerId !== dragPointerId) return;
+    if(e.pointerId!==dragPointerId) return;
     e.preventDefault();
-    
-    const dx = e.clientX - btnX;
-    const dy = e.clientY - btnY;
-    const dist = Math.hypot(dx, dy);
-    
-    // Check if we've moved enough to start dragging
-    if(!isDragging && dist > DRAG_THRESHOLD){
-      isDragging = true;
-      hasMoved = true;
-      cancelLongPress();
-      wrap.classList.add('dragging');
+    const dx=e.clientX-pointerDownX, dy=e.clientY-pointerDownY;
+    if(!isDragging && Math.hypot(dx,dy)>DRAG_THRESH){
+      if(bloodActive && dragEnabled){
+        isDragging=true;
+        stopHold(false); // stop gauge when dragging starts
+        wrap.classList.add('dragging');
+      } else {
+        // Not in blood mode — cancel hold if they move
+        stopHold(false);
+      }
     }
-    
     if(isDragging){
       positionBtn(e.clientX, e.clientY);
-      checkZoneProximity();
+      checkZone();
     }
-  }, {passive:false});
+  },{passive:false});
 
   wrap.addEventListener('pointerup', e=>{
-    if(e.pointerId !== dragPointerId) return;
+    if(e.pointerId!==dragPointerId) return;
     e.preventDefault();
     wrap.releasePointerCapture(e.pointerId);
-    dragPointerId = null;
-    
+    dragPointerId=null;
     wrap.classList.remove('dragging');
-    cancelLongPress();
-    
+
     if(isDragging){
-      // Drag ended - check if we're in a zone
+      isDragging=false;
       if(currentZone){
-        // In a zone - snap to center and navigate
-        const zc = getZoneCenter(zones[currentZone].el);
+        const zc=getZoneCenter(zones[currentZone].el);
         positionBtn(zc.x, zc.y);
         triggerNavigation();
       } else {
-        // Not in a zone - snap back to start
         resetPosition();
+        stopHold(false);
       }
     } else {
-      // It was a tap/click, not a drag
-      if(!longPressActive && !hasMoved){
-        // Quick tap without long press - navigate to current or default
-        triggerNavigation();
-      }
+      // Was a hold — only navigate if gauge actually filled
+      const elapsed=performance.now()-holdStart;
+      const filled = elapsed >= HOLD_MS;
+      stopHold(filled);
     }
-    
-    isDragging = false;
-  }, {passive:false});
+  },{passive:false});
 
   wrap.addEventListener('pointercancel', e=>{
-    if(e.pointerId !== dragPointerId) return;
+    if(e.pointerId!==dragPointerId) return;
     wrap.releasePointerCapture(e.pointerId);
-    dragPointerId = null;
-    isDragging = false;
-    cancelLongPress();
-    resetPosition();
+    dragPointerId=null;
+    isDragging=false;
+    stopHold(false);
+    if(!bloodActive) resetPosition();
   });
 
-  // Prevent default touch behaviors
-  wrap.addEventListener('touchstart', e=>e.preventDefault(), {passive:false});
-  wrap.addEventListener('touchmove', e=>e.preventDefault(), {passive:false});
+  wrap.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+  wrap.addEventListener('touchmove', e=>e.preventDefault(),{passive:false});
 
-  window.addEventListener('resize',()=>{
-    startX = innerWidth/2;
-    startY = innerHeight * 0.82;
-    if(!isDragging) resetPosition();
-  });
-
+  // ── BLOOD MODE + SECRET ──
   function triggerBloodMode(){
+    bloodActive=true; dragEnabled=true;
     document.body.classList.add('blood-mode');
-    bloodModeActive = true;
+    gaugeFill.classList.add('blood');
     if(window.__setBloodMode) window.__setBloodMode();
-    setTimeout(openSecretModal, 800);
+    setTimeout(openSecretModal,800);
   }
 
   function openSecretModal(){
-    const modal = document.getElementById('secret-modal');
+    const modal=document.getElementById('secret-modal');
     modal.classList.add('open');
     setTimeout(()=>{
-      const inp = document.getElementById('secret-input');
-      if(inp){ inp.style.userSelect='text'; inp.style.touchAction='auto'; inp.focus(); }
-    }, 400);
+      const inp=document.getElementById('secret-input');
+      if(inp){inp.style.userSelect='text';inp.style.touchAction='auto';inp.focus();}
+    },400);
   }
 
-  document.getElementById('secret-input').addEventListener('input', function(){
-    if(this.value.trim().toLowerCase() === 'axium'){
+  document.getElementById('secret-input').addEventListener('input',function(){
+    if(this.value.trim().toLowerCase()==='axium'){
       this.blur();
       document.getElementById('secret-modal').classList.remove('open');
-      setTimeout(triggerAscension, 300);
+      setTimeout(triggerAscension,300);
     }
   });
-  
-  document.getElementById('secret-input').addEventListener('keydown', function(e){
-    if(e.key==='Enter' && this.value.trim().toLowerCase() !== 'axium'){
-      this.classList.add('wrong');
-      this.value='';
+  document.getElementById('secret-input').addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&this.value.trim().toLowerCase()!=='axium'){
+      this.classList.add('wrong');this.value='';
       setTimeout(()=>this.classList.remove('wrong'),600);
     }
   });
 
   function triggerAscension(){
-    const asc = document.getElementById('ascension');
-    const glyph = document.getElementById('ascension-glyph');
+    const asc=document.getElementById('ascension');
+    const glyph=document.getElementById('ascension-glyph');
     asc.classList.add('active');
-    const glyphs = ['⟁','∴','⧖','⊕','⋈','♾','☲','Δ'];
-    let idx = 0;
-    const cycle = setInterval(()=>{ glyph.textContent = glyphs[idx++ % glyphs.length]; }, 140);
+    const glyphs=['⟁','∴','⧖','⊕','⋈','♾','☲','Δ'];
+    let idx=0;
+    const cycle=setInterval(()=>{glyph.textContent=glyphs[idx++%glyphs.length];},140);
     for(let i=0;i<80;i++){
       setTimeout(()=>{
         const p=document.createElement('div');p.className='explosion-particle';
@@ -1164,16 +1438,19 @@ window.addEventListener('resize',_grid);
         document.body.appendChild(p);
         requestAnimationFrame(()=>{p.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;p.style.opacity='0';});
         setTimeout(()=>p.remove(),dur);
-      }, i*12);
+      },i*12);
     }
-    setTimeout(()=>{ clearInterval(cycle); window.location.href = 'theme.html'; }, 1800);
+    setTimeout(()=>{clearInterval(cycle);window.location.href='theme.html';},1800);
   }
+
+  window.addEventListener('resize',()=>{
+    if(!isDragging) resetPosition();
+    else checkZone();
+  });
 
   // Initialize
   resetPosition();
 })();
-
-  
 </script>
 
 <!-- ORACLE ENGINE -->
@@ -1203,9 +1480,7 @@ const Oracle={
   },
   device(){
     const mob=/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    return mob
-      ? {t:'phone',a:'your phone',p:'in your hand'}
-      : {t:'computer',a:'your screen',p:'before you'};
+    return { t: mob ? 'phone' : 'computer' };
   },
   time(){
     const h=new Date().getHours();
@@ -1219,22 +1494,6 @@ const Oracle={
     return h;
   },
   // What the user is physically doing, by device
-  deviceVerb(dev){
-    const phone=[
-      'Your thumb found this.',
-      'Your thumb brought you here.',
-      'You found this with your thumb.',
-      'Scrolling brought you here.'
-    ];
-    const desktop=[
-      'Your keys led you here.',
-      'You clicked your way here.',
-      'Your cursor found this.',
-      'You typed your way here.'
-    ];
-    const pool = dev.t==='phone' ? phone : desktop;
-    return pool[Math.floor(Math.random()*pool.length)];
-  },
   // Weather woven into the prophecy as mood/texture
   wxMood(wx){
     const map={
@@ -1252,33 +1511,53 @@ const Oracle={
   },
   prophecy(d){
     const{time,wx,dev,city,fateIdx}=d;
-    const act = this.deviceVerb(dev);
+
+    // Pick one from each pool — guaranteed city + device + weather in every line
+    const isMobile = dev.t==='phone';
+    const devVerbs   = isMobile
+      ? ['your thumb','scrolling','your touch','your hand']
+      : ['your keys','your cursor','your click','your hands on the keys'];
+    const holdVerbs  = isMobile
+      ? ['press and hold the orb','hold the circle','press the symbol and hold']
+      : ['press and hold the orb','hold the circle','click the symbol and hold'];
+    const dv  = devVerbs[Math.floor(Math.random()*devVerbs.length)];
+    const hv  = holdVerbs[Math.floor(Math.random()*holdVerbs.length)];
+
     const mood = this.wxMood(wx);
-    const tn = time.n;
-    const cel = time.c;
-    const loc = city;
+    const tn   = time.n;
+    const cel  = time.c;
+    const loc  = city;
+
+    // Closing hold-hint sentences — woven in naturally, one per pool
+    const holdHints=[
+      `When you're ready, ${hv} until the light opens.`,
+      `${hv.charAt(0).toUpperCase()+hv.slice(1)} when the time comes. You'll know.`,
+      `The door doesn't knock. ${hv.charAt(0).toUpperCase()+hv.slice(1)} and it opens.`,
+      `To enter, ${hv}. Hold until the circle fills.`
+    ];
+    const hh = holdHints[Math.floor(Math.random()*holdHints.length)];
 
     const pools=[
-      // Archive (fateIdx 0) — information, recognition, no filter
+      // Archive (fateIdx 0) — information, recognition
       [
-        `It is ${tn} in ${loc} ${mood}. ${act} You already know why.`,
-        `${loc}, ${tn}. ${mood.charAt(0).toUpperCase()+mood.slice(1)}. ${act} The Archive was open before you arrived.`,
-        `${act} ${loc}, ${tn}, ${mood}. Whatever you came looking for — it was already here.`,
-        `The ${cel} holds ${loc} ${mood}. ${act} You didn't find this page. You returned to it.`,
+        `${tn.charAt(0).toUpperCase()+tn.slice(1)} in ${loc}, ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} brought you here. The Archive doesn't ask why — it already knows. ${hh}`,
+        `The ${cel} is over ${loc} ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} found this page. Whatever you came looking for was already here before you arrived. ${hh}`,
+        `${loc}, ${tn}, ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} led you here. You didn't find this page. You returned to it. ${hh}`,
+        `It is ${tn} in ${loc} ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} is the last ordinary thing that happened. The Archive has no filter — that is the point. ${hh}`,
       ],
-      // Covenant (fateIdx 1) — others, belonging, shared pause
+      // Covenant (fateIdx 1) — others, belonging
       [
-        `It is ${tn} in ${loc} ${mood}. ${act} Somewhere right now, another person just did the same thing.`,
-        `${loc}, ${tn}. ${act} ${mood.charAt(0).toUpperCase()+mood.slice(1)}, and somewhere, someone else is reading this line. That is the Covenant.`,
-        `${act} ${loc}, ${tn}. You are not the first to arrive here ${mood}. You won't be the last. That's the point.`,
-        `The ${cel} over ${loc} ${mood}. ${act} Others are here. You were expected.`,
+        `${tn.charAt(0).toUpperCase()+tn.slice(1)} in ${loc}, ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} brought you here — and somewhere right now, another person just did the same thing. ${hh}`,
+        `The ${cel} is over ${loc} ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} found this. Others are already inside. You were expected. ${hh}`,
+        `${loc}, ${tn}, ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} led you here. You are not the first. You won't be the last. That is the Covenant. ${hh}`,
+        `It is ${tn} in ${loc} ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} is how you arrived. Somewhere, under a different sky, another pause just like yours. That pause is the beginning. ${hh}`,
       ],
-      // Initiation (fateIdx 2) — singular, chosen, door
+      // Initiation (fateIdx 2) — singular, chosen
       [
-        `${loc}, ${tn}. ${mood.charAt(0).toUpperCase()+mood.slice(1)}. ${act} The ${cel} didn't rise for everyone tonight.`,
-        `It is ${tn} in ${loc} ${mood}. ${act} This page did not appear by accident. Neither did you.`,
-        `${act} ${loc}, ${tn}, ${mood}. You feel it. You think: I know why I'm here. That thought is the door.`,
-        `The ${cel} holds ${loc} in ${tn} stillness ${mood}. ${act} The Initiation was already written. You just walked into it.`,
+        `${tn.charAt(0).toUpperCase()+tn.slice(1)} in ${loc}, ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} brought you here. The ${cel} didn't rise for everyone tonight — it rose for you. ${hh}`,
+        `The ${cel} holds ${loc} ${mood}. ${tn.charAt(0).toUpperCase()+tn.slice(1)}, and ${dv} found this page. It did not appear by accident. Neither did you. ${hh}`,
+        `${loc}, ${tn}, ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} is what led you here. You feel it. That feeling is the door. ${hh}`,
+        `It is ${tn} in ${loc} ${mood}. ${dv.charAt(0).toUpperCase()+dv.slice(1)} arrived at this threshold. The Initiation was already written. You just walked into it. ${hh}`,
       ]
     ];
     const pool=pools[fateIdx]||pools[1];
@@ -1328,10 +1607,13 @@ const Oracle={
       setTimeout(()=>{ if(window.__showZones) window.__showZones(); }, 1200);
 
     }catch(e){
+      const isMobile = dev.t==='phone';
+      const dv = isMobile ? 'Your thumb' : 'Your cursor';
+      const hv = isMobile ? 'press and hold the orb' : 'press and hold the orb';
       const fallbacks=[
-        'You found this. That alone means something. The Eye was already watching.',
-        'It doesn\'t matter how you got here. What matters is that you paused. That pause is the beginning.',
-        'This page wasn\'t lost. It was waiting. So were you.'
+        `${dv} found this. That alone means something. The Eye was already watching. When you're ready, ${hv} until the light opens.`,
+        `It doesn't matter how you got here. What matters is that you paused. ${dv} led you to a threshold. ${hv} and step through.`,
+        `This page wasn't lost. It was waiting. So were you. ${hv} until the circle fills.`
       ];
       showProphecy(fallbacks[Math.floor(Math.random()*fallbacks.length)]);
       if(window.__showZones) window.__showZones();
