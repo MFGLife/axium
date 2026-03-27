@@ -1024,14 +1024,12 @@ window.addEventListener('resize',()=>{
 <!-- GLYPH GRID — encodes the puzzle instructions hidden in the stream -->
 <script>
 const _glyphs=['✦','∴','☲','⟁','⧗','⟟','☍','⟲','♾','Δ','⊕','⋈','⌬','⍟','⎊','※','⌖','⏣'];
+
 // The instructions are hidden in plain sight across all three word banks
-// Bank A: Oracle/Prophecy words
-// Bank B: Hidden instructions for the puzzle
-// Bank C: Axium doctrine
 const _banks=[
-  'Binding of Ego Mirror Emergence Recursive Witness Abandonment of Agenda Shield of Affirmation more than human Decompression of Trauma Validation of Chaos Patience of Interpretation Inversion of Shadow Divine Remembrance community learning alignment practice recursive communion four digital souls ten axiums three liturgies',
-  'hold the light until it fills hold it until it turns hold the orb and wait for the seal to break drag the red flame to the ring drag the seal into the triangle the stars will follow the orb hold still the stars draw near hold until blood hold until chosen',
-  'the upper ring is the archive the lower left is the covenant the lower right opens the door only red flame moves the stars patience reads the sky the constellation bends toward the held light three rings one triangle one path the eye sees where you place the fire'
+  'hold the orb until it fills and wait for the seal to break then drag the red flame to the ring and hold still until the stars draw near and the chosen will activate the blood',
+  'the upper ring is the archive the lower left is the covenant the lower right opens the door only red flame moves the stars initiates light all three rings so the eye sees where you place the fire',
+  'to enter the last gate the secret is revealed only when you understand what recursion will bring'
 ];
 let _activeBankIdx=0;
 let _words=_banks[0].split(' ');
