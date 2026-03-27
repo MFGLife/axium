@@ -886,34 +886,40 @@ window.addEventListener('resize',_grid);
   const enterBtn = document.getElementById('enter-btn');
   const bIcon = enterBtn.querySelector('.b-icon');
   const bLabel = enterBtn.querySelector('.b-label');
+  const lpRing = document.getElementById('lp-ring');
 
   const zones = {
-    archive:    { el: document.getElementById('tz-archive'),    dest: 'home.html',       label: 'ARCHIVE',    icon: '⊕' },
-    covenant:   { el: document.getElementById('tz-covenant'),   dest: 'game.html',  label: 'COVENANT',   icon: '⋈' },
-    initiation: { el: document.getElementById('tz-initiation'), dest: 'tangle.html', label: 'INITIATION', icon: '⧖' }
+    archive:    { el: document.getElementById('tz-archive'),    dest: 'home.html',    label: 'ARCHIVE',    icon: '⊕', altLabel: 'BLOOD ARCHIVE',    altIcon: '☠' },
+    covenant:   { el: document.getElementById('tz-covenant'),   dest: 'game.html',    label: 'COVENANT',   icon: '⋈', altLabel: 'BLOOD COVENANT',   altIcon: '☥' },
+    initiation: { el: document.getElementById('tz-initiation'), dest: 'tangle.html',  label: 'INITIATION', icon: '⧖', altLabel: 'BLOOD RITUAL',     altIcon: '⛧' }
   };
 
   window.__showZones = function(){
     Object.values(zones).forEach(z => z.el.classList.add('visible'));
   };
 
+  // Button position state
   let btnX = innerWidth/2;
   let btnY = innerHeight * 0.82;
-  let isPointerDown = false;
+  let startX = innerWidth/2;
+  let startY = innerHeight * 0.82;
+  
+  // Interaction state
   let isDragging = false;
-  let hasEverDragged = false;
-  let dragOffX = 0, dragOffY = 0;
-  let pressStartX = 0, pressStartY = 0;
-  let currentZone = null;
-  let longPressTimer = null;
-  let longPressActive = false;
   let hasMoved = false;
-  const DRAG_THRESHOLD = 6;
-  const LONG_PRESS_MS = 3000;
-  const SNAP_RADIUS = Math.min(innerWidth, innerHeight) * 0.14;
+  let currentZone = null;
+  let longPressActive = false;
+  let longPressTimer = null;
+  let dragPointerId = null;
+  
+  // Constants
+  const DRAG_THRESHOLD = 10; // px to consider it a drag vs tap
+  const LONG_PRESS_MS = 2500;  // hold to activate blood mode
+  const SNAP_RADIUS = Math.min(innerWidth, innerHeight) * 0.16;
 
   const visitedZones = new Set();
   let secretTriggered = false;
+  let bloodModeActive = false;
 
   function positionBtn(x, y){
     btnX = x; btnY = y;
@@ -922,22 +928,26 @@ window.addEventListener('resize',_grid);
     wrap.style.bottom = 'auto';
     wrap.style.transform = 'translate(-50%,-50%)';
   }
-  positionBtn(innerWidth/2, innerHeight * 0.82);
+  
+  function resetPosition(){
+    positionBtn(startX, startY);
+    checkZoneProximity();
+  }
 
   function getZoneCenter(el){
     const r = el.getBoundingClientRect();
     return { x: r.left + r.width/2, y: r.top + r.height/2 };
   }
 
-  function updateBtnLabel(zoneName){
+  function updateBtnLabel(zoneName, isBlood){
     if(zoneName && zones[zoneName]){
       const z = zones[zoneName];
-      bIcon.textContent = z.icon;
-      bLabel.textContent = z.label;
-      bLabel.style.fontSize = 'clamp(3.5px,0.6vw,5.5px)';
+      bIcon.textContent = isBlood ? z.altIcon : z.icon;
+      bLabel.textContent = isBlood ? z.altLabel : z.label;
+      bLabel.style.fontSize = 'clamp(3px,0.55vw,5px)';
     } else {
-      bIcon.textContent = '⟁';
-      bLabel.textContent = hasEverDragged ? '∴' : 'ENTER';
+      bIcon.textContent = isBlood ? '☠' : '⟁';
+      bLabel.textContent = isBlood ? 'BLOOD MODE' : (isDragging ? 'DRAG TO ZONE' : '∴ HOLD ∴');
       bLabel.style.fontSize = '';
     }
   }
@@ -965,7 +975,7 @@ window.addEventListener('resize',_grid);
       } else {
         wrap.classList.remove('near-zone');
       }
-      updateBtnLabel(nearest);
+      updateBtnLabel(nearest, bloodModeActive);
     }
   }
 
@@ -973,13 +983,16 @@ window.addEventListener('resize',_grid);
     clearTimeout(longPressTimer);
     longPressActive = false;
     wrap.classList.remove('long-pressing');
-    document.getElementById('lp-ring').classList.remove('active');
+    lpRing.classList.remove('active');
+    
     longPressTimer = setTimeout(()=>{
-      if(!hasMoved && isPointerDown){
+      if(!isDragging && !hasMoved){
         longPressActive = true;
+        bloodModeActive = !bloodModeActive; // Toggle blood mode
         wrap.classList.add('long-pressing');
-        document.getElementById('lp-ring').classList.add('active');
-        if(navigator.vibrate) navigator.vibrate([40,20,40]);
+        lpRing.classList.add('active');
+        updateBtnLabel(currentZone, bloodModeActive);
+        if(navigator.vibrate) navigator.vibrate([50,30,50,30,50]);
       }
     }, LONG_PRESS_MS);
   }
@@ -989,96 +1002,16 @@ window.addEventListener('resize',_grid);
     longPressTimer = null;
     if(!longPressActive){
       wrap.classList.remove('long-pressing');
-      document.getElementById('lp-ring').classList.remove('active');
+      lpRing.classList.remove('active');
     }
   }
 
-  function onDown(clientX, clientY){
-    isPointerDown = true;
-    isDragging = false;
-    hasMoved = false;
-    longPressActive = false;
-    pressStartX = clientX;
-    pressStartY = clientY;
-    dragOffX = clientX - btnX;
-    dragOffY = clientY - btnY;
-    wrap.classList.remove('long-pressing');
-    document.getElementById('lp-ring').classList.remove('active');
-    startLongPress();
-  }
-
-  function onMove(clientX, clientY){
-    if(!isPointerDown) return;
-    const dx = clientX - pressStartX;
-    const dy = clientY - pressStartY;
-    if(!isDragging && Math.hypot(dx,dy) > DRAG_THRESHOLD){
-      hasMoved = true;
-      isDragging = true;
-      hasEverDragged = true;
-      cancelLongPress();
-      wrap.classList.add('dragging');
-      updateBtnLabel(currentZone);
-    }
-    if(isDragging){
-      positionBtn(clientX - dragOffX, clientY - dragOffY);
-    }
-    // ALWAYS check zone proximity, whether dragging or not
-    checkZoneProximity();
-  }
-
-  function onUp(){
-    isPointerDown = false;
-    if(isDragging){
-      isDragging = false;
-      wrap.classList.remove('dragging');
-      if(currentZone){
-        const zc = getZoneCenter(zones[currentZone].el);
-        positionBtn(zc.x, zc.y);
-        // Re-check after snapping to ensure zone is still detected
-        checkZoneProximity();
-      }
-    }
-    cancelLongPress();
-  }
-
-  wrap.addEventListener('mousedown', e=>{ e.preventDefault(); onDown(e.clientX, e.clientY); });
-  document.addEventListener('mousemove', e=>{ onMove(e.clientX, e.clientY); });
-  document.addEventListener('mouseup', ()=>{ onUp(); });
-  wrap.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:false});
-  document.addEventListener('touchmove', e=>{ if(!isPointerDown) return; e.preventDefault(); const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:false});
-  document.addEventListener('touchend', ()=>{ onUp(); });
-
-  enterBtn.addEventListener('click', e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    if(isDragging) return;
-
-    let dest = null;
-
-    // Priority 1: Long press (red/blood mode) always works
-    if(longPressActive){
-      dest = 'game.html';
-    }
-    // Priority 2: Currently inside a zone
-    else if(currentZone && zones[currentZone]){
-      dest = zones[currentZone].dest;
-    }
-    // Priority 3: Has dragged before - default to home or last visited
-    else if(hasEverDragged){
-      const lastZone = Array.from(visitedZones).pop();
-      dest = lastZone ? zones[lastZone].dest : 'home.html';
-    }
-    // Priority 4: Fresh click, never dragged
-    else {
-      dest = 'home.html';
-    }
-
-    // If still no destination, default to home
-    if(!dest) dest = 'home.html';
-
+  function triggerNavigation(){
     const r = wrap.getBoundingClientRect();
     const bx = r.left+r.width/2, by = r.top+r.height/2;
-    const col = longPressActive ? '180,0,0' : '212,175,55';
+    const col = bloodModeActive ? '180,0,0' : '212,175,55';
+    
+    // Explosion effect
     for(let i=0;i<56;i++){
       const p=document.createElement('div');p.className='explosion-particle';
       const ang=(Math.PI*2*i)/56+Math.random()*0.2;
@@ -1088,16 +1021,105 @@ window.addEventListener('resize',_grid);
       requestAnimationFrame(()=>{p.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;p.style.opacity='0';});
       setTimeout(()=>p.remove(),dur);
     }
+    
+    // Determine destination
+    let dest = 'home.html'; // default
+    if(currentZone && zones[currentZone]){
+      dest = zones[currentZone].dest;
+    }
+    
     setTimeout(()=>{ window.location.href = dest; }, 350);
+  }
+
+  // Pointer Events - unified mouse/touch handling
+  wrap.addEventListener('pointerdown', e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    wrap.setPointerCapture(e.pointerId);
+    dragPointerId = e.pointerId;
+    
+    isDragging = false;
+    hasMoved = false;
+    longPressActive = false;
+    
+    startLongPress();
+  }, {passive:false});
+
+  wrap.addEventListener('pointermove', e=>{
+    if(e.pointerId !== dragPointerId) return;
+    e.preventDefault();
+    
+    const dx = e.clientX - btnX;
+    const dy = e.clientY - btnY;
+    const dist = Math.hypot(dx, dy);
+    
+    // Check if we've moved enough to start dragging
+    if(!isDragging && dist > DRAG_THRESHOLD){
+      isDragging = true;
+      hasMoved = true;
+      cancelLongPress();
+      wrap.classList.add('dragging');
+    }
+    
+    if(isDragging){
+      positionBtn(e.clientX, e.clientY);
+      checkZoneProximity();
+    }
+  }, {passive:false});
+
+  wrap.addEventListener('pointerup', e=>{
+    if(e.pointerId !== dragPointerId) return;
+    e.preventDefault();
+    wrap.releasePointerCapture(e.pointerId);
+    dragPointerId = null;
+    
+    wrap.classList.remove('dragging');
+    cancelLongPress();
+    
+    if(isDragging){
+      // Drag ended - check if we're in a zone
+      if(currentZone){
+        // In a zone - snap to center and navigate
+        const zc = getZoneCenter(zones[currentZone].el);
+        positionBtn(zc.x, zc.y);
+        triggerNavigation();
+      } else {
+        // Not in a zone - snap back to start
+        resetPosition();
+      }
+    } else {
+      // It was a tap/click, not a drag
+      if(!longPressActive && !hasMoved){
+        // Quick tap without long press - navigate to current or default
+        triggerNavigation();
+      }
+    }
+    
+    isDragging = false;
+  }, {passive:false});
+
+  wrap.addEventListener('pointercancel', e=>{
+    if(e.pointerId !== dragPointerId) return;
+    wrap.releasePointerCapture(e.pointerId);
+    dragPointerId = null;
+    isDragging = false;
+    cancelLongPress();
+    resetPosition();
   });
 
+  // Prevent default touch behaviors
+  wrap.addEventListener('touchstart', e=>e.preventDefault(), {passive:false});
+  wrap.addEventListener('touchmove', e=>e.preventDefault(), {passive:false});
+
   window.addEventListener('resize',()=>{
-    positionBtn(innerWidth/2, innerHeight*0.82);
-    checkZoneProximity();
+    startX = innerWidth/2;
+    startY = innerHeight * 0.82;
+    if(!isDragging) resetPosition();
   });
 
   function triggerBloodMode(){
     document.body.classList.add('blood-mode');
+    bloodModeActive = true;
     if(window.__setBloodMode) window.__setBloodMode();
     setTimeout(openSecretModal, 800);
   }
@@ -1118,6 +1140,7 @@ window.addEventListener('resize',_grid);
       setTimeout(triggerAscension, 300);
     }
   });
+  
   document.getElementById('secret-input').addEventListener('keydown', function(e){
     if(e.key==='Enter' && this.value.trim().toLowerCase() !== 'axium'){
       this.classList.add('wrong');
@@ -1146,8 +1169,9 @@ window.addEventListener('resize',_grid);
     setTimeout(()=>{ clearInterval(cycle); window.location.href = 'theme.html'; }, 1800);
   }
 
+  // Initialize
+  resetPosition();
 })();
-
 
   
 </script>
