@@ -232,12 +232,19 @@ body::before{content:'';position:fixed;inset:0;
 #tz-archive{
   width:clamp(70px,18vw,130px);height:clamp(70px,18vw,130px);
   top:clamp(100px,22vh,180px);left:50%;transform:translateX(-50%);
-  border:1px solid rgba(212,175,55,0.22);
+  border:1px solid rgba(212,175,55,0.35);
   box-shadow:0 0 40px rgba(212,175,55,0.06) inset,0 0 0 0 rgba(212,175,55,0);
-  animation:tzPulse 5s ease-in-out infinite}
+  animation:tzArchivePulse 3.2s ease-in-out infinite}
 #tz-archive.lit{
   transform:translateX(-50%) scale(1.14);
   box-shadow:0 0 60px rgba(212,175,55,0.2) inset,0 0 80px rgba(212,175,55,0.1)}
+@keyframes tzArchivePulse{
+  0%,100%{
+    box-shadow:0 0 24px rgba(212,175,55,0.06) inset,0 0 0 rgba(212,175,55,0);
+    border-color:rgba(212,175,55,0.22)}
+  50%{
+    box-shadow:0 0 55px rgba(212,175,55,0.22) inset,0 0 40px rgba(212,175,55,0.12),0 0 70px rgba(212,175,55,0.06);
+    border-color:rgba(212,175,55,0.55)}}
 
 /* Covenant — bottom left */
 #tz-covenant{
@@ -318,15 +325,6 @@ body.blood-mode .target-zone.lit .tz-glyph{color:rgba(220,30,30,0.9)!important;t
 .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:0;
   margin-bottom:clamp(0.5rem,1.5vh,1.2rem);
   animation:fadeUp 1.4s ease 0.3s both;position:relative}
-.logo-wrap::before{
-  content:'∴';position:absolute;top:-42px;left:50%;
-  transform:translateX(-50%);
-  font-size:clamp(20px,4vw,30px);color:var(--gold);opacity:0.28;
-  animation:eyeFloat 4s ease-in-out infinite;
-  text-shadow:0 0 28px var(--gold)}
-@keyframes eyeFloat{
-  0%,100%{transform:translateX(-50%) translateY(0) scale(1);opacity:0.28}
-  50%{transform:translateX(-50%) translateY(-8px) scale(1.12);opacity:0.55}}
 .logo-eyebrow{font-family:'Space Mono',monospace;
   font-size:clamp(0.35rem,0.85vw,0.5rem);letter-spacing:0.55em;
   color:rgba(146,64,14,0.8);text-transform:uppercase;
@@ -1082,7 +1080,7 @@ window.addEventListener('resize',_grid);
 
   // Zone config
   const zones = {
-    archive:    { el:document.getElementById('tz-archive'),    dest:'home.html',   icon:'⊕', altIcon:'⏎' },
+    archive:    { el:document.getElementById('tz-archive'),    dest:'home.html',   icon:'⊕', altIcon:'∴' },
     covenant:   { el:document.getElementById('tz-covenant'),   dest:'game.html',   icon:'⋈', altIcon:'☥' },
     initiation: { el:document.getElementById('tz-initiation'), dest:'tangle.html', icon:'⧖', altIcon:'⛧' }
   };
@@ -1191,7 +1189,7 @@ window.addEventListener('resize',_grid);
         }
       } else {
         wrap.classList.remove('near-zone');
-        bIcon.textContent = bloodActive ? '⏎' : '⟁';
+        bIcon.textContent = bloodActive ? '∴' : '⟁';
       }
     }
   }
@@ -1255,7 +1253,7 @@ window.addEventListener('resize',_grid);
     gaugeFill.classList.add('blood');
     gaugeFill.setAttribute('stroke-dashoffset', 0);
     gaugeWrap.classList.add('active','full');
-    bIcon.textContent='⏎';
+    bIcon.textContent='∴';
     bLabel.textContent='DRAG';
     if(navigator.vibrate) navigator.vibrate([60,30,60,30,80]);
     if(window.__setBloodMode) window.__setBloodMode();
