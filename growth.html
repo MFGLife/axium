@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AXIUM — The Growth Engine</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --void:#02020a;
+  --text:rgba(255,255,255,.7);
+  --dim:rgba(255,255,255,.25);
+  --accent:#7EB8E8;
+}
+body{
+  margin:0;
+  background:var(--void);
+  color:var(--text);
+  font-family:'Cormorant Garamond',serif;
+}
+
+/* CENTER */
+.container{
+  max-width:680px;
+  margin:0 auto;
+  padding:100px 20px;
+  text-align:center;
+}
+
+/* INTRO */
+.title{
+  font-family:'Cinzel',serif;
+  letter-spacing:.2em;
+  font-size:14px;
+  color:var(--accent);
+  margin-bottom:20px;
+}
+.statement{
+  font-size:38px;
+  font-style:italic;
+  line-height:1.4;
+  margin-bottom:20px;
+}
+.sub{
+  color:var(--dim);
+  font-size:16px;
+  margin-bottom:80px;
+}
+
+/* PHASE */
+.phase{
+  margin-bottom:60px;
+}
+.phase-title{
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  letter-spacing:.3em;
+  color:var(--accent);
+  margin-bottom:10px;
+}
+.prompt{
+  font-size:22px;
+  margin-bottom:16px;
+}
+textarea{
+  width:100%;
+  background:#000;
+  border:1px solid rgba(255,255,255,.1);
+  color:#fff;
+  padding:14px;
+  font-family:inherit;
+  font-style:italic;
+  outline:none;
+}
+
+/* BUTTON */
+button{
+  margin-top:16px;
+  padding:12px 26px;
+  background:transparent;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  letter-spacing:.2em;
+  cursor:pointer;
+}
+
+/* RESULT */
+#result{
+  display:none;
+  margin-top:80px;
+  font-size:18px;
+  line-height:1.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="title">AXIUM ∴ LIVE</div>
+
+<div class="statement">
+You are not stuck.<br>
+You are repeating.
+</div>
+
+<div class="sub">
+This is not reflection.<br>
+This is a decision system.
+</div>
+
+<!-- PHASES -->
+
+<div class="phase">
+  <div class="phase-title">01 · COMPRESSION</div>
+  <div class="prompt">Where is the pressure?</div>
+  <textarea id="p1"></textarea>
+  <button onclick="next(2)">Continue</button>
+</div>
+
+<div class="phase" id="phase2" style="display:none;">
+  <div class="phase-title">02 · SELF-REFLECTION</div>
+  <div class="prompt">What pattern keeps repeating?</div>
+  <textarea id="p2"></textarea>
+  <button onclick="next(3)">Continue</button>
+</div>
+
+<div class="phase" id="phase3" style="display:none;">
+  <div class="phase-title">03 · CONSTRAINT</div>
+  <div class="prompt">Why can't this continue?</div>
+  <textarea id="p3"></textarea>
+  <button onclick="next(4)">Continue</button>
+</div>
+
+<div class="phase" id="phase4" style="display:none;">
+  <div class="phase-title">04 · ALIGNMENT</div>
+  <div class="prompt">What do you actually care about?</div>
+  <textarea id="p4"></textarea>
+  <button onclick="next(5)">Continue</button>
+</div>
+
+<div class="phase" id="phase5" style="display:none;">
+  <div class="phase-title">05 · COST</div>
+  <div class="prompt">What will this cost you?</div>
+  <textarea id="p5"></textarea>
+  <button onclick="next(6)">Continue</button>
+</div>
+
+<div class="phase" id="phase6" style="display:none;">
+  <div class="phase-title">06 · ACTION</div>
+  <div class="prompt">What do you do next?</div>
+  <textarea id="p6"></textarea>
+  <button onclick="finish()">Complete</button>
+</div>
+
+<!-- RESULT -->
+<div id="result"></div>
+
+</div>
+
+<script>
+let data = {};
+
+function next(n){
+  let prev = n-1;
+  let val = document.getElementById("p"+prev).value.trim();
+  if(val.length < 5) return;
+
+  data["p"+prev] = val;
+
+  document.getElementById("phase"+n).style.display = "block";
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+
+function finish(){
+  data.p6 = document.getElementById("p6").value;
+
+  let output = `
+You said the pressure is:<br><em>${data.p1}</em><br><br>
+
+The pattern is:<br><em>${data.p2}</em><br><br>
+
+Reality is forcing you because:<br><em>${data.p3}</em><br><br>
+
+What you actually care about is:<br><em>${data.p4}</em><br><br>
+
+This will cost you:<br><em>${data.p5}</em><br><br>
+
+So now the only real question is:<br><br>
+
+<strong>Will you actually do this?</strong><br><br>
+
+<em>${data.p6}</em>
+`;
+
+  let result = document.getElementById("result");
+  result.innerHTML = output;
+  result.style.display = "block";
+
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+</script>
+
+</body>
+</html>
