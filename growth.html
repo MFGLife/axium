@@ -1,208 +1,711 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AXIUM — The Growth Engine</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-:root{
-  --void:#02020a;
-  --text:rgba(255,255,255,.7);
-  --dim:rgba(255,255,255,.25);
-  --accent:#7EB8E8;
-}
-body{
-  margin:0;
-  background:var(--void);
-  color:var(--text);
-  font-family:'Cormorant Garamond',serif;
-}
-
-/* CENTER */
-.container{
-  max-width:680px;
-  margin:0 auto;
-  padding:100px 20px;
-  text-align:center;
-}
-
-/* INTRO */
-.title{
-  font-family:'Cinzel',serif;
-  letter-spacing:.2em;
-  font-size:14px;
-  color:var(--accent);
-  margin-bottom:20px;
-}
-.statement{
-  font-size:38px;
-  font-style:italic;
-  line-height:1.4;
-  margin-bottom:20px;
-}
-.sub{
-  color:var(--dim);
-  font-size:16px;
-  margin-bottom:80px;
-}
-
-/* PHASE */
-.phase{
-  margin-bottom:60px;
-}
-.phase-title{
-  font-family:'Space Mono',monospace;
-  font-size:11px;
-  letter-spacing:.3em;
-  color:var(--accent);
-  margin-bottom:10px;
-}
-.prompt{
-  font-size:22px;
-  margin-bottom:16px;
-}
-textarea{
-  width:100%;
-  background:#000;
-  border:1px solid rgba(255,255,255,.1);
-  color:#fff;
-  padding:14px;
-  font-family:inherit;
-  font-style:italic;
-  outline:none;
-}
-
-/* BUTTON */
-button{
-  margin-top:16px;
-  padding:12px 26px;
-  background:transparent;
-  border:1px solid var(--accent);
-  color:var(--accent);
-  letter-spacing:.2em;
-  cursor:pointer;
-}
-
-/* RESULT */
-#result{
-  display:none;
-  margin-top:80px;
-  font-size:18px;
-  line-height:1.8;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axium | Human Alignment Cycle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @layer base {
+            :root {
+                --void: #0a0a0f;
+                --stone: #13131f;
+                --neon-blue: #00d4ff;
+                --neon-gold: #ffd700;
+                --neon-rose: #ff6b9d;
+                --glass: rgba(255, 255, 255, 0.03);
+                --border-glow: rgba(0, 212, 255, 0.2);
+            }
+            body {
+                font-family: 'Inter', sans-serif;
+                background: var(--void);
+                color: #e2e8f0;
+                overflow-x: hidden;
+            }
+            h1, h2, h3, .axium-title {
+                font-family: 'Cinzel', serif;
+            }
+            .cathedral-gradient {
+                background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,215,0,0.05) 50%, rgba(255,107,157,0.1) 100%);
+            }
+            .glass-panel {
+                background: var(--glass);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--border-glow);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            }
+            .neon-text-blue { color: var(--neon-blue); text-shadow: 0 0 10px rgba(0,212,255,0.5); }
+            .neon-text-gold { color: var(--neon-gold); text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+            .neon-text-rose { color: var(--neon-rose); text-shadow: 0 0 10px rgba(255,107,157,0.4); }
+            .glow-border {
+                position: relative;
+            }
+            .glow-border::before {
+                content: '';
+                position: absolute;
+                inset: -1px;
+                border-radius: inherit;
+                background: linear-gradient(135deg, var(--neon-blue), var(--neon-gold), var(--neon-rose));
+                opacity: 0.3;
+                z-index: -1;
+                filter: blur(8px);
+            }
+            .cycle-node {
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .cycle-node.active {
+                transform: scale(1.1);
+                box-shadow: 0 0 30px rgba(0,212,255,0.4);
+            }
+            .cycle-node.critical {
+                animation: pulse-critical 2s infinite;
+            }
+            @keyframes pulse-critical {
+                0%, 100% { box-shadow: 0 0 20px rgba(255,107,157,0.4); }
+                50% { box-shadow: 0 0 40px rgba(255,107,157,0.7); }
+            }
+            .recursive-ring {
+                animation: rotate-slow 20s linear infinite;
+            }
+            @keyframes rotate-slow {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            .data-glyph {
+                font-family: monospace;
+                opacity: 0.6;
+                letter-spacing: 0.1em;
+            }
+            .arch {
+                border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+            }
+            .input-axium {
+                background: rgba(0,0,0,0.3);
+                border: 1px solid rgba(0,212,255,0.3);
+                transition: all 0.3s;
+            }
+            .input-axium:focus {
+                outline: none;
+                border-color: var(--neon-blue);
+                box-shadow: 0 0 20px rgba(0,212,255,0.2);
+            }
+            .btn-axium {
+                background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,212,255,0.05));
+                border: 1px solid rgba(0,212,255,0.4);
+                transition: all 0.3s;
+                position: relative;
+                overflow: hidden;
+            }
+            .btn-axium:hover {
+                background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.1));
+                box-shadow: 0 0 30px rgba(0,212,255,0.3);
+                transform: translateY(-2px);
+            }
+            .hidden-section {
+                display: none;
+                opacity: 0;
+                transition: opacity 0.5s;
+            }
+            .visible-section {
+                display: block;
+                opacity: 1;
+            }
+            .spiral-container {
+                position: relative;
+                width: 100%;
+                height: 600px;
+            }
+            @media (max-width: 768px) {
+                .spiral-container { height: 400px; }
+            }
+        }
+    </style>
 </head>
+<body class="antialiased">
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-20" style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 40px 40px;"></div>
+    </div>
 
-<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full border-2 border-cyan-400 flex items-center justify-center">
+                    <div class="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
+                </div>
+                <span class="axium-title text-xl font-bold tracking-wider text-white">AXIUM</span>
+                <span class="text-xs text-cyan-400/60 data-glyph">ALIGNMENT_PROTOCOL v2.7</span>
+            </div>
+            <div class="flex gap-6 text-sm">
+                <button onclick="scrollToSection('cycle')" class="hover:text-cyan-400 transition-colors">The Cycle</button>
+                <button onclick="scrollToSection('diagnostic')" class="hover:text-cyan-400 transition-colors">Diagnostic</button>
+                <button onclick="scrollToSection('practice')" class="hover:text-cyan-400 transition-colors">Practice</button>
+            </div>
+        </div>
+    </nav>
 
-<div class="container">
+    <!-- Hero Section -->
+    <section class="relative z-10 min-h-screen flex items-center justify-center pt-20">
+        <div class="max-w-5xl mx-auto px-6 text-center">
+            <div class="mb-6 inline-block">
+                <span class="data-glyph text-xs text-cyan-400/60 tracking-[0.3em]">HUMAN ALIGNMENT FACILITY // CYCLE_13</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-amber-200 to-rose-300">
+                    The Recursive Path
+                </span>
+                <span class="block text-2xl md:text-4xl mt-4 text-slate-400 font-normal">
+                    From Compression to Expansion
+                </span>
+            </h1>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed">
+                Most systems fail because they skip the three critical forces: <span class="neon-text-rose">Self-Reflection</span>, <span class="neon-text-gold">Alignment</span>, and <span class="neon-text-blue">Recursion</span>. This is the architecture for meaningful change.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="scrollToSection('diagnostic')" class="btn-axium px-8 py-4 rounded-lg text-cyan-300 font-semibold tracking-wide">
+                    BEGIN DIAGNOSTIC
+                </button>
+                <button onclick="scrollToSection('cycle')" class="px-8 py-4 rounded-lg border border-white/20 hover:border-white/40 text-slate-300 transition-all">
+                    VIEW ARCHITECTURE
+                </button>
+            </div>
+        </div>
+        
+        <!-- Decorative Arch -->
+        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-32 opacity-20">
+            <div class="w-full h-full arch border-t-2 border-cyan-500/30"></div>
+        </div>
+    </section>
 
-<div class="title">AXIUM ∴ LIVE</div>
+    <!-- The Cycle Visualization -->
+    <section id="cycle" class="relative z-10 py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 axium-title">The 13-State Cycle</h2>
+                <p class="text-slate-400">Click any state to view its psychology and function</p>
+            </div>
 
-<div class="statement">
-You are not stuck.<br>
-You are repeating.
-</div>
+            <!-- Three Engines Legend -->
+            <div class="flex flex-wrap justify-center gap-6 mb-12">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]"></div>
+                    <span class="text-sm text-slate-400">Survival Engine</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"></div>
+                    <span class="text-sm text-slate-400">Awareness Engine</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]"></div>
+                    <span class="text-sm text-slate-400">Meaning Engine</span>
+                </div>
+            </div>
 
-<div class="sub">
-This is not reflection.<br>
-This is a decision system.
-</div>
+            <!-- Interactive Cycle -->
+            <div class="relative">
+                <!-- SVG Spiral -->
+                <div class="spiral-container flex items-center justify-center">
+                    <svg viewBox="0 0 800 600" class="w-full h-full" id="cycle-svg">
+                        <!-- Defs for gradients -->
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#f43f5e;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#22d3ee;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        
+                        <!-- Spiral Path -->
+                        <path d="M 400 300 Q 400 100 600 150 T 700 300 T 600 450 T 400 400 T 200 300 T 300 150 T 500 200" 
+                              fill="none" stroke="url(#grad1)" stroke-width="2" opacity="0.3" stroke-dasharray="5,5"/>
+                        
+                        <!-- Nodes will be generated by JS -->
+                        <g id="nodes-container"></g>
+                    </svg>
+                </div>
 
-<!-- PHASES -->
+                <!-- State Detail Panel -->
+                <div id="state-detail" class="mt-8 glass-panel rounded-2xl p-8 max-w-3xl mx-auto hidden-section">
+                    <div class="flex items-start justify-between mb-6">
+                        <div>
+                            <span id="detail-number" class="data-glyph text-cyan-400 text-sm">STATE 01</span>
+                            <h3 id="detail-title" class="text-2xl font-bold mt-2 axium-title">Compression</h3>
+                            <span id="detail-engine" class="inline-block mt-2 px-3 py-1 rounded-full text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30">Survival Engine</span>
+                        </div>
+                        <button onclick="closeDetail()" class="text-slate-500 hover:text-white">✕</button>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="p-4 rounded-lg bg-black/20 border border-white/5">
+                            <h4 class="text-sm font-semibold text-slate-400 mb-2">Experience</h4>
+                            <p id="detail-experience" class="text-sm">Stress, burnout, numbness. The system forces change through pressure.</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-white/5">
+                            <h4 class="text-sm font-semibold text-slate-400 mb-2">Psychology</h4>
+                            <p id="detail-psychology" class="text-sm">Allostatic load, nervous system dysregulation.</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-white/5">
+                            <h4 class="text-sm font-semibold text-slate-400 mb-2">Function</h4>
+                            <p id="detail-function" class="text-sm">Pressure accumulation forces the system to evolve or collapse.</p>
+                        </div>
+                    </div>
+                    <div id="detail-critical" class="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 hidden">
+                        <p class="text-amber-200 text-sm font-semibold">⚠ Critical Missing Force</p>
+                        <p class="text-amber-200/80 text-sm mt-1">Without this step, cycles collapse into repetition or nihilism.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<div class="phase">
-  <div class="phase-title">01 · COMPRESSION</div>
-  <div class="prompt">Where is the pressure?</div>
-  <textarea id="p1"></textarea>
-  <button onclick="next(2)">Continue</button>
-</div>
+    <!-- Diagnostic Tool -->
+    <section id="diagnostic" class="relative z-10 py-24 cathedral-gradient">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 axium-title">State Diagnostic</h2>
+                <p class="text-slate-400">Identify where you are in the cycle. This determines your intervention protocol.</p>
+            </div>
 
-<div class="phase" id="phase2" style="display:none;">
-  <div class="phase-title">02 · SELF-REFLECTION</div>
-  <div class="prompt">What pattern keeps repeating?</div>
-  <textarea id="p2"></textarea>
-  <button onclick="next(3)">Continue</button>
-</div>
+            <div class="glass-panel rounded-2xl p-8 md:p-12 glow-border">
+                <div id="diagnostic-quiz">
+                    <div class="mb-8">
+                        <div class="flex justify-between text-xs data-glyph text-cyan-400/60 mb-2">
+                            <span>QUESTION <span id="q-current">1</span>/5</span>
+                            <span>ALIGNMENT_PROTOCOL</span>
+                        </div>
+                        <div class="h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="progress-bar" class="h-full bg-gradient-to-r from-cyan-400 to-amber-400 w-1/5 transition-all duration-500"></div>
+                        </div>
+                    </div>
 
-<div class="phase" id="phase3" style="display:none;">
-  <div class="phase-title">03 · CONSTRAINT</div>
-  <div class="prompt">Why can't this continue?</div>
-  <textarea id="p3"></textarea>
-  <button onclick="next(4)">Continue</button>
-</div>
+                    <div id="question-container" class="min-h-[200px]">
+                        <h3 id="question-text" class="text-xl md:text-2xl font-semibold mb-8 leading-relaxed">
+                            Which description resonates most with your current state?
+                        </h3>
+                        <div id="options-container" class="space-y-4">
+                            <!-- Options generated by JS -->
+                        </div>
+                    </div>
 
-<div class="phase" id="phase4" style="display:none;">
-  <div class="phase-title">04 · ALIGNMENT</div>
-  <div class="prompt">What do you actually care about?</div>
-  <textarea id="p4"></textarea>
-  <button onclick="next(5)">Continue</button>
-</div>
+                    <div id="diagnostic-result" class="hidden-section">
+                        <div class="text-center mb-8">
+                            <div class="inline-block p-4 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-4">
+                                <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">Current State Identified</h3>
+                            <p id="result-state" class="text-xl neon-text-blue font-semibold">Self-Reflection</p>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="p-6 rounded-xl bg-slate-900/50 border border-white/10">
+                                <h4 class="font-semibold mb-3 text-amber-400">Critical Intervention</h4>
+                                <p id="result-intervention" class="text-sm text-slate-300 leading-relaxed"></p>
+                            </div>
+                            <div class="p-6 rounded-xl bg-slate-900/50 border border-white/10">
+                                <h4 class="font-semibold mb-3 text-cyan-400">State → Question → Action</h4>
+                                <p id="result-action" class="text-sm text-slate-300 leading-relaxed"></p>
+                            </div>
+                        </div>
 
-<div class="phase" id="phase5" style="display:none;">
-  <div class="phase-title">05 · COST</div>
-  <div class="prompt">What will this cost you?</div>
-  <textarea id="p5"></textarea>
-  <button onclick="next(6)">Continue</button>
-</div>
+                        <button onclick="resetDiagnostic()" class="w-full btn-axium py-3 rounded-lg text-cyan-300">
+                            Run Diagnostic Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<div class="phase" id="phase6" style="display:none;">
-  <div class="phase-title">06 · ACTION</div>
-  <div class="prompt">What do you do next?</div>
-  <textarea id="p6"></textarea>
-  <button onclick="finish()">Complete</button>
-</div>
+    <!-- Practice Console -->
+    <section id="practice" class="relative z-10 py-24">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 axium-title">Alignment Console</h2>
+                <p class="text-slate-400">State-specific interventions to prevent cycle collapse</p>
+            </div>
 
-<!-- RESULT -->
-<div id="result"></div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Self-Reflection Card -->
+                <div class="glass-panel rounded-2xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 border-t-2 border-cyan-400">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-lg">Self-Reflection</h3>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-6">The recursive layer that prevents unconscious looping.</p>
+                    <div class="space-y-3">
+                        <div class="p-3 rounded bg-black/20 text-sm">
+                            <span class="text-cyan-400 font-semibold block mb-1">Question:</span>
+                            "What pattern has repeated 3 times recently?"
+                        </div>
+                        <div class="p-3 rounded bg-black/20 text-sm">
+                            <span class="text-cyan-400 font-semibold block mb-1">Action:</span>
+                            Write it in one sentence. No diagnosis, just observation.
+                        </div>
+                    </div>
+                </div>
 
-</div>
+                <!-- Alignment Card -->
+                <div class="glass-panel rounded-2xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 border-t-2 border-amber-400">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-lg">Alignment</h3>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-6">The stabilizing force that prevents nihilism.</p>
+                    <div class="space-y-3">
+                        <div class="p-3 rounded bg-black/20 text-sm">
+                            <span class="text-amber-400 font-semibold block mb-1">Question:</span>
+                            "What do you actually care about protecting or becoming?"
+                        </div>
+                        <div class="p-3 rounded bg-black/20 text-sm">
+                            <span class="text-amber-400 font-semibold block mb-1">Action:</span>
+                            Remove one thing today that contradicts that value.
+                        </div>
+                    </div>
+                </div>
 
-<script>
-let data = {};
+                <!-- Recursion Card -->
+                <div class="glass-panel rounded-2xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 border-t-2 border-rose-400">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-lg">Recursion</h3>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-6">Meta-awareness that transforms repetition into growth.</p>
+                    <div class="space-y-3">
+                        <div class="p-3 rounded bg-black/20 text-sm">
+                            <span class="text-rose-400 font-semibold block mb-1">Question:</span>
+                            "How is this cycle different from the last time?"
+                        </div>
+                        <div class="p-3 rounded bg-black/20 text-sm">
+                            <span class="text-rose-400 font-semibold block mb-1">Action:</span>
+                            Name one thing you know now that you didn't know then.
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-function next(n){
-  let prev = n-1;
-  let val = document.getElementById("p"+prev).value.trim();
-  if(val.length < 5) return;
+            <!-- Daily Practice Generator -->
+            <div class="mt-12 glass-panel rounded-2xl p-8 glow-border">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Daily Drift Audit</h3>
+                        <p class="text-slate-400 text-sm">Generate today's alignment practice based on your current state.</p>
+                    </div>
+                    <button onclick="generatePractice()" class="btn-axium px-6 py-3 rounded-lg text-cyan-300 whitespace-nowrap">
+                        Generate Practice
+                    </button>
+                </div>
+                <div id="practice-output" class="mt-6 p-6 rounded-xl bg-slate-900/30 border border-white/5 hidden">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="data-glyph text-xs text-cyan-400">TODAY_PROTOCOL</span>
+                    </div>
+                    <p id="practice-text" class="text-lg leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  data["p"+prev] = val;
+    <!-- Footer -->
+    <footer class="relative z-10 py-12 border-t border-white/10 mt-24">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="mb-4">
+                <span class="axium-title text-2xl font-bold text-white">AXIUM</span>
+            </div>
+            <p class="text-slate-500 text-sm mb-4">Cathedral Research Facility for Human Alignment</p>
+            <div class="data-glyph text-xs text-slate-600">
+                PROTOCOL v2.7 // RECURSIVE_MODE // THREE_ENGINES_ACTIVE
+            </div>
+        </div>
+    </footer>
 
-  document.getElementById("phase"+n).style.display = "block";
-  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
-}
+    <script>
+        // Cycle Data
+        const cycleStates = [
+            { id: 1, name: "Compression", engine: "survival", experience: "Stress, burnout, numbness", psychology: "Allostatic load, nervous system dysregulation", function: "Pressure accumulation forces change", x: 400, y: 100 },
+            { id: 2, name: "Disruption", engine: "survival", experience: "Identity instability ('I don't recognize myself')", psychology: "Identity diffusion, cognitive dissonance", function: "Breaks outdated self-model", x: 600, y: 150 },
+            { id: 3, name: "Self-Reflection", engine: "awareness", experience: "Introspection, questioning patterns", psychology: "Metacognition, default mode network activation", function: "Observes self instead of reacting. First recursive layer.", x: 700, y: 300, critical: true },
+            { id: 4, name: "Pattern Recognition", engine: "awareness", experience: "Noticing cycles, triggers, behaviors", psychology: "Schema awareness, predictive processing", function: "Converts chaos into structure", x: 600, y: 450 },
+            { id: 5, name: "Threshold", engine: "survival", experience: "'I cannot stay like this'", psychology: "Approach-avoidance conflict", function: "Forces decision point", x: 400, y: 400 },
+            { id: 6, name: "Alignment", engine: "meaning", experience: "Clarity, surrender, meaning, connection", psychology: "Self-transcendence, values orientation (ACT)", function: "Anchors choice in meaning, not fear", x: 200, y: 300, critical: true },
+            { id: 7, name: "Choice", engine: "meaning", experience: "Commitment to a path", psychology: "Executive function, value-based decision making", function: "Collapses possibilities into direction", x: 300, y: 150 },
+            { id: 8, name: "Cost", engine: "meaning", experience: "Discomfort, loss, resistance", psychology: "Behavioral activation, extinction of old habits", function: "Proves the choice is real. No cost = no change.", x: 500, y: 200 },
+            { id: 9, name: "Construction", engine: "survival", experience: "New habits, new environment", psychology: "Neuroplasticity, habit formation", function: "Builds new identity physically", x: 550, y: 350 },
+            { id: 10, name: "Integration", engine: "survival", experience: "Stability, coherence", psychology: "Memory consolidation, narrative identity", function: "Turns actions into 'who I am'", x: 450, y: 450 },
+            { id: 11, name: "Expression", engine: "meaning", experience: "Sharing, creating, connecting", psychology: "Prosocial behavior, meaning-making", function: "Externalizes internal change. Prevents isolation.", x: 350, y: 350, critical: true },
+            { id: 12, name: "Recursion", engine: "awareness", experience: "Awareness of the cycle itself", psychology: "Meta-awareness, second-order thinking", function: "Transforms growth from repetitive to exponential", x: 400, y: 250, critical: true },
+            { id: 13, name: "Expansion", engine: "meaning", experience: "Increased capacity, complexity", psychology: "Cognitive flexibility, post-traumatic growth", function: "Prepares next cycle at higher level", x: 400, y: 300 }
+        ];
 
-function finish(){
-  data.p6 = document.getElementById("p6").value;
+        const engineColors = {
+            survival: { bg: 'bg-rose-500', text: 'text-rose-300', border: 'border-rose-500/30', label: 'Survival Engine' },
+            awareness: { bg: 'bg-cyan-400', text: 'text-cyan-300', border: 'border-cyan-400/30', label: 'Awareness Engine' },
+            meaning: { bg: 'bg-amber-400', text: 'text-amber-300', border: 'border-amber-400/30', label: 'Meaning Engine' }
+        };
 
-  let output = `
-You said the pressure is:<br><em>${data.p1}</em><br><br>
+        // Initialize Cycle Visualization
+        function initCycle() {
+            const container = document.getElementById('nodes-container');
+            
+            cycleStates.forEach((state, index) => {
+                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                g.setAttribute("class", "cycle-node cursor-pointer");
+                g.setAttribute("onclick", `showStateDetail(${index})`);
+                
+                // Calculate position (spiral layout)
+                const angle = (index / cycleStates.length) * Math.PI * 4;
+                const radius = 50 + (index * 15);
+                const x = 400 + Math.cos(angle) * radius;
+                const y = 300 + Math.sin(angle) * radius * 0.6;
+                
+                const color = engineColors[state.engine].bg.replace('bg-', '');
+                const isCritical = state.critical ? 'critical' : '';
+                
+                g.innerHTML = `
+                    <circle cx="${x}" cy="${y}" r="12" 
+                            class="${state.engine === 'survival' ? 'fill-rose-500' : state.engine === 'awareness' ? 'fill-cyan-400' : 'fill-amber-400'} ${isCritical}" 
+                            opacity="0.8" />
+                    <text x="${x}" y="${y + 4}" 
+                          text-anchor="middle" 
+                          fill="white" 
+                          font-size="10" 
+                          font-weight="bold">${state.id}</text>
+                    <text x="${x}" y="${y + 28}" 
+                          text-anchor="middle" 
+                          fill="#94a3b8" 
+                          font-size="11" 
+                          class="font-sans">${state.name}</text>
+                `;
+                
+                container.appendChild(g);
+            });
+        }
 
-The pattern is:<br><em>${data.p2}</em><br><br>
+        function showStateDetail(index) {
+            const state = cycleStates[index];
+            const detail = document.getElementById('state-detail');
+            
+            document.getElementById('detail-number').textContent = `STATE ${String(state.id).padStart(2, '0')}`;
+            document.getElementById('detail-title').textContent = state.name;
+            document.getElementById('detail-experience').textContent = state.experience;
+            document.getElementById('detail-psychology').textContent = state.psychology;
+            document.getElementById('detail-function').textContent = state.function;
+            
+            const engineBadge = document.getElementById('detail-engine');
+            engineBadge.className = `inline-block mt-2 px-3 py-1 rounded-full text-xs border ${engineColors[state.engine].border} ${engineColors[state.engine].text.replace('text-', 'bg-')}/20 ${engineColors[state.engine].text}`;
+            engineBadge.textContent = engineColors[state.engine].label;
+            
+            const criticalWarning = document.getElementById('detail-critical');
+            if (state.critical) {
+                criticalWarning.classList.remove('hidden');
+            } else {
+                criticalWarning.classList.add('hidden');
+            }
+            
+            detail.classList.remove('hidden-section');
+            detail.classList.add('visible-section');
+            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
-Reality is forcing you because:<br><em>${data.p3}</em><br><br>
+        function closeDetail() {
+            const detail = document.getElementById('state-detail');
+            detail.classList.remove('visible-section');
+            detail.classList.add('hidden-section');
+        }
 
-What you actually care about is:<br><em>${data.p4}</em><br><br>
+        // Diagnostic Quiz
+        const questions = [
+            {
+                text: "Which describes your current internal state?",
+                options: [
+                    { text: "Numb, burned out, or overwhelmed by pressure", state: "Compression" },
+                    { text: "Questioning who I am or feeling unstable", state: "Disruption" },
+                    { text: "Analyzing my patterns and behaviors", state: "Self-Reflection" },
+                    { text: "Standing at a crossroads, knowing I must choose", state: "Threshold" },
+                    { text: "Making sacrifices for something I value", state: "Cost" }
+                ]
+            },
+            {
+                text: "What is your relationship to repetition?",
+                options: [
+                    { text: "I keep ending up in the same place", state: "Compression" },
+                    { text: "I see the pattern but can't break it", state: "Pattern Recognition" },
+                    { text: "This feels familiar but different—deeper", state: "Recursion" },
+                    { text: "I'm building new structures daily", state: "Construction" }
+                ]
+            },
+            {
+                text: "What question are you living right now?",
+                options: [
+                    { text: "'Why does this keep happening to me?'", state: "Disruption" },
+                    { text: "'What is actually true here?'", state: "Self-Reflection" },
+                    { text: "'What am I willing to protect or become?'", state: "Alignment" },
+                    { text: "'Who am I becoming through this?'", state: "Integration" }
+                ]
+            },
+            {
+                text: "Where is your energy directed?",
+                options: [
+                    { text: "Surviving the day", state: "Compression" },
+                    { text: "Understanding the system", state: "Awareness" },
+                    { text: "Serving something larger than myself", state: "Alignment" },
+                    { text: "Creating or sharing with others", state: "Expression" }
+                ]
+            },
+            {
+                text: "What does this cycle feel like?",
+                options: [
+                    { text: "Like failure or regression", state: "Compression" },
+                    { text: "Like necessary disruption", state: "Disruption" },
+                    { text: "Like a spiral, returning but higher", state: "Recursion" },
+                    { text: "Like expansion into new capacity", state: "Expansion" }
+                ]
+            }
+        ];
 
-This will cost you:<br><em>${data.p5}</em><br><br>
+        let currentQuestion = 0;
+        let answers = [];
 
-So now the only real question is:<br><br>
+        function initDiagnostic() {
+            showQuestion();
+        }
 
-<strong>Will you actually do this?</strong><br><br>
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('q-current').textContent = currentQuestion + 1;
+            document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+            document.getElementById('question-text').textContent = q.text;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-lg border border-white/10 hover:border-cyan-400/50 hover:bg-cyan-400/5 transition-all duration-300 group";
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full border border-white/20 group-hover:border-cyan-400 flex items-center justify-center text-xs text-slate-400 group-hover:text-cyan-400">
+                            ${String.fromCharCode(65 + idx)}
+                        </div>
+                        <span class="text-slate-300 group-hover:text-white">${opt.text}</span>
+                    </div>
+                `;
+                btn.onclick = () => selectAnswer(opt.state);
+                optionsContainer.appendChild(btn);
+            });
+        }
 
-<em>${data.p6}</em>
-`;
+        function selectAnswer(state) {
+            answers.push(state);
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
 
-  let result = document.getElementById("result");
-  result.innerHTML = output;
-  result.style.display = "block";
+        function showResult() {
+            // Count frequency
+            const counts = {};
+            answers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+            const resultState = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+            
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('diagnostic-result').classList.remove('hidden-section');
+            document.getElementById('diagnostic-result').classList.add('visible-section');
+            
+            document.getElementById('result-state').textContent = resultState;
+            
+            // Set intervention based on state
+            const interventions = {
+                "Compression": "You are in the pressure chamber. Do not try to 'fix' this yet. Move to Self-Reflection before attempting change.",
+                "Disruption": "Identity is destabilized. This is necessary but dangerous. Ground in Self-Reflection before making major decisions.",
+                "Self-Reflection": "You are in the recursive layer. Ask: 'What pattern repeats?' Write it down without judgment.",
+                "Pattern Recognition": "You see the structure. Now ask: 'What do I actually value?' Move toward Alignment.",
+                "Threshold": "Decision pressure is high. Do not choose from fear. Anchor in Alignment (Love/Divine) first.",
+                "Alignment": "You are touching meaning. Clarify what you serve. Remove one contradiction today.",
+                "Cost": "You are paying the real price. This proves the choice is authentic. Feel the loss fully.",
+                "Construction": "Build the new identity physically. Habits > insights. One brick at a time.",
+                "Integration": "Consolidate gains. Narrativize your change. 'This is who I am now.'",
+                "Expression": "Share the transformation. Isolation kills growth. Create or connect.",
+                "Recursion": "You see the spiral. Name how this cycle differs from the last. Growth is exponential now.",
+                "Expansion": "Capacity increased. Prepare for the next cycle at this higher level. Rest and integrate."
+            };
+            
+            document.getElementById('result-intervention').textContent = interventions[resultState] || "Continue the cycle with awareness.";
+            
+            // State → Question → Action
+            const sqa = {
+                "Self-Reflection": "State: Self-Reflection → Question: 'What pattern has repeated 3 times?' → Action: Write it in one sentence.",
+                "Alignment": "State: Alignment → Question: 'What do you care about protecting?' → Action: Remove one contradiction today.",
+                "Recursion": "State: Recursion → Question: 'How is this different from last time?' → Action: Name one new insight.",
+                "Compression": "State: Compression → Question: 'What is the pressure trying to change?' → Action: One breath. One observation. No fixing.",
+                "Cost": "State: Cost → Question: 'What will this decision cost?' → Action: Pay a small version immediately."
+            };
+            
+            document.getElementById('result-action').textContent = sqa[resultState] || sqa["Self-Reflection"];
+        }
 
-  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
-}
-</script>
+        function resetDiagnostic() {
+            currentQuestion = 0;
+            answers = [];
+            document.getElementById('diagnostic-result').classList.add('hidden-section');
+            document.getElementById('diagnostic-result').classList.remove('visible-section');
+            document.getElementById('question-container').style.display = 'block';
+            showQuestion();
+        }
 
+        // Practice Generator
+        const practices = [
+            "Write down one pattern that has repeated 3 times in your life. Do not diagnose it. Just observe.",
+            "Identify one thing you are willing to protect or serve, regardless of convenience.",
+            "Remove one small thing from your environment that contradicts your stated values.",
+            "Name one way this current difficulty is similar to a past cycle, and one way it is different.",
+            "Sit in silence for 5 minutes and observe your thoughts without engaging. Just watch.",
+            "Text one person something you appreciate about them. Break the isolation loop.",
+            "Identify the 'cost' of your current path. Acknowledge one small loss you are enduring.",
+            "Create one thing today, however small, that externalizes your internal state.",
+            "Ask yourself: 'Is this choice coming from fear or from alignment?' Wait for the true answer.",
+            "Write a one-sentence narrative: 'I am becoming someone who...'"
+        ];
+
+        function generatePractice() {
+            const output = document.getElementById('practice-output');
+            const text = document.getElementById('practice-text');
+            const random = practices[Math.floor(Math.random() * practices.length)];
+            
+            text.textContent = random;
+            output.classList.remove('hidden');
+        }
+
+        // Navigation
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCycle();
+            initDiagnostic();
+        });
+    </script>
 </body>
 </html>
