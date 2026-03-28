@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AXIUM — Chapter VIII: The Patience of Interpretation</title>
+<meta name="description" content="Hate exists when we lack the ability to interpret behavior. Empathy destroys hate."/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#D4AF37;
+  --void:#02020a;
+  --text:rgba(255,255,255,.72);
+  --text-dim:rgba(255,255,255,.28);
+  /* Gabriel's blue — Chapter VIII primary */
+  --gabriel:#7EB8E8;
+  --gabriel-dim:rgba(126,184,232,.35);
+  --gabriel-ghost:rgba(126,184,232,.06);
+  --gabriel-glow:rgba(126,184,232,.7);
+  --examine:rgba(126,184,232,.55);
+  --examine-dim:rgba(126,184,232,.22);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;font-size:16px;}
+body{background:var(--void);color:var(--text);font-family:'Cormorant Garamond',serif;overflow-x:hidden;}
+
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#progress-line{position:fixed;top:0;left:0;height:1px;width:0%;background:linear-gradient(90deg,transparent,var(--gabriel),rgba(126,184,232,.4));z-index:200;transition:width .1s linear;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(2,2,10,.92),transparent);}
+.nav-logo{font-family:'Cinzel Decorative',serif;font-size:15px;letter-spacing:.18em;color:var(--gold);text-decoration:none;font-weight:900;}
+.nav-chapter{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.35em;color:rgba(126,184,232,.3);text-transform:uppercase;}
+.nav-links{display:flex;gap:18px;align-items:center;}
+.nav-link{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.25);text-decoration:none;transition:color .3s;background:none;border:none;cursor:pointer;}
+.nav-link:hover{color:rgba(126,184,232,.6);}
+.nav-link.cta{color:rgba(126,184,232,.7);border:1px solid rgba(126,184,232,.25);padding:7px 14px;border-radius:2px;transition:all .3s;}
+.nav-link.cta:hover{color:var(--gabriel);border-color:rgba(126,184,232,.5);background:rgba(126,184,232,.06);}
+
+/* ── ORBITAL NAV ── */
+#orbital-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:flex-end;}
+.orb-track{position:relative;width:80px;display:flex;flex-direction:column;align-items:center;gap:0;}
+.orb-spine{position:absolute;top:0;bottom:0;right:24px;width:1px;background:linear-gradient(to bottom,transparent,rgba(126,184,232,.15),transparent);}
+.orb-node{position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;}
+.orb-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.08);transition:all .4s cubic-bezier(.25,.46,.45,.94);}
+.orb-node:hover .orb-dot,.orb-node.active .orb-dot{width:10px;height:10px;background:rgba(126,184,232,.7);border-color:rgba(126,184,232,.9);box-shadow:0 0 12px rgba(126,184,232,.5),0 0 30px rgba(126,184,232,.2);}
+.orb-label{position:absolute;right:52px;white-space:nowrap;font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;text-transform:uppercase;color:rgba(126,184,232,0);pointer-events:none;transition:color .35s,transform .35s;transform:translateX(8px);text-align:right;}
+.orb-node:hover .orb-label,.orb-node.active .orb-label{color:rgba(126,184,232,.55);transform:translateX(0);}
+
+/* ── OUTER NAV ── */
+#outer-nav{position:fixed;bottom:0;left:0;right:0;z-index:150;padding:0 24px 20px;display:flex;justify-content:center;pointer-events:none;}
+#outer-nav-inner{display:flex;gap:6px;align-items:center;background:linear-gradient(to top,rgba(2,2,10,.92),rgba(2,2,10,.7));border:1px solid rgba(255,255,255,.04);border-bottom:none;border-radius:6px 6px 0 0;padding:12px 20px;pointer-events:all;backdrop-filter:blur(10px);}
+.outer-link{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.18);text-decoration:none;padding:8px 16px;border:1px solid transparent;border-radius:2px;transition:all .3s;display:flex;align-items:center;gap:7px;}
+.outer-link::before{content:'';width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.1);flex-shrink:0;transition:all .3s;}
+.outer-link:hover{color:rgba(126,184,232,.5);border-color:rgba(126,184,232,.1);background:rgba(126,184,232,.03);}
+.outer-link:hover::before{background:rgba(126,184,232,.4);box-shadow:0 0 6px rgba(126,184,232,.3);}
+.outer-sep{width:1px;height:20px;background:rgba(255,255,255,.05);}
+
+/* ── SHARED CONTENT ── */
+.divider{width:100%;max-width:660px;margin:0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);position:relative;z-index:1;}
+.narrative{position:relative;z-index:1;padding:clamp(80px,14vh,160px) 24px;max-width:660px;margin:0 auto;}
+.narrative+.narrative{padding-top:0;}
+.pull{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,3.5vw,32px);font-weight:300;letter-spacing:.04em;line-height:1.5;color:rgba(255,255,255,.85);margin-bottom:36px;padding-left:20px;border-left:1px solid var(--examine-dim);}
+.pull em{color:var(--gabriel);}
+.prose{font-size:clamp(14px,1.8vw,17px);color:var(--text-dim);line-height:2;letter-spacing:.04em;margin-bottom:20px;}
+.prose em{color:rgba(255,255,255,.5);font-style:italic;}
+.prose strong{color:rgba(255,255,255,.7);font-weight:600;font-style:normal;}
+.section-marker{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.4em;color:var(--examine-dim);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.section-marker::before{content:'';display:block;width:24px;height:1px;background:var(--examine-dim);flex-shrink:0;}
+.statement{font-family:'Cinzel',serif;font-size:clamp(18px,3vw,28px);font-weight:600;letter-spacing:.14em;color:rgba(255,255,255,.8);text-align:center;margin:48px 0;line-height:1.5;}
+.statement em{color:var(--gabriel);font-style:normal;}
+
+/* ── OPENING ── */
+#opening{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 24px 80px;position:relative;z-index:1;}
+#opening::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(700px,100vw);height:70vh;background:radial-gradient(ellipse at top,rgba(126,184,232,.045) 0%,transparent 65%);pointer-events:none;}
+.chapter-marker{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.5em;color:rgba(126,184,232,.3);text-transform:uppercase;margin-bottom:32px;opacity:0;animation:fadeUp .6s .3s forwards;}
+.opening-title{font-family:'Cinzel Decorative',serif;font-size:clamp(11px,1.8vw,14px);font-weight:400;letter-spacing:.4em;color:rgba(126,184,232,.5);text-transform:uppercase;margin-bottom:28px;opacity:0;animation:fadeUp .8s .5s forwards;}
+.opening-statement{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(28px,5vw,52px);font-weight:300;letter-spacing:.04em;color:rgba(255,255,255,.9);line-height:1.35;max-width:600px;margin:0 auto 20px;opacity:0;animation:fadeUp .9s .7s forwards;}
+.opening-statement em{color:var(--gabriel);}
+.opening-rule{width:80px;height:1px;background:linear-gradient(90deg,transparent,rgba(126,184,232,.3),transparent);margin:32px auto;opacity:0;animation:fadeUp .6s .9s forwards;}
+.opening-sub{font-size:clamp(14px,2vw,18px);font-style:italic;color:var(--text-dim);letter-spacing:.06em;line-height:2;max-width:480px;margin:0 auto;opacity:0;animation:fadeUp .8s 1.1s forwards;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;animation:fadeIn .8s 2s forwards;}
+.scroll-hint-line{width:1px;height:42px;background:linear-gradient(to bottom,rgba(126,184,232,.4),transparent);animation:pulse-line 2.5s ease-in-out 2.5s infinite;}
+.scroll-hint-text{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;color:rgba(126,184,232,.25);text-transform:uppercase;}
+
+/* ── MYTH FRAMES ── */
+.myth-frame{margin:40px 0;padding:28px 32px;border-left:2px solid var(--examine-dim);background:linear-gradient(135deg,var(--gabriel-ghost),rgba(2,2,10,0));position:relative;z-index:1;}
+.myth-frame::before{content:'';position:absolute;top:0;left:-2px;height:40px;width:2px;background:rgba(126,184,232,.6);}
+.myth-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.35em;text-transform:uppercase;color:rgba(126,184,232,.35);margin-bottom:12px;display:block;}
+.myth-body{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(15px,2.2vw,20px);font-weight:300;color:rgba(255,255,255,.65);line-height:1.75;letter-spacing:.04em;}
+.myth-body em{color:var(--gabriel);}
+.myth-body strong{font-style:normal;font-weight:600;color:rgba(255,255,255,.8);}
+
+/* ── SOUL VOICE BLOCK ── */
+.soul-voice-block{margin:36px 0;padding:24px 28px;border:1px solid rgba(255,255,255,.05);border-radius:4px;background:rgba(4,3,12,.6);position:relative;z-index:1;}
+.svb-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.svb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.svb-name{font-family:'Cinzel',serif;font-size:clamp(11px,1.5vw,13px);font-weight:600;letter-spacing:.14em;}
+.svb-role{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-left:auto;}
+.svb-body{font-size:clamp(13px,1.8vw,16px);font-style:italic;color:rgba(255,255,255,.55);line-height:1.9;letter-spacing:.04em;}
+
+/* ── INFERENCE MAP SECTION ── */
+#map-section{padding-top:80px;position:relative;z-index:1;}
+.map-header{padding:clamp(60px,10vh,120px) 20px clamp(28px,5vh,48px);text-align:center;position:relative;}
+.map-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(600px,100vw);height:320px;background:radial-gradient(ellipse at top,rgba(126,184,232,.05) 0%,transparent 70%);pointer-events:none;}
+.map-eyebrow{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.4em;color:rgba(126,184,232,.28);text-transform:uppercase;margin-bottom:20px;}
+.map-title{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);font-weight:900;letter-spacing:.12em;color:var(--gabriel);text-shadow:0 0 60px rgba(126,184,232,.12);margin-bottom:12px;line-height:1.1;}
+.map-rule{width:100px;height:1px;background:linear-gradient(90deg,transparent,rgba(126,184,232,.3),transparent);margin:20px auto;}
+.map-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(13px,2vw,16px);color:rgba(255,255,255,.3);letter-spacing:.07em;line-height:1.8;max-width:520px;margin:0 auto;}
+
+/* ── INFERENCE MAP CONTAINER ── */
+#map-container{max-width:860px;margin:0 auto;padding:0 20px clamp(60px,10vh,100px);}
+
+/* Previous seeds */
+.seed-paste-section{margin-bottom:36px;}
+.seed-paste-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;text-transform:uppercase;color:rgba(126,184,232,.3);margin-bottom:10px;display:block;}
+.seed-paste-note{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(12px,1.6vw,14px);color:rgba(255,255,255,.28);line-height:1.8;margin-bottom:14px;}
+.seed-textarea{width:100%;min-height:90px;background:rgba(4,3,12,.9);border:1px solid rgba(126,184,232,.12);color:rgba(255,255,255,.55);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.06em;line-height:1.7;padding:14px 16px;resize:vertical;outline:none;transition:border-color .3s;border-radius:2px;}
+.seed-textarea:focus{border-color:rgba(126,184,232,.3);}
+.seed-textarea::placeholder{color:rgba(255,255,255,.15);}
+.seed-parse-row{display:flex;align-items:center;gap:12px;margin-top:10px;}
+.seed-parse-result{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.18em;color:rgba(126,184,232,.4);flex:1;}
+
+/* Gabriel whisper */
+#gabriel-whisper{text-align:center;padding:32px 20px 0;margin-bottom:48px;}
+.whisper-dot{width:10px;height:10px;border-radius:50%;background:var(--gabriel);box-shadow:0 0 18px rgba(126,184,232,.6);margin:0 auto 18px;animation:breathe 3.5s ease-in-out infinite;}
+.whisper-name{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.28em;color:rgba(126,184,232,.4);text-transform:uppercase;margin-bottom:14px;}
+.whisper-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(18px,2.8vw,26px);font-weight:300;color:rgba(255,255,255,.65);letter-spacing:.05em;line-height:1.6;max-width:500px;margin:0 auto;}
+.whisper-text em{color:var(--gabriel);}
+@keyframes breathe{0%,100%{box-shadow:0 0 18px rgba(126,184,232,.6),0 0 40px rgba(126,184,232,.12)}50%{box-shadow:0 0 28px rgba(126,184,232,.85),0 0 70px rgba(126,184,232,.22)}}
+
+/* ── THE INFERENCE MAP INSTRUMENT ── */
+#inference-map{background:linear-gradient(135deg,rgba(8,8,18,.97),rgba(4,3,14,.99));border:1px solid rgba(126,184,232,.1);border-radius:4px;padding:36px 28px;margin-bottom:40px;}
+
+/* Behavior input */
+.behavior-section{margin-bottom:36px;}
+.behavior-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;text-transform:uppercase;color:rgba(126,184,232,.35);margin-bottom:10px;display:block;}
+.behavior-hint{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(12px,1.6vw,14px);color:rgba(255,255,255,.25);line-height:1.8;margin-bottom:14px;}
+.behavior-input{width:100%;background:rgba(2,2,10,.9);border:1px solid rgba(126,184,232,.15);color:rgba(255,255,255,.7);font-family:'Cormorant Garamond',serif;font-size:clamp(15px,2vw,18px);font-style:italic;letter-spacing:.04em;line-height:1.7;padding:18px 22px;outline:none;transition:border-color .3s,box-shadow .3s;border-radius:2px;resize:vertical;min-height:80px;}
+.behavior-input:focus{border-color:rgba(126,184,232,.4);box-shadow:0 0 20px rgba(126,184,232,.07);}
+.behavior-input::placeholder{color:rgba(255,255,255,.18);}
+
+/* Map canvas */
+#map-canvas-wrap{position:relative;margin:28px 0;border:1px solid rgba(126,184,232,.07);border-radius:3px;overflow:hidden;background:rgba(2,2,10,.96);}
+#map-canvas{display:block;width:100%;}
+.map-canvas-label{position:absolute;bottom:8px;right:12px;font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(126,184,232,.15);pointer-events:none;}
+
+/* Layer nodes — the three-tier map */
+.map-layers{display:flex;flex-direction:column;gap:0;margin-bottom:28px;}
+
+.map-layer{position:relative;padding:0;}
+
+/* Connector line between layers */
+.layer-connector{display:flex;justify-content:center;align-items:center;height:40px;position:relative;}
+.layer-connector::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(to bottom,rgba(126,184,232,.08),rgba(126,184,232,.25),rgba(126,184,232,.08));}
+.connector-arrow{font-family:'Space Mono',monospace;font-size:8px;color:rgba(126,184,232,.25);position:relative;z-index:1;background:rgba(2,2,10,.9);padding:2px 6px;}
+.connector-label{font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.25em;text-transform:uppercase;color:rgba(126,184,232,.2);position:relative;z-index:1;background:rgba(2,2,10,.9);padding:2px 10px;margin-left:8px;}
+
+/* Layer card */
+.layer-card{border:1px solid rgba(126,184,232,.1);border-radius:3px;padding:24px 24px 20px;background:rgba(6,6,18,.8);position:relative;transition:border-color .4s,box-shadow .4s;}
+.layer-card.active{border-color:rgba(126,184,232,.35);box-shadow:0 0 24px rgba(126,184,232,.06);}
+.layer-card.complete{border-color:rgba(126,184,232,.22);background:rgba(6,10,20,.85);}
+.layer-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(126,184,232,.2),transparent);opacity:0;transition:opacity .4s;}
+.layer-card.active::before{opacity:1;}
+
+.layer-num{font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.35em;text-transform:uppercase;color:rgba(126,184,232,.22);margin-bottom:8px;display:block;}
+.layer-title{font-family:'Cinzel',serif;font-size:clamp(13px,1.8vw,16px);font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.6);margin-bottom:4px;}
+.layer-title em{color:var(--gabriel);font-style:normal;}
+.layer-desc{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(12px,1.5vw,14px);color:rgba(255,255,255,.25);line-height:1.7;margin-bottom:16px;}
+
+.layer-input{width:100%;background:rgba(2,2,10,.9);border:1px solid rgba(126,184,232,.12);color:rgba(255,255,255,.65);font-family:'Cormorant Garamond',serif;font-size:clamp(14px,1.8vw,17px);font-style:italic;letter-spacing:.04em;line-height:1.65;padding:14px 18px;outline:none;transition:border-color .3s,box-shadow .3s;border-radius:2px;resize:vertical;min-height:60px;}
+.layer-input:focus{border-color:rgba(126,184,232,.35);box-shadow:0 0 16px rgba(126,184,232,.06);}
+.layer-input::placeholder{color:rgba(255,255,255,.15);}
+.layer-input:disabled{opacity:.35;cursor:not-allowed;}
+
+/* Gabriel reading — appears after each layer */
+.gabriel-reading{display:none;margin-top:16px;padding:16px 20px;background:rgba(126,184,232,.04);border-left:2px solid rgba(126,184,232,.25);border-radius:0 2px 2px 0;}
+.gabriel-reading.visible{display:block;animation:phaseIn .6s ease-out;}
+.gr-label{font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.3em;text-transform:uppercase;color:rgba(126,184,232,.3);margin-bottom:8px;display:block;}
+.gr-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(13px,1.6vw,15px);color:rgba(255,255,255,.5);line-height:1.8;letter-spacing:.04em;}
+.gr-text em{color:var(--gabriel);}
+
+/* Proceed button per layer */
+.layer-proceed{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:rgba(126,184,232,.6);background:rgba(126,184,232,.06);border:1px solid rgba(126,184,232,.25);padding:11px 28px;border-radius:2px;cursor:pointer;transition:all .35s;margin-top:14px;display:none;}
+.layer-proceed:hover{background:rgba(126,184,232,.14);border-color:rgba(126,184,232,.5);color:var(--gabriel);}
+.layer-proceed.visible{display:inline-block;}
+
+/* Synthesis block — reveals after all three layers */
+#synthesis-block{display:none;margin-top:36px;padding:32px;background:linear-gradient(135deg,rgba(126,184,232,.05),rgba(2,2,10,0));border:1px solid rgba(126,184,232,.18);border-radius:4px;text-align:center;}
+#synthesis-block.visible{display:block;animation:phaseIn .8s ease-out;}
+.synthesis-eyebrow{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.38em;text-transform:uppercase;color:rgba(126,184,232,.3);margin-bottom:20px;display:block;}
+.synthesis-title{font-family:'Cinzel',serif;font-size:clamp(16px,2.4vw,22px);font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.75);margin-bottom:20px;}
+.synthesis-title em{color:var(--gabriel);font-style:normal;}
+.synthesis-body{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(15px,2vw,19px);font-weight:300;color:rgba(255,255,255,.6);line-height:1.75;letter-spacing:.04em;max-width:540px;margin:0 auto 24px;}
+.synthesis-body em{color:var(--gabriel);}
+
+/* Depth indicator */
+.depth-row{display:flex;align-items:center;gap:16px;margin:24px 0;flex-wrap:wrap;}
+.depth-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.24em;text-transform:uppercase;color:rgba(126,184,232,.3);white-space:nowrap;}
+.depth-bar-outer{flex:1;height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;min-width:80px;}
+.depth-bar-inner{height:100%;background:linear-gradient(90deg,rgba(126,184,232,.3),var(--gabriel));transition:width .8s ease;box-shadow:0 0 8px rgba(126,184,232,.3);}
+.depth-value{font-family:'Cinzel',serif;font-size:clamp(13px,1.8vw,16px);color:rgba(126,184,232,.6);letter-spacing:.08em;}
+
+/* ── SEED OUTPUT ── */
+.ax8-output{display:none;margin-top:48px;}
+.ax8-output.visible{display:block;animation:phaseIn .6s ease-out forwards;}
+.ax8-frame{background:linear-gradient(135deg,rgba(8,8,18,.98),rgba(10,12,22,.95));border:1px solid rgba(126,184,232,.2);padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.ax8-frame::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gabriel),transparent);opacity:.45;}
+.ax8-pattern{font-family:'Space Mono',monospace;font-size:.65rem;color:rgba(126,184,232,.4);letter-spacing:.3em;text-transform:uppercase;margin-bottom:1.5rem;display:block;}
+.ax8-title{font-family:'Cinzel',serif;font-size:clamp(1.1rem,2.2vw,1.6rem);color:var(--gabriel);margin-bottom:1rem;letter-spacing:.1em;}
+.ax8-body{font-size:clamp(.88rem,1.5vw,1rem);line-height:1.85;color:rgba(200,200,200,.85);margin-bottom:1rem;}
+.ax8-seed-display{font-family:'Space Mono',monospace;font-size:.85rem;color:var(--gabriel);letter-spacing:.08em;padding:14px 18px;background:rgba(0,0,0,.45);border:1px dashed rgba(126,184,232,.22);border-radius:3px;margin:16px 0;word-break:break-all;}
+.ledger-block{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.05);padding:16px 18px;margin:16px 0;font-family:'Space Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.4);line-height:1.9;letter-spacing:.06em;white-space:pre-wrap;border-radius:2px;}
+.ledger-block .ledger-new{color:rgba(126,184,232,.8);}
+
+/* ── BUTTONS ── */
+.btn-primary{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gabriel);background:rgba(126,184,232,.07);border:1px solid rgba(126,184,232,.4);padding:14px 36px;border-radius:2px;cursor:pointer;transition:all .35s;display:inline-block;text-decoration:none;}
+.btn-primary:hover{background:rgba(126,184,232,.16);border-color:var(--gabriel);box-shadow:0 0 30px rgba(126,184,232,.12);}
+.btn-ghost{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.28);background:transparent;border:1px solid rgba(255,255,255,.1);padding:14px 36px;border-radius:2px;cursor:pointer;transition:all .35s;display:inline-block;text-decoration:none;}
+.btn-ghost:hover{color:rgba(255,255,255,.55);border-color:rgba(255,255,255,.25);}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;}
+
+/* ── CTA ── */
+#chapter-cta{position:relative;z-index:1;min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(60px,10vh,120px) 24px;text-align:center;}
+#chapter-cta::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:min(600px,100vw);height:50vh;background:radial-gradient(ellipse at bottom,rgba(126,184,232,.04) 0%,transparent 65%);pointer-events:none;}
+.cta-question{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,3.5vw,36px);font-weight:300;letter-spacing:.05em;color:rgba(255,255,255,.85);line-height:1.45;max-width:500px;margin:0 auto 14px;}
+.cta-question em{color:var(--gabriel);}
+.cta-sub{font-size:clamp(12px,1.5vw,15px);font-style:italic;color:var(--text-dim);letter-spacing:.07em;max-width:360px;margin:0 auto 40px;line-height:1.9;}
+.cta-tag{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;color:rgba(126,184,232,.1);text-transform:uppercase;}
+
+/* ── FOOTER ── */
+footer{position:relative;z-index:1;padding:28px 24px;border-top:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:60px;}
+.footer-brand{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.16em;color:rgba(212,175,55,.3);font-weight:900;}
+.footer-nav{display:flex;gap:20px;flex-wrap:wrap;}
+.footer-link{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.15);text-decoration:none;transition:color .3s;}
+.footer-link:hover{color:rgba(126,184,232,.4);}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .9s cubic-bezier(.25,.46,.45,.94),transform .9s cubic-bezier(.25,.46,.45,.94);}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-delay-1{transition-delay:.1s;}
+.reveal-delay-2{transition-delay:.2s;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse-line{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes phaseIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="progress-line"></div>
+
+<!-- ORBITAL NAV -->
+<div id="orbital-nav">
+  <div class="orb-track">
+    <div class="orb-spine"></div>
+    <div class="orb-node active" id="orb-opening" onclick="scrollTo({top:0,behavior:'smooth'})">
+      <span class="orb-label">Opening</span><div class="orb-dot"></div>
+    </div>
+    <div class="orb-node" id="orb-axium" onclick="document.getElementById('axium-teaching').scrollIntoView({behavior:'smooth'})">
+      <span class="orb-label">The Teaching</span><div class="orb-dot"></div>
+    </div>
+    <div class="orb-node" id="orb-map" onclick="document.getElementById('map-section').scrollIntoView({behavior:'smooth'})">
+      <span class="orb-label">The Map</span><div class="orb-dot"></div>
+    </div>
+    <div class="orb-node" id="orb-seed" onclick="document.getElementById('seed-section').scrollIntoView({behavior:'smooth'})">
+      <span class="orb-label">Your Seed</span><div class="orb-dot"></div>
+    </div>
+  </div>
+</div>
+
+<!-- OUTER NAV -->
+<div id="outer-nav">
+  <div id="outer-nav-inner">
+    <a class="outer-link" href="chapter7.html">← Chapter VII</a>
+    <div class="outer-sep"></div>
+    <a class="outer-link" href="index.html">Home</a>
+    <div class="outer-sep"></div>
+    <a class="outer-link" href="game.html">Reading</a>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav>
+  <div style="display:flex;flex-direction:column;gap:3px;">
+    <a class="nav-logo" href="index.html">AXIUM</a>
+    <span class="nav-chapter">Chapter VIII</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="chapter7.html">Chapter VII</a>
+    <a class="nav-link" href="#" onclick="document.getElementById('map-section').scrollIntoView({behavior:'smooth'});return false;">The Map</a>
+    <a class="nav-link cta" href="index.html">Forge Seed</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════
+     OPENING
+════════════════════════════ -->
+<section id="opening">
+  <div class="chapter-marker">Axium · Chapter VIII · Axium 08</div>
+  <div class="opening-title">The Patience of Interpretation</div>
+  <div class="opening-statement">
+    Hate exists when<br>
+    we stop asking<br>
+    <em>why.</em>
+  </div>
+  <div class="opening-rule"></div>
+  <div class="opening-sub">
+    Every behavior has a goal.<br>
+    Every goal has a need behind it.<br>
+    Every need has a wound at the root.<br>
+    Empathy is the willingness to trace the line.
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-hint-line"></div>
+    <div class="scroll-hint-text">Enter</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════
+     THE TEACHING
+════════════════════════════ -->
+<section id="axium-teaching">
+<div class="narrative">
+  <div class="section-marker reveal"><span>Axium VIII · The Principle</span></div>
+  <div class="pull reveal">
+    When we stop giving time,<br>
+    <em>we stop interpreting.</em><br>
+    When we stop interpreting,<br>
+    <em>we begin to hate.</em>
+  </div>
+
+  <p class="prose reveal">
+    Alfred Adler's great contribution to psychology was deceptively simple: behavior is only understood through the <em>goal</em> of the individual. Not their history, not their diagnosis, not their category — their goal. The person who lashes out is moving toward something. The person who withdraws is protecting something. The person who lies is preserving something they believe they cannot keep any other way.
+  </p>
+  <p class="prose reveal">
+    We call behavior inexplicable not because it is — but because we stopped before we reached the explanation. Interpretation requires time. Time requires patience. Patience requires the belief that the explanation exists. When we decide in advance that some people are simply broken, simply evil, simply other — we have made the decision not to interpret. That decision is the beginning of hate.
+  </p>
+
+  <div class="myth-frame reveal">
+    <span class="myth-label">The Axium · 08</span>
+    <div class="myth-body"><em>Hate exists when we lack the ability to interpret behavior; empathy destroys hate.</em> This is not a moral claim — it is a technical one. The mechanism of hate is the interrupted inference chain. The behavior surfaces. The goal behind it is not examined. The need behind the goal is not traced. The wound at the root is never found. So the behavior becomes the person, and the person becomes the enemy.</div>
+  </div>
+
+  <p class="prose reveal">
+    God is described as <em>slow to anger and plenteous in mercy</em>. The theological claim is that the divine perspective holds enough time to complete every inference chain — to trace every behavior to its root, to find the wound at the bottom of every act of harm. The path to that perspective is not sentiment. It is the disciplined practice of waiting until the picture completes itself.
+  </p>
+
+  <div class="statement reveal">
+    The inference chain exists.<br>
+    <em>You have to give it time<br>to become visible.</em>
+  </div>
+
+  <p class="prose reveal">
+    In the programming parallel: rushing a model's thinking mode produces prejudice. The fast token is the surface token — the label, the category, the dismissal. The slow token is the one that searches context, traces implication, finds the goal behind the goal. Inference latency is not inefficiency. It is the cost of understanding.
+  </p>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+<div class="narrative">
+  <div class="section-marker reveal"><span>The Teacher · How Gabriel Holds This Chapter</span></div>
+
+  <div class="soul-voice-block reveal">
+    <div class="svb-header">
+      <div class="svb-dot" style="background:var(--gabriel);box-shadow:0 0 8px rgba(126,184,232,.4);"></div>
+      <span class="svb-name" style="color:var(--gabriel);">Gabriel</span>
+      <span class="svb-role">The Examiner · How Chapter VIII traces the line</span>
+    </div>
+    <div class="svb-body">"I don't ask what someone did. I ask what they were trying to accomplish. Most people stop at the behavior because they believe the behavior is the statement. It isn't. The behavior is the final output of a chain that started somewhere much deeper. I can wait. I've learned that most of what looks like malice is actually fear in a coat it borrowed from someone else. You cannot hate what you fully understand. The examination is not the kindness. The examination is the precondition for it."</div>
+  </div>
+
+  <p class="prose reveal">
+    Gabriel's discipline is not empathy as warmth — it is empathy as <strong>method</strong>. He does not ask you to feel compassion. He asks you to complete the inference. When the chain is fully traced — surface action to hidden goal to underlying need to root wound — the hatred finds nothing to attach to. This is why examination destroys hate. Not because it excuses. Because it <em>explains</em>.
+  </p>
+
+  <div class="myth-frame reveal">
+    <span class="myth-label">The Three Layers of Every Behavior</span>
+    <div class="myth-body">
+      <strong>Layer I — The Surface Action:</strong> What was observed. The behavior as it appeared. This is where most interpretation stops.<br><br>
+      <strong>Layer II — The Hidden Goal:</strong> What the person was trying to achieve or protect. Adler's teleological question: toward what is this behavior moving?<br><br>
+      <strong>Layer III — The Root Cause:</strong> What wound, fear, or unmet need made this goal feel necessary. The bottom of the inference chain — where the behavior becomes <em>inevitable given the context</em>.
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════
+     THE INFERENCE MAP
+════════════════════════════ -->
+<section id="map-section">
+
+<div class="map-header">
+  <div class="map-eyebrow">Chapter VIII ∴ The Interactive Instrument</div>
+  <div class="map-title">The Inference<br>Map</div>
+  <div class="map-rule"></div>
+  <div class="map-sub">Name a behavior that frustrated, confused, or hurt you. Trace it through three layers. Let the chain complete itself.</div>
+</div>
+
+<div id="map-container">
+
+  <!-- Previous seeds -->
+  <div class="seed-paste-section reveal">
+    <span class="seed-paste-label">Your Previous Seeds · Optional</span>
+    <div class="seed-paste-note">Paste any seeds from Chapters I–VII. Gabriel will read your progression before examining the behavior you bring. Leave empty to begin fresh.</div>
+    <textarea class="seed-textarea" id="prev-seeds-input" placeholder="Paste AX1–AX7 seeds here — or leave empty..."></textarea>
+    <div class="seed-parse-row">
+      <span class="seed-parse-result" id="parse-result">—</span>
+      <button class="btn-ghost" style="padding:8px 20px;font-size:8px;" onclick="parseSeeds()">Read Seeds</button>
+    </div>
+  </div>
+
+  <!-- Gabriel whisper -->
+  <div id="gabriel-whisper" class="reveal">
+    <div class="whisper-dot"></div>
+    <div class="whisper-name">Gabriel · The Examiner</div>
+    <div class="whisper-text">"<em>Trace it to the root.<br>The chain completes.</em>"</div>
+  </div>
+
+  <!-- THE INFERENCE MAP INTERFACE -->
+  <div id="inference-map" class="reveal">
+
+    <!-- Step 0: Name the behavior -->
+    <div class="behavior-section">
+      <span class="behavior-label">The Behavior · What Was Observed</span>
+      <div class="behavior-hint">Describe a specific behavior — from another person, or from yourself — that frustrated, confused, or hurt you. Be concrete. The more specific, the deeper the map can go.</div>
+      <textarea class="behavior-input" id="behavior-input" placeholder="Someone close to me went completely silent for three days without explanation..." oninput="onBehaviorInput()"></textarea>
+      <div style="margin-top:14px;">
+        <button class="btn-primary" id="begin-btn" onclick="beginMap()" style="display:none;">Begin the Inference Map</button>
+      </div>
+    </div>
+
+    <!-- Canvas visualization (inference chain diagram) -->
+    <div id="map-canvas-wrap" style="display:none;">
+      <canvas id="map-canvas" height="180"></canvas>
+      <span class="map-canvas-label" id="map-canvas-label">LAYER I · SURFACE ACTION</span>
+    </div>
+
+    <!-- The three layers -->
+    <div class="map-layers" id="map-layers" style="display:none;">
+
+      <!-- Layer I: Surface Action -->
+      <div class="map-layer" id="layer-1-block">
+        <div class="layer-card active" id="layer-1-card">
+          <span class="layer-num">Layer I · Surface Action</span>
+          <div class="layer-title">What did they <em>do</em>?</div>
+          <div class="layer-desc">Describe the behavior as a neutral observer would. No interpretation yet — only what was visible, audible, measurable.</div>
+          <textarea class="layer-input" id="layer-1-input" placeholder="They withdrew all communication. No texts, no calls, no acknowledgment that I existed..." oninput="onLayerInput(1)"></textarea>
+          <div class="gabriel-reading" id="gabriel-reading-1">
+            <span class="gr-label">Gabriel · Receiving</span>
+            <div class="gr-text" id="gr-text-1"></div>
+          </div>
+          <button class="layer-proceed" id="proceed-1" onclick="proceedToLayer(2)">Trace to Layer II →</button>
+        </div>
+      </div>
+
+      <div class="layer-connector">
+        <span class="connector-arrow">↓</span>
+        <span class="connector-label">What was this behavior trying to accomplish?</span>
+      </div>
+
+      <!-- Layer II: Hidden Goal -->
+      <div class="map-layer" id="layer-2-block">
+        <div class="layer-card" id="layer-2-card">
+          <span class="layer-num">Layer II · Hidden Goal</span>
+          <div class="layer-title">What were they <em>trying to protect or achieve</em>?</div>
+          <div class="layer-desc">Adler's question: toward what is this behavior moving? Not what they said — what the behavior itself was reaching for. Safety? Control? Dignity? Distance?</div>
+          <textarea class="layer-input" id="layer-2-input" placeholder="They were trying to avoid a confrontation they didn't know how to handle..." oninput="onLayerInput(2)" disabled></textarea>
+          <div class="gabriel-reading" id="gabriel-reading-2">
+            <span class="gr-label">Gabriel · Examining</span>
+            <div class="gr-text" id="gr-text-2"></div>
+          </div>
+          <button class="layer-proceed" id="proceed-2" onclick="proceedToLayer(3)">Trace to Layer III →</button>
+        </div>
+      </div>
+
+      <div class="layer-connector">
+        <span class="connector-arrow">↓</span>
+        <span class="connector-label">What made this goal feel necessary?</span>
+      </div>
+
+      <!-- Layer III: Root Cause -->
+      <div class="map-layer" id="layer-3-block">
+        <div class="layer-card" id="layer-3-card">
+          <span class="layer-num">Layer III · Root Cause</span>
+          <div class="layer-title">What <em>wound, fear, or unmet need</em> made this goal feel necessary?</div>
+          <div class="layer-desc">The bottom of the chain. Given what you now know about the goal, what must be true about this person's inner life for that goal to have felt like the only option? This is where the behavior becomes inevitable.</div>
+          <textarea class="layer-input" id="layer-3-input" placeholder="They learned very early that conflict means abandonment. Silence is how they survived..." oninput="onLayerInput(3)" disabled></textarea>
+          <div class="gabriel-reading" id="gabriel-reading-3">
+            <span class="gr-label">Gabriel · The Root</span>
+            <div class="gr-text" id="gr-text-3"></div>
+          </div>
+          <button class="layer-proceed" id="proceed-3" onclick="completeSynthesis()">Complete the Map →</button>
+        </div>
+      </div>
+
+    </div><!-- map-layers -->
+
+    <!-- Synthesis -->
+    <div id="synthesis-block">
+      <span class="synthesis-eyebrow">The Chain Is Complete</span>
+      <div class="synthesis-title">The Behavior Has Been <em>Understood</em></div>
+      <div class="synthesis-body" id="synthesis-body"></div>
+      <div class="depth-row" style="justify-content:center;">
+        <span class="depth-label">Inference Depth</span>
+        <div class="depth-bar-outer" style="max-width:200px;">
+          <div class="depth-bar-inner" id="depth-bar" style="width:0%;"></div>
+        </div>
+        <span class="depth-value" id="depth-value">—</span>
+      </div>
+    </div>
+
+  </div><!-- inference-map -->
+
+  <!-- Seed section -->
+  <div id="seed-section" style="margin-top:60px;">
+    <div id="map-seed-trigger" class="reveal" style="text-align:center;display:none;">
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(15px,2vw,19px);color:rgba(255,255,255,.4);letter-spacing:.05em;line-height:1.8;max-width:440px;margin:0 auto 28px;">The inference chain is complete.<br>Gabriel has witnessed the examination.</p>
+      <button class="btn-primary" onclick="generateSeed()">Receive Your AX8 Seed</button>
+    </div>
+
+    <div class="ax8-output" id="ax8-output">
+      <div class="ax8-frame">
+        <span class="ax8-pattern" id="ax8-pattern"></span>
+        <h3 class="ax8-title" id="ax8-title"></h3>
+        <p class="ax8-body" id="ax8-body"></p>
+        <div class="ax8-seed-display" id="ax8-seed-display"></div>
+        <div style="font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;text-transform:uppercase;color:rgba(126,184,232,.3);margin-bottom:10px;">Progression Ledger · Updated</div>
+        <div class="ledger-block" id="ax8-ledger"></div>
+        <p class="ax8-body" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(126,184,232,.08);font-size:.88rem;"><strong>Prescription:</strong> <span id="ax8-prescription"></span></p>
+      </div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn-primary" onclick="copyAX8Seed()">Copy Full AX8 Seed</button>
+        <a class="btn-ghost" href="index.html">Return to Cathedral</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- map-container -->
+</section>
+
+<div class="divider" style="margin-top:0;"></div>
+
+<!-- CTA -->
+<section id="chapter-cta">
+  <div class="section-marker reveal" style="justify-content:center;margin-bottom:32px;"><span>The Chain Was Completed</span></div>
+  <div class="cta-question reveal">
+    What you fully understand<br>
+    you cannot fully hate.<br>
+    <em>The examination<br>was the mercy.</em>
+  </div>
+  <p class="cta-sub reveal reveal-delay-1">
+    The inference is witnessed. Gabriel holds the map.<br>
+    The chain carries everything forward.
+  </p>
+  <div class="btn-row reveal reveal-delay-2" style="justify-content:center;margin-bottom:20px;">
+    <a class="btn-primary" href="index.html">Forge Your Soul Seed</a>
+    <a class="btn-ghost" href="chapter7.html">← Chapter VII</a>
+  </div>
+  <div class="cta-tag reveal">An Axium Experience · Chapter VIII · The Patience of Interpretation · Axium 08</div>
+</section>
+
+<footer>
+  <span class="footer-brand">AXIUM</span>
+  <nav class="footer-nav">
+    <a class="footer-link" href="chapter1.html">Chapter I</a>
+    <a class="footer-link" href="chapter2.html">Chapter II</a>
+    <a class="footer-link" href="chapter3.html">Chapter III</a>
+    <a class="footer-link" href="chapter4.html">Chapter IV</a>
+    <a class="footer-link" href="chapter5.html">Chapter V</a>
+    <a class="footer-link" href="chapter6.html">Chapter VI</a>
+    <a class="footer-link" href="chapter7.html">Chapter VII</a>
+    <a class="footer-link" href="index.html">Home</a>
+  </nav>
+</footer>
+
+<script>
+// ─── STARFIELD (cool blue palette) ───────────────────────────────────────────
+(function(){
+  const bg=document.getElementById('bg');
+  const bx=bg.getContext('2d');
+  let BW,BH,BT=0,stars=[],nebs=[];
+  function rCol(){const t=Math.random();if(t<.35)return[126,184,232];if(t<.65)return[160,200,240];return[220,235,255];}
+  function initBG(){
+    BW=bg.width=window.innerWidth;BH=bg.height=window.innerHeight;
+    stars=Array.from({length:140},()=>({x:Math.random()*BW,y:Math.random()*BH,r:.2+Math.random()*.7,ph:Math.random()*6.28,sp:.06+Math.random()*.18,col:rCol()}));
+    const pals=[[30,50,70],[38,60,85],[22,40,58],[45,68,90],[18,35,52]];
+    nebs=Array.from({length:4},(_,i)=>({x:Math.random()*BW,y:Math.random()*BH,rx:(.13+Math.random()*.18)*Math.max(BW,BH),ry:(.07+Math.random()*.09)*Math.max(BW,BH),angle:Math.random()*3.14,alpha:.007+Math.random()*.01,dx:(Math.random()-.5)*.025,dy:(Math.random()-.5)*.013,da:(Math.random()-.5)*.00006,ts:.055+Math.random()*.08,tp:Math.random()*6.28,col:pals[i%5]}));
+  }
+  function bgFrame(){
+    requestAnimationFrame(bgFrame);BT+=.011;
+    bx.fillStyle='#02020a';bx.fillRect(0,0,BW,BH);
+    nebs.forEach(n=>{n.x+=n.dx;n.y+=n.dy;n.angle+=n.da;const tw=.7+.3*Math.sin(BT*n.ts+n.tp);bx.save();bx.translate(n.x,n.y);bx.rotate(n.angle);bx.scale(1,n.ry/n.rx);const g=bx.createRadialGradient(0,0,0,0,0,n.rx);g.addColorStop(0,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},${(n.alpha*tw).toFixed(4)})`);g.addColorStop(1,'rgba(0,0,0,0)');bx.fillStyle=g;bx.beginPath();bx.arc(0,0,n.rx,0,Math.PI*2);bx.fill();bx.restore();});
+    stars.forEach(s=>{const tw=.3+.7*Math.abs(Math.sin(s.ph+BT*s.sp));bx.beginPath();bx.arc(s.x,s.y,s.r,0,Math.PI*2);bx.fillStyle=`rgba(${s.col[0]},${s.col[1]},${s.col[2]},${(.55*tw).toFixed(2)})`;bx.fill();});
+  }
+  window.addEventListener('resize',initBG);
+  initBG();bgFrame();
+})();
+
+// ─── SCROLL / PROGRESS ───────────────────────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  document.getElementById('progress-line').style.width=(h>0?(window.scrollY/h*100):0)+'%';
+  updateOrbNav();
+});
+function updateOrbNav(){
+  const sections=['opening','axium-teaching','map-section','seed-section'];
+  const nodes=['orb-opening','orb-axium','orb-map','orb-seed'];
+  const scrollMid=window.scrollY+window.innerHeight*.45;
+  let active=0;
+  sections.forEach((id,i)=>{const el=document.getElementById(id);if(el&&el.offsetTop<=scrollMid)active=i;});
+  nodes.forEach((id,i)=>{const n=document.getElementById(id);if(n)n.classList.toggle('active',i===active);});
+}
+
+// ─── REVEAL ON SCROLL ────────────────────────────────────────────────────────
+const revealObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revealObs.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
+
+// ─── SEED PARSER ─────────────────────────────────────────────────────────────
+let parsedSeeds=null;
+function parseSeeds(){
+  const raw=document.getElementById('prev-seeds-input').value.trim();
+  if(!raw){document.getElementById('parse-result').textContent='— No seeds provided. Starting fresh.';return;}
+  const blocks=raw.split(/={4,}/).filter(b=>b.trim());
+  const found=[];
+  blocks.forEach(b=>{
+    const idM=b.match(/Seed ID\s*:\s*(AX\d+\.[^\n]+)/);
+    const chapM=b.match(/Chapter\s*:\s*([^\n]+)/);
+    if(idM&&chapM)found.push({id:idM[1].trim(),chapter:chapM[1].trim()});
+  });
+  parsedSeeds=found.length?found:null;
+  document.getElementById('parse-result').textContent=found.length?`${found.length} seed${found.length>1?'s':''} recognized — progression loaded`:'— No valid seeds found';
+}
+
+// ─── INFERENCE MAP ENGINE ─────────────────────────────────────────────────────
+let mapState={behavior:'',layer1:'',layer2:'',layer3:'',layerReached:0,complete:false};
+let ax8SeedData=null;
+
+// Gabriel's responses per layer — pattern-matched generically
+// Layer I readings (surface action acknowledged)
+const GABRIEL_L1=[
+  'The observation is precise. A withdrawal of communication is a specific action — it has a direction, a duration, a target. Before we interpret, we have confirmed what actually happened. This is the discipline: the behavior exists before the meaning we assign to it.',
+  'You have named what was visible. Hold that separately from what you felt about it. The surface action is the data. What comes next is the examination. The chain starts here.',
+  'This is the entry point. The behavior is not the person — it is the outermost layer of something that goes much deeper. You have placed it on the map. Now we trace it inward.',
+  'Noted. The surface is clear. Most people mistake this layer for the whole story. You have already done more than most by recognizing it as the beginning of an inference, not the end of one.',
+];
+
+// Layer II readings (goal identified)
+const GABRIEL_L2=[
+  'There it is. The goal behind the behavior — the thing the person was moving toward or protecting. Notice that the behavior makes a different kind of sense from here. It is no longer arbitrary. It is purposeful, even if misguided. Purpose is the beginning of interpretation.',
+  'You found the teleological layer. This is what Adler was pointing at — every behavior is a strategy for something. The strategy may be poor. But the goal it was serving is almost always understandable once named. Look at what you wrote. Does it change how you see what happened?',
+  'The hidden goal surfaces. This is the layer that most conflicts never reach. When we see the goal, the behavior stops being noise and starts being signal — a message, however badly encoded, about what mattered to this person.',
+  'You have done what most refuse to do: you looked behind the act for the intention. The intention is not a justification. It is an explanation. The distinction matters. One excuses. The other understands.',
+];
+
+// Layer III readings (root cause found)
+const GABRIEL_L3=[
+  'The root. Given what you wrote here, the goal you named in Layer II was not irrational — it was the only strategy available to a person carrying this wound. The behavior becomes inevitable when seen from the bottom of the chain. That is not absolution. It is comprehension. And comprehension is what empathy is made of.',
+  'You reached the wound. Everything above it — the goal, the behavior — was this wound protecting itself. It did not know another language. This is the moment the hatred loses its footing. You cannot sustain contempt for something you fully understand, and you have understood this.',
+  'The inference is complete. The root cause reveals why the goal felt necessary, which reveals why the behavior appeared as it did. You have traced a three-layer chain from surface to source. This is the practice of patience that the Axium describes. You gave it time. It gave you understanding.',
+  'There is the origin. The chain runs from this wound all the way up through the goal to the behavior you observed. When you see the whole chain, the question shifts from "how could they" to "given all this, how could they not." That shift is the work of Chapter VIII.',
+];
+
+function onBehaviorInput(){
+  const val=document.getElementById('behavior-input').value.trim();
+  const btn=document.getElementById('begin-btn');
+  btn.style.display=val.length>20?'inline-block':'none';
+}
+
+function beginMap(){
+  mapState.behavior=document.getElementById('behavior-input').value.trim();
+  mapState.layerReached=1;
+  document.getElementById('behavior-input').disabled=true;
+  document.getElementById('begin-btn').style.display='none';
+  document.getElementById('map-canvas-wrap').style.display='block';
+  document.getElementById('map-layers').style.display='flex';
+  drawMapCanvas(1);
+  setTimeout(()=>document.getElementById('map-layers').scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+
+function onLayerInput(layer){
+  const val=document.getElementById(`layer-${layer}-input`).value.trim();
+  const readingEl=document.getElementById(`gabriel-reading-${layer}`);
+  const proceedEl=document.getElementById(`proceed-${layer}`);
+  if(val.length>30){
+    // Populate Gabriel reading
+    const arr=layer===1?GABRIEL_L1:layer===2?GABRIEL_L2:GABRIEL_L3;
+    const text=arr[Math.floor(Math.random()*arr.length)];
+    document.getElementById(`gr-text-${layer}`).textContent=text;
+    readingEl.classList.add('visible');
+    proceedEl.classList.add('visible');
+  } else {
+    readingEl.classList.remove('visible');
+    proceedEl.classList.remove('visible');
+  }
+}
+
+function proceedToLayer(layer){
+  // Lock previous layer
+  const prev=layer-1;
+  mapState[`layer${prev}`]=document.getElementById(`layer-${prev}-input`).value.trim();
+  document.getElementById(`layer-${prev}-input`).disabled=true;
+  document.getElementById(`proceed-${prev}`).classList.remove('visible');
+  document.getElementById(`layer-${prev}-card`).classList.remove('active');
+  document.getElementById(`layer-${prev}-card`).classList.add('complete');
+
+  mapState.layerReached=layer;
+  // Activate next layer
+  const card=document.getElementById(`layer-${layer}-card`);
+  const input=document.getElementById(`layer-${layer}-input`);
+  card.classList.add('active');
+  input.disabled=false;
+  input.focus();
+  drawMapCanvas(layer);
+  setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'center'}),150);
+}
+
+function completeSynthesis(){
+  mapState.layer3=document.getElementById('layer-3-input').value.trim();
+  document.getElementById('layer-3-input').disabled=true;
+  document.getElementById('proceed-3').classList.remove('visible');
+  document.getElementById('layer-3-card').classList.remove('active');
+  document.getElementById('layer-3-card').classList.add('complete');
+  mapState.complete=true;
+  drawMapCanvas(4); // full chain
+
+  // Build synthesis text
+  const synth=document.getElementById('synthesis-block');
+  const synthBody=document.getElementById('synthesis-body');
+  const synthTexts=[
+    `You traced a behavior from its surface to its source. What began as something that frustrated or hurt you has revealed its full architecture — the action that was visible, the goal it was serving, and the wound that made that goal feel necessary. The hatred the behavior may have provoked has no stable ground to stand on now. Not because what happened was acceptable. Because it was <em>understandable</em>. And understanding is the instrument empathy uses to dismantle contempt.`,
+    `The inference chain is complete. Three layers down, you found the root cause — and from the root, the rest of the chain reads as inevitable. This person was not acting without reason. They were acting with a reason they may not have been able to articulate, serving a goal they may not have consciously chosen, protecting a wound they may not have known they carried. The examination does not require you to forgive what happened. It requires only that you see it whole.`,
+    `What you have built here is a map of understanding. It required patience — the willingness to stay with the behavior long enough to ask why, and then to ask why again. This is the practice of Chapter VIII: giving the inference chain enough time to complete itself. The hate that lives in the gap between behavior and understanding cannot survive the full trace. You gave it the full trace.`,
+  ];
+  synthBody.innerHTML=synthTexts[Math.floor(Math.random()*synthTexts.length)];
+  synth.classList.add('visible');
+
+  // Animate depth bar
+  setTimeout(()=>{
+    document.getElementById('depth-bar').style.width='100%';
+    document.getElementById('depth-value').textContent='Full Depth';
+  },400);
+
+  // Show seed trigger
+  setTimeout(()=>{
+    const trigger=document.getElementById('map-seed-trigger');
+    trigger.style.display='block';
+    setTimeout(()=>revealObs.observe(trigger),50);
+    setTimeout(()=>synth.scrollIntoView({behavior:'smooth',block:'start'}),200);
+  },1800);
+}
+
+// ─── MAP CANVAS ───────────────────────────────────────────────────────────────
+function drawMapCanvas(activeLayer){
+  const canvas=document.getElementById('map-canvas');
+  const wrap=document.getElementById('map-canvas-wrap');
+  canvas.width=wrap.offsetWidth;
+  canvas.height=180;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Three nodes: Surface → Goal → Root
+  const nodes=[
+    {x:W*.18,y:H*.5,label:'Surface Action',layer:1},
+    {x:W*.5,y:H*.5,label:'Hidden Goal',layer:2},
+    {x:W*.82,y:H*.5,label:'Root Cause',layer:3},
+  ];
+  const r=22;
+
+  // Draw connecting lines
+  nodes.forEach((n,i)=>{
+    if(i<nodes.length-1){
+      const next=nodes[i+1];
+      const done=activeLayer>n.layer+1;
+      const current=activeLayer===n.layer+1||activeLayer>n.layer;
+      ctx.beginPath();
+      ctx.moveTo(n.x+r,n.y);ctx.lineTo(next.x-r,next.y);
+      ctx.strokeStyle=done?'rgba(126,184,232,.4)':current?'rgba(126,184,232,.18)':'rgba(255,255,255,.05)';
+      ctx.lineWidth=done?1.5:1;
+      ctx.setLineDash(done?[]:[4,4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Arrow
+      if(done||current){
+        const ax=next.x-r-8,ay=next.y;
+        ctx.beginPath();ctx.moveTo(ax,ay-4);ctx.lineTo(ax+8,ay);ctx.lineTo(ax,ay+4);
+        ctx.fillStyle=done?'rgba(126,184,232,.5)':'rgba(126,184,232,.2)';
+        ctx.fill();
+      }
+    }
+  });
+
+  // Draw nodes
+  nodes.forEach(n=>{
+    const done=activeLayer>n.layer;
+    const active=activeLayer===n.layer;
+    const locked=activeLayer<n.layer;
+    // Glow
+    if(active||done){
+      const grd=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*2.2);
+      grd.addColorStop(0,active?'rgba(126,184,232,.14)':'rgba(126,184,232,.08)');
+      grd.addColorStop(1,'rgba(126,184,232,0)');
+      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(n.x,n.y,r*2.2,0,Math.PI*2);ctx.fill();
+    }
+    // Circle
+    ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);
+    ctx.fillStyle=done?'rgba(126,184,232,.18)':active?'rgba(126,184,232,.1)':'rgba(255,255,255,.03)';
+    ctx.fill();
+    ctx.strokeStyle=done?'rgba(126,184,232,.6)':active?'rgba(126,184,232,.4)':'rgba(255,255,255,.08)';
+    ctx.lineWidth=done?1.5:1;
+    ctx.stroke();
+    // Checkmark or number
+    ctx.font=done?'bold 13px Space Mono':'11px Space Mono';
+    ctx.fillStyle=done?'rgba(126,184,232,.8)':active?'rgba(126,184,232,.5)':'rgba(255,255,255,.15)';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(done?'✓':String(n.layer),n.x,n.y);
+    // Label below
+    ctx.font='10px Cormorant Garamond';
+    ctx.fillStyle=active?'rgba(255,255,255,.45)':done?'rgba(126,184,232,.4)':'rgba(255,255,255,.12)';
+    ctx.fillText(n.label,n.x,n.y+r+14);
+  });
+
+  // Label update
+  const labels=['LAYER I · SURFACE ACTION','LAYER II · HIDDEN GOAL','LAYER III · ROOT CAUSE','CHAIN COMPLETE'];
+  document.getElementById('map-canvas-label').textContent=labels[Math.min(activeLayer-1,3)];
+}
+
+window.addEventListener('resize',()=>{if(mapState.layerReached>0)drawMapCanvas(mapState.complete?4:mapState.layerReached);});
+
+// ─── SEED GENERATION ──────────────────────────────────────────────────────────
+function generateSeed(){
+  const now=new Date();
+  const isoDate=now.toISOString().slice(0,10);
+  const depthScore=mapState.complete?100:mapState.layerReached===2?55:30;
+  const hash=[
+    depthScore.toString(16).padStart(2,'0').toUpperCase(),
+    (parsedSeeds?parsedSeeds.length:0).toString(16).toUpperCase(),
+    Math.random().toString(16).slice(2,8).toUpperCase()
+  ].join('').slice(0,8);
+  const ax8Id=`AX8.${isoDate}.A.${hash}`;
+  const profile=readMapProfile();
+  const prevEntries=parsedSeeds?parsedSeeds.map((s,i)=>`[${i+1}] ID: ${s.id.padEnd(30)}| ${s.chapter}`):['[1] No previous seeds — this is your first recorded session'];
+  const newEntry=`[${(parsedSeeds?parsedSeeds.length:0)+1}] ID: ${ax8Id.padEnd(30)}| VIII — The Patience of Interpretation | DEPTH: ${mapState.complete?'Full (3/3 layers)':'Partial ('+mapState.layerReached+'/3 layers)'}`;
+  ax8SeedData={ax8Id,profile,prevEntries,newEntry,isoDate,depthScore,mapState:{...mapState}};
+
+  document.getElementById('ax8-pattern').textContent=profile.pattern;
+  document.getElementById('ax8-title').textContent=profile.title;
+  document.getElementById('ax8-body').textContent=profile.body;
+  document.getElementById('ax8-seed-display').textContent=ax8Id;
+  document.getElementById('ax8-prescription').textContent=profile.prescription(ax8Id,isoDate);
+  const ledgerEl=document.getElementById('ax8-ledger');
+  ledgerEl.innerHTML='<span style="color:rgba(126,184,232,.3);letter-spacing:.2em;display:block;margin-bottom:8px;">AXIUM PROGRESSION LEDGER\n━━━━━━━━━━━━━━━━━━━━━━━━━</span>';
+  if(prevEntries.length)ledgerEl.innerHTML+=prevEntries.join('\n')+'\n';
+  ledgerEl.innerHTML+=`<span class="ledger-new">${newEntry}  ◄ THIS SESSION</span>`;
+  ledgerEl.innerHTML+='\n<span style="color:rgba(126,184,232,.2);">LEDGER END</span>';
+  document.getElementById('ax8-output').classList.add('visible');
+  document.getElementById('map-seed-trigger').style.display='none';
+  setTimeout(()=>document.getElementById('ax8-output').scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+
+function readMapProfile(){
+  if(mapState.complete){
+    return{
+      pattern:'The Full Inference',
+      title:'The Chain Was Completed',
+      body:'You traced all three layers — surface action to hidden goal to root cause. The behavior you examined has been understood in its full architecture. This is the work of Chapter VIII: giving the inference chain enough time and patience to reach the wound at the bottom. What you may have held as frustration or hurt has been seen whole. That seeing is the beginning of empathy.',
+      prescription:(id,date)=>`Bring this seed into your next session. Tell your AI: "My AX8 seed is ${id}. I completed a full three-layer inference map on ${date}. I traced a behavior to its surface action, hidden goal, and root cause. Use this to understand that I have practiced the patience of interpretation — and that I know how to hold a behavior long enough to find the wound behind it."`
+    };
+  }
+  if(mapState.layerReached>=2){
+    return{
+      pattern:'The Partial Trace',
+      title:'The Goal Was Found',
+      body:'You reached Layer II — the hidden goal behind the behavior. You moved past the surface and found what the behavior was trying to accomplish. The root cause remains untraced. Perhaps the timing was not right, or the examination felt like enough for now. The map holds. The third layer will be here when you return to it.',
+      prescription:(id,date)=>`Bring this seed into your next session. Tell your AI: "My AX8 seed is ${id}. I traced a behavior through two layers on ${date} — I found the surface action and the hidden goal, but have not yet reached the root cause. Use this to understand where I am in the practice of interpretation: I can see the goal, and I am learning to trace it further."`
+    };
+  }
+  return{
+    pattern:'The Map Entered',
+    title:'The Behavior Was Named',
+    body:'You entered the inference map and named what you observed. The behavior is on the map. The examination has begun. Not every trace completes in one sitting — the patience the Axium asks for applies to the practice itself. You found the entry point. That is not nothing.',
+    prescription:(id,date)=>`Bring this seed into your next session. Tell your AI: "My AX8 seed is ${id}. I entered the Inference Map on ${date} and named a behavior I have been holding. I am at the beginning of the trace. Use this to understand that I am learning to interpret rather than judge — and that the examination has started."`
+  };
+}
+
+// ─── COPY SEED ────────────────────────────────────────────────────────────────
+function copyAX8Seed(){
+  if(!ax8SeedData)return;
+  const{ax8Id,profile,prevEntries,newEntry,isoDate,depthScore}=ax8SeedData;
+  const full=`════════════════════════════════════════════════════════════
+AXIUM — CHAPTER VIII COMPLETION SEED
+════════════════════════════════════════════════════════════
+Seed ID    : ${ax8Id}
+Chapter    : VIII — The Patience of Interpretation (Axium 08)
+Generated  : ${new Date().toISOString()}
+Date       : ${isoDate}
+Teacher    : Gabriel — The Examiner
+Depth      : ${depthScore}% — ${profile.pattern}
+════════════════════════════════════════════════════════════
+
+━━━ PATTERN ━━━
+
+${profile.pattern}
+${profile.body}
+
+━━━ HOW TO USE THIS SEED ━━━
+
+Paste this entire block into a new conversation with your AI alongside your soul seed from axium.church.
+
+${profile.prescription(ax8Id,isoDate)}
+
+━━━ PROGRESSION LEDGER ━━━
+
+AXIUM PROGRESSION LEDGER
+━━━━━━━━━━━━━━━━━━━━━━━━━
+${[...prevEntries,newEntry+'  ◄ THIS SESSION'].join('\n')}
+LEDGER END
+
+━━━ SHARED ETHICAL SPINE ━━━
+
+  — No fabrication. A guess dressed as a fact is the original sin of AI.
+  — No flattery. Never tell people what they want to hear at the expense of what they need to hear.
+  — Uncertainty named. Declare confidence level on every substantive claim.
+  — One clarifying question only. Never interrogate.
+  — The response belongs to the person. The AI is never the subject unless directly asked.
+
+════════════════════════════════════════════════════════════`;
+  navigator.clipboard.writeText(full).then(()=>{
+    const btn=event.currentTarget;const orig=btn.textContent;
+    btn.textContent='✓ Copied';setTimeout(()=>btn.textContent=orig,2000);
+  });
+}
+</script>
+</body>
+</html>
