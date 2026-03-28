@@ -555,6 +555,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
             <button class="hm-tab on" onclick="switchHudTab(0,this)" data-tab="0">Constellation</button>
             <button class="hm-tab" onclick="switchHudTab(1,this)" data-tab="1">Live Positions</button>
             <button class="hm-tab" onclick="switchHudTab(2,this)" data-tab="2">Present Moment</button>
+            <button class="hm-tab" onclick="switchHudTab(3,this)" data-tab="3">Music</button>
         </div>
         <div id="hud-modal-body">
             <!-- Tab 0: Constellation -->
@@ -580,6 +581,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
                 <div class="hud-slider-labels"><span>&#8722;100yr</span><span>+100yr</span></div>
                 <button class="tc-reset" onclick="resetTime()">&#8634; Reset to Now</button>
             </div>
+            <div class="hm-pane" id="hm-pane-3">
+                <div class="hm-pane-label">Music</div>
+                <div>
+<iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2184015935&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe><div style="font-size: 10px; color: #cccccc;line-break: anywhere;word-break: normal;overflow: hidden;white-space: nowrap;text-overflow: ellipsis; font-family: Interstate,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Garuda,Verdana,Tahoma,sans-serif;font-weight: 100;"><a href="https://soundcloud.com/micheal-salmon-1" title="Micheal Salmon" target="_blank" style="color: #cccccc; text-decoration: none;">Micheal Salmon</a> · <a href="https://soundcloud.com/micheal-salmon-1/sets/god-tier" title="God Tier" target="_blank" style="color: #cccccc; text-decoration: none;">God Tier</a></div>
+                </div>
+            </div>
+
+
         </div>
     </div>
 </div>
