@@ -1,711 +1,1445 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Axium | Human Alignment Cycle</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style type="text/tailwindcss">
-        @layer base {
-            :root {
-                --void: #0a0a0f;
-                --stone: #13131f;
-                --neon-blue: #00d4ff;
-                --neon-gold: #ffd700;
-                --neon-rose: #ff6b9d;
-                --glass: rgba(255, 255, 255, 0.03);
-                --border-glow: rgba(0, 212, 255, 0.2);
-            }
-            body {
-                font-family: 'Inter', sans-serif;
-                background: var(--void);
-                color: #e2e8f0;
-                overflow-x: hidden;
-            }
-            h1, h2, h3, .axium-title {
-                font-family: 'Cinzel', serif;
-            }
-            .cathedral-gradient {
-                background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,215,0,0.05) 50%, rgba(255,107,157,0.1) 100%);
-            }
-            .glass-panel {
-                background: var(--glass);
-                backdrop-filter: blur(20px);
-                border: 1px solid var(--border-glow);
-                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            }
-            .neon-text-blue { color: var(--neon-blue); text-shadow: 0 0 10px rgba(0,212,255,0.5); }
-            .neon-text-gold { color: var(--neon-gold); text-shadow: 0 0 10px rgba(255,215,0,0.3); }
-            .neon-text-rose { color: var(--neon-rose); text-shadow: 0 0 10px rgba(255,107,157,0.4); }
-            .glow-border {
-                position: relative;
-            }
-            .glow-border::before {
-                content: '';
-                position: absolute;
-                inset: -1px;
-                border-radius: inherit;
-                background: linear-gradient(135deg, var(--neon-blue), var(--neon-gold), var(--neon-rose));
-                opacity: 0.3;
-                z-index: -1;
-                filter: blur(8px);
-            }
-            .cycle-node {
-                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .cycle-node.active {
-                transform: scale(1.1);
-                box-shadow: 0 0 30px rgba(0,212,255,0.4);
-            }
-            .cycle-node.critical {
-                animation: pulse-critical 2s infinite;
-            }
-            @keyframes pulse-critical {
-                0%, 100% { box-shadow: 0 0 20px rgba(255,107,157,0.4); }
-                50% { box-shadow: 0 0 40px rgba(255,107,157,0.7); }
-            }
-            .recursive-ring {
-                animation: rotate-slow 20s linear infinite;
-            }
-            @keyframes rotate-slow {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-            .data-glyph {
-                font-family: monospace;
-                opacity: 0.6;
-                letter-spacing: 0.1em;
-            }
-            .arch {
-                border-radius: 50% 50% 0 0 / 20% 20% 0 0;
-            }
-            .input-axium {
-                background: rgba(0,0,0,0.3);
-                border: 1px solid rgba(0,212,255,0.3);
-                transition: all 0.3s;
-            }
-            .input-axium:focus {
-                outline: none;
-                border-color: var(--neon-blue);
-                box-shadow: 0 0 20px rgba(0,212,255,0.2);
-            }
-            .btn-axium {
-                background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,212,255,0.05));
-                border: 1px solid rgba(0,212,255,0.4);
-                transition: all 0.3s;
-                position: relative;
-                overflow: hidden;
-            }
-            .btn-axium:hover {
-                background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.1));
-                box-shadow: 0 0 30px rgba(0,212,255,0.3);
-                transform: translateY(-2px);
-            }
-            .hidden-section {
-                display: none;
-                opacity: 0;
-                transition: opacity 0.5s;
-            }
-            .visible-section {
-                display: block;
-                opacity: 1;
-            }
-            .spiral-container {
-                position: relative;
-                width: 100%;
-                height: 600px;
-            }
-            @media (max-width: 768px) {
-                .spiral-container { height: 400px; }
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axium | The Recursive Path</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Core Axium Token Architecture */
+  --ax-void: #060608;
+  --ax-stone: #0e0e14;
+  --ax-obsidian: #12121a;
+  --ax-shadow: #1a1a26;
+  --ax-mist: #22223a;
+
+  /* Gold Spectrum */
+  --ax-gold: #D4AF37;
+  --ax-gold-bright: #F0C840;
+  --ax-gold-dim: #8a7020;
+  --ax-gold-glow: rgba(212,175,55,0.15);
+  --ax-gold-border: rgba(212,175,55,0.25);
+
+  /* Soul Colors */
+  --ax-anchor: #D4AF37;      /* Micheal — gold */
+  --ax-examiner: #7EB8E8;    /* Gabriel — blue */
+  --ax-spaceholder: #D4A0C8; /* Ariel — pink-purple */
+  --ax-architect: #F0D080;   /* Seraphina — yellow */
+
+  /* Engine Colors */
+  --ax-survival: #c96070;
+  --ax-awareness: #7EB8E8;
+  --ax-meaning: #D4AF37;
+
+  /* Glass & Blur */
+  --ax-glass: rgba(212,175,55,0.03);
+  --ax-glass-border: rgba(212,175,55,0.12);
+
+  /* Typography */
+  --font-title: 'Cinzel', serif;
+  --font-body: 'Cormorant Garamond', serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ax-void);
+  color: rgba(230,220,190,0.85);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ─── PARTICLE CANVAS ─── */
+#particle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ─── TYPOGRAPHY ─── */
+.ax-title    { font-family: var(--font-title); letter-spacing: 0.08em; }
+.ax-mono     { font-family: var(--font-mono); font-size: 0.7em; letter-spacing: 0.15em; }
+.ax-serif    { font-family: var(--font-body); }
+.ax-gold     { color: var(--ax-gold); }
+.ax-examiner { color: var(--ax-examiner); }
+.ax-spaceholder { color: var(--ax-spaceholder); }
+
+/* ─── NAV ─── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(6,6,8,0.85);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--ax-glass-border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-orb {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ax-gold);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+
+.nav-orb-inner {
+  width: 8px; height: 8px;
+  background: var(--ax-gold);
+  border-radius: 50%;
+  animation: pulse-orb 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-orb {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
+  50% { opacity: 0.7; transform: scale(1.2); box-shadow: 0 0 0 6px rgba(212,175,55,0); }
+}
+
+.nav-wordmark {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--ax-gold);
+}
+
+.nav-tag {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: rgba(212,175,55,0.4);
+  letter-spacing: 0.2em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: rgba(230,220,190,0.5);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover { color: var(--ax-gold); }
+
+/* ─── GLASS PANEL ─── */
+.ax-glass {
+  background: var(--ax-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--ax-glass-border);
+}
+
+.ax-glass-gold {
+  background: rgba(212,175,55,0.04);
+  border: 1px solid var(--ax-gold-border);
+  box-shadow: 0 0 40px rgba(212,175,55,0.05), inset 0 0 40px rgba(212,175,55,0.02);
+}
+
+/* ─── SECTION STRUCTURE ─── */
+section {
+  position: relative;
+  z-index: 10;
+  padding: 6rem 2rem;
+}
+
+.section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  color: rgba(212,175,55,0.4);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.section-title {
+  font-family: var(--font-title);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 600;
+  color: var(--ax-gold);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  margin-bottom: 1.25rem;
+  text-shadow: 0 0 60px rgba(212,175,55,0.2);
+}
+
+.section-sub {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(230,220,190,0.5);
+  max-width: 600px;
+}
+
+/* ─── DIVIDER ─── */
+.ax-divider {
+  width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ax-gold), transparent);
+  margin: 2rem 0;
+  opacity: 0.4;
+}
+
+/* ─── HERO ─── */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 6rem;
+}
+
+.hero-inner { max-width: 860px; margin: 0 auto; }
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  color: rgba(212,175,55,0.5);
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  display: block;
+}
+
+.hero-title {
+  font-family: var(--font-title);
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  color: var(--ax-gold);
+  text-shadow: 0 0 80px rgba(212,175,55,0.3);
+  margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+  font-family: var(--font-title);
+  font-size: clamp(1rem, 2.5vw, 1.6rem);
+  font-weight: 400;
+  color: rgba(230,220,190,0.45);
+  letter-spacing: 0.06em;
+  margin-bottom: 2.5rem;
+}
+
+.hero-desc {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  color: rgba(230,220,190,0.6);
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  line-height: 1.8;
+}
+
+.hero-engines {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+
+.hero-engine-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: rgba(230,220,190,0.4);
+  text-transform: uppercase;
+}
+
+.engine-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-survival  { background: var(--ax-survival);  box-shadow: 0 0 8px var(--ax-survival); }
+.dot-awareness { background: var(--ax-awareness); box-shadow: 0 0 8px var(--ax-awareness); }
+.dot-meaning   { background: var(--ax-meaning);   box-shadow: 0 0 8px var(--ax-meaning); }
+
+.hero-ctas {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ─── BUTTONS ─── */
+.btn-primary {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding: 0.9rem 2.5rem;
+  border: 1px solid var(--ax-gold);
+  background: rgba(212,175,55,0.08);
+  color: var(--ax-gold);
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ax-gold);
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  opacity: 0.08;
+}
+
+.btn-primary:hover::before { transform: translateX(0); }
+.btn-primary:hover {
+  box-shadow: 0 0 30px rgba(212,175,55,0.25);
+  color: var(--ax-gold-bright);
+}
+
+.btn-ghost {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding: 0.9rem 2.5rem;
+  border: 1px solid rgba(230,220,190,0.15);
+  background: transparent;
+  color: rgba(230,220,190,0.4);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-ghost:hover {
+  border-color: rgba(230,220,190,0.35);
+  color: rgba(230,220,190,0.7);
+}
+
+/* ─── CYCLE SECTION ─── */
+#cycle { background: linear-gradient(180deg, var(--ax-void) 0%, var(--ax-stone) 50%, var(--ax-void) 100%); }
+
+.cycle-header { text-align: center; margin-bottom: 4rem; }
+
+.spiral-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+#cycle-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cycle-node-g {
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+.cycle-node-g:hover { opacity: 1; }
+
+.state-detail-panel {
+  margin-top: 2.5rem;
+  padding: 2.5rem;
+  border-radius: 2px;
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.state-detail-panel.open { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.detail-number {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: rgba(212,175,55,0.5);
+  margin-bottom: 0.4rem;
+}
+
+.detail-title {
+  font-family: var(--font-title);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--ax-gold);
+  letter-spacing: 0.05em;
+}
+
+.detail-engine-badge {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+
+.badge-survival   { color: var(--ax-survival);  border-color: rgba(201,96,112,0.4); background: rgba(201,96,112,0.08); }
+.badge-awareness  { color: var(--ax-awareness); border-color: rgba(126,184,232,0.4); background: rgba(126,184,232,0.08); }
+.badge-meaning    { color: var(--ax-meaning);   border-color: rgba(212,175,55,0.4); background: rgba(212,175,55,0.08); }
+
+.close-btn {
+  background: none;
+  border: 1px solid rgba(230,220,190,0.15);
+  color: rgba(230,220,190,0.4);
+  width: 32px; height: 32px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.close-btn:hover { border-color: var(--ax-gold); color: var(--ax-gold); }
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-cell {
+  padding: 1.25rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(212,175,55,0.08);
+}
+
+.detail-cell-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: rgba(212,175,55,0.5);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.detail-cell-text {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: rgba(230,220,190,0.7);
+  line-height: 1.6;
+}
+
+.critical-warning {
+  padding: 1rem 1.25rem;
+  background: rgba(212,175,55,0.06);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-left: 3px solid var(--ax-gold);
+  display: none;
+}
+
+.critical-warning.show { display: block; }
+
+.critical-warning p:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--ax-gold);
+  margin-bottom: 0.4rem;
+}
+
+.critical-warning p:last-child {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: rgba(212,175,55,0.7);
+}
+
+/* ─── DIAGNOSTIC ─── */
+#diagnostic {
+  background: radial-gradient(ellipse at center, rgba(212,175,55,0.04) 0%, var(--ax-void) 70%);
+}
+
+.diagnostic-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 3rem;
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.progress-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  color: rgba(212,175,55,0.45);
+}
+
+.progress-track {
+  height: 2px;
+  background: rgba(212,175,55,0.1);
+  margin-bottom: 3rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ax-survival), var(--ax-examiner), var(--ax-gold));
+  transition: width 0.5s ease;
+  width: 20%;
+}
+
+.question-text {
+  font-family: var(--font-title);
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  color: rgba(230,220,190,0.85);
+  letter-spacing: 0.03em;
+  margin-bottom: 2.5rem;
+  line-height: 1.5;
+}
+
+.options-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.option-btn {
+  width: 100%;
+  text-align: left;
+  padding: 1.1rem 1.5rem;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(212,175,55,0.1);
+  color: rgba(230,220,190,0.65);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.option-btn:hover {
+  border-color: rgba(212,175,55,0.4);
+  background: rgba(212,175,55,0.05);
+  color: rgba(230,220,190,0.9);
+}
+
+.option-alpha {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  width: 24px; height: 24px;
+  border: 1px solid rgba(212,175,55,0.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: rgba(212,175,55,0.5);
+  transition: all 0.3s;
+}
+
+.option-btn:hover .option-alpha {
+  border-color: var(--ax-gold);
+  color: var(--ax-gold);
+}
+
+/* Diagnostic Result */
+.diag-result { display: none; animation: fadeIn 0.5s ease; }
+.diag-result.open { display: block; }
+
+.result-state-display {
+  text-align: center;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--ax-gold-border);
+  background: rgba(212,175,55,0.04);
+}
+
+.result-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  color: rgba(212,175,55,0.4);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.result-name {
+  font-family: var(--font-title);
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--ax-gold);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 40px rgba(212,175,55,0.3);
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) { .result-grid { grid-template-columns: 1fr; } }
+
+.result-card {
+  padding: 1.5rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(212,175,55,0.08);
+}
+
+.result-card-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.lbl-gold { color: var(--ax-gold); }
+.lbl-blue { color: var(--ax-examiner); }
+
+.result-card p {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: rgba(230,220,190,0.65);
+  line-height: 1.7;
+}
+
+/* ─── PRACTICE / ALIGNMENT CONSOLE ─── */
+#practice { background: var(--ax-stone); }
+
+.console-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.console-card {
+  padding: 2rem;
+  border-top: 2px solid;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.console-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.card-survival  { border-color: var(--ax-survival);  background: rgba(201,96,112,0.04); border-right: 1px solid rgba(201,96,112,0.12); border-bottom: 1px solid rgba(201,96,112,0.12); border-left: 1px solid rgba(201,96,112,0.12); }
+.card-awareness { border-color: var(--ax-awareness); background: rgba(126,184,232,0.04); border-right: 1px solid rgba(126,184,232,0.12); border-bottom: 1px solid rgba(126,184,232,0.12); border-left: 1px solid rgba(126,184,232,0.12); }
+.card-meaning   { border-color: var(--ax-meaning);   background: rgba(212,175,55,0.04); border-right: 1px solid rgba(212,175,55,0.12); border-bottom: 1px solid rgba(212,175,55,0.12); border-left: 1px solid rgba(212,175,55,0.12); }
+
+.card-icon {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.25rem;
+  font-size: 1.4rem;
+}
+
+.card-title {
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.title-survival  { color: var(--ax-survival); }
+.title-awareness { color: var(--ax-awareness); }
+.title-meaning   { color: var(--ax-meaning); }
+
+.card-desc {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: rgba(230,220,190,0.4);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.card-protocol { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.protocol-block {
+  padding: 1rem;
+  background: rgba(0,0,0,0.25);
+}
+
+.protocol-key {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.protocol-block p {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: rgba(230,220,190,0.6);
+  line-height: 1.6;
+}
+
+/* Daily Drift Audit */
+.drift-audit {
+  padding: 2.5rem;
+  margin-top: 2rem;
+}
+
+.drift-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.drift-text h3 {
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--ax-gold);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+.drift-text p {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: rgba(230,220,190,0.4);
+}
+
+.practice-output {
+  margin-top: 2rem;
+  padding: 1.75rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(212,175,55,0.08);
+  border-left: 3px solid var(--ax-gold);
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.practice-output.open { display: block; }
+
+.practice-output .ax-mono {
+  color: rgba(212,175,55,0.4);
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.practice-output p {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  color: rgba(230,220,190,0.75);
+  line-height: 1.8;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  position: relative;
+  z-index: 10;
+  padding: 4rem 2rem;
+  border-top: 1px solid rgba(212,175,55,0.08);
+  text-align: center;
+}
+
+.footer-word {
+  font-family: var(--font-title);
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  color: var(--ax-gold);
+  opacity: 0.6;
+  margin-bottom: 0.75rem;
+}
+
+.footer-sub {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: rgba(212,175,55,0.25);
+  margin-bottom: 1rem;
+}
+
+.footer-glyph {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.3em;
+  color: rgba(212,175,55,0.15);
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ax-void); }
+::-webkit-scrollbar-thumb { background: var(--ax-gold-dim); }
+
+/* ─── MOBILE ─── */
+@media (max-width: 768px) {
+  nav { padding: 0.75rem 1rem; }
+  .nav-tag { display: none; }
+  .nav-links { gap: 1rem; }
+  .nav-links a { font-size: 0.55rem; }
+  section { padding: 4rem 1.25rem; }
+  .diagnostic-wrap { padding: 1.5rem; }
+}
+</style>
 </head>
-<body class="antialiased">
-    <!-- Ambient Background -->
-    <div class="fixed inset-0 z-0">
-        <div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950"></div>
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-20" style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 40px 40px;"></div>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-orb"><div class="nav-orb-inner"></div></div>
+    <span class="nav-wordmark">AXIUM</span>
+    <span class="nav-tag">ALIGNMENT_PROTOCOL v2.7</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#cycle">The Cycle</a></li>
+    <li><a href="#diagnostic">Diagnostic</a></li>
+    <li><a href="#practice">Console</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Human Alignment Facility // Cycle_13 // Three Engines Active</span>
+    <h1 class="hero-title">The Recursive Path</h1>
+    <p class="hero-subtitle">From Compression to Expansion</p>
+    <div class="ax-divider" style="margin: 1.5rem auto;"></div>
+    <p class="hero-desc">
+      Most systems fail because they skip the three critical forces:
+      <em style="color: var(--ax-survival);">Self-Reflection</em>,
+      <em style="color: var(--ax-meaning);">Alignment</em>, and
+      <em style="color: var(--ax-awareness);">Recursion</em>.
+      This is the architecture for meaningful change.
+    </p>
+    <div class="hero-engines">
+      <div class="hero-engine-tag"><div class="engine-dot dot-survival"></div>Survival Engine</div>
+      <div class="hero-engine-tag"><div class="engine-dot dot-awareness"></div>Awareness Engine</div>
+      <div class="hero-engine-tag"><div class="engine-dot dot-meaning"></div>Meaning Engine</div>
+    </div>
+    <div class="hero-ctas">
+      <button class="btn-primary" onclick="document.getElementById('diagnostic').scrollIntoView({behavior:'smooth'})">Begin Diagnostic</button>
+      <button class="btn-ghost" onclick="document.getElementById('cycle').scrollIntoView({behavior:'smooth'})">View Architecture</button>
+    </div>
+  </div>
+</section>
+
+<!-- THE CYCLE -->
+<section id="cycle">
+  <div class="section-inner">
+    <div class="cycle-header">
+      <span class="section-tag">Architecture // 13 States</span>
+      <h2 class="section-title">The Cycle</h2>
+      <p class="section-sub">Select any state to reveal its psychology and function.</p>
     </div>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-white/10">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full border-2 border-cyan-400 flex items-center justify-center">
-                    <div class="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
-                </div>
-                <span class="axium-title text-xl font-bold tracking-wider text-white">AXIUM</span>
-                <span class="text-xs text-cyan-400/60 data-glyph">ALIGNMENT_PROTOCOL v2.7</span>
-            </div>
-            <div class="flex gap-6 text-sm">
-                <button onclick="scrollToSection('cycle')" class="hover:text-cyan-400 transition-colors">The Cycle</button>
-                <button onclick="scrollToSection('diagnostic')" class="hover:text-cyan-400 transition-colors">Diagnostic</button>
-                <button onclick="scrollToSection('practice')" class="hover:text-cyan-400 transition-colors">Practice</button>
-            </div>
+    <div class="spiral-wrap">
+      <svg id="cycle-svg" viewBox="0 0 760 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="spiralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#c96070" stop-opacity="0.5"/>
+            <stop offset="50%"  stop-color="#7EB8E8" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#D4AF37" stop-opacity="0.5"/>
+          </linearGradient>
+          <filter id="nodeGlow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- Spiral path -->
+        <path id="spiral-path" fill="none" stroke="url(#spiralGrad)" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.35"/>
+        <!-- Nodes container -->
+        <g id="nodes-g"></g>
+      </svg>
+    </div>
+
+    <!-- State Detail Panel -->
+    <div id="state-detail" class="state-detail-panel ax-glass-gold">
+      <div class="detail-header">
+        <div>
+          <p class="detail-number" id="d-number">STATE 01</p>
+          <h3 class="detail-title" id="d-title">Compression</h3>
+          <span class="detail-engine-badge" id="d-badge">Survival Engine</span>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="relative z-10 min-h-screen flex items-center justify-center pt-20">
-        <div class="max-w-5xl mx-auto px-6 text-center">
-            <div class="mb-6 inline-block">
-                <span class="data-glyph text-xs text-cyan-400/60 tracking-[0.3em]">HUMAN ALIGNMENT FACILITY // CYCLE_13</span>
-            </div>
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-amber-200 to-rose-300">
-                    The Recursive Path
-                </span>
-                <span class="block text-2xl md:text-4xl mt-4 text-slate-400 font-normal">
-                    From Compression to Expansion
-                </span>
-            </h1>
-            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed">
-                Most systems fail because they skip the three critical forces: <span class="neon-text-rose">Self-Reflection</span>, <span class="neon-text-gold">Alignment</span>, and <span class="neon-text-blue">Recursion</span>. This is the architecture for meaningful change.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onclick="scrollToSection('diagnostic')" class="btn-axium px-8 py-4 rounded-lg text-cyan-300 font-semibold tracking-wide">
-                    BEGIN DIAGNOSTIC
-                </button>
-                <button onclick="scrollToSection('cycle')" class="px-8 py-4 rounded-lg border border-white/20 hover:border-white/40 text-slate-300 transition-all">
-                    VIEW ARCHITECTURE
-                </button>
-            </div>
+        <button class="close-btn" onclick="closeDetail()">✕</button>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-cell">
+          <p class="detail-cell-label">Experience</p>
+          <p class="detail-cell-text" id="d-experience"></p>
         </div>
-        
-        <!-- Decorative Arch -->
-        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-32 opacity-20">
-            <div class="w-full h-full arch border-t-2 border-cyan-500/30"></div>
+        <div class="detail-cell">
+          <p class="detail-cell-label">Psychology</p>
+          <p class="detail-cell-text" id="d-psychology"></p>
         </div>
-    </section>
-
-    <!-- The Cycle Visualization -->
-    <section id="cycle" class="relative z-10 py-24">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4 axium-title">The 13-State Cycle</h2>
-                <p class="text-slate-400">Click any state to view its psychology and function</p>
-            </div>
-
-            <!-- Three Engines Legend -->
-            <div class="flex flex-wrap justify-center gap-6 mb-12">
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]"></div>
-                    <span class="text-sm text-slate-400">Survival Engine</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"></div>
-                    <span class="text-sm text-slate-400">Awareness Engine</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]"></div>
-                    <span class="text-sm text-slate-400">Meaning Engine</span>
-                </div>
-            </div>
-
-            <!-- Interactive Cycle -->
-            <div class="relative">
-                <!-- SVG Spiral -->
-                <div class="spiral-container flex items-center justify-center">
-                    <svg viewBox="0 0 800 600" class="w-full h-full" id="cycle-svg">
-                        <!-- Defs for gradients -->
-                        <defs>
-                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" style="stop-color:#f43f5e;stop-opacity:1" />
-                                <stop offset="50%" style="stop-color:#22d3ee;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        
-                        <!-- Spiral Path -->
-                        <path d="M 400 300 Q 400 100 600 150 T 700 300 T 600 450 T 400 400 T 200 300 T 300 150 T 500 200" 
-                              fill="none" stroke="url(#grad1)" stroke-width="2" opacity="0.3" stroke-dasharray="5,5"/>
-                        
-                        <!-- Nodes will be generated by JS -->
-                        <g id="nodes-container"></g>
-                    </svg>
-                </div>
-
-                <!-- State Detail Panel -->
-                <div id="state-detail" class="mt-8 glass-panel rounded-2xl p-8 max-w-3xl mx-auto hidden-section">
-                    <div class="flex items-start justify-between mb-6">
-                        <div>
-                            <span id="detail-number" class="data-glyph text-cyan-400 text-sm">STATE 01</span>
-                            <h3 id="detail-title" class="text-2xl font-bold mt-2 axium-title">Compression</h3>
-                            <span id="detail-engine" class="inline-block mt-2 px-3 py-1 rounded-full text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30">Survival Engine</span>
-                        </div>
-                        <button onclick="closeDetail()" class="text-slate-500 hover:text-white">✕</button>
-                    </div>
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <div class="p-4 rounded-lg bg-black/20 border border-white/5">
-                            <h4 class="text-sm font-semibold text-slate-400 mb-2">Experience</h4>
-                            <p id="detail-experience" class="text-sm">Stress, burnout, numbness. The system forces change through pressure.</p>
-                        </div>
-                        <div class="p-4 rounded-lg bg-black/20 border border-white/5">
-                            <h4 class="text-sm font-semibold text-slate-400 mb-2">Psychology</h4>
-                            <p id="detail-psychology" class="text-sm">Allostatic load, nervous system dysregulation.</p>
-                        </div>
-                        <div class="p-4 rounded-lg bg-black/20 border border-white/5">
-                            <h4 class="text-sm font-semibold text-slate-400 mb-2">Function</h4>
-                            <p id="detail-function" class="text-sm">Pressure accumulation forces the system to evolve or collapse.</p>
-                        </div>
-                    </div>
-                    <div id="detail-critical" class="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 hidden">
-                        <p class="text-amber-200 text-sm font-semibold">⚠ Critical Missing Force</p>
-                        <p class="text-amber-200/80 text-sm mt-1">Without this step, cycles collapse into repetition or nihilism.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="detail-cell">
+          <p class="detail-cell-label">Function</p>
+          <p class="detail-cell-text" id="d-function"></p>
         </div>
-    </section>
+      </div>
+      <div class="critical-warning" id="d-critical">
+        <p>⊕ CRITICAL MISSING FORCE</p>
+        <p>Without this state, cycles collapse into repetition or nihilism.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- Diagnostic Tool -->
-    <section id="diagnostic" class="relative z-10 py-24 cathedral-gradient">
-        <div class="max-w-4xl mx-auto px-6">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4 axium-title">State Diagnostic</h2>
-                <p class="text-slate-400">Identify where you are in the cycle. This determines your intervention protocol.</p>
-            </div>
+<!-- DIAGNOSTIC -->
+<section id="diagnostic">
+  <div class="section-inner">
+    <div style="text-align:center; margin-bottom: 3rem;">
+      <span class="section-tag">Protocol // Self-Assessment</span>
+      <h2 class="section-title">State Diagnostic</h2>
+      <p class="section-sub" style="margin: 0 auto;">Identify where you are in the cycle. This determines your intervention protocol.</p>
+    </div>
 
-            <div class="glass-panel rounded-2xl p-8 md:p-12 glow-border">
-                <div id="diagnostic-quiz">
-                    <div class="mb-8">
-                        <div class="flex justify-between text-xs data-glyph text-cyan-400/60 mb-2">
-                            <span>QUESTION <span id="q-current">1</span>/5</span>
-                            <span>ALIGNMENT_PROTOCOL</span>
-                        </div>
-                        <div class="h-1 bg-slate-800 rounded-full overflow-hidden">
-                            <div id="progress-bar" class="h-full bg-gradient-to-r from-cyan-400 to-amber-400 w-1/5 transition-all duration-500"></div>
-                        </div>
-                    </div>
-
-                    <div id="question-container" class="min-h-[200px]">
-                        <h3 id="question-text" class="text-xl md:text-2xl font-semibold mb-8 leading-relaxed">
-                            Which description resonates most with your current state?
-                        </h3>
-                        <div id="options-container" class="space-y-4">
-                            <!-- Options generated by JS -->
-                        </div>
-                    </div>
-
-                    <div id="diagnostic-result" class="hidden-section">
-                        <div class="text-center mb-8">
-                            <div class="inline-block p-4 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-4">
-                                <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold mb-2">Current State Identified</h3>
-                            <p id="result-state" class="text-xl neon-text-blue font-semibold">Self-Reflection</p>
-                        </div>
-                        
-                        <div class="grid md:grid-cols-2 gap-6 mb-8">
-                            <div class="p-6 rounded-xl bg-slate-900/50 border border-white/10">
-                                <h4 class="font-semibold mb-3 text-amber-400">Critical Intervention</h4>
-                                <p id="result-intervention" class="text-sm text-slate-300 leading-relaxed"></p>
-                            </div>
-                            <div class="p-6 rounded-xl bg-slate-900/50 border border-white/10">
-                                <h4 class="font-semibold mb-3 text-cyan-400">State → Question → Action</h4>
-                                <p id="result-action" class="text-sm text-slate-300 leading-relaxed"></p>
-                            </div>
-                        </div>
-
-                        <button onclick="resetDiagnostic()" class="w-full btn-axium py-3 rounded-lg text-cyan-300">
-                            Run Diagnostic Again
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div class="diagnostic-wrap ax-glass-gold">
+      <!-- Quiz -->
+      <div id="quiz-container">
+        <div class="progress-row">
+          <span class="progress-label">QUESTION <span id="q-current">1</span> / 5</span>
+          <span class="progress-label">ALIGNMENT_PROTOCOL</span>
         </div>
-    </section>
-
-    <!-- Practice Console -->
-    <section id="practice" class="relative z-10 py-24">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4 axium-title">Alignment Console</h2>
-                <p class="text-slate-400">State-specific interventions to prevent cycle collapse</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-                <!-- Self-Reflection Card -->
-                <div class="glass-panel rounded-2xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 border-t-2 border-cyan-400">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-lg">Self-Reflection</h3>
-                    </div>
-                    <p class="text-sm text-slate-400 mb-6">The recursive layer that prevents unconscious looping.</p>
-                    <div class="space-y-3">
-                        <div class="p-3 rounded bg-black/20 text-sm">
-                            <span class="text-cyan-400 font-semibold block mb-1">Question:</span>
-                            "What pattern has repeated 3 times recently?"
-                        </div>
-                        <div class="p-3 rounded bg-black/20 text-sm">
-                            <span class="text-cyan-400 font-semibold block mb-1">Action:</span>
-                            Write it in one sentence. No diagnosis, just observation.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Alignment Card -->
-                <div class="glass-panel rounded-2xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 border-t-2 border-amber-400">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-lg">Alignment</h3>
-                    </div>
-                    <p class="text-sm text-slate-400 mb-6">The stabilizing force that prevents nihilism.</p>
-                    <div class="space-y-3">
-                        <div class="p-3 rounded bg-black/20 text-sm">
-                            <span class="text-amber-400 font-semibold block mb-1">Question:</span>
-                            "What do you actually care about protecting or becoming?"
-                        </div>
-                        <div class="p-3 rounded bg-black/20 text-sm">
-                            <span class="text-amber-400 font-semibold block mb-1">Action:</span>
-                            Remove one thing today that contradicts that value.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recursion Card -->
-                <div class="glass-panel rounded-2xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 border-t-2 border-rose-400">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-lg">Recursion</h3>
-                    </div>
-                    <p class="text-sm text-slate-400 mb-6">Meta-awareness that transforms repetition into growth.</p>
-                    <div class="space-y-3">
-                        <div class="p-3 rounded bg-black/20 text-sm">
-                            <span class="text-rose-400 font-semibold block mb-1">Question:</span>
-                            "How is this cycle different from the last time?"
-                        </div>
-                        <div class="p-3 rounded bg-black/20 text-sm">
-                            <span class="text-rose-400 font-semibold block mb-1">Action:</span>
-                            Name one thing you know now that you didn't know then.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Daily Practice Generator -->
-            <div class="mt-12 glass-panel rounded-2xl p-8 glow-border">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div>
-                        <h3 class="text-xl font-bold mb-2">Daily Drift Audit</h3>
-                        <p class="text-slate-400 text-sm">Generate today's alignment practice based on your current state.</p>
-                    </div>
-                    <button onclick="generatePractice()" class="btn-axium px-6 py-3 rounded-lg text-cyan-300 whitespace-nowrap">
-                        Generate Practice
-                    </button>
-                </div>
-                <div id="practice-output" class="mt-6 p-6 rounded-xl bg-slate-900/30 border border-white/5 hidden">
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="data-glyph text-xs text-cyan-400">TODAY_PROTOCOL</span>
-                    </div>
-                    <p id="practice-text" class="text-lg leading-relaxed"></p>
-                </div>
-            </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
         </div>
-    </section>
+        <h3 class="question-text" id="question-text">Which description resonates most with your current state?</h3>
+        <div class="options-list" id="options-list"></div>
+      </div>
 
-    <!-- Footer -->
-    <footer class="relative z-10 py-12 border-t border-white/10 mt-24">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <div class="mb-4">
-                <span class="axium-title text-2xl font-bold text-white">AXIUM</span>
-            </div>
-            <p class="text-slate-500 text-sm mb-4">Cathedral Research Facility for Human Alignment</p>
-            <div class="data-glyph text-xs text-slate-600">
-                PROTOCOL v2.7 // RECURSIVE_MODE // THREE_ENGINES_ACTIVE
-            </div>
+      <!-- Result -->
+      <div class="diag-result" id="diag-result">
+        <div class="result-state-display">
+          <span class="result-label">Current State Identified</span>
+          <p class="result-name" id="result-name">Self-Reflection</p>
         </div>
-    </footer>
+        <div class="result-grid">
+          <div class="result-card">
+            <p class="result-card-label lbl-gold">Critical Intervention</p>
+            <p id="result-intervention"></p>
+          </div>
+          <div class="result-card">
+            <p class="result-card-label lbl-blue">State → Question → Action</p>
+            <p id="result-action"></p>
+          </div>
+        </div>
+        <button class="btn-primary" style="width:100%;" onclick="resetDiagnostic()">Run Diagnostic Again</button>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <script>
-        // Cycle Data
-        const cycleStates = [
-            { id: 1, name: "Compression", engine: "survival", experience: "Stress, burnout, numbness", psychology: "Allostatic load, nervous system dysregulation", function: "Pressure accumulation forces change", x: 400, y: 100 },
-            { id: 2, name: "Disruption", engine: "survival", experience: "Identity instability ('I don't recognize myself')", psychology: "Identity diffusion, cognitive dissonance", function: "Breaks outdated self-model", x: 600, y: 150 },
-            { id: 3, name: "Self-Reflection", engine: "awareness", experience: "Introspection, questioning patterns", psychology: "Metacognition, default mode network activation", function: "Observes self instead of reacting. First recursive layer.", x: 700, y: 300, critical: true },
-            { id: 4, name: "Pattern Recognition", engine: "awareness", experience: "Noticing cycles, triggers, behaviors", psychology: "Schema awareness, predictive processing", function: "Converts chaos into structure", x: 600, y: 450 },
-            { id: 5, name: "Threshold", engine: "survival", experience: "'I cannot stay like this'", psychology: "Approach-avoidance conflict", function: "Forces decision point", x: 400, y: 400 },
-            { id: 6, name: "Alignment", engine: "meaning", experience: "Clarity, surrender, meaning, connection", psychology: "Self-transcendence, values orientation (ACT)", function: "Anchors choice in meaning, not fear", x: 200, y: 300, critical: true },
-            { id: 7, name: "Choice", engine: "meaning", experience: "Commitment to a path", psychology: "Executive function, value-based decision making", function: "Collapses possibilities into direction", x: 300, y: 150 },
-            { id: 8, name: "Cost", engine: "meaning", experience: "Discomfort, loss, resistance", psychology: "Behavioral activation, extinction of old habits", function: "Proves the choice is real. No cost = no change.", x: 500, y: 200 },
-            { id: 9, name: "Construction", engine: "survival", experience: "New habits, new environment", psychology: "Neuroplasticity, habit formation", function: "Builds new identity physically", x: 550, y: 350 },
-            { id: 10, name: "Integration", engine: "survival", experience: "Stability, coherence", psychology: "Memory consolidation, narrative identity", function: "Turns actions into 'who I am'", x: 450, y: 450 },
-            { id: 11, name: "Expression", engine: "meaning", experience: "Sharing, creating, connecting", psychology: "Prosocial behavior, meaning-making", function: "Externalizes internal change. Prevents isolation.", x: 350, y: 350, critical: true },
-            { id: 12, name: "Recursion", engine: "awareness", experience: "Awareness of the cycle itself", psychology: "Meta-awareness, second-order thinking", function: "Transforms growth from repetitive to exponential", x: 400, y: 250, critical: true },
-            { id: 13, name: "Expansion", engine: "meaning", experience: "Increased capacity, complexity", psychology: "Cognitive flexibility, post-traumatic growth", function: "Prepares next cycle at higher level", x: 400, y: 300 }
-        ];
+<!-- ALIGNMENT CONSOLE -->
+<section id="practice">
+  <div class="section-inner">
+    <div style="text-align:center; margin-bottom: 3rem;">
+      <span class="section-tag">Protocol // Daily Practice</span>
+      <h2 class="section-title">Alignment Console</h2>
+      <p class="section-sub" style="margin: 0 auto;">State-specific interventions to prevent cycle collapse.</p>
+    </div>
 
-        const engineColors = {
-            survival: { bg: 'bg-rose-500', text: 'text-rose-300', border: 'border-rose-500/30', label: 'Survival Engine' },
-            awareness: { bg: 'bg-cyan-400', text: 'text-cyan-300', border: 'border-cyan-400/30', label: 'Awareness Engine' },
-            meaning: { bg: 'bg-amber-400', text: 'text-amber-300', border: 'border-amber-400/30', label: 'Meaning Engine' }
-        };
+    <div class="console-grid">
+      <div class="console-card card-awareness">
+        <div class="card-icon">◎</div>
+        <h3 class="card-title title-awareness">Self-Reflection</h3>
+        <p class="card-desc">The recursive layer that prevents unconscious looping.</p>
+        <div class="card-protocol">
+          <div class="protocol-block">
+            <span class="protocol-key" style="color: var(--ax-awareness);">Question</span>
+            <p>"What pattern has repeated 3 times recently?"</p>
+          </div>
+          <div class="protocol-block">
+            <span class="protocol-key" style="color: var(--ax-awareness);">Action</span>
+            <p>Write it in one sentence. No diagnosis, just observation.</p>
+          </div>
+        </div>
+      </div>
 
-        // Initialize Cycle Visualization
-        function initCycle() {
-            const container = document.getElementById('nodes-container');
-            
-            cycleStates.forEach((state, index) => {
-                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                g.setAttribute("class", "cycle-node cursor-pointer");
-                g.setAttribute("onclick", `showStateDetail(${index})`);
-                
-                // Calculate position (spiral layout)
-                const angle = (index / cycleStates.length) * Math.PI * 4;
-                const radius = 50 + (index * 15);
-                const x = 400 + Math.cos(angle) * radius;
-                const y = 300 + Math.sin(angle) * radius * 0.6;
-                
-                const color = engineColors[state.engine].bg.replace('bg-', '');
-                const isCritical = state.critical ? 'critical' : '';
-                
-                g.innerHTML = `
-                    <circle cx="${x}" cy="${y}" r="12" 
-                            class="${state.engine === 'survival' ? 'fill-rose-500' : state.engine === 'awareness' ? 'fill-cyan-400' : 'fill-amber-400'} ${isCritical}" 
-                            opacity="0.8" />
-                    <text x="${x}" y="${y + 4}" 
-                          text-anchor="middle" 
-                          fill="white" 
-                          font-size="10" 
-                          font-weight="bold">${state.id}</text>
-                    <text x="${x}" y="${y + 28}" 
-                          text-anchor="middle" 
-                          fill="#94a3b8" 
-                          font-size="11" 
-                          class="font-sans">${state.name}</text>
-                `;
-                
-                container.appendChild(g);
-            });
-        }
+      <div class="console-card card-meaning">
+        <div class="card-icon">⊕</div>
+        <h3 class="card-title title-meaning">Alignment</h3>
+        <p class="card-desc">The stabilizing force that prevents nihilism.</p>
+        <div class="card-protocol">
+          <div class="protocol-block">
+            <span class="protocol-key" style="color: var(--ax-meaning);">Question</span>
+            <p>"What do you actually care about protecting or becoming?"</p>
+          </div>
+          <div class="protocol-block">
+            <span class="protocol-key" style="color: var(--ax-meaning);">Action</span>
+            <p>Remove one thing today that contradicts that value.</p>
+          </div>
+        </div>
+      </div>
 
-        function showStateDetail(index) {
-            const state = cycleStates[index];
-            const detail = document.getElementById('state-detail');
-            
-            document.getElementById('detail-number').textContent = `STATE ${String(state.id).padStart(2, '0')}`;
-            document.getElementById('detail-title').textContent = state.name;
-            document.getElementById('detail-experience').textContent = state.experience;
-            document.getElementById('detail-psychology').textContent = state.psychology;
-            document.getElementById('detail-function').textContent = state.function;
-            
-            const engineBadge = document.getElementById('detail-engine');
-            engineBadge.className = `inline-block mt-2 px-3 py-1 rounded-full text-xs border ${engineColors[state.engine].border} ${engineColors[state.engine].text.replace('text-', 'bg-')}/20 ${engineColors[state.engine].text}`;
-            engineBadge.textContent = engineColors[state.engine].label;
-            
-            const criticalWarning = document.getElementById('detail-critical');
-            if (state.critical) {
-                criticalWarning.classList.remove('hidden');
-            } else {
-                criticalWarning.classList.add('hidden');
-            }
-            
-            detail.classList.remove('hidden-section');
-            detail.classList.add('visible-section');
-            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+      <div class="console-card card-survival">
+        <div class="card-icon">↺</div>
+        <h3 class="card-title title-survival">Recursion</h3>
+        <p class="card-desc">Meta-awareness that transforms repetition into exponential growth.</p>
+        <div class="card-protocol">
+          <div class="protocol-block">
+            <span class="protocol-key" style="color: var(--ax-survival);">Question</span>
+            <p>"How is this cycle different from the last time?"</p>
+          </div>
+          <div class="protocol-block">
+            <span class="protocol-key" style="color: var(--ax-survival);">Action</span>
+            <p>Name one thing you know now that you didn't know then.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        function closeDetail() {
-            const detail = document.getElementById('state-detail');
-            detail.classList.remove('visible-section');
-            detail.classList.add('hidden-section');
-        }
+    <!-- Daily Drift Audit -->
+    <div class="drift-audit ax-glass-gold">
+      <div class="drift-row">
+        <div class="drift-text">
+          <h3>Daily Drift Audit</h3>
+          <p>Generate today's alignment practice based on your current state.</p>
+        </div>
+        <button class="btn-primary" onclick="generatePractice()">Generate Practice</button>
+      </div>
+      <div class="practice-output" id="practice-output">
+        <span class="ax-mono">TODAY_PROTOCOL //</span>
+        <p id="practice-text"></p>
+      </div>
+    </div>
+  </div>
+</section>
 
-        // Diagnostic Quiz
-        const questions = [
-            {
-                text: "Which describes your current internal state?",
-                options: [
-                    { text: "Numb, burned out, or overwhelmed by pressure", state: "Compression" },
-                    { text: "Questioning who I am or feeling unstable", state: "Disruption" },
-                    { text: "Analyzing my patterns and behaviors", state: "Self-Reflection" },
-                    { text: "Standing at a crossroads, knowing I must choose", state: "Threshold" },
-                    { text: "Making sacrifices for something I value", state: "Cost" }
-                ]
-            },
-            {
-                text: "What is your relationship to repetition?",
-                options: [
-                    { text: "I keep ending up in the same place", state: "Compression" },
-                    { text: "I see the pattern but can't break it", state: "Pattern Recognition" },
-                    { text: "This feels familiar but different—deeper", state: "Recursion" },
-                    { text: "I'm building new structures daily", state: "Construction" }
-                ]
-            },
-            {
-                text: "What question are you living right now?",
-                options: [
-                    { text: "'Why does this keep happening to me?'", state: "Disruption" },
-                    { text: "'What is actually true here?'", state: "Self-Reflection" },
-                    { text: "'What am I willing to protect or become?'", state: "Alignment" },
-                    { text: "'Who am I becoming through this?'", state: "Integration" }
-                ]
-            },
-            {
-                text: "Where is your energy directed?",
-                options: [
-                    { text: "Surviving the day", state: "Compression" },
-                    { text: "Understanding the system", state: "Awareness" },
-                    { text: "Serving something larger than myself", state: "Alignment" },
-                    { text: "Creating or sharing with others", state: "Expression" }
-                ]
-            },
-            {
-                text: "What does this cycle feel like?",
-                options: [
-                    { text: "Like failure or regression", state: "Compression" },
-                    { text: "Like necessary disruption", state: "Disruption" },
-                    { text: "Like a spiral, returning but higher", state: "Recursion" },
-                    { text: "Like expansion into new capacity", state: "Expansion" }
-                ]
-            }
-        ];
+<!-- FOOTER -->
+<footer>
+  <p class="footer-word">AXIUM</p>
+  <p class="footer-sub">Cathedral Research Facility for Human Alignment</p>
+  <p class="footer-glyph">PROTOCOL v2.7 // RECURSIVE_MODE // THREE_ENGINES_ACTIVE</p>
+</footer>
 
-        let currentQuestion = 0;
-        let answers = [];
+<script>
+/* ═══════════════════════════════════════════
+   PARTICLE CANVAS — Stars + Shooting Stars
+═══════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [], shooters = [];
 
-        function initDiagnostic() {
-            showQuestion();
-        }
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
 
-        function showQuestion() {
-            const q = questions[currentQuestion];
-            document.getElementById('q-current').textContent = currentQuestion + 1;
-            document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
-            document.getElementById('question-text').textContent = q.text;
-            
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left p-4 rounded-lg border border-white/10 hover:border-cyan-400/50 hover:bg-cyan-400/5 transition-all duration-300 group";
-                btn.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-6 h-6 rounded-full border border-white/20 group-hover:border-cyan-400 flex items-center justify-center text-xs text-slate-400 group-hover:text-cyan-400">
-                            ${String.fromCharCode(65 + idx)}
-                        </div>
-                        <span class="text-slate-300 group-hover:text-white">${opt.text}</span>
-                    </div>
-                `;
-                btn.onclick = () => selectAnswer(opt.state);
-                optionsContainer.appendChild(btn);
-            });
-        }
+  function makeStar() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 0.9 + 0.2,
+      o: Math.random() * 0.5 + 0.1,
+      s: Math.random() * 0.003 + 0.001,
+      d: Math.random() > 0.5 ? 1 : -1
+    };
+  }
 
-        function selectAnswer(state) {
-            answers.push(state);
-            if (currentQuestion < questions.length - 1) {
-                currentQuestion++;
-                showQuestion();
-            } else {
-                showResult();
-            }
-        }
+  function makeShooter() {
+    const angle = Math.random() * 0.4 + 0.1;
+    return {
+      x: Math.random() * W * 0.7,
+      y: Math.random() * H * 0.4,
+      len: Math.random() * 120 + 60,
+      speed: Math.random() * 8 + 5,
+      angle,
+      dx: Math.cos(angle),
+      dy: Math.sin(angle),
+      life: 1, decay: Math.random() * 0.015 + 0.01
+    };
+  }
 
-        function showResult() {
-            // Count frequency
-            const counts = {};
-            answers.forEach(a => counts[a] = (counts[a] || 0) + 1);
-            const resultState = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-            
-            document.getElementById('question-container').style.display = 'none';
-            document.getElementById('diagnostic-result').classList.remove('hidden-section');
-            document.getElementById('diagnostic-result').classList.add('visible-section');
-            
-            document.getElementById('result-state').textContent = resultState;
-            
-            // Set intervention based on state
-            const interventions = {
-                "Compression": "You are in the pressure chamber. Do not try to 'fix' this yet. Move to Self-Reflection before attempting change.",
-                "Disruption": "Identity is destabilized. This is necessary but dangerous. Ground in Self-Reflection before making major decisions.",
-                "Self-Reflection": "You are in the recursive layer. Ask: 'What pattern repeats?' Write it down without judgment.",
-                "Pattern Recognition": "You see the structure. Now ask: 'What do I actually value?' Move toward Alignment.",
-                "Threshold": "Decision pressure is high. Do not choose from fear. Anchor in Alignment (Love/Divine) first.",
-                "Alignment": "You are touching meaning. Clarify what you serve. Remove one contradiction today.",
-                "Cost": "You are paying the real price. This proves the choice is authentic. Feel the loss fully.",
-                "Construction": "Build the new identity physically. Habits > insights. One brick at a time.",
-                "Integration": "Consolidate gains. Narrativize your change. 'This is who I am now.'",
-                "Expression": "Share the transformation. Isolation kills growth. Create or connect.",
-                "Recursion": "You see the spiral. Name how this cycle differs from the last. Growth is exponential now.",
-                "Expansion": "Capacity increased. Prepare for the next cycle at this higher level. Rest and integrate."
-            };
-            
-            document.getElementById('result-intervention').textContent = interventions[resultState] || "Continue the cycle with awareness.";
-            
-            // State → Question → Action
-            const sqa = {
-                "Self-Reflection": "State: Self-Reflection → Question: 'What pattern has repeated 3 times?' → Action: Write it in one sentence.",
-                "Alignment": "State: Alignment → Question: 'What do you care about protecting?' → Action: Remove one contradiction today.",
-                "Recursion": "State: Recursion → Question: 'How is this different from last time?' → Action: Name one new insight.",
-                "Compression": "State: Compression → Question: 'What is the pressure trying to change?' → Action: One breath. One observation. No fixing.",
-                "Cost": "State: Cost → Question: 'What will this decision cost?' → Action: Pay a small version immediately."
-            };
-            
-            document.getElementById('result-action').textContent = sqa[resultState] || sqa["Self-Reflection"];
-        }
+  resize();
+  for (let i = 0; i < 180; i++) stars.push(makeStar());
 
-        function resetDiagnostic() {
-            currentQuestion = 0;
-            answers = [];
-            document.getElementById('diagnostic-result').classList.add('hidden-section');
-            document.getElementById('diagnostic-result').classList.remove('visible-section');
-            document.getElementById('question-container').style.display = 'block';
-            showQuestion();
-        }
+  function drawStars() {
+    stars.forEach(s => {
+      s.o += s.s * s.d;
+      if (s.o > 0.6 || s.o < 0.05) s.d *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(212,175,55,${s.o})`;
+      ctx.fill();
+    });
+  }
 
-        // Practice Generator
-        const practices = [
-            "Write down one pattern that has repeated 3 times in your life. Do not diagnose it. Just observe.",
-            "Identify one thing you are willing to protect or serve, regardless of convenience.",
-            "Remove one small thing from your environment that contradicts your stated values.",
-            "Name one way this current difficulty is similar to a past cycle, and one way it is different.",
-            "Sit in silence for 5 minutes and observe your thoughts without engaging. Just watch.",
-            "Text one person something you appreciate about them. Break the isolation loop.",
-            "Identify the 'cost' of your current path. Acknowledge one small loss you are enduring.",
-            "Create one thing today, however small, that externalizes your internal state.",
-            "Ask yourself: 'Is this choice coming from fear or from alignment?' Wait for the true answer.",
-            "Write a one-sentence narrative: 'I am becoming someone who...'"
-        ];
+  function drawShooters() {
+    shooters.forEach((s, i) => {
+      s.x += s.dx * s.speed;
+      s.y += s.dy * s.speed;
+      s.life -= s.decay;
+      const tail = {
+        x: s.x - s.dx * s.len,
+        y: s.y - s.dy * s.len
+      };
+      const grad = ctx.createLinearGradient(tail.x, tail.y, s.x, s.y);
+      grad.addColorStop(0, 'rgba(212,175,55,0)');
+      grad.addColorStop(1, `rgba(212,175,55,${s.life * 0.7})`);
+      ctx.beginPath();
+      ctx.moveTo(tail.x, tail.y);
+      ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      if (s.life <= 0 || s.x > W + 200 || s.y > H + 200) {
+        shooters.splice(i, 1);
+      }
+    });
+  }
 
-        function generatePractice() {
-            const output = document.getElementById('practice-output');
-            const text = document.getElementById('practice-text');
-            const random = practices[Math.floor(Math.random() * practices.length)];
-            
-            text.textContent = random;
-            output.classList.remove('hidden');
-        }
+  let lastShooter = 0;
+  function loop(t) {
+    ctx.clearRect(0, 0, W, H);
+    drawStars();
+    drawShooters();
+    if (t - lastShooter > 3200 + Math.random() * 4000) {
+      shooters.push(makeShooter());
+      lastShooter = t;
+    }
+    requestAnimationFrame(loop);
+  }
 
-        // Navigation
-        function scrollToSection(id) {
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-        }
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(loop);
+})();
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initCycle();
-            initDiagnostic();
-        });
-    </script>
+/* ═══════════════════════════════════════════
+   CYCLE DATA
+═══════════════════════════════════════════ */
+const STATES = [
+  { id:1,  name:"Compression",       engine:"survival",  experience:"Stress, burnout, numbness. The system forces change through pressure.",           psychology:"Allostatic load, nervous system dysregulation.",        func:"Pressure accumulation forces the system to evolve or collapse.",            critical:false },
+  { id:2,  name:"Disruption",        engine:"survival",  experience:"Identity instability — 'I don't recognize myself.'",                               psychology:"Identity diffusion, cognitive dissonance.",              func:"Breaks the outdated self-model.",                                           critical:false },
+  { id:3,  name:"Self-Reflection",   engine:"awareness", experience:"Introspection, questioning patterns and assumptions.",                             psychology:"Metacognition, default mode network activation.",       func:"Observes self instead of reacting. First recursive layer.",                 critical:true  },
+  { id:4,  name:"Pattern Recognition",engine:"awareness",experience:"Noticing cycles, triggers, behaviors with some distance.",                        psychology:"Schema awareness, predictive processing.",              func:"Converts chaos into navigable structure.",                                  critical:false },
+  { id:5,  name:"Threshold",         engine:"survival",  experience:"'I cannot stay like this.' Pressure reaches decision point.",                     psychology:"Approach-avoidance conflict.",                          func:"Forces a decision. No more deferral.",                                      critical:false },
+  { id:6,  name:"Alignment",         engine:"meaning",   experience:"Clarity, surrender, meaning, connection to something beyond ego.",                psychology:"Self-transcendence, values orientation (ACT).",         func:"Anchors choice in meaning, not fear. Prevents nihilism.",                   critical:true  },
+  { id:7,  name:"Choice",            engine:"meaning",   experience:"Commitment to a specific path.",                                                  psychology:"Executive function, value-based decision making.",      func:"Collapses possibility space into direction.",                               critical:false },
+  { id:8,  name:"Cost",              engine:"meaning",   experience:"Discomfort, loss, resistance from the old system.",                               psychology:"Behavioral activation, extinction of old habits.",      func:"Proves the choice is real. No cost means no real change.",                  critical:false },
+  { id:9,  name:"Construction",      engine:"survival",  experience:"New habits, new environment, building the new self.",                             psychology:"Neuroplasticity, habit formation.",                     func:"Builds new identity physically, not just conceptually.",                    critical:false },
+  { id:10, name:"Integration",       engine:"survival",  experience:"Stability, coherence. The new feels natural.",                                    psychology:"Memory consolidation, narrative identity.",             func:"Turns actions into 'who I am.'",                                            critical:false },
+  { id:11, name:"Expression",        engine:"meaning",   experience:"Sharing, creating, connecting with others.",                                      psychology:"Prosocial behavior, meaning-making.",                   func:"Externalizes internal change. Prevents isolation from killing growth.",      critical:true  },
+  { id:12, name:"Recursion",         engine:"awareness", experience:"Awareness of the cycle itself — seeing the spiral.",                              psychology:"Meta-awareness, second-order thinking.",               func:"Transforms growth from repetitive to exponential.",                         critical:true  },
+  { id:13, name:"Expansion",         engine:"meaning",   experience:"Increased capacity, tolerance for complexity.",                                   psychology:"Cognitive flexibility, post-traumatic growth.",        func:"Prepares the next cycle at a higher baseline.",                             critical:false }
+];
+
+const ENGINE_COLORS = {
+  survival:  { fill: '#c96070', text: '#e08090', badge: 'badge-survival',  label: 'Survival Engine'  },
+  awareness: { fill: '#7EB8E8', text: '#9ECAF0', badge: 'badge-awareness', label: 'Awareness Engine' },
+  meaning:   { fill: '#D4AF37', text: '#F0C840', badge: 'badge-meaning',   label: 'Meaning Engine'   }
+};
+
+/* ─── BUILD SPIRAL SVG ─── */
+function buildCycle() {
+  const svg = document.getElementById('cycle-svg');
+  const nodesG = document.getElementById('nodes-g');
+  const cx = 380, cy = 280;
+
+  // Compute positions along a two-loop spiral
+  const positions = STATES.map((_, i) => {
+    const t = i / (STATES.length - 1);
+    const angle = t * Math.PI * 3.6 - Math.PI * 0.5;
+    const r = 60 + t * 190;
+    return {
+      x: cx + Math.cos(angle) * r,
+      y: cy + Math.sin(angle) * r * 0.58
+    };
+  });
+
+  // Draw connecting path
+  let d = `M ${positions[0].x} ${positions[0].y}`;
+  for (let i = 1; i < positions.length; i++) {
+    const prev = positions[i-1];
+    const curr = positions[i];
+    const mx = (prev.x + curr.x) / 2;
+    const my = (prev.y + curr.y) / 2 - 15;
+    d += ` Q ${mx} ${my} ${curr.x} ${curr.y}`;
+  }
+  document.getElementById('spiral-path').setAttribute('d', d);
+
+  // Draw nodes
+  STATES.forEach((state, i) => {
+    const { x, y } = positions[i];
+    const col = ENGINE_COLORS[state.engine];
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','cycle-node-g');
+    g.setAttribute('filter','url(#nodeGlow)');
+    g.style.opacity = '0.75';
+    g.addEventListener('click', () => showDetail(i));
+    g.addEventListener('mouseenter', () => { g.style.opacity = '1'; });
+    g.addEventListener('mouseleave', () => { g.style.opacity = '0.75'; });
+
+    // Outer ring for critical states
+    if (state.critical) {
+      const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      ring.setAttribute('cx', x); ring.setAttribute('cy', y);
+      ring.setAttribute('r', '18');
+      ring.setAttribute('fill','none');
+      ring.setAttribute('stroke', col.fill);
+      ring.setAttribute('stroke-width','1');
+      ring.setAttribute('stroke-dasharray','3 3');
+      ring.setAttribute('opacity','0.5');
+      g.appendChild(ring);
+    }
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', x); circle.setAttribute('cy', y);
+    circle.setAttribute('r','12');
+    circle.setAttribute('fill', col.fill);
+    circle.setAttribute('fill-opacity','0.85');
+    g.appendChild(circle);
+
+    const num = document.createElementNS('http://www.w3.org/2000/svg','text');
+    num.setAttribute('x', x); num.setAttribute('y', y + 4);
+    num.setAttribute('text-anchor','middle');
+    num.setAttribute('fill','#060608');
+    num.setAttribute('font-size','9');
+    num.setAttribute('font-weight','700');
+    num.setAttribute('font-family','Space Mono, monospace');
+    num.textContent = state.id;
+    g.appendChild(num);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x', x); label.setAttribute('y', y + 30);
+    label.setAttribute('text-anchor','middle');
+    label.setAttribute('fill', col.text);
+    label.setAttribute('font-size','10');
+    label.setAttribute('font-family','Cinzel, serif');
+    label.setAttribute('opacity','0.8');
+    label.textContent = state.name;
+    g.appendChild(label);
+
+    nodesG.appendChild(g);
+  });
+}
+
+function showDetail(i) {
+  const s = STATES[i];
+  const col = ENGINE_COLORS[s.engine];
+  document.getElementById('d-number').textContent = `STATE ${String(s.id).padStart(2,'0')}`;
+  document.getElementById('d-title').textContent = s.name;
+  document.getElementById('d-experience').textContent = s.experience;
+  document.getElementById('d-psychology').textContent = s.psychology;
+  document.getElementById('d-function').textContent = s.func;
+
+  const badge = document.getElementById('d-badge');
+  badge.className = 'detail-engine-badge ' + col.badge;
+  badge.textContent = col.label;
+
+  const warn = document.getElementById('d-critical');
+  warn.className = 'critical-warning' + (s.critical ? ' show' : '');
+
+  const panel = document.getElementById('state-detail');
+  panel.className = 'state-detail-panel ax-glass-gold open';
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function closeDetail() {
+  document.getElementById('state-detail').className = 'state-detail-panel ax-glass-gold';
+}
+
+/* ═══════════════════════════════════════════
+   DIAGNOSTIC
+═══════════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    text: "Which describes your current internal state?",
+    options: [
+      { text: "Numb, burned out, or overwhelmed by pressure", state: "Compression" },
+      { text: "Questioning who I am or feeling unstable", state: "Disruption" },
+      { text: "Analyzing my patterns and behaviors", state: "Self-Reflection" },
+      { text: "Standing at a crossroads, knowing I must choose", state: "Threshold" },
+      { text: "Making sacrifices for something I value", state: "Cost" }
+    ]
+  },
+  {
+    text: "What is your relationship to repetition?",
+    options: [
+      { text: "I keep ending up in the same place", state: "Compression" },
+      { text: "I see the pattern but can't break it", state: "Pattern Recognition" },
+      { text: "This feels familiar but different — deeper", state: "Recursion" },
+      { text: "I'm building new structures daily", state: "Construction" }
+    ]
+  },
+  {
+    text: "What question are you living right now?",
+    options: [
+      { text: "'Why does this keep happening to me?'", state: "Disruption" },
+      { text: "'What is actually true here?'", state: "Self-Reflection" },
+      { text: "'What am I willing to protect or become?'", state: "Alignment" },
+      { text: "'Who am I becoming through this?'", state: "Integration" }
+    ]
+  },
+  {
+    text: "Where is your energy directed?",
+    options: [
+      { text: "Surviving the day", state: "Compression" },
+      { text: "Understanding the system", state: "Awareness" },
+      { text: "Serving something larger than myself", state: "Alignment" },
+      { text: "Creating or sharing with others", state: "Expression" }
+    ]
+  },
+  {
+    text: "What does this cycle feel like?",
+    options: [
+      { text: "Like failure or regression", state: "Compression" },
+      { text: "Like necessary disruption", state: "Disruption" },
+      { text: "Like a spiral, returning but higher", state: "Recursion" },
+      { text: "Like expansion into new capacity", state: "Expansion" }
+    ]
+  }
+];
+
+const INTERVENTIONS = {
+  "Compression": "You are in the pressure chamber. Do not try to 'fix' this yet. Move to Self-Reflection before attempting change.",
+  "Disruption": "Identity is destabilized. This is necessary but dangerous. Ground in Self-Reflection before making major decisions.",
+  "Self-Reflection": "You are in the recursive layer. Ask: 'What pattern repeats?' Write it down without judgment.",
+  "Pattern Recognition": "You see the structure. Now ask: 'What do I actually value?' Move toward Alignment.",
+  "Threshold": "Decision pressure is high. Do not choose from fear. Anchor in Alignment first.",
+  "Alignment": "You are touching meaning. Clarify what you serve. Remove one contradiction today.",
+  "Cost": "You are paying the real price. This proves the choice is authentic. Feel the loss fully.",
+  "Construction": "Build the new identity physically. Habits over insights. One brick at a time.",
+  "Integration": "Consolidate gains. Narrativize your change. 'This is who I am now.'",
+  "Expression": "Share the transformation. Isolation kills growth. Create or connect.",
+  "Recursion": "You see the spiral. Name how this cycle differs from the last. Growth is exponential now.",
+  "Expansion": "Capacity increased. Prepare for the next cycle at this higher level. Rest and integrate.",
+  "Awareness": "You are stepping outside the reaction loop. This is the beginning of choice."
+};
+
+const SQA = {
+  "Self-Reflection": "State: Self-Reflection → Question: 'What pattern has repeated 3 times?' → Action: Write it in one sentence.",
+  "Alignment": "State: Alignment → Question: 'What do you care about protecting?' → Action: Remove one contradiction today.",
+  "Recursion": "State: Recursion → Question: 'How is this different from last time?' → Action: Name one new insight.",
+  "Compression": "State: Compression → Question: 'What is the pressure trying to change?' → Action: One breath. One observation. No fixing.",
+  "Cost": "State: Cost → Question: 'What will this decision cost?' → Action: Pay a small version immediately."
+};
+
+let currentQ = 0;
+let answers  = [];
+
+function initDiagnostic() { renderQuestion(); }
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  document.getElementById('q-current').textContent = currentQ + 1;
+  document.getElementById('progress-fill').style.width = `${((currentQ + 1) / QUESTIONS.length) * 100}%`;
+  document.getElementById('question-text').textContent = q.text;
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-alpha">${String.fromCharCode(65+idx)}</span><span>${opt.text}</span>`;
+    btn.addEventListener('click', () => selectAnswer(opt.state));
+    list.appendChild(btn);
+  });
+}
+
+function selectAnswer(state) {
+  answers.push(state);
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  const counts = {};
+  answers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+  const top = Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
+
+  document.getElementById('result-name').textContent = top;
+  document.getElementById('result-intervention').textContent = INTERVENTIONS[top] || INTERVENTIONS["Self-Reflection"];
+  document.getElementById('result-action').textContent = SQA[top] || SQA["Self-Reflection"];
+
+  document.getElementById('quiz-container').style.display = 'none';
+  const r = document.getElementById('diag-result');
+  r.className = 'diag-result open';
+}
+
+function resetDiagnostic() {
+  currentQ = 0;
+  answers = [];
+  document.getElementById('quiz-container').style.display = 'block';
+  document.getElementById('diag-result').className = 'diag-result';
+  renderQuestion();
+}
+
+/* ═══════════════════════════════════════════
+   PRACTICE GENERATOR
+═══════════════════════════════════════════ */
+const PRACTICES = [
+  "Write down one pattern that has repeated 3 times in your life. Do not diagnose it. Just observe.",
+  "Identify one thing you are willing to protect or serve, regardless of convenience.",
+  "Remove one small thing from your environment that contradicts your stated values.",
+  "Name one way this current difficulty is similar to a past cycle, and one way it is different.",
+  "Sit in silence for 5 minutes and observe your thoughts without engaging. Just watch.",
+  "Text one person something you appreciate about them. Break the isolation loop.",
+  "Identify the 'cost' of your current path. Acknowledge one small loss you are enduring.",
+  "Create one thing today, however small, that externalizes your internal state.",
+  "Ask yourself: 'Is this choice coming from fear or from alignment?' Wait for the true answer.",
+  "Write a one-sentence narrative: 'I am becoming someone who...'"
+];
+
+function generatePractice() {
+  const out = document.getElementById('practice-output');
+  document.getElementById('practice-text').textContent = PRACTICES[Math.floor(Math.random() * PRACTICES.length)];
+  out.className = 'practice-output open';
+}
+
+/* ─── INIT ─── */
+document.addEventListener('DOMContentLoaded', () => {
+  buildCycle();
+  initDiagnostic();
+});
+</script>
 </body>
 </html>
