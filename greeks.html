@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIUM — Greek Oracle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #D4AF37;
+    --gold-dim: #8B6F1A;
+    --gold-glow: rgba(212,175,55,0.15);
+    --gold-glow-strong: rgba(212,175,55,0.3);
+    --void: #050507;
+    --void-2: #0A0A0F;
+    --void-3: #111118;
+    --void-4: #1A1A24;
+    --text: #C8C0A8;
+    --text-dim: #6B6555;
+    --delta-color: #7EB8E8;
+    --gamma-color: #E8B87E;
+    --theta-color: #E87E7E;
+    --vega-color: #B87EE8;
+    --gain: #4ADE80;
+    --loss: #F87171;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--void);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ── PARTICLE CANVAS ── */
+  #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5; }
+
+  /* ── SACRED GEOMETRY BG ── */
+  .sacred-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 50%, rgba(212,175,55,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, var(--void) 0%, var(--void-2) 100%);
+  }
+  .sacred-bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(212,175,55,0.03) 79px, rgba(212,175,55,0.03) 80px),
+      repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(212,175,55,0.03) 79px, rgba(212,175,55,0.03) 80px);
+  }
+
+  /* ── CORNER MARKS ── */
+  .corner { position: fixed; width: 40px; height: 40px; z-index: 2; }
+  .corner::before, .corner::after { content: ''; position: absolute; background: var(--gold); }
+  .corner::before { width: 100%; height: 1px; top: 0; left: 0; }
+  .corner::after { width: 1px; height: 100%; top: 0; left: 0; }
+  .corner.tl { top: 16px; left: 16px; }
+  .corner.tr { top: 16px; right: 16px; transform: scaleX(-1); }
+  .corner.bl { bottom: 16px; left: 16px; transform: scaleY(-1); }
+  .corner.br { bottom: 16px; right: 16px; transform: scale(-1); }
+
+  /* ── LAYOUT ── */
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center; margin-bottom: 48px;
+    animation: fadeDown 0.8s ease both;
+  }
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 6px;
+    color: var(--gold-dim); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900; color: var(--gold);
+    letter-spacing: 8px; line-height: 1;
+    text-shadow: 0 0 40px rgba(212,175,55,0.3);
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 15px;
+    color: var(--text-dim); letter-spacing: 2px;
+  }
+  .ritual-divider {
+    display: flex; align-items: center; gap: 16px;
+    margin: 20px auto; max-width: 400px;
+  }
+  .ritual-divider::before, .ritual-divider::after {
+    content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim));
+  }
+  .ritual-divider::after { background: linear-gradient(90deg, var(--gold-dim), transparent); }
+  .ritual-divider span { color: var(--gold); font-size: 10px; letter-spacing: 4px; }
+
+  /* ── MAIN GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--void-2);
+    border: 1px solid rgba(212,175,55,0.15);
+    padding: 28px;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  }
+  .panel::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--gold-glow) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .panel-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px; letter-spacing: 5px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(212,175,55,0.1);
+  }
+
+  /* ── FULL-WIDTH PANELS ── */
+  .panel.full { grid-column: 1 / -1; }
+
+  /* ── INPUT ROWS ── */
+  .input-row {
+    display: flex; align-items: center;
+    margin-bottom: 18px; gap: 12px;
+  }
+  .input-row label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--text-dim); text-transform: uppercase;
+    width: 80px; flex-shrink: 0;
+  }
+  .greek-symbol {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; width: 28px; flex-shrink: 0;
+    text-align: center; line-height: 1;
+  }
+  .input-wrap { flex: 1; position: relative; }
+  .input-wrap input[type="number"] {
+    width: 100%; background: var(--void-3);
+    border: 1px solid rgba(212,175,55,0.15);
+    color: var(--gold); font-family: 'Space Mono', monospace;
+    font-size: 14px; padding: 10px 14px;
+    outline: none; transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  .input-wrap input[type="number"]::-webkit-inner-spin-button,
+  .input-wrap input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .input-wrap input[type="number"]:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 16px var(--gold-glow);
+  }
+
+  /* Greek color accents on focus */
+  .delta-row .input-wrap input:focus { border-color: var(--delta-color); box-shadow: 0 0 16px rgba(126,184,232,0.2); }
+  .gamma-row .input-wrap input:focus { border-color: var(--gamma-color); box-shadow: 0 0 16px rgba(232,184,126,0.2); }
+  .theta-row .input-wrap input:focus { border-color: var(--theta-color); box-shadow: 0 0 16px rgba(232,126,126,0.2); }
+  .vega-row .input-wrap input:focus { border-color: var(--vega-color); box-shadow: 0 0 16px rgba(184,126,232,0.2); }
+
+  .delta-symbol { color: var(--delta-color); }
+  .gamma-symbol { color: var(--gamma-color); }
+  .theta-symbol { color: var(--theta-color); }
+  .vega-symbol  { color: var(--vega-color); }
+
+  /* ── SLIDERS ── */
+  .slider-row { margin-bottom: 22px; }
+  .slider-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .slider-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+  .slider-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px; font-weight: 700;
+    color: var(--gold);
+  }
+  input[type="range"] {
+    width: 100%; -webkit-appearance: none;
+    height: 2px; background: var(--void-4); outline: none;
+    cursor: pointer; border-radius: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--gold); border: none;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    cursor: pointer; transition: transform 0.15s;
+  }
+  input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.3); }
+  input[type="range"].stock-slider { accent-color: var(--delta-color); }
+  input[type="range"].iv-slider    { accent-color: var(--vega-color); }
+  input[type="range"].days-slider  { accent-color: var(--theta-color); }
+
+  /* custom track fill via CSS custom prop */
+  .stock-slider { background: linear-gradient(90deg, var(--delta-color) var(--pct,50%), var(--void-4) var(--pct,50%)); }
+  .iv-slider    { background: linear-gradient(90deg, var(--vega-color) var(--pct,50%), var(--void-4) var(--pct,50%)); }
+  .days-slider  { background: linear-gradient(90deg, var(--theta-color) var(--pct,0%), var(--void-4) var(--pct,0%)); }
+
+  /* ── RESULT DISPLAY ── */
+  .result-panel {
+    text-align: center;
+    padding: 36px 28px;
+  }
+  .result-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 5px;
+    color: var(--text-dim); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .result-value {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(48px, 8vw, 80px);
+    font-weight: 900; line-height: 1;
+    transition: color 0.3s, text-shadow 0.3s;
+    letter-spacing: 2px;
+  }
+  .result-value.positive {
+    color: var(--gain);
+    text-shadow: 0 0 40px rgba(74,222,128,0.4);
+  }
+  .result-value.negative {
+    color: var(--loss);
+    text-shadow: 0 0 40px rgba(248,113,113,0.4);
+  }
+  .result-value.neutral { color: var(--gold); text-shadow: 0 0 40px var(--gold-glow); }
+  .result-subtext {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 14px;
+    color: var(--text-dim); margin-top: 8px;
+  }
+  .new-price-row {
+    display: flex; justify-content: center; align-items: baseline;
+    gap: 12px; margin-top: 20px;
+  }
+  .price-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+  .new-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px; font-weight: 700;
+    color: var(--text); transition: color 0.3s;
+  }
+  .new-price.positive { color: var(--gain); }
+  .new-price.negative { color: var(--loss); }
+
+  /* ── CONTRIBUTION BARS ── */
+  .contrib-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-top: 4px;
+  }
+  .contrib-item { position: relative; }
+  .contrib-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  .contrib-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .contrib-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; font-weight: 700;
+  }
+  .bar-track {
+    height: 4px; background: var(--void-4);
+    position: relative; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+    border-radius: 0;
+  }
+  .bar-fill.pos { background: var(--gain); }
+  .bar-fill.neg { background: var(--loss); }
+
+  .delta-fill  { }
+  .gamma-fill  { }
+  .vega-fill   { }
+  .theta-fill  { }
+
+  /* ── EXPLANATION PANEL ── */
+  .explain-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 16px;
+  }
+  @media (max-width: 680px) { .explain-grid { grid-template-columns: 1fr 1fr; } }
+
+  .greek-card {
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--void-3);
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .greek-card.active { border-color: rgba(212,175,55,0.3); }
+  .greek-card::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 2px;
+    transition: opacity 0.3s;
+  }
+  .delta-card::after  { background: var(--delta-color); }
+  .gamma-card::after  { background: var(--gamma-color); }
+  .theta-card::after  { background: var(--theta-color); }
+  .vega-card::after   { background: var(--vega-color); }
+
+  .greek-card-symbol {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; line-height: 1; margin-bottom: 4px;
+  }
+  .greek-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--text-dim); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .greek-card-desc {
+    font-size: 12px; line-height: 1.6;
+    color: var(--text-dim);
+  }
+  .greek-card-live {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px; font-weight: 700;
+    margin-top: 10px;
+  }
+
+  /* ── PULSE ANIMATION on update ── */
+  @keyframes pulse-gold {
+    0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
+    70%  { box-shadow: 0 0 0 8px rgba(212,175,55,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+  }
+  .pulse { animation: pulse-gold 0.4s ease; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity:0; transform: translateY(-20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  @keyframes shoot {
+    0%   { transform: translateX(0) translateY(0); opacity:1; }
+    100% { transform: translateX(200px) translateY(200px); opacity:0; }
+  }
+
+  /* ── FORMULA DISPLAY ── */
+  .formula {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--text-dim);
+    background: var(--void);
+    border: 1px solid rgba(212,175,55,0.08);
+    padding: 14px 16px;
+    margin-top: 20px; line-height: 2;
+    letter-spacing: 0.5px;
+  }
+  .formula .f-val { color: var(--gold); font-weight: 700; }
+  .formula .f-pos { color: var(--gain); }
+  .formula .f-neg { color: var(--loss); }
+  .formula .f-d   { color: var(--delta-color); }
+  .formula .f-g   { color: var(--gamma-color); }
+  .formula .f-t   { color: var(--theta-color); }
+  .formula .f-v   { color: var(--vega-color); }
+
+  /* ── SCENARIO ROW ── */
+  .scenario-row {
+    display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;
+  }
+  .scenario-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-dim);
+    background: var(--void-3);
+    border: 1px solid rgba(212,175,55,0.1);
+    padding: 7px 14px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .scenario-btn:hover {
+    border-color: var(--gold); color: var(--gold);
+    background: var(--gold-glow);
+  }
+
+  /* timestamp */
+  .timestamp {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--text-dim); text-align: center;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div class="sacred-bg"></div>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="app">
+
+  <header>
+    <div class="eyebrow">Axium · Options Intelligence</div>
+    <h1>GREEK ORACLE</h1>
+    <div class="subtitle">The derivatives of price, rendered as prophecy</div>
+    <div class="ritual-divider"><span>◈</span></div>
+  </header>
+
+  <div class="grid">
+
+    <!-- LEFT: CONTRACT + GREEKS INPUT -->
+    <div class="panel">
+      <div class="panel-title">Contract Parameters</div>
+
+      <div class="input-row">
+        <label>Price</label>
+        <span class="greek-symbol" style="color:var(--gold)">$</span>
+        <div class="input-wrap">
+          <input type="number" id="contractPrice" value="5.00" step="0.01" min="0.01">
+        </div>
+      </div>
+
+      <div class="input-row delta-row">
+        <label>Delta</label>
+        <span class="greek-symbol delta-symbol">Δ</span>
+        <div class="input-wrap">
+          <input type="number" id="delta" value="0.50" step="0.01" min="-1" max="1">
+        </div>
+      </div>
+
+      <div class="input-row gamma-row">
+        <label>Gamma</label>
+        <span class="greek-symbol gamma-symbol">Γ</span>
+        <div class="input-wrap">
+          <input type="number" id="gamma" value="0.05" step="0.01" min="0">
+        </div>
+      </div>
+
+      <div class="input-row theta-row">
+        <label>Theta</label>
+        <span class="greek-symbol theta-symbol">Θ</span>
+        <div class="input-wrap">
+          <input type="number" id="theta" value="-0.05" step="0.01">
+        </div>
+      </div>
+
+      <div class="input-row vega-row">
+        <label>Vega</label>
+        <span class="greek-symbol vega-symbol">V</span>
+        <div class="input-wrap">
+          <input type="number" id="vega" value="0.10" step="0.01">
+        </div>
+      </div>
+
+      <div class="panel-title" style="margin-top:28px">Quick Scenarios</div>
+      <div class="scenario-row">
+        <button class="scenario-btn" onclick="loadScenario('atm')">ATM Call</button>
+        <button class="scenario-btn" onclick="loadScenario('deep')">Deep ITM</button>
+        <button class="scenario-btn" onclick="loadScenario('far')">Far OTM</button>
+        <button class="scenario-btn" onclick="loadScenario('highvega')">High IV Play</button>
+        <button class="scenario-btn" onclick="loadScenario('earningscrushed')">IV Crushed</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: SLIDERS / WHAT-IF -->
+    <div class="panel">
+      <div class="panel-title">Market Conditions — What If</div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label">Stock Move</span>
+          <span class="slider-val" id="stockMoveVal">$0.00</span>
+        </div>
+        <input type="range" class="stock-slider" id="stockMove"
+          min="-20" max="20" value="0" step="0.25">
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label">IV Change</span>
+          <span class="slider-val" id="ivMoveVal">0.00%</span>
+        </div>
+        <input type="range" class="iv-slider" id="ivMove"
+          min="-0.5" max="0.5" value="0" step="0.01">
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label">Days Passed</span>
+          <span class="slider-val" id="daysVal">0 days</span>
+        </div>
+        <input type="range" class="days-slider" id="daysPassed"
+          min="0" max="30" value="0" step="1">
+      </div>
+
+      <!-- LIVE FORMULA BREAKDOWN -->
+      <div class="formula" id="formulaDisplay">
+        Enter your contract values to see the calculation.
+      </div>
+    </div>
+
+    <!-- RESULT — full width -->
+    <div class="panel full result-panel">
+      <div class="result-eyebrow">Estimated Price Change</div>
+      <div class="result-value neutral" id="resultChange">$0.00</div>
+      <div class="result-subtext">Taylor Series approximation · Δ + ½Γs² + VΔσ + Θt</div>
+      <div class="new-price-row">
+        <span class="price-label">Estimated New Price</span>
+        <span class="new-price" id="newPrice">$5.00</span>
+      </div>
+    </div>
+
+    <!-- CONTRIBUTION BARS -->
+    <div class="panel full">
+      <div class="panel-title">Greek Contributions</div>
+      <div class="contrib-grid">
+        <div class="contrib-item">
+          <div class="contrib-header">
+            <span class="contrib-name"><span style="color:var(--delta-color)">Δ</span> Delta</span>
+            <span class="contrib-val" id="deltaContrib" style="color:var(--delta-color)">$0.00</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill pos" id="deltaBar" style="width:0%"></div></div>
+        </div>
+        <div class="contrib-item">
+          <div class="contrib-header">
+            <span class="contrib-name"><span style="color:var(--gamma-color)">Γ</span> Gamma</span>
+            <span class="contrib-val" id="gammaContrib" style="color:var(--gamma-color)">$0.00</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill pos" id="gammaBar" style="width:0%"></div></div>
+        </div>
+        <div class="contrib-item">
+          <div class="contrib-header">
+            <span class="contrib-name"><span style="color:var(--vega-color)">V</span> Vega</span>
+            <span class="contrib-val" id="vegaContrib" style="color:var(--vega-color)">$0.00</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill pos" id="vegaBar" style="width:0%"></div></div>
+        </div>
+        <div class="contrib-item">
+          <div class="contrib-header">
+            <span class="contrib-name"><span style="color:var(--theta-color)">Θ</span> Theta</span>
+            <span class="contrib-val" id="thetaContrib" style="color:var(--theta-color)">$0.00</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill neg" id="thetaBar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GREEK EDUCATION CARDS -->
+    <div class="panel full">
+      <div class="panel-title">The Four Forces</div>
+      <div class="explain-grid">
+        <div class="greek-card delta-card" id="deltaCard">
+          <div class="greek-card-symbol delta-symbol">Δ</div>
+          <div class="greek-card-name">Delta</div>
+          <div class="greek-card-desc">Direction. How much the option price moves per $1 move in the stock. 0.50 = 50¢ per dollar. At 1.00 you're moving dollar-for-dollar with the stock.</div>
+          <div class="greek-card-live delta-symbol" id="deltaLive">0.50</div>
+        </div>
+        <div class="greek-card gamma-card" id="gammaCard">
+          <div class="greek-card-symbol gamma-symbol">Γ</div>
+          <div class="greek-card-name">Gamma</div>
+          <div class="greek-card-desc">Acceleration. The rate at which Delta changes. High Gamma = Delta is unstable. Near-the-money options explode with Gamma. This is the force amateur calculators miss.</div>
+          <div class="greek-card-live gamma-symbol" id="gammaLive">0.05</div>
+        </div>
+        <div class="greek-card theta-card" id="thetaCard">
+          <div class="greek-card-symbol theta-symbol">Θ</div>
+          <div class="greek-card-name">Theta</div>
+          <div class="greek-card-desc">Decay. What the contract costs you every day you hold it. The clock is always running. Theta accelerates exponentially in the final 30 days.</div>
+          <div class="greek-card-live theta-symbol" id="thetaLive">-0.05</div>
+        </div>
+        <div class="greek-card vega-card" id="vegaCard">
+          <div class="greek-card-symbol vega-symbol">V</div>
+          <div class="greek-card-name">Vega</div>
+          <div class="greek-card-desc">Volatility. Gain or loss per 1% change in Implied Volatility. After earnings, IV crushes and Vega becomes destructive — even if you called the direction right.</div>
+          <div class="greek-card-live vega-symbol" id="vegaLive">0.10</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="timestamp" id="timestamp"></div>
+
+</div>
+
+<script>
+// ── PARTICLES ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [], stars = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+for (let i = 0; i < 80; i++) {
+  particles.push({
+    x: Math.random() * 2000, y: Math.random() * 1200,
+    r: Math.random() * 1.2, a: Math.random(),
+    vx: (Math.random()-0.5)*0.08, vy: (Math.random()-0.5)*0.08
+  });
+}
+
+function spawnStar() {
+  if (Math.random() < 0.02) {
+    stars.push({
+      x: Math.random()*W, y: Math.random()*H*0.5,
+      l: Math.random()*80+40, a: 1,
+      dx: Math.random()*2+1, dy: Math.random()*1.5+0.5
+    });
+  }
+}
+
+function drawParticles() {
+  ctx.clearRect(0,0,W,H);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x<0) p.x=W; if (p.x>W) p.x=0;
+    if (p.y<0) p.y=H; if (p.y>H) p.y=0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(212,175,55,${p.a*0.4})`;
+    ctx.fill();
+  });
+  spawnStar();
+  stars = stars.filter(s => s.a > 0);
+  stars.forEach(s => {
+    ctx.save();
+    ctx.globalAlpha = s.a;
+    ctx.strokeStyle = 'rgba(212,175,55,0.7)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x + s.l*s.dx/Math.sqrt(s.dx*s.dx+s.dy*s.dy),
+               s.y + s.l*s.dy/Math.sqrt(s.dx*s.dx+s.dy*s.dy));
+    ctx.stroke();
+    ctx.restore();
+    s.x += s.dx*3; s.y += s.dy*3; s.a -= 0.025;
+  });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ── SLIDER TRACK FILL ──
+function updateSliderTrack(el, min, max) {
+  const pct = ((el.value - min) / (max - min)) * 100;
+  el.style.setProperty('--pct', pct + '%');
+}
+
+// ── CALCULATION ENGINE ──
+function calculate() {
+  const price      = parseFloat(document.getElementById('contractPrice').value) || 0;
+  const delta      = parseFloat(document.getElementById('delta').value) || 0;
+  const gamma      = parseFloat(document.getElementById('gamma').value) || 0;
+  const theta      = parseFloat(document.getElementById('theta').value) || 0;
+  const vega       = parseFloat(document.getElementById('vega').value) || 0;
+  const stockMove  = parseFloat(document.getElementById('stockMove').value) || 0;
+  const ivMove     = parseFloat(document.getElementById('ivMove').value) || 0;
+  const days       = parseFloat(document.getElementById('daysPassed').value) || 0;
+
+  // Update slider labels
+  const sm = document.getElementById('stockMove');
+  const iv = document.getElementById('ivMove');
+  const dp = document.getElementById('daysPassed');
+  updateSliderTrack(sm, -20, 20);
+  updateSliderTrack(iv, -0.5, 0.5);
+  updateSliderTrack(dp, 0, 30);
+
+  document.getElementById('stockMoveVal').textContent =
+    (stockMove >= 0 ? '+' : '') + '$' + Math.abs(stockMove).toFixed(2);
+  document.getElementById('ivMoveVal').textContent =
+    (ivMove >= 0 ? '+' : '') + (ivMove * 100).toFixed(1) + '%';
+  document.getElementById('daysVal').textContent = days + (days === 1 ? ' day' : ' days');
+
+  // Taylor Series components
+  const deltaGain  = delta * stockMove;
+  const gammaGain  = 0.5 * gamma * Math.pow(stockMove, 2);
+  const vegaGain   = vega * (ivMove * 100);   // vega per 1% IV change
+  const thetaLoss  = theta * days;
+  const totalChange = deltaGain + gammaGain + vegaGain + thetaLoss;
+  const newPrice   = Math.max(0, price + totalChange);
+
+  // Update live Greek cards
+  document.getElementById('deltaLive').textContent = delta.toFixed(3);
+  document.getElementById('gammaLive').textContent = gamma.toFixed(3);
+  document.getElementById('thetaLive').textContent = theta.toFixed(3);
+  document.getElementById('vegaLive').textContent  = vega.toFixed(3);
+
+  // Result display
+  const resultEl  = document.getElementById('resultChange');
+  const newPriceEl = document.getElementById('newPrice');
+  const sign = totalChange >= 0 ? '+' : '';
+  resultEl.textContent = sign + '$' + totalChange.toFixed(2);
+  resultEl.className = 'result-value ' + (totalChange > 0.005 ? 'positive' : totalChange < -0.005 ? 'negative' : 'neutral');
+  newPriceEl.textContent = '$' + newPrice.toFixed(2);
+  newPriceEl.className = 'new-price ' + (totalChange > 0.005 ? 'positive' : totalChange < -0.005 ? 'negative' : '');
+
+  // Contribution bars
+  const contribs = [
+    { id: 'delta', val: deltaGain },
+    { id: 'gamma', val: gammaGain },
+    { id: 'vega',  val: vegaGain  },
+    { id: 'theta', val: thetaLoss }
+  ];
+  const maxAbs = Math.max(...contribs.map(c => Math.abs(c.val)), 0.001);
+  contribs.forEach(c => {
+    const el  = document.getElementById(c.id + 'Contrib');
+    const bar = document.getElementById(c.id + 'Bar');
+    const sign = c.val >= 0 ? '+' : '';
+    el.textContent = sign + '$' + c.val.toFixed(3);
+    bar.style.width = Math.min(100, (Math.abs(c.val) / maxAbs) * 100) + '%';
+    bar.className = 'bar-fill ' + (c.val >= 0 ? 'pos' : 'neg');
+  });
+
+  // Highlight dominant greek card
+  ['delta','gamma','theta','vega'].forEach(g => {
+    document.getElementById(g+'Card').classList.remove('active');
+  });
+  const dominant = contribs.reduce((a,b) => Math.abs(a.val) > Math.abs(b.val) ? a : b);
+  document.getElementById(dominant.id+'Card').classList.add('active');
+
+  // Formula
+  const fmtSign = v => (v >= 0 ? '+' : '') + '$' + v.toFixed(3);
+  const clsDelta = deltaGain >= 0 ? 'f-pos' : 'f-neg';
+  const clsGamma = gammaGain >= 0 ? 'f-pos' : 'f-neg';
+  const clsVega  = vegaGain  >= 0 ? 'f-pos' : 'f-neg';
+  const clsTheta = thetaLoss >= 0 ? 'f-pos' : 'f-neg';
+
+  document.getElementById('formulaDisplay').innerHTML =
+    `<span class="f-d">Δ</span>·S = ${delta.toFixed(3)} × ${stockMove >= 0 ? '+' : ''}${stockMove.toFixed(2)}  =  <span class="f-d ${clsDelta}">${fmtSign(deltaGain)}</span><br>` +
+    `<span class="f-g">½Γ</span>·S² = 0.5 × ${gamma.toFixed(3)} × ${stockMove.toFixed(2)}² =  <span class="f-g ${clsGamma}">${fmtSign(gammaGain)}</span><br>` +
+    `<span class="f-v">V</span>·Δσ = ${vega.toFixed(3)} × ${(ivMove*100).toFixed(1)}%  =  <span class="f-v ${clsVega}">${fmtSign(vegaGain)}</span><br>` +
+    `<span class="f-t">Θ</span>·t  = ${theta.toFixed(3)} × ${days}d  =  <span class="f-t ${clsTheta}">${fmtSign(thetaLoss)}</span><br>` +
+    `────────────────────────────<br>` +
+    `Total Δ Price  =  <span class="f-val">${sign}$${totalChange.toFixed(3)}</span>`;
+
+  // Timestamp
+  document.getElementById('timestamp').textContent =
+    'Oracle computed · ' + new Date().toLocaleTimeString();
+}
+
+// ── SCENARIO PRESETS ──
+function loadScenario(name) {
+  const s = {
+    atm:             { price:5.00, delta:0.50,  gamma:0.08, theta:-0.07, vega:0.15 },
+    deep:            { price:18.00, delta:0.90, gamma:0.01, theta:-0.03, vega:0.05 },
+    far:             { price:0.80, delta:0.10,  gamma:0.02, theta:-0.02, vega:0.08 },
+    highvega:        { price:6.50, delta:0.45,  gamma:0.06, theta:-0.04, vega:0.40 },
+    earningscrushed: { price:4.20, delta:0.48,  gamma:0.07, theta:-0.09, vega:0.25 }
+  };
+  const d = s[name];
+  document.getElementById('contractPrice').value = d.price;
+  document.getElementById('delta').value  = d.delta;
+  document.getElementById('gamma').value  = d.gamma;
+  document.getElementById('theta').value  = d.theta;
+  document.getElementById('vega').value   = d.vega;
+
+  // Reset sliders for earnings crush scenario
+  if (name === 'earningscrushed') {
+    document.getElementById('ivMove').value = -0.35;
+    document.getElementById('daysPassed').value = 1;
+  } else {
+    document.getElementById('ivMove').value = 0;
+    document.getElementById('daysPassed').value = 0;
+  }
+  document.getElementById('stockMove').value = 0;
+
+  // Pulse all panels
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.remove('pulse');
+    void p.offsetWidth;
+    p.classList.add('pulse');
+  });
+  calculate();
+}
+
+// ── EVENT LISTENERS ──
+document.querySelectorAll('input').forEach(el => {
+  el.addEventListener('input', calculate);
+});
+
+// Initial render
+calculate();
+</script>
+</body>
+</html>
