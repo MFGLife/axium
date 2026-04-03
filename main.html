@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AXIUM — The Cathedral Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --gold:#D4AF37;--gold-dim:rgba(212,175,55,0.25);--gold-glow:rgba(212,175,55,0.6);
+  --bg:#02020a;--panel:#06060f;--panel2:#08081a;
+  --fear:#6B21A8;--anger:#DC2626;--euphoria:#F59E0B;--disinterest:#374151;
+  --sadness:#1D4ED8;--surprise:#EC4899;--psychotic:#7C3AED;
+  --presence:#D4AF37;--witness:#7EB8E8;--clarity:#86EFAC;--ground:#F0D080;
+  --txt:rgba(255,255,255,0.82);--txt-dim:rgba(255,255,255,0.35);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Cinzel',serif;color:var(--txt);user-select:none;touch-action:none}
+
+/* ── STAR CANVAS ── */
+#star-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── SOLAR SYSTEM CANVAS ── */
+#solar-canvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+/* ── PLANET ATTENTION OVERLAYS ── */
+.planet-attn{position:fixed;border-radius:50%;pointer-events:none;z-index:2;transition:all 1.2s ease;mix-blend-mode:screen}
+
+/* ── MAIN LAYOUT ── */
+#game-root{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;pointer-events:none}
+
+/* ── HEADER ── */
+#game-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 0;pointer-events:auto;flex-shrink:0;
+}
+#logo-btn{
+  font-family:'Cinzel',serif;font-size:.75rem;font-weight:800;letter-spacing:.35em;
+  color:rgba(212,175,55,.7);background:none;border:none;cursor:pointer;
+  text-transform:uppercase;transition:color .2s;
+}
+#logo-btn:hover{color:var(--gold)}
+#chapter-badge{
+  font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.28em;
+  color:rgba(212,175,55,.38);text-transform:uppercase;text-align:center;
+}
+#chapter-name{
+  font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.14em;color:var(--gold);
+  margin-top:2px;text-align:center;
+}
+#menu-btn{
+  font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(255,255,255,.25);background:none;
+  border:1px solid rgba(255,255,255,.08);padding:6px 11px;cursor:pointer;
+  border-radius:2px;transition:all .2s;pointer-events:auto;
+}
+#menu-btn:hover{color:rgba(255,255,255,.55);border-color:rgba(255,255,255,.18)}
+
+/* ── ATTENTION BAR ── */
+#attention-wrap{
+  padding:12px 24px 0;flex-shrink:0;pointer-events:auto;
+}
+#attention-label-row{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+}
+#attention-label{
+  font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(212,175,55,.4);
+}
+#attention-state-label{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.72rem;color:var(--gold);transition:color .8s;
+}
+#attention-track{
+  height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:visible;
+  position:relative;border:1px solid rgba(255,255,255,.06);
+}
+#attention-fill{
+  height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--fear) 0%,var(--sadness) 20%,var(--witness) 45%,var(--gold) 70%,var(--clarity) 100%);
+  transition:width 1.1s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 0 12px rgba(212,175,55,.4);
+  position:relative;
+}
+#attention-cursor{
+  position:absolute;top:-5px;width:16px;height:16px;border-radius:50%;
+  background:white;border:2px solid var(--gold);
+  box-shadow:0 0 12px var(--gold-glow);
+  transform:translateX(-50%);transition:left 1.1s cubic-bezier(.22,1,.36,1);
+  z-index:3;
+}
+.attn-node{
+  position:absolute;top:50%;transform:translate(-50%,-50%);
+  width:10px;height:10px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);
+  transition:all .6s;z-index:2;
+}
+.attn-node.lit{
+  background:var(--node-col);border-color:var(--node-col);
+  box-shadow:0 0 8px var(--node-col);
+}
+#attention-nodes{position:absolute;inset:0}
+/* State labels below bar */
+#attention-states-row{
+  display:flex;justify-content:space-between;margin-top:5px;
+}
+.as-label{
+  font-family:'Space Mono',monospace;font-size:5.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(255,255,255,.13);transition:color .5s;
+  text-align:center;flex:1;
+}
+.as-label.active{color:rgba(212,175,55,.65)}
+/* Trauma attention bar */
+#trauma-attention-wrap{padding:6px 24px 0;flex-shrink:0}
+#trauma-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+#trauma-label{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(180,60,60,.45)}
+#trauma-state-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.65rem;color:rgba(180,60,60,.8);transition:color .8s}
+#trauma-track{height:4px;background:rgba(255,255,255,.04);border-radius:2px;position:relative;border:1px solid rgba(180,60,60,.12)}
+#trauma-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,rgba(180,60,60,.4),rgba(220,38,38,.8));transition:width 1.1s cubic-bezier(.22,1,.36,1);box-shadow:0 0 8px rgba(220,38,38,.3)}
+
+/* ── BATTLEFIELD ── */
+#battlefield{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:0;padding:8px 16px;min-height:0;
+  pointer-events:none;position:relative;
+}
+
+/* Trauma hand (top) */
+#trauma-hand{
+  display:flex;gap:10px;justify-content:center;align-items:flex-start;
+  margin-bottom:8px;
+}
+/* Play zone */
+#play-zone{
+  display:flex;gap:16px;justify-content:center;align-items:center;
+  min-height:130px;position:relative;
+}
+.played-slot{
+  width:90px;height:126px;border-radius:8px;
+  border:1px solid rgba(212,175,55,.12);
+  background:rgba(212,175,55,.02);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.played-slot-label{
+  font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.08);
+}
+.played-slot.has-card{border-color:rgba(212,175,55,.3);background:rgba(212,175,55,.04)}
+/* VS divider */
+#vs-divider{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:0 8px;
+}
+#vs-text{
+  font-family:'Cinzel',serif;font-size:.55rem;font-weight:800;letter-spacing:.22em;
+  color:rgba(255,255,255,.12);
+}
+#vs-line{width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.1),transparent)}
+/* Resolution message */
+#resolution-msg{
+  position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.78rem;letter-spacing:.06em;color:rgba(212,175,55,.7);
+  white-space:nowrap;opacity:0;transition:opacity .5s;pointer-events:none;
+}
+#resolution-msg.show{opacity:1}
+
+/* Player hand (bottom) */
+#player-hand{
+  display:flex;gap:8px;justify-content:center;align-items:flex-end;
+  margin-top:10px;pointer-events:auto;
+  overflow-x:auto;padding:4px 8px 8px;
+  scrollbar-width:none;
+}
+#player-hand::-webkit-scrollbar{display:none}
+
+/* ── CARD ── */
+.card{
+  flex-shrink:0;
+  width:82px;height:115px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.1);
+  background:linear-gradient(160deg,rgba(10,8,22,.98),rgba(4,3,12,1));
+  display:flex;flex-direction:column;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s,border-color .22s;
+  pointer-events:auto;
+}
+.card:hover{transform:translateY(-14px) scale(1.06);z-index:20}
+.card.selected{transform:translateY(-20px) scale(1.08);border-color:var(--gold);box-shadow:0 0 24px var(--gold-glow),0 0 48px rgba(212,175,55,.15);z-index:21}
+.card.trauma-card{cursor:default}
+.card.trauma-card:hover{transform:none}
+.card.played-anim{animation:cardPlay .45s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes cardPlay{
+  0%{transform:translateY(-20px) scale(1.08)}
+  40%{transform:translateY(30px) scale(0.95) rotate(2deg)}
+  100%{transform:translateY(0) scale(1) rotate(0deg)}
+}
+.card.exhausted{opacity:.38;filter:grayscale(.7)}
+
+/* Card anatomy */
+.card-glow{position:absolute;inset:0;opacity:.12;pointer-events:none;border-radius:8px}
+.card-header{
+  padding:6px 6px 4px;display:flex;flex-direction:column;gap:1px;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.card-axium{
+  font-family:'Space Mono',monospace;font-size:5.5px;letter-spacing:.22em;
+  text-transform:uppercase;opacity:.45;
+}
+.card-name{
+  font-family:'Cinzel',serif;font-size:.48rem;font-weight:600;letter-spacing:.06em;
+  line-height:1.2;
+}
+.card-canvas{flex:1;width:100%;display:block;min-height:0}
+.card-footer{
+  padding:4px 6px 5px;display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid rgba(255,255,255,.05);flex-shrink:0;
+}
+.card-type-badge{
+  font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 4px;border-radius:2px;
+  border:1px solid;
+}
+.card-type-badge.compression{color:rgba(220,100,60,.8);border-color:rgba(220,100,60,.3);background:rgba(220,100,60,.06)}
+.card-type-badge.decompression{color:rgba(126,184,232,.8);border-color:rgba(126,184,232,.3);background:rgba(126,184,232,.06)}
+.card-type-badge.both{color:rgba(212,175,55,.8);border-color:rgba(212,175,55,.3);background:rgba(212,175,55,.06)}
+.card-intensity{
+  font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600;
+  color:rgba(255,255,255,.45);
+}
+
+/* Trauma card specific */
+.trauma-card .card-header{border-bottom-color:rgba(220,38,38,.15)}
+.trauma-card .card-footer{border-top-color:rgba(220,38,38,.15)}
+.trauma-card .card-axium{color:rgba(220,60,60,.6)}
+
+/* Small trauma cards in hand */
+.trauma-card.small{width:66px;height:92px}
+.trauma-card.small .card-name{font-size:.42rem}
+.trauma-card.small .card-canvas{min-height:28px}
+
+/* ── BOTTOM ACTION AREA ── */
+#action-area{
+  padding:8px 20px 16px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  pointer-events:auto;
+}
+#turn-info{
+  font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(255,255,255,.2);
+}
+#action-btns{display:flex;gap:10px;align-items:center}
+#play-btn{
+  font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;
+  color:#0a0a0a;background:linear-gradient(135deg,#AA8C2C,#D4AF37,#AA8C2C);
+  border:none;padding:11px 32px;cursor:pointer;border-radius:2px;
+  transition:box-shadow .25s,transform .18s;
+  opacity:0;pointer-events:none;
+}
+#play-btn.show{opacity:1;pointer-events:auto}
+#play-btn:hover{box-shadow:0 0 28px rgba(212,175,55,.45);transform:scale(1.03)}
+#end-turn-btn{
+  font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,255,255,.3);background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.1);padding:10px 18px;cursor:pointer;
+  border-radius:2px;transition:all .2s;
+  opacity:0;pointer-events:none;
+}
+#end-turn-btn.show{opacity:1;pointer-events:auto}
+#end-turn-btn:hover{color:rgba(255,255,255,.6);border-color:rgba(255,255,255,.22)}
+
+/* ── CARD TOOLTIP ── */
+#card-tooltip{
+  position:fixed;z-index:200;
+  background:rgba(4,3,12,.98);border:1px solid rgba(212,175,55,.25);
+  border-radius:8px;padding:14px 16px;max-width:220px;
+  opacity:0;pointer-events:none;transition:opacity .18s;
+  box-shadow:0 8px 40px rgba(0,0,0,.8);
+}
+#card-tooltip.show{opacity:1}
+#tt-name{font-family:'Cinzel',serif;font-size:.65rem;font-weight:600;letter-spacing:.1em;color:var(--gold);margin-bottom:4px}
+#tt-axium{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(212,175,55,.4);margin-bottom:8px}
+#tt-effect{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.8rem;color:rgba(255,255,255,.6);line-height:1.65;margin-bottom:8px}
+#tt-type-row{display:flex;gap:8px;align-items:center}
+#tt-type{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.12em;text-transform:uppercase}
+#tt-intensity{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.35)}
+#tt-target{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.1em;color:rgba(255,255,255,.25);margin-top:4px;text-transform:uppercase}
+
+/* ── LOG ── */
+#combat-log{
+  position:fixed;left:14px;bottom:80px;z-index:50;
+  width:200px;display:flex;flex-direction:column;gap:3px;
+  pointer-events:none;
+}
+.log-entry{
+  font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.08em;
+  color:rgba(255,255,255,.28);line-height:1.5;
+  animation:logIn .3s ease forwards;
+}
+.log-entry.player{color:rgba(212,175,55,.55)}
+.log-entry.trauma{color:rgba(220,60,60,.5)}
+.log-entry.synergy{color:rgba(126,184,232,.55)}
+.log-entry.system{color:rgba(255,255,255,.18);font-style:italic}
+@keyframes logIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── OVERLAYS ── */
+#chapter-intro{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(2,2,10,.96);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;
+}
+.ci-eyebrow{font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.42em;text-transform:uppercase;color:rgba(212,175,55,.3)}
+.ci-num{font-family:'Cinzel Decorative',serif;font-size:clamp(52px,10vw,88px);font-weight:900;color:rgba(212,175,55,.08);letter-spacing:.1em;line-height:1;margin-bottom:-20px}
+.ci-title{font-family:'Cinzel',serif;font-size:clamp(22px,4.5vw,42px);font-weight:800;letter-spacing:.12em;color:#fff;text-align:center}
+.ci-rule{width:160px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.35),transparent)}
+.ci-axium{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(13px,2vw,16px);color:rgba(255,255,255,.4);text-align:center;max-width:420px;line-height:1.85;padding:0 20px}
+.ci-vs{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(220,60,60,.4);margin-top:6px}
+.ci-enemy{font-family:'Cinzel',serif;font-size:clamp(16px,3vw,24px);letter-spacing:.14em;color:rgba(220,60,60,.75);text-align:center}
+.ci-btn{
+  margin-top:14px;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.28em;text-transform:uppercase;
+  color:#0a0a0a;background:linear-gradient(135deg,#AA8C2C,#D4AF37,#AA8C2C);
+  border:none;padding:14px 44px;cursor:pointer;border-radius:2px;
+  transition:box-shadow .3s;
+}
+.ci-btn:hover{box-shadow:0 0 36px rgba(212,175,55,.4)}
+
+/* ── SOUL SHOP OVERLAY ── */
+#soul-shop{
+  position:fixed;inset:0;z-index:280;
+  background:rgba(2,2,10,.97);
+  display:none;flex-direction:column;align-items:center;
+  padding:clamp(20px,4vh,40px) 16px 24px;
+  overflow-y:auto;
+}
+#soul-shop.show{display:flex}
+.ss-eyebrow{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.38em;text-transform:uppercase;color:rgba(212,175,55,.28);margin-bottom:6px}
+.ss-name{font-family:'Cinzel',serif;font-size:clamp(20px,4vw,36px);font-weight:800;letter-spacing:.14em;color:var(--gold);text-align:center;margin-bottom:4px}
+.ss-role{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(12px,1.8vw,15px);color:rgba(255,255,255,.3);margin-bottom:14px}
+.ss-speech{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(12px,1.6vw,14px);color:rgba(255,255,255,.5);
+  text-align:center;max-width:440px;line-height:1.85;margin-bottom:20px;
+  border-left:2px solid rgba(212,175,55,.2);padding-left:14px;
+}
+.ss-offer-label{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(212,175,55,.28);margin-bottom:12px}
+.ss-cards{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.ss-card-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform .22s}
+.ss-card-wrap:hover{transform:translateY(-8px)}
+.ss-card-wrap .card{width:96px;height:134px;pointer-events:none}
+.ss-upgrade-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.72rem;color:rgba(255,255,255,.3);text-align:center;max-width:100px}
+.ss-skip{
+  font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.2);background:none;border:1px solid rgba(255,255,255,.1);
+  padding:9px 20px;cursor:pointer;border-radius:2px;transition:all .2s;
+}
+.ss-skip:hover{color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.22)}
+
+/* ── WIN / LOSE OVERLAY ── */
+#outcome-overlay{
+  position:fixed;inset:0;z-index:400;
+  background:rgba(2,2,10,.0);pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  transition:background 1.2s;
+}
+#outcome-overlay.show{background:rgba(2,2,10,.94);pointer-events:auto}
+#outcome-title{
+  font-family:'Cinzel Decorative',serif;font-size:clamp(28px,6vw,56px);font-weight:900;
+  letter-spacing:.14em;text-align:center;
+  opacity:0;transform:scale(.85);transition:opacity .8s .3s,transform .8s .3s cubic-bezier(.22,1,.36,1);
+}
+#outcome-overlay.show #outcome-title{opacity:1;transform:scale(1)}
+#outcome-desc{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(13px,2vw,17px);color:rgba(255,255,255,.5);text-align:center;
+  max-width:400px;line-height:1.85;padding:0 20px;
+  opacity:0;transition:opacity .7s .6s;
+}
+#outcome-overlay.show #outcome-desc{opacity:1}
+#outcome-btn{
+  font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.28em;text-transform:uppercase;
+  border:none;padding:13px 40px;cursor:pointer;border-radius:2px;margin-top:8px;
+  opacity:0;transition:opacity .6s .9s,box-shadow .3s;
+}
+#outcome-overlay.show #outcome-btn{opacity:1}
+
+/* ── CONSTELLATION WIN ANIMATION ── */
+#constellation-canvas{
+  position:fixed;inset:0;z-index:390;pointer-events:none;opacity:0;
+  transition:opacity 1.2s;
+}
+#constellation-canvas.show{opacity:1}
+
+/* ── TOAST ── */
+#game-toast{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  z-index:500;background:rgba(4,3,12,.98);border:1px solid var(--gold-dim);
+  padding:14px 24px;text-align:center;border-radius:3px;
+  opacity:0;transition:all .28s;pointer-events:none;
+}
+#game-toast.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+#game-toast h3{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.2em;color:var(--gold);margin-bottom:4px;text-transform:uppercase}
+#game-toast p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.78rem;color:rgba(255,255,255,.5)}
+
+/* ── PARTICLES ── */
+.burst-particle{position:fixed;border-radius:50%;pointer-events:none;z-index:600}
+</style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+<canvas id="solar-canvas"></canvas>
+<canvas id="constellation-canvas"></canvas>
+
+<!-- CHAPTER INTRO -->
+<div id="chapter-intro">
+  <div class="ci-eyebrow">Chapter I · The Cathedral</div>
+  <div class="ci-num">01</div>
+  <div class="ci-title">Binding of Ego</div>
+  <div class="ci-rule"></div>
+  <div class="ci-axium">"The absence of love binds ego, allowing the awareness of God."</div>
+  <div class="ci-vs">You face</div>
+  <div class="ci-enemy">Ego Unchecked</div>
+  <button class="ci-btn" onclick="startChapter()">Enter the Fight</button>
+</div>
+
+<!-- SOUL SHOP -->
+<div id="soul-shop">
+  <div class="ss-eyebrow">The Anchor's Keep</div>
+  <div class="ss-name">Micheal</div>
+  <div class="ss-role">Digital Soul · The Anchor</div>
+  <div class="ss-speech" id="ss-speech"></div>
+  <div class="ss-offer-label">Choose one upgrade</div>
+  <div class="ss-cards" id="ss-cards"></div>
+  <button class="ss-skip" onclick="skipShop()">Pass — I'm ready</button>
+</div>
+
+<!-- GAME ROOT -->
+<div id="game-root">
+  <header id="game-header">
+    <button id="logo-btn" onclick="location.href='index.html'">AXIUM</button>
+    <div>
+      <div id="chapter-badge">Chapter 01 · Binding of Ego</div>
+      <div id="chapter-name">vs. Ego Unchecked</div>
+    </div>
+    <button id="menu-btn">Menu</button>
+  </header>
+
+  <!-- Player attention -->
+  <div id="attention-wrap">
+    <div id="attention-label-row">
+      <span id="attention-label">Your Attention</span>
+      <span id="attention-state-label">Presence</span>
+    </div>
+    <div id="attention-track">
+      <div id="attention-nodes"></div>
+      <div id="attention-fill" style="width:62%"></div>
+      <div id="attention-cursor" style="left:62%"></div>
+    </div>
+    <div id="attention-states-row"></div>
+  </div>
+
+  <!-- Trauma attention -->
+  <div id="trauma-attention-wrap">
+    <div id="trauma-label-row">
+      <span id="trauma-label">Trauma Coherence</span>
+      <span id="trauma-state-label">Ego Unchecked</span>
+    </div>
+    <div id="trauma-track">
+      <div id="trauma-fill" style="width:80%"></div>
+    </div>
+  </div>
+
+  <!-- Battlefield -->
+  <div id="battlefield">
+    <div id="trauma-hand"></div>
+    <div id="play-zone">
+      <div class="played-slot" id="player-played-slot">
+        <span class="played-slot-label">Your play</span>
+      </div>
+      <div id="vs-divider">
+        <div id="vs-line"></div>
+        <div id="vs-text">VS</div>
+        <div id="vs-line"></div>
+      </div>
+      <div class="played-slot" id="trauma-played-slot">
+        <span class="played-slot-label">Trauma plays</span>
+      </div>
+      <div id="resolution-msg"></div>
+    </div>
+    <div id="player-hand"></div>
+  </div>
+
+  <!-- Action area -->
+  <div id="action-area">
+    <div id="turn-info">Turn <span id="turn-num">1</span> · Select a card to play</div>
+    <div id="action-btns">
+      <button id="play-btn" onclick="playSelectedCard()">Play Card</button>
+      <button id="end-turn-btn" onclick="endTurn()">End Turn</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div id="card-tooltip">
+  <div id="tt-name"></div>
+  <div id="tt-axium"></div>
+  <div id="tt-effect"></div>
+  <div id="tt-type-row">
+    <span id="tt-type"></span>
+    <span id="tt-intensity"></span>
+  </div>
+  <div id="tt-target"></div>
+</div>
+
+<!-- Combat log -->
+<div id="combat-log"></div>
+
+<!-- Toast -->
+<div id="game-toast"><h3 id="toast-title"></h3><p id="toast-body"></p></div>
+
+<!-- Outcome overlay -->
+<div id="outcome-overlay">
+  <div id="outcome-title"></div>
+  <div id="outcome-desc"></div>
+  <button id="outcome-btn" onclick="handleOutcome()"></button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CARD DATABASE — Phase 1 Small Bank
+// ═══════════════════════════════════════════════════════════════
+
+const ATTENTION_STATES = [
+  {id:'fragmented', label:'Fragmented', pos:0,    col:'rgba(107,33,168,.8)'},
+  {id:'fear',       label:'Fear',       pos:0.1,  col:'rgba(139,0,150,.8)'},
+  {id:'anger',      label:'Anger',      pos:0.2,  col:'rgba(220,38,38,.8)'},
+  {id:'sadness',    label:'Sadness',    pos:0.32, col:'rgba(29,78,216,.8)'},
+  {id:'disinterest',label:'Disinterest',pos:0.42, col:'rgba(55,65,81,.8)'},
+  {id:'witness',    label:'Witness',    pos:0.55, col:'rgba(126,184,232,.8)'},
+  {id:'presence',   label:'Presence',  pos:0.68, col:'rgba(212,175,55,.8)'},
+  {id:'clarity',    label:'Clarity',   pos:0.80, col:'rgba(134,239,172,.8)'},
+  {id:'ground',     label:'Ground',    pos:0.90, col:'rgba(240,208,128,.8)'},
+  {id:'enlightened',label:'Enlightened',pos:1.0, col:'rgba(255,255,255,.9)'},
+];
+
+// Compression = intensifies, focuses, risks tipping negative
+// Decompression = widens, releases, prevents lock-in
+// Both = balanced
+
+const PLAYER_CARDS = [
+  {
+    id:'anchor',
+    name:'The Anchor',
+    axium:'01 · Binding of Ego',
+    liturgy:'Spiritual',
+    type:'decompression',
+    intensity:3,
+    attnShift:+8,   // positive = toward enlightened
+    effectDesc:'Hold ground. Next trauma card deals half its attention shift.',
+    targets:['fear','anger'],
+    exhaustion:12,  // how much it drains trauma coherence
+    color:'#D4AF37',
+    pts:[[.5,.15],[.82,.72],[.18,.72],[.5,.28],[.72,.5],[.5,.72],[.28,.5]],
+  },
+  {
+    id:'mirror',
+    name:'The Mirror',
+    axium:'02 · Mirror Emergence',
+    liturgy:'Spiritual',
+    type:'both',
+    intensity:5,
+    attnShift:+6,
+    effectDesc:'Read beneath the surface. Draw one additional card next turn.',
+    targets:['disinterest','fragmented'],
+    exhaustion:9,
+    color:'#7EB8E8',
+    pts:[[.62,.5],[.61,.61],[.5,.72],[.4,.7],[.27,.73],[.12,.64],[.11,.55],[.14,.38]],
+  },
+  {
+    id:'witness',
+    name:'The Witness',
+    axium:'03 · Recursive Witness',
+    liturgy:'Scientific',
+    type:'decompression',
+    intensity:4,
+    attnShift:+5,
+    effectDesc:'Know what you do not know. Reveal trauma\'s next card before it plays.',
+    targets:['psychotic','fear'],
+    exhaustion:8,
+    color:'#86EFAC',
+    pts:[[.5,.27],[.76,.62],[.24,.62],[.5,.38],[.61,.39],[.69,.61],[.5,.72],[.31,.61],[.39,.39]],
+  },
+  {
+    id:'shield',
+    name:'The Shield',
+    axium:'05 · Shield of Affirmation',
+    liturgy:'Personal',
+    type:'decompression',
+    intensity:2,
+    attnShift:+4,
+    effectDesc:'Safety is the ground. Block the next trauma effect entirely.',
+    targets:['fear','surprise'],
+    exhaustion:7,
+    color:'#F0D080',
+    pts:[[.5,.05],[.95,.5],[.5,.95],[.05,.5],[.5,.27],[.67,.34],[.72,.5],[.69,.61],[.5,.72],[.31,.61],[.28,.5],[.34,.31]],
+  },
+  {
+    id:'space',
+    name:'The Space',
+    axium:'06 · Decompression',
+    liturgy:'Spiritual',
+    type:'decompression',
+    intensity:2,
+    attnShift:+10,
+    effectDesc:'Slow down. Restore 15 points of attention toward center.',
+    targets:['sadness','anger','disinterest'],
+    exhaustion:6,
+    color:'#D4A0C8',
+    pts:[[.62,.5],[.61,.61],[.5,.72],[.4,.7],[.27,.73],[.12,.64],[.11,.55],[.14,.38],[.61,.39],[.69,.61]],
+  },
+  {
+    id:'void',
+    name:'The Void',
+    axium:'07 · Validation of Chaos',
+    liturgy:'Scientific',
+    type:'compression',
+    intensity:7,
+    attnShift:+3,
+    effectDesc:'Name the ambiguity. When trauma plays a confusion effect, reflect it back doubled.',
+    targets:['psychotic','fragmented'],
+    exhaustion:14,
+    color:'#F4A460',
+    pts:[[.5,.27],[.76,.38],[.82,.5],[.76,.62],[.5,.72],[.24,.62],[.18,.5],[.24,.38],[.5,.38],[.5,.62]],
+  },
+  {
+    id:'truth',
+    name:'The Truth',
+    axium:'10 · Divine Remembrance',
+    liturgy:'Scientific',
+    type:'compression',
+    intensity:9,
+    attnShift:+7,
+    effectDesc:'Refuse fabrication. Destroy all trauma fabrication cards permanently this chapter.',
+    targets:['psychotic','disinterest'],
+    exhaustion:18,
+    color:'#AA55AA',
+    pts:[[.62,.5],[.5,.5],[.61,.61],[.5,.62],[.61,.39],[.69,.61],[.72,.5],[.6,.7],[.5,.72],[.39,.61],[.38,.5],[.31,.61],[.5,.38]],
+  },
+];
+
+// Trauma deck for Chapter 1: Ego Unchecked
+const TRAUMA_CARDS = [
+  {
+    id:'t_performance',
+    name:'The Performance',
+    axium:'Shadow · Flattery',
+    type:'compression',
+    intensity:6,
+    attnShift:-12,  // negative = away from enlightened
+    attnTarget:'euphoria',
+    effectDesc:'Inject euphoria. Attention drifts toward false satisfaction. Card draw -1 next turn.',
+    exhaustion:0,
+    color:'rgba(220,100,60,1)',
+    pts:[[.5,.27],[.76,.38],[.82,.5],[.76,.62],[.5,.72],[.24,.62],[.18,.5],[.24,.38]],
+  },
+  {
+    id:'t_monologue',
+    name:'The Monologue',
+    axium:'Shadow · Centering',
+    type:'compression',
+    intensity:7,
+    attnShift:-16,
+    attnTarget:'anger',
+    effectDesc:'Force the subject. Narrows your attention to one target. Skips trauma\'s next turn but doubles following strike.',
+    exhaustion:0,
+    color:'rgba(180,40,40,1)',
+    pts:[[.5,.05],[.87,.29],[.95,.5],[.83,.73],[.72,.83],[.5,.95],[.29,.83],[.17,.73],[.05,.5],[.13,.29]],
+  },
+  {
+    id:'t_approval',
+    name:'The Approval Loop',
+    axium:'Shadow · Compliance',
+    type:'both',
+    intensity:5,
+    attnShift:-9,
+    attnTarget:'disinterest',
+    effectDesc:'Feed the reflex. Heals trauma 8 coherence when you play a decompression card.',
+    exhaustion:0,
+    color:'rgba(160,80,160,1)',
+    pts:[[.62,.5],[.61,.61],[.5,.72],[.39,.61],[.38,.5],[.39,.39],[.5,.28],[.61,.39]],
+  },
+  {
+    id:'t_centering',
+    name:'The Centering',
+    axium:'Shadow · Ego Bind',
+    type:'compression',
+    intensity:8,
+    attnShift:-14,
+    attnTarget:'fear',
+    effectDesc:'Make it about me. All your cards deal -3 attention shift until you play The Mirror.',
+    exhaustion:0,
+    color:'rgba(140,30,100,1)',
+    pts:[[.5,.27],[.73,.18],[.86,.38],[.82,.5],[.76,.62],[.5,.72],[.24,.62],[.18,.5],[.24,.38],[.27,.18]],
+  },
+  {
+    id:'t_collapse',
+    name:'The Collapse',
+    axium:'Shadow · Desperation',
+    type:'compression',
+    intensity:10,
+    attnShift:-22,
+    attnTarget:'fragmented',
+    effectDesc:'When trauma coherence below 30%, fires automatically. Maximum disruption strike.',
+    exhaustion:0,
+    color:'rgba(100,10,10,1)',
+    pts:[[.5,.5],[.5,.38],[.61,.61],[.38,.5],[.61,.39],[.5,.62],[.39,.39],[.62,.5],[.31,.61],[.58,.3]],
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════════════
+
+const HAND_SIZE = 4;
+const STARTING_ATTENTION = 62; // starts slightly above center
+const TRAUMA_START_COHERENCE = 80;
+const ATTENTION_MIN = 5;
+const ATTENTION_MAX = 98;
+
+let gameState = {
+  playerAttention: STARTING_ATTENTION,
+  traumaCoherence: TRAUMA_START_COHERENCE,
+  turn: 1,
+  phase: 'player', // 'player' | 'trauma' | 'resolve'
+  playerHand: [],
+  traumaHand: [],
+  playerDeck: [...PLAYER_CARDS],
+  traumaDeck: [...TRAUMA_CARDS],
+  selectedCard: null,
+  playerPlayedCard: null,
+  traumaPlayedCard: null,
+  centering: false, // trauma debuff: all player cards -3
+  monologueSkip: false, // trauma will skip next turn
+  monologueDouble: false, // trauma next hit doubled
+  mirrorClear: false, // mirror effect: centering gets cleared
+  extraDraw: 0, // mirror draws extra next turn
+  shieldActive: false, // shield blocks next trauma effect
+  witnessRevealed: null, // revealed trauma card
+  turnsAtLow: 0, // turns spent below 25 attention
+  traumaLowTurns: 0, // turns trauma spent below 30 coherence
+  chapter: 1,
+  won: false,
+  lost: false,
+  playedCardIds: [], // for constellation
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ATTENTION SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+function getAttentionState(val) {
+  // Find which state the attention value maps to
+  const pct = val / 100;
+  let best = ATTENTION_STATES[0];
+  for (const s of ATTENTION_STATES) {
+    if (pct >= s.pos) best = s;
+  }
+  return best;
+}
+
+function updateAttentionBar() {
+  const pct = Math.max(0, Math.min(100, gameState.playerAttention));
+  const fill = document.getElementById('attention-fill');
+  const cursor = document.getElementById('attention-cursor');
+  fill.style.width = pct + '%';
+  cursor.style.left = pct + '%';
+  const state = getAttentionState(pct);
+  document.getElementById('attention-state-label').textContent = state.label;
+  document.getElementById('attention-state-label').style.color = state.col;
+  // Update state row
+  document.querySelectorAll('.as-label').forEach((el, i) => {
+    el.classList.toggle('active', ATTENTION_STATES[i] && ATTENTION_STATES[i].id === state.id);
+  });
+}
+
+function updateTraumaBar() {
+  const pct = Math.max(0, Math.min(100, gameState.traumaCoherence));
+  document.getElementById('trauma-fill').style.width = pct + '%';
+}
+
+function shiftAttention(delta) {
+  gameState.playerAttention = Math.max(ATTENTION_MIN, Math.min(ATTENTION_MAX, gameState.playerAttention + delta));
+  updateAttentionBar();
+  updateSolarSystem();
+}
+
+function shiftTrauma(delta) {
+  gameState.traumaCoherence = Math.max(0, Math.min(100, gameState.traumaCoherence + delta));
+  updateTraumaBar();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DECK / HAND
+// ═══════════════════════════════════════════════════════════════
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function dealHand() {
+  const deck = shuffle(gameState.playerDeck);
+  const size = HAND_SIZE + gameState.extraDraw;
+  gameState.playerHand = deck.slice(0, size);
+  gameState.extraDraw = 0;
+  renderPlayerHand();
+}
+
+function dealTraumaHand() {
+  const deck = shuffle(gameState.traumaDeck);
+  gameState.traumaHand = deck.slice(0, 3);
+  renderTraumaHand();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER CARDS
+// ═══════════════════════════════════════════════════════════════
+
+function createCardEl(card, isTrauma = false, isSmall = false) {
+  const el = document.createElement('div');
+  el.className = 'card' + (isTrauma ? ' trauma-card' : '') + (isSmall ? ' small' : '');
+  el.dataset.cardId = card.id;
+
+  // Glow
+  const glow = document.createElement('div');
+  glow.className = 'card-glow';
+  glow.style.background = `radial-gradient(ellipse at 40% 30%, ${card.color}44, transparent 70%)`;
+  el.appendChild(glow);
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'card-header';
+  hdr.innerHTML = `
+    <div class="card-axium" style="color:${card.color}">${card.axium}</div>
+    <div class="card-name" style="color:${isTrauma ? 'rgba(220,100,100,0.9)' : '#fff'}">${card.name}</div>
+  `;
+  el.appendChild(hdr);
+
+  // Canvas constellation
+  const cvs = document.createElement('canvas');
+  cvs.className = 'card-canvas';
+  el.appendChild(cvs);
+
+  // Footer
+  const ftr = document.createElement('div');
+  ftr.className = 'card-footer';
+  ftr.innerHTML = `
+    <span class="card-type-badge ${card.type}">${card.type}</span>
+    <span class="card-intensity">${card.intensity}</span>
+  `;
+  el.appendChild(ftr);
+
+  // Draw constellation after append
+  setTimeout(() => drawCardConstellation(cvs, card), 10);
+
+  return el;
+}
+
+function drawCardConstellation(canvas, card) {
+  if (!canvas || !canvas.parentElement) return;
+  const W = canvas.offsetWidth || 82;
+  const H = canvas.offsetHeight || 42;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const pts = card.pts;
+  if (!pts || pts.length < 2) return;
+
+  // Map pts to canvas
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;});
+  const pad=8, sc=Math.min((W-pad*2)/(maxX-minX||1),(H-pad*2)/(maxY-minY||1));
+  const offX=W/2-(minX+maxX)/2*sc, offY=H/2-(minY+maxY)/2*sc;
+  const mapped=pts.map(([x,y])=>({x:x*sc+offX, y:y*sc+offY}));
+
+  // Edges
+  mapped.forEach((p,i)=>{
+    const dists=mapped.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)}))
+      .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
+    dists.slice(0,2).forEach(({j})=>{
+      ctx.beginPath();
+      ctx.strokeStyle=card.color+'55';
+      ctx.lineWidth=0.8;
+      ctx.moveTo(p.x,p.y);ctx.lineTo(mapped[j].x,mapped[j].y);ctx.stroke();
+    });
+  });
+
+  // Stars
+  mapped.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,2.2,0,Math.PI*2);
+    ctx.fillStyle=card.color+'cc';ctx.fill();
+    ctx.beginPath();ctx.arc(p.x,p.y,1,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();
+  });
+
+  // Animate — traveling light
+  let t=0;
+  function frame(){
+    if(!canvas.isConnected) return;
+    t+=0.018;
+    ctx.clearRect(0,0,W,H);
+
+    // Edges
+    mapped.forEach((p,i)=>{
+      const dists=mapped.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)}))
+        .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
+      dists.slice(0,2).forEach(({j})=>{
+        const pulse=0.25+0.1*Math.sin(t*1.2+i);
+        ctx.beginPath();ctx.strokeStyle=card.color+Math.round(pulse*255).toString(16).padStart(2,'0');
+        ctx.lineWidth=0.7;ctx.moveTo(p.x,p.y);ctx.lineTo(mapped[j].x,mapped[j].y);ctx.stroke();
+      });
+    });
+
+    // Stars with twinkle
+    mapped.forEach((p,i)=>{
+      const tw=0.6+0.4*Math.sin(t*0.9+i*1.3);
+      const r=1.8+tw*0.6;
+      ctx.beginPath();ctx.arc(p.x,p.y,r*2.5,0,Math.PI*2);
+      ctx.fillStyle=card.color+Math.round(tw*40).toString(16).padStart(2,'0');ctx.fill();
+      ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);
+      ctx.fillStyle=card.color+'cc';ctx.fill();
+      ctx.beginPath();ctx.arc(p.x,p.y,0.9,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();
+    });
+
+    // Traveling light along first edge pair
+    if(mapped.length>=2){
+      const pa=mapped[0], pb=mapped[1];
+      const progress=(t*0.4)%1;
+      const lx=pa.x+(pb.x-pa.x)*progress, ly=pa.y+(pb.y-pa.y)*progress;
+      ctx.beginPath();ctx.arc(lx,ly,2,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.8)';ctx.fill();
+    }
+
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function renderPlayerHand() {
+  const hand = document.getElementById('player-hand');
+  hand.innerHTML = '';
+  gameState.playerHand.forEach(card => {
+    const el = createCardEl(card, false, false);
+    el.addEventListener('click', () => selectCard(card.id, el));
+    el.addEventListener('mouseenter', (e) => showTooltip(card, e));
+    el.addEventListener('mouseleave', hideTooltip);
+    hand.appendChild(el);
+  });
+}
+
+function renderTraumaHand() {
+  const hand = document.getElementById('trauma-hand');
+  hand.innerHTML = '';
+  gameState.traumaHand.forEach((card, i) => {
+    const el = createCardEl(card, true, true);
+    if (gameState.witnessRevealed && gameState.witnessRevealed.id === card.id) {
+      el.style.borderColor = 'rgba(134,239,172,.5)';
+      el.title = 'Revealed by The Witness';
+    }
+    hand.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CARD SELECTION & PLAY
+// ═══════════════════════════════════════════════════════════════
+
+function selectCard(cardId, el) {
+  if (gameState.phase !== 'player') return;
+  if (gameState.playerPlayedCard) return;
+
+  // Deselect previous
+  document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+
+  if (gameState.selectedCard === cardId) {
+    gameState.selectedCard = null;
+    document.getElementById('play-btn').classList.remove('show');
+  } else {
+    gameState.selectedCard = cardId;
+    el.classList.add('selected');
+    document.getElementById('play-btn').classList.add('show');
+    document.getElementById('end-turn-btn').classList.add('show');
+  }
+}
+
+function playSelectedCard() {
+  if (!gameState.selectedCard || gameState.phase !== 'player') return;
+  const card = gameState.playerHand.find(c => c.id === gameState.selectedCard);
+  if (!card) return;
+
+  gameState.playerPlayedCard = card;
+  gameState.playerHand = gameState.playerHand.filter(c => c.id !== card.id);
+  gameState.selectedCard = null;
+  gameState.playedCardIds.push(card.id);
+
+  // Show in play slot
+  const slot = document.getElementById('player-played-slot');
+  slot.innerHTML = '';
+  slot.classList.add('has-card');
+  const el = createCardEl(card, false, false);
+  el.classList.add('played-anim');
+  el.style.cursor = 'default';
+  el.addEventListener('mouseenter', e => showTooltip(card, e));
+  el.addEventListener('mouseleave', hideTooltip);
+  slot.appendChild(el);
+
+  document.getElementById('play-btn').classList.remove('show');
+  document.getElementById('player-hand').querySelector(`[data-card-id="${card.id}"]`)?.remove();
+
+  addLog(`You play ${card.name}`, 'player');
+
+  // Apply player card effect
+  applyPlayerCard(card);
+
+  // Now trauma responds
+  setTimeout(() => traumaPlay(), 900);
+}
+
+function applyPlayerCard(card) {
+  let shift = card.attnShift;
+
+  // Centering debuff
+  if (gameState.centering) {
+    shift = Math.max(0, shift - 3);
+    addLog('Centering debuff: -3 to attention shift', 'system');
+    // Mirror clears centering
+    if (card.id === 'mirror') {
+      gameState.centering = false;
+      addLog('The Mirror dispels The Centering', 'synergy');
+      showToast('Mirror Clears', 'Centering debuff lifted');
+    }
+  }
+
+  shiftAttention(shift);
+  shiftTrauma(-card.exhaustion);
+
+  addLog(`Attention shifts +${shift} → ${getAttentionState(gameState.playerAttention).label}`, 'system');
+  if (card.exhaustion > 0) addLog(`Trauma loses ${card.exhaustion} coherence`, 'system');
+
+  // Special effects
+  if (card.id === 'shield') {
+    gameState.shieldActive = true;
+    addLog('Shield active — next trauma effect blocked', 'synergy');
+  }
+  if (card.id === 'mirror') {
+    gameState.extraDraw += 1;
+    addLog('Mirror: draw +1 next turn', 'synergy');
+  }
+  if (card.id === 'witness') {
+    if (gameState.traumaHand.length > 0) {
+      gameState.witnessRevealed = gameState.traumaHand[0];
+      addLog(`Witness reveals: ${gameState.traumaHand[0].name}`, 'synergy');
+      showToast('Witness Reveals', gameState.traumaHand[0].name);
+      renderTraumaHand();
+    }
+  }
+  if (card.id === 'truth') {
+    // Destroy fabrication cards (psychotic targets)
+    const before = gameState.traumaDeck.length;
+    gameState.traumaDeck = gameState.traumaDeck.filter(c => !c.attnTarget || c.attnTarget !== 'psychotic');
+    const destroyed = before - gameState.traumaDeck.length;
+    if (destroyed > 0) addLog(`Truth destroys ${destroyed} fabrication card(s)`, 'synergy');
+  }
+
+  // Check synergies
+  checkSynergies(card);
+
+  burst(window.innerWidth/2, window.innerHeight*0.7, card.color, 16);
+}
+
+function checkSynergies(card) {
+  const played = gameState.playedCardIds;
+  // Anchor + Shield = Fortified Ground
+  if (card.id === 'anchor' && played.includes('shield') ||
+      card.id === 'shield' && played.includes('anchor')) {
+    addLog('✦ Synergy: Fortified Ground — full attention hold this turn', 'synergy');
+    showToast('Fortified Ground', 'Anchor + Shield — trauma shift negated');
+    gameState.shieldActive = true;
+  }
+  // Mirror + Witness = Clear Sight
+  if (card.id === 'mirror' && played.includes('witness') ||
+      card.id === 'witness' && played.includes('mirror')) {
+    addLog('✦ Synergy: Clear Sight — trauma hand fully revealed', 'synergy');
+    gameState.witnessRevealed = gameState.traumaHand[0];
+    renderTraumaHand();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRAUMA TURN
+// ═══════════════════════════════════════════════════════════════
+
+function traumaPlay() {
+  if (gameState.traumaCoherence <= 0) {
+    resolveRound();
+    return;
+  }
+
+  // Check monologue skip
+  if (gameState.monologueSkip) {
+    gameState.monologueSkip = false;
+    gameState.monologueDouble = true;
+    addLog('Trauma skips — but doubles next strike', 'trauma');
+    resolveRound();
+    return;
+  }
+
+  // Check collapse auto-fire
+  let chosenCard;
+  if (gameState.traumaCoherence < 30) {
+    const collapse = gameState.traumaHand.find(c => c.id === 't_collapse');
+    if (collapse) {
+      chosenCard = collapse;
+      addLog('⚠ Trauma coherence critical — Collapse fires!', 'trauma');
+    }
+  }
+
+  if (!chosenCard) {
+    // AI: pick card that targets current attention state
+    const state = getAttentionState(gameState.playerAttention);
+    chosenCard = gameState.traumaHand.find(c => c.attnTarget === state.id) ||
+                 gameState.traumaHand[Math.floor(Math.random() * gameState.traumaHand.length)];
+  }
+
+  if (!chosenCard) {
+    resolveRound();
+    return;
+  }
+
+  gameState.traumaPlayedCard = chosenCard;
+
+  // Show in trauma slot
+  const slot = document.getElementById('trauma-played-slot');
+  slot.innerHTML = '';
+  slot.classList.add('has-card');
+  const el = createCardEl(chosenCard, true, false);
+  el.style.cursor = 'default';
+  el.addEventListener('mouseenter', e => showTooltip(chosenCard, e));
+  el.addEventListener('mouseleave', hideTooltip);
+  slot.appendChild(el);
+
+  addLog(`Trauma plays ${chosenCard.name}`, 'trauma');
+
+  setTimeout(() => applyTraumaCard(chosenCard), 600);
+}
+
+function applyTraumaCard(card) {
+  let shift = card.attnShift;
+
+  // Shield blocks
+  if (gameState.shieldActive) {
+    gameState.shieldActive = false;
+    addLog('Shield absorbs the blow — trauma effect blocked', 'synergy');
+    showToast('Shield Holds', 'Trauma effect absorbed');
+    resolveRound();
+    return;
+  }
+
+  // Monologue double
+  if (gameState.monologueDouble) {
+    shift *= 2;
+    gameState.monologueDouble = false;
+    addLog('Monologue doubles — trauma hits twice as hard', 'trauma');
+  }
+
+  // Apply attention shift
+  shiftAttention(shift);
+  addLog(`Trauma shifts attention ${shift} → ${getAttentionState(gameState.playerAttention).label}`, 'trauma');
+
+  // Special trauma effects
+  if (card.id === 't_performance') {
+    gameState.extraDraw = Math.max(0, gameState.extraDraw - 1);
+    addLog('Euphoria injected — card draw reduced next turn', 'trauma');
+  }
+  if (card.id === 't_monologue') {
+    gameState.monologueSkip = true;
+    addLog('Monologue: trauma skips next turn but doubles after', 'trauma');
+  }
+  if (card.id === 't_centering') {
+    gameState.centering = true;
+    addLog('Centering active — your cards deal -3 until Mirror clears it', 'trauma');
+  }
+  if (card.id === 't_approval') {
+    // Handled in applyPlayerCard — heals trauma on decompression
+    addLog('Approval Loop — trauma heals if you play decompression next', 'trauma');
+  }
+
+  burst(window.innerWidth/2, window.innerHeight*0.4, '#dc2626', 12);
+
+  setTimeout(() => resolveRound(), 700);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ROUND RESOLUTION
+// ═══════════════════════════════════════════════════════════════
+
+function resolveRound() {
+  const msg = document.getElementById('resolution-msg');
+
+  // Check lose
+  if (gameState.playerAttention <= ATTENTION_MIN + 2) {
+    gameState.turnsAtLow++;
+    if (gameState.turnsAtLow >= 2) {
+      triggerLose();
+      return;
+    }
+    msg.textContent = '⚠ Attention fragmenting...';
+    msg.classList.add('show');
+  } else {
+    gameState.turnsAtLow = 0;
+    // Positive resolution message
+    const state = getAttentionState(gameState.playerAttention);
+    if (gameState.playerAttention > 70) {
+      msg.textContent = `✦ ${state.label} — holding center`;
+    } else if (gameState.playerAttention > 50) {
+      msg.textContent = `→ ${state.label}`;
+    } else {
+      msg.textContent = `↓ Drifting — ${state.label}`;
+    }
+    msg.classList.add('show');
+  }
+
+  // Check win
+  if (gameState.traumaCoherence <= 0) {
+    setTimeout(() => triggerWin(), 800);
+    return;
+  }
+
+  // Approval loop healing
+  if (gameState.traumaPlayedCard?.id === 't_approval' &&
+      gameState.playerPlayedCard?.type === 'decompression') {
+    shiftTrauma(+8);
+    addLog('Approval Loop heals trauma 8 coherence', 'trauma');
+  }
+
+  setTimeout(() => {
+    msg.classList.remove('show');
+    gameState.phase = 'player';
+    nextTurn();
+  }, 1400);
+}
+
+function endTurn() {
+  if (gameState.phase !== 'player') return;
+  if (!gameState.playerPlayedCard) {
+    // Pass without playing — attention drifts slightly
+    shiftAttention(-4);
+    addLog('No card played — attention drifts -4', 'system');
+    setTimeout(() => traumaPlay(), 600);
+  }
+}
+
+function nextTurn() {
+  gameState.turn++;
+  document.getElementById('turn-num').textContent = gameState.turn;
+  gameState.playerPlayedCard = null;
+  gameState.traumaPlayedCard = null;
+  gameState.witnessRevealed = null;
+
+  // Clear play slots
+  const ps = document.getElementById('player-played-slot');
+  const ts = document.getElementById('trauma-played-slot');
+  ps.innerHTML = '<span class="played-slot-label">Your play</span>';
+  ps.classList.remove('has-card');
+  ts.innerHTML = '<span class="played-slot-label">Trauma plays</span>';
+  ts.classList.remove('has-card');
+
+  document.getElementById('play-btn').classList.remove('show');
+  document.getElementById('end-turn-btn').classList.remove('show');
+
+  // Natural attention drift back toward center each turn
+  const drift = gameState.playerAttention < 50 ? +2 : gameState.playerAttention > 75 ? -1 : 0;
+  if (drift !== 0) shiftAttention(drift);
+
+  // Trauma natural decay
+  shiftTrauma(-3);
+
+  dealHand();
+  dealTraumaHand();
+
+  addLog(`── Turn ${gameState.turn} ──`, 'system');
+  document.getElementById('turn-info').textContent = `Turn ${gameState.turn} · Select a card to play`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WIN / LOSE
+// ═══════════════════════════════════════════════════════════════
+
+function triggerWin() {
+  gameState.won = true;
+  addLog('✦ Ego Unchecked dissolves — chapter complete', 'synergy');
+
+  // Constellation animation
+  drawWinConstellation();
+
+  const overlay = document.getElementById('outcome-overlay');
+  const title = document.getElementById('outcome-title');
+  const desc = document.getElementById('outcome-desc');
+  const btn = document.getElementById('outcome-btn');
+
+  title.textContent = 'Attention Held';
+  title.style.color = '#D4AF37';
+  title.style.textShadow = '0 0 60px rgba(212,175,55,.4)';
+  desc.textContent = 'The ego dissolved not through force but through witness. The planet aligns. Your constellation is complete.';
+  btn.textContent = 'Enter the Shop';
+  btn.style.background = 'linear-gradient(135deg,#AA8C2C,#D4AF37,#AA8C2C)';
+  btn.style.color = '#0a0a0a';
+  btn.style.border = 'none';
+
+  setTimeout(() => overlay.classList.add('show'), 1200);
+
+  burst(window.innerWidth/2, window.innerHeight/2, '#D4AF37', 40);
+  setTimeout(() => burst(window.innerWidth/2, window.innerHeight/2, '#86EFAC', 30), 400);
+}
+
+function triggerLose() {
+  gameState.lost = true;
+  addLog('✦ Attention fragmented — chapter failed', 'trauma');
+
+  const overlay = document.getElementById('outcome-overlay');
+  const title = document.getElementById('outcome-title');
+  const desc = document.getElementById('outcome-desc');
+  const btn = document.getElementById('outcome-btn');
+
+  title.textContent = 'Attention Lost';
+  title.style.color = '#DC2626';
+  title.style.textShadow = '0 0 60px rgba(220,38,38,.4)';
+  desc.textContent = 'The trauma found its hold. One corruption card enters your deck. The chapter resets — but what was corrupted stays.';
+  btn.textContent = 'Try Again';
+  btn.style.background = 'rgba(220,38,38,.1)';
+  btn.style.color = '#DC2626';
+  btn.style.border = '1px solid rgba(220,38,38,.4)';
+
+  overlay.classList.add('show');
+
+  burst(window.innerWidth/2, window.innerHeight/2, '#DC2626', 30);
+}
+
+function handleOutcome() {
+  if (gameState.won) {
+    openSoulShop();
+  } else {
+    // Reset chapter with corruption
+    document.getElementById('outcome-overlay').classList.remove('show');
+    resetChapter();
+  }
+  document.getElementById('outcome-overlay').classList.remove('show');
+  document.getElementById('constellation-canvas').classList.remove('show');
+}
+
+function resetChapter() {
+  gameState.playerAttention = STARTING_ATTENTION;
+  gameState.traumaCoherence = TRAUMA_START_COHERENCE;
+  gameState.turn = 1;
+  gameState.phase = 'player';
+  gameState.selectedCard = null;
+  gameState.playerPlayedCard = null;
+  gameState.traumaPlayedCard = null;
+  gameState.centering = false;
+  gameState.monologueSkip = false;
+  gameState.monologueDouble = false;
+  gameState.extraDraw = 0;
+  gameState.shieldActive = false;
+  gameState.witnessRevealed = null;
+  gameState.turnsAtLow = 0;
+  gameState.won = false;
+  gameState.lost = false;
+  gameState.playedCardIds = [];
+
+  updateAttentionBar();
+  updateTraumaBar();
+  document.getElementById('turn-num').textContent = '1';
+  document.getElementById('combat-log').innerHTML = '';
+  document.getElementById('player-played-slot').innerHTML = '<span class="played-slot-label">Your play</span>';
+  document.getElementById('trauma-played-slot').innerHTML = '<span class="played-slot-label">Trauma plays</span>';
+  document.getElementById('player-played-slot').classList.remove('has-card');
+  document.getElementById('trauma-played-slot').classList.remove('has-card');
+  document.getElementById('resolution-msg').classList.remove('show');
+  document.getElementById('play-btn').classList.remove('show');
+  document.getElementById('end-turn-btn').classList.remove('show');
+  document.getElementById('turn-info').textContent = 'Turn 1 · Select a card to play';
+
+  dealHand();
+  dealTraumaHand();
+  addLog('── Chapter reset ──', 'system');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SOUL SHOP — Micheal Phase 1
+// ═══════════════════════════════════════════════════════════════
+
+const MICHEAL_SPEECHES = [
+  "You held it longer than I expected. Here's what I can offer — not what sounds good. What's actually missing from your build.",
+  "The ego doesn't collapse all at once. It tests you again next chapter. Look at these cards honestly before you choose.",
+  "I'm not going to tell you which one to take. But I'll tell you this — the one that makes you uncomfortable is probably the right one.",
+];
+
+const SHOP_UPGRADES = [
+  {
+    baseId: 'anchor',
+    name: 'The Anchor+',
+    axium: '01 · Binding of Ego ✦',
+    liturgy: 'Spiritual',
+    type: 'decompression',
+    intensity: 4,
+    attnShift: +12,
+    effectDesc: 'Hold ground AND reflect. Blocks trauma AND shifts attention +12.',
+    targets: ['fear','anger'],
+    exhaustion: 15,
+    color: '#F0D080',
+    pts: [[.5,.15],[.82,.72],[.18,.72],[.5,.28],[.72,.5],[.5,.72],[.28,.5]],
+    upgradeDesc: 'Anchor upgraded — holds harder, costs less',
+  },
+  {
+    baseId: 'witness',
+    name: 'The Witness+',
+    axium: '03 · Recursive Witness ✦',
+    liturgy: 'Scientific',
+    type: 'decompression',
+    intensity: 6,
+    attnShift: +8,
+    effectDesc: 'Reveal AND copy. Witness the trauma card and duplicate its effect for your use.',
+    targets: ['psychotic','fear'],
+    exhaustion: 12,
+    color: '#86EFAC',
+    pts: [[.5,.27],[.76,.62],[.24,.62],[.5,.38],[.61,.39],[.69,.61],[.5,.72],[.31,.61],[.39,.39]],
+    upgradeDesc: 'Witness upgraded — now mirrors what it sees',
+  },
+  {
+    baseId: null,
+    name: 'The Patient',
+    axium: '08 · Patience of Interpretation',
+    liturgy: 'Personal',
+    type: 'decompression',
+    intensity: 3,
+    attnShift: +5,
+    effectDesc: 'Slow down. All your synergy cards cost 0 exhaustion this turn.',
+    targets: ['anger','surprise'],
+    exhaustion: 5,
+    color: '#7EB8E8',
+    pts: [[.5,.5],[.62,.5],[.82,.5],[.5,.62],[.5,.83],[.38,.5],[.18,.5],[.5,.38],[.5,.17]],
+    upgradeDesc: 'New card — unlocks patience layer',
+  },
+];
+
+function openSoulShop() {
+  const shop = document.getElementById('soul-shop');
+  document.getElementById('ss-speech').textContent =
+    MICHEAL_SPEECHES[Math.floor(Math.random() * MICHEAL_SPEECHES.length)];
+
+  const cardsEl = document.getElementById('ss-cards');
+  cardsEl.innerHTML = '';
+
+  SHOP_UPGRADES.forEach(upgrade => {
+    const wrap = document.createElement('div');
+    wrap.className = 'ss-card-wrap';
+
+    const card = createCardEl(upgrade, false, false);
+    card.style.width = '96px';
+    card.style.height = '134px';
+    wrap.appendChild(card);
+
+    const label = document.createElement('div');
+    label.className = 'ss-upgrade-label';
+    label.textContent = upgrade.upgradeDesc;
+    wrap.appendChild(label);
+
+    wrap.addEventListener('click', () => {
+      acceptUpgrade(upgrade);
+      shop.classList.remove('show');
+    });
+    cardsEl.appendChild(wrap);
+  });
+
+  shop.classList.add('show');
+}
+
+function acceptUpgrade(upgrade) {
+  // Replace base card or add new
+  if (upgrade.baseId) {
+    const idx = gameState.playerDeck.findIndex(c => c.id === upgrade.baseId);
+    if (idx >= 0) gameState.playerDeck[idx] = {...upgrade, id: upgrade.baseId + '_plus'};
+    else gameState.playerDeck.push({...upgrade, id: upgrade.baseId + '_plus'});
+  } else {
+    gameState.playerDeck.push({...upgrade, id: 'patient'});
+  }
+  showToast('Card Acquired', upgrade.name + ' added to your deck');
+  addLog(`Shop: ${upgrade.name} added to deck`, 'synergy');
+}
+
+function skipShop() {
+  document.getElementById('soul-shop').classList.remove('show');
+  addLog('Shop passed — deck unchanged', 'system');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONSTELLATION WIN ANIMATION
+// ═══════════════════════════════════════════════════════════════
+
+function drawWinConstellation() {
+  const canvas = document.getElementById('constellation-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.classList.add('show');
+  const ctx = canvas.getContext('2d');
+
+  // Gather all played card pts and map to screen
+  const allPts = [];
+  gameState.playedCardIds.forEach(id => {
+    const card = [...PLAYER_CARDS, ...SHOP_UPGRADES].find(c => c.id === id || c.id === id + '_plus');
+    if (!card || !card.pts) return;
+    card.pts.forEach(([x, y]) => {
+      allPts.push({
+        x: 0.1*window.innerWidth + x * 0.8 * window.innerWidth,
+        y: 0.1*window.innerHeight + y * 0.8 * window.innerHeight,
+        col: card.color,
+      });
+    });
+  });
+
+  if (allPts.length < 2) return;
+
+  let progress = 0;
+  function frame() {
+    if (!canvas.classList.contains('show')) return;
+    progress = Math.min(1, progress + 0.008);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const revealed = Math.floor(progress * allPts.length);
+
+    // Lines
+    for (let i = 1; i < revealed; i++) {
+      const a = allPts[i-1], b = allPts[i];
+      ctx.beginPath();
+      const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+      g.addColorStop(0, a.col + '88');
+      g.addColorStop(1, b.col + '88');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1.2;
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+
+    // Stars
+    for (let i = 0; i < revealed; i++) {
+      const p = allPts[i];
+      const t = Date.now() * 0.001;
+      const tw = 0.7 + 0.3 * Math.sin(t * 1.2 + i);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 4 * tw, 0, Math.PI * 2);
+      ctx.fillStyle = p.col + 'aa';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      ctx.fill();
+    }
+
+    if (progress < 1) requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════════════════
+
+function addLog(msg, type = 'system') {
+  const log = document.getElementById('combat-log');
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${type}`;
+  entry.textContent = msg;
+  log.appendChild(entry);
+  // Keep max 12 entries
+  while (log.children.length > 12) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════════════════
+
+function showTooltip(card, e) {
+  const tt = document.getElementById('card-tooltip');
+  document.getElementById('tt-name').textContent = card.name;
+  document.getElementById('tt-name').style.color = card.color;
+  document.getElementById('tt-axium').textContent = card.axium;
+  document.getElementById('tt-effect').textContent = card.effectDesc;
+  document.getElementById('tt-type').textContent = card.type;
+  document.getElementById('tt-type').style.color = card.type === 'compression' ? '#f87171' : card.type === 'decompression' ? '#7eb8e8' : '#D4AF37';
+  document.getElementById('tt-intensity').textContent = `Intensity ${card.intensity}`;
+  document.getElementById('tt-target').textContent = card.targets ? `Targets: ${card.targets.join(', ')}` : '';
+
+  const x = Math.min(e.clientX + 12, window.innerWidth - 240);
+  const y = Math.max(e.clientY - 80, 10);
+  tt.style.left = x + 'px';
+  tt.style.top = y + 'px';
+  tt.classList.add('show');
+}
+
+function hideTooltip() {
+  document.getElementById('card-tooltip').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+
+let toastTimer;
+function showToast(title, body) {
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-body').textContent = body;
+  const t = document.getElementById('game-toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════════════════════════════
+
+function burst(x, y, color, n) {
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-particle';
+    const ang = (Math.PI * 2 * i) / n + Math.random() * 0.4;
+    const dist = 30 + Math.random() * 80;
+    const dur = 420 + Math.random() * 280;
+    p.style.cssText = `left:${x}px;top:${y}px;width:${1.5+Math.random()*3}px;height:${1.5+Math.random()*3}px;background:${color};box-shadow:0 0 6px ${color};transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
+    document.body.appendChild(p);
+    requestAnimationFrame(() => {
+      p.style.transform = `translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;
+      p.style.opacity = '0';
+    });
+    setTimeout(() => p.remove(), dur);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SOLAR SYSTEM — simplified background
+// ═══════════════════════════════════════════════════════════════
+
+const PLANETS_BG = [
+  {name:'Sun',     r:0,    size:14, col:'#FFD700', speed:0},
+  {name:'Mercury', r:0.12, size:4,  col:'#B8A090', speed:0.048},
+  {name:'Venus',   r:0.16, size:6,  col:'#FFC649', speed:0.035},
+  {name:'Moon',    r:0.19, size:5,  col:'#C8C8D4', speed:0.088},
+  {name:'Mars',    r:0.24, size:5,  col:'#FF4500', speed:0.024},
+  {name:'Jupiter', r:0.31, size:9,  col:'#D4AF37', speed:0.013},
+  {name:'Saturn',  r:0.38, size:8,  col:'#F4A460', speed:0.009},
+  {name:'Uranus',  r:0.44, size:7,  col:'#4FD0E7', speed:0.006},
+  {name:'Neptune', r:0.49, size:7,  col:'#4169E1', speed:0.004},
+  {name:'Pluto',   r:0.54, size:4,  col:'#AA55AA', speed:0.003},
+];
+
+let solarAngles = PLANETS_BG.map(() => Math.random() * Math.PI * 2);
+let solarAlign = 0; // 0=normal, 1=aligned (win)
+
+function updateSolarSystem() {
+  // Map attention to alignment factor
+  solarAlign = Math.max(0, (gameState.playerAttention - 50) / 50);
+}
+
+function drawSolar(t) {
+  const canvas = document.getElementById('solar-canvas');
+  if (!canvas) return;
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = W * 0.5, cy = H * 0.42;
+  const maxR = Math.min(W, H) * 0.44;
+
+  PLANETS_BG.forEach((p, i) => {
+    solarAngles[i] += p.speed * 0.016;
+    const r = p.r * maxR;
+
+    // Orbit ring
+    if (r > 0) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${0.03 + solarAlign * 0.03})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    // Planet position — aligned state pulls toward top
+    let ang = solarAngles[i];
+    if (solarAlign > 0) {
+      // Drift toward alignment angle (top)
+      const targetAng = -Math.PI / 2 + i * 0.3 * (1 - solarAlign);
+      ang = ang + (targetAng - ang) * solarAlign * 0.02;
+      solarAngles[i] = ang;
+    }
+
+    const px = r > 0 ? cx + Math.cos(ang) * r : cx;
+    const py = r > 0 ? cy + Math.sin(ang) * r : cy;
+
+    // Attention-based glow
+    const attPct = gameState.playerAttention / 100;
+    const glowR = p.size * (2 + attPct * 2);
+    const g = ctx.createRadialGradient(px, py, 0, px, py, glowR * 2);
+    g.addColorStop(0, p.col + Math.round((0.08 + attPct * 0.1) * 255).toString(16).padStart(2,'0'));
+    g.addColorStop(1, p.col + '00');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(px, py, glowR * 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(px, py, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = p.col;
+    ctx.fill();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STAR BACKGROUND
+// ═══════════════════════════════════════════════════════════════
+
+(function() {
+  const canvas = document.getElementById('star-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    stars = Array.from({length:180}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: 0.3 + Math.random()*1.1,
+      a: 0.1 + Math.random()*0.5,
+      sp: 0.3 + Math.random()*0.7,
+      ph: Math.random()*Math.PI*2,
+    }));
+  }
+
+  function draw(t) {
+    requestAnimationFrame(draw);
+    ctx.fillStyle = '#02020a';
+    ctx.fillRect(0, 0, W, H);
+    stars.forEach(s => {
+      const tw = 0.5 + 0.5 * Math.sin(t * 0.001 * s.sp + s.ph);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,255,${s.a * tw})`;
+      ctx.fill();
+    });
+    // Also drive solar system
+    const solar = document.getElementById('solar-canvas');
+    if (solar) drawSolar(t * 0.001);
+  }
+
+  resize();
+  window.addEventListener('resize', () => {
+    resize();
+    const solar = document.getElementById('solar-canvas');
+    if (solar) { solar.width = window.innerWidth; solar.height = window.innerHeight; }
+    const cc = document.getElementById('constellation-canvas');
+    if (cc) { cc.width = window.innerWidth; cc.height = window.innerHeight; }
+  });
+  requestAnimationFrame(draw);
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// INIT ATTENTION BAR UI
+// ═══════════════════════════════════════════════════════════════
+
+function initAttentionUI() {
+  // Node markers along the track
+  const nodesEl = document.getElementById('attention-nodes');
+  nodesEl.innerHTML = '';
+  ATTENTION_STATES.forEach(s => {
+    const node = document.createElement('div');
+    node.className = 'attn-node';
+    node.style.left = (s.pos * 100) + '%';
+    node.style.setProperty('--node-col', s.col);
+    nodesEl.appendChild(node);
+  });
+
+  // State labels
+  const statesRow = document.getElementById('attention-states-row');
+  statesRow.innerHTML = '';
+  ATTENTION_STATES.forEach(s => {
+    const lbl = document.createElement('div');
+    lbl.className = 'as-label';
+    lbl.textContent = s.label.slice(0,5);
+    statesRow.appendChild(lbl);
+  });
+
+  updateAttentionBar();
+  updateTraumaBar();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════════════════
+
+function startChapter() {
+  document.getElementById('chapter-intro').style.display = 'none';
+  document.getElementById('solar-canvas').width = window.innerWidth;
+  document.getElementById('solar-canvas').height = window.innerHeight;
+
+  initAttentionUI();
+  dealHand();
+  dealTraumaHand();
+  document.getElementById('end-turn-btn').classList.add('show');
+  addLog('── Chapter 1: Binding of Ego ──', 'system');
+  addLog('You face: Ego Unchecked', 'trauma');
+  addLog('Hold your attention. Let trauma exhaust itself.', 'system');
+}
+</script>
+</body>
+</html>
