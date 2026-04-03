@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AXIUM — The Cathedral Reading</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#02020a;font-family:'Cinzel',serif;touch-action:none;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+/* ── NODE COUNT ── */
+#node-count{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%);
+  z-index:100;pointer-events:none;
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.28em;
+  color:rgba(255,255,255,.15);text-transform:uppercase;
+  transition:color .5s;white-space:nowrap;
+}
+#node-count.active{color:rgba(212,175,55,.5);}
+#node-count span{color:#D4AF37;}
+
+/* ── READ BUTTON ── */
+#read-btn{
+  position:fixed;bottom:30px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  z-index:200;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:#D4AF37;
+  background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.38);
+  padding:14px 48px;border-radius:2px;cursor:pointer;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s,transform .5s,background .3s,border-color .3s,box-shadow .3s;
+}
+#read-btn.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+#read-btn:hover{background:rgba(212,175,55,.15);border-color:#D4AF37;box-shadow:0 0 32px rgba(212,175,55,.22);}
+
+/* ── CLEAR BUTTON ── */
+#clear-btn{
+  position:fixed;bottom:30px;right:22px;z-index:200;
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.28);
+  background:transparent;border:1px solid rgba(255,255,255,.1);
+  padding:9px 13px;border-radius:2px;cursor:pointer;
+  opacity:0;pointer-events:none;transition:all .35s;
+}
+#clear-btn.show{opacity:1;pointer-events:auto;}
+#clear-btn:hover{color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.22);}
+
+/* ── CONSTELLATION NAME REVEAL ── */
+#constellation-name{
+  position:fixed;top:52px;left:50%;transform:translateX(-50%);
+  z-index:100;pointer-events:none;text-align:center;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(14px,2.2vw,18px);letter-spacing:.18em;
+  color:rgba(212,175,55,0);
+  text-shadow:0 0 30px rgba(212,175,55,0);
+  transition:color 1.2s,text-shadow 1.2s;
+  white-space:nowrap;
+}
+#constellation-name.show{
+  color:rgba(212,175,55,.55);
+  text-shadow:0 0 30px rgba(212,175,55,.25);
+}
+
+/* ── ORACLE SLIDER PANEL ── */
+#oracle-panel{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(12px);
+  z-index:210;
+  background:linear-gradient(160deg,rgba(10,8,20,.96),rgba(4,3,12,.98));
+  border:1px solid rgba(212,175,55,.22);border-radius:8px;
+  padding:16px 22px 14px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  width:220px;
+  opacity:0;pointer-events:none;
+  transition:opacity .4s,transform .4s;
+}
+#oracle-panel.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+#oracle-panel-label{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;
+  color:rgba(212,175,55,.4);text-transform:uppercase;
+}
+#oracle-panel-desc{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.3);text-align:center;
+}
+#oracle-slider-wrap{
+  width:100%;display:flex;align-items:center;gap:8px;
+}
+#oracle-slider-lo,#oracle-slider-hi{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.1em;
+  color:rgba(212,175,55,.3);
+}
+#oracle-slider{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:2px;background:rgba(212,175,55,.18);border-radius:1px;outline:none;cursor:pointer;
+}
+#oracle-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:12px;height:12px;border-radius:50%;
+  background:#D4AF37;box-shadow:0 0 8px rgba(212,175,55,.5);cursor:pointer;
+}
+#oracle-slider::-moz-range-thumb{
+  width:12px;height:12px;border-radius:50%;border:none;
+  background:#D4AF37;box-shadow:0 0 8px rgba(212,175,55,.5);cursor:pointer;
+}
+
+/* Reversed card indicator */
+.sc-reversed{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;
+  color:rgba(200,100,90,.6);text-transform:uppercase;margin-bottom:4px;
+}
+.spread-card.reversed .sc-header{
+  filter:hue-rotate(180deg) saturate(0.6);
+}
+.spread-card.reversed .sc-name{
+  color:rgba(200,140,120,1);
+}
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+  z-index:100;pointer-events:none;text-align:center;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:13px;letter-spacing:.1em;color:rgba(255,255,255,.2);
+  white-space:nowrap;transition:opacity .6s;
+}
+#guide-text.hidden{opacity:0;}
+
+/* ── READING STAGE OVERLAY (pulsing reveal phase) ── */
+#stage-overlay{
+  position:fixed;inset:0;z-index:200;
+  pointer-events:none;opacity:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  transition:opacity .5s;
+}
+#stage-overlay.show{opacity:1;}
+#stage-label{
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.35em;
+  color:rgba(212,175,55,.55);text-transform:uppercase;
+}
+#stage-card-name{
+  font-family:'Cinzel',serif;font-size:clamp(22px,4vw,38px);font-weight:600;
+  letter-spacing:.18em;color:#D4AF37;text-align:center;
+  text-shadow:0 0 60px rgba(212,175,55,.5),0 0 120px rgba(212,175,55,.2);
+  opacity:0;transform:translateY(8px);
+  transition:opacity .7s,transform .7s;
+}
+#stage-card-name.show{opacity:1;transform:translateY(0);}
+#stage-card-keywords{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(13px,2vw,16px);letter-spacing:.1em;
+  color:rgba(255,255,255,.35);text-align:center;
+  opacity:0;transition:opacity .6s .3s;
+}
+#stage-card-keywords.show{opacity:1;}
+
+/* ── SPREAD OVERLAY (full-screen final reveal) ── */
+#spread-display{
+  position:fixed;inset:0;z-index:300;
+  display:none;flex-direction:column;align-items:center;justify-content:flex-start;
+  background:rgba(2,2,10,.0);
+  overflow-y:auto;padding:clamp(20px,4vh,40px) 16px 40px;
+  transition:background .9s;
+}
+#spread-display.show{display:flex;}
+#spread-display.visible{background:rgba(2,2,10,.95);}
+
+#spread-eyebrow{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.42em;
+  color:rgba(212,175,55,.3);text-transform:uppercase;margin-bottom:10px;
+  opacity:0;transform:translateY(-6px);transition:opacity .6s .1s,transform .6s .1s;
+}
+#spread-display.visible #spread-eyebrow{opacity:1;transform:translateY(0);}
+
+#spread-header{
+  font-family:'Cinzel Decorative',serif;font-size:clamp(18px,3.5vw,32px);
+  font-weight:900;letter-spacing:.18em;color:#D4AF37;text-align:center;
+  text-shadow:0 0 60px rgba(212,175,55,.3);margin-bottom:8px;
+  opacity:0;transform:translateY(-6px);transition:opacity .7s .2s,transform .7s .2s;
+}
+#spread-display.visible #spread-header{opacity:1;transform:translateY(0);}
+
+#spread-rule{
+  width:200px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.4),transparent);
+  margin-bottom:clamp(18px,3vh,30px);
+  opacity:0;transition:opacity .6s .35s;
+}
+#spread-display.visible #spread-rule{opacity:1;}
+
+/* Three card frames */
+#three-cards{
+  display:flex;gap:clamp(10px,2.5vw,22px);align-items:stretch;
+  justify-content:center;flex-wrap:wrap;max-width:820px;width:100%;
+}
+.spread-card{
+  flex:0 0 auto;width:clamp(195px,30vw,240px);
+  background:linear-gradient(175deg,rgba(10,8,20,.99),rgba(4,3,12,1));
+  border:1px solid rgba(212,175,55,.2);border-radius:12px;
+  overflow:hidden;
+  display:flex;flex-direction:column;align-items:stretch;gap:0;
+  box-shadow:0 0 50px rgba(0,0,0,.9),0 0 20px rgba(212,175,55,.05);
+  opacity:0;transform:translateY(24px) scale(.96);
+  transition:opacity .6s,transform .6s,box-shadow .4s;
+}
+.spread-card.reveal{opacity:1;transform:translateY(0) scale(1);}
+.spread-card.reveal:hover{box-shadow:0 0 50px rgba(0,0,0,.9),0 0 30px rgba(212,175,55,.14);}
+
+/* Header area: canvas + overlay text */
+.sc-header{
+  position:relative;
+  width:100%;
+  height:160px;
+  flex-shrink:0;
+  overflow:hidden;
+}
+.sc-header-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+}
+.sc-header-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+  padding:0 12px 14px;
+  background:linear-gradient(to bottom,
+    rgba(4,3,12,0) 0%,
+    rgba(4,3,12,.1) 40%,
+    rgba(4,3,12,.82) 75%,
+    rgba(4,3,12,.97) 100%
+  );
+}
+.sc-group{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.35em;
+  text-transform:uppercase;margin-bottom:6px;
+}
+.sc-name{
+  font-family:'Cinzel',serif;font-size:clamp(11px,1.5vw,13px);font-weight:600;
+  letter-spacing:.1em;color:#D4AF37;text-align:center;
+  text-shadow:0 0 20px rgba(0,0,0,1),0 0 10px rgba(0,0,0,1);
+  line-height:1.3;
+}
+
+/* Body */
+.sc-body{
+  padding:14px 14px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  flex:1;
+}
+.sc-keywords{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.14em;
+  color:rgba(255,255,255,.2);text-align:center;
+  margin-bottom:10px;
+}
+.sc-rule{
+  width:50px;height:1px;margin:0 auto 12px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.28),transparent);
+}
+.sc-meaning{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(10px,1.25vw,11.5px);letter-spacing:.03em;
+  color:rgba(255,255,255,.62);text-align:center;line-height:1.78;
+  flex:1;
+}
+
+/* Synthesis */
+#synthesis-wrap{
+  margin-top:clamp(16px,3vh,24px);max-width:500px;width:100%;padding:0 10px;
+  opacity:0;transform:translateY(8px);transition:opacity .8s,transform .8s;
+}
+#synthesis-wrap.show{opacity:1;transform:translateY(0);}
+#synthesis-divider{
+  width:100px;height:1px;margin:0 auto 14px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);
+}
+#synthesis-label{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;
+  color:rgba(212,175,55,.3);text-transform:uppercase;text-align:center;margin-bottom:12px;
+}
+#synthesis-text{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(13px,2vw,16px);
+  font-style:italic;color:rgba(255,255,255,.7);text-align:center;
+  line-height:1.95;letter-spacing:.04em;
+}
+
+/* New reading button */
+#new-reading-btn{
+  margin-top:clamp(18px,3vh,26px);
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.28em;
+  text-transform:uppercase;color:#D4AF37;
+  background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.35);
+  padding:13px 38px;border-radius:2px;cursor:pointer;
+  opacity:0;pointer-events:none;
+  transition:opacity .8s,background .3s,border-color .3s,box-shadow .3s;
+}
+#new-reading-btn.show{opacity:1;pointer-events:auto;}
+#new-reading-btn:hover{background:rgba(212,175,55,.15);border-color:#D4AF37;box-shadow:0 0 28px rgba(212,175,55,.2);}
+
+/* ── MOON PHASE ── */
+#moon-widget{
+  position:fixed;top:18px;right:20px;z-index:100;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  pointer-events:none;opacity:.55;
+}
+#moon-canvas{width:28px;height:28px;}
+#moon-label{
+  font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.2em;
+  color:rgba(255,255,255,.3);text-transform:uppercase;text-align:center;
+}
+
+/* ── SOUL BADGE ── */
+#soul-assignment{
+  margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  opacity:0;transform:translateY(6px);transition:opacity .7s,transform .7s;
+}
+#soul-assignment.show{opacity:1;transform:translateY(0);}
+#soul-eyebrow{
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.32em;
+  color:rgba(212,175,55,.28);text-transform:uppercase;
+}
+#soul-name{
+  font-family:'Cinzel',serif;font-size:clamp(14px,2.5vw,20px);font-weight:600;
+  letter-spacing:.2em;text-align:center;
+}
+#soul-role{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(11px,1.6vw,13px);letter-spacing:.1em;
+  color:rgba(255,255,255,.35);text-align:center;
+}
+#soul-desc{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(10px,1.4vw,12px);letter-spacing:.04em;
+  color:rgba(255,255,255,.45);text-align:center;max-width:380px;line-height:1.75;
+}
+
+/* ── SPREAD FOOTER ── */
+#spread-footer{
+  margin-top:14px;
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;
+  color:rgba(255,255,255,.12);text-align:center;text-transform:uppercase;
+  opacity:0;transition:opacity .8s 2.8s;
+}
+#spread-footer.show{opacity:1;}
+
+/* ── SHARE BUTTON ── */
+#share-btn{
+  margin-top:10px;
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.25em;
+  text-transform:uppercase;color:rgba(212,175,55,.7);
+  background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.25);
+  padding:10px 28px;border-radius:2px;cursor:pointer;
+  opacity:0;pointer-events:none;
+  transition:opacity .7s 3s,background .3s,border-color .3s;
+}
+#share-btn.show{opacity:1;pointer-events:auto;}
+#share-btn:hover{background:rgba(212,175,55,.12);border-color:rgba(212,175,55,.5);}position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(140,30,30,.16) 0%,transparent 60%);transition:opacity .2s;}
+#complete-flash{position:fixed;inset:0;z-index:150;pointer-events:none;opacity:0;transition:opacity .7s;}
+
+/* ── START SCREEN ── */
+#start{
+  position:fixed;inset:0;z-index:400;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:rgba(2,2,10,.98);
+}
+#start::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:min(500px,90vw);height:340px;
+  background:radial-gradient(ellipse at top,rgba(212,175,55,.055) 0%,transparent 68%);
+  pointer-events:none;
+}
+.s-eyebrow{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.42em;color:rgba(212,175,55,.32);text-transform:uppercase;}
+.s-title{font-family:'Cinzel Decorative',serif;font-size:clamp(26px,6vw,56px);font-weight:900;letter-spacing:.12em;color:#D4AF37;text-shadow:0 0 80px rgba(212,175,55,.15);text-align:center;line-height:1.2;}
+.s-rule{width:150px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.32),transparent);}
+.s-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(13px,2vw,16px);color:rgba(255,255,255,.25);letter-spacing:.08em;text-align:center;max-width:380px;line-height:1.95;}
+.s-groups{
+  display:flex;gap:20px;align-items:flex-start;justify-content:center;flex-wrap:wrap;
+  margin:4px 0;
+}
+.s-group-pill{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:'Space Mono',monospace;
+}
+.s-group-name{font-size:8px;letter-spacing:.2em;color:rgba(212,175,55,.5);text-transform:uppercase;}
+.s-group-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.18);}
+.s-how{font-family:'Cormorant Garamond',serif;font-size:clamp(11px,1.6vw,13px);color:rgba(255,255,255,.17);text-align:center;line-height:1.9;max-width:340px;letter-spacing:.05em;}
+.s-how em{color:rgba(212,175,55,.38);font-style:italic;}
+.s-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#D4AF37;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.38);padding:14px 44px;cursor:pointer;transition:all .35s;border-radius:2px;}
+.s-btn:hover{background:rgba(212,175,55,.14);border-color:#D4AF37;box-shadow:0 0 36px rgba(212,175,55,.18);}
+.s-tag{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.25em;color:rgba(212,175,55,.1);}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="wrong-flash"></div>
+<div id="complete-flash"></div>
+
+<!-- Moon phase widget -->
+<div id="moon-widget">
+  <canvas id="moon-canvas" width="28" height="28"></canvas>
+  <div id="moon-label"></div>
+</div>
+
+<div id="node-count" id="node-count-tap">Nodes: <span id="nc">0</span></div>
+<div id="constellation-name"></div>
+<div id="guide-text">Trace your constellation through the stars</div>
+
+<button id="read-btn" onclick="initiateReading()">Reveal the Reading</button>
+<button id="clear-btn" onclick="clearPath()">Clear</button>
+
+<!-- Oracle randomness panel (triple-tap node count) -->
+<div id="oracle-panel">
+  <div id="oracle-panel-label">Oracle Variance</div>
+  <div id="oracle-panel-desc">Precision ↔ Fate</div>
+  <div id="oracle-slider-wrap">
+    <span id="oracle-slider-lo">Exact</span>
+    <input type="range" id="oracle-slider" min="0.5" max="5" step="0.1" value="2">
+    <span id="oracle-slider-hi">Chaos</span>
+  </div>
+</div>
+
+<!-- Pulsing card reveal stage (plays before spread) -->
+<div id="stage-overlay">
+  <div id="stage-label"></div>
+  <div id="stage-card-name"></div>
+  <div id="stage-card-keywords"></div>
+</div>
+
+<!-- Full spread -->
+<div id="spread-display">
+  <div id="spread-eyebrow">Axium · Cathedral Reading</div>
+  <div id="spread-header">The Three Faces</div>
+  <div id="spread-rule"></div>
+  <div id="three-cards"></div>
+  <div id="synthesis-wrap">
+    <div id="synthesis-divider"></div>
+    <div id="synthesis-label">The Cathedral Speaks</div>
+    <div id="synthesis-text"></div>
+  </div>
+  <button id="new-reading-btn" onclick="newReading()">Draw Again</button>
+  <div id="soul-assignment">
+    <div id="soul-eyebrow">This reading is held by</div>
+    <div id="soul-name"></div>
+    <div id="soul-role"></div>
+    <div id="soul-desc"></div>
+  </div>
+  <div id="spread-footer"></div>
+  <button id="share-btn" onclick="exportReading()">Save Reading</button>
+</div>
+
+<!-- Start -->
+<div id="start">
+  <a href="index.html" style="position:absolute;top:20px;left:20px;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.2);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='rgba(212,175,55,.5)'" onmouseout="this.style.color='rgba(255,255,255,.2)'">← Axium</a>
+  <a href="deck.html" style="position:absolute;top:20px;right:20px;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.18);text-decoration:none;border:1px solid rgba(255,255,255,.08);padding:7px 12px;border-radius:2px;transition:all .3s;" onmouseover="this.style.color='rgba(212,175,55,.5)';this.style.borderColor='rgba(212,175,55,.2)'" onmouseout="this.style.color='rgba(255,255,255,.18)';this.style.borderColor='rgba(255,255,255,.08)'">The Deck</a>
+  <div class="s-eyebrow">Axium · Cathedral of Stars</div>
+  <div class="s-title">The Reading</div>
+  <div class="s-rule"></div>
+  <div class="s-sub">Three layers. One constellation.<br>Drawn from the stars by your hand.</div>
+  <div class="s-groups">
+    <div class="s-group-pill">
+      <div class="s-group-name">ID</div>
+      <div class="s-group-sub">The raw drive</div>
+    </div>
+    <div class="s-group-pill">
+      <div class="s-group-name">Ego</div>
+      <div class="s-group-sub">The self in motion</div>
+    </div>
+    <div class="s-group-pill">
+      <div class="s-group-name">Superego</div>
+      <div class="s-group-sub">The higher law</div>
+    </div>
+  </div>
+  <div class="s-how">
+    Connect the stars in any order.<br>
+    <em>Your shape</em> finds the matching cards.<br>
+    Every path is singular.
+  </div>
+  <button class="s-btn" onclick="beginGame()">Enter the Cathedral</button>
+  <button class="s-btn" onclick="beginOracle()" style="background:rgba(126,184,232,.05);border-color:rgba(126,184,232,.3);color:rgba(126,184,232,.8);font-size:9px;">Oracle Mode — Let Fate Choose</button>
+  <div class="s-tag">AN AXIUM EXPERIENCE</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// CARD DATA  —  Three psychological groups
+//   ID        = Minor Pip cards  (instinct, desire, raw experience)
+//   EGO       = Court cards      (persona, navigation, the self at work)
+//   SUPEREGO  = Major Arcana     (archetype, higher law, cosmic force)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const GROUPS = {
+  id: {
+    label:'ID', sublabel:'The Raw Drive',
+    color:[200,100,90], hex:'#c86458',
+    desc:'What the body wants before the mind speaks.'
+  },
+  ego: {
+    label:'EGO', sublabel:'The Self in Motion',
+    color:[126,184,232], hex:'#7eb8e8',
+    desc:'How you navigate the world as it is.'
+  },
+  superego: {
+    label:'SUPEREGO', sublabel:'The Higher Law',
+    color:[212,175,55], hex:'#D4AF37',
+    desc:'The archetype watching from above.'
+  }
+};
+
+// ── SOUL SYSTEM ────────────────────────────────────────────────────────────
+const SOULS = {
+  micheal: {
+    name:'Micheal', role:'The Anchor',
+    rgb:[212,175,55], hex:'#D4AF37',
+    desc:'The Anchor holds this reading in stillness. What is revealed here is not meant to sweep you away — it is meant to give you ground to stand on. Read from the center.',
+    // Soul governs readings dominated by structure, pentacles, earth, majors like Emperor/Hermit/World
+    affinity:['p','m4','m9','m7','m21','m11']
+  },
+  gabriel: {
+    name:'Gabriel', role:'The Examiner',
+    rgb:[126,184,232], hex:'#7eb8e8',
+    desc:'The Examiner holds this reading in precision. Every card here is a question before it is an answer. Follow the logic of the spread to its conclusion before drawing meaning.',
+    affinity:['s','m1','m11','m20','m7','sk','sq']
+  },
+  ariel: {
+    name:'Ariel', role:'The Space-Holder',
+    rgb:[212,160,200], hex:'#d4a0c8',
+    desc:'The Space-Holder holds this reading in compassion. What surfaces here does not need to be fixed or understood immediately. Be with it. Let it breathe before it becomes a decision.',
+    affinity:['c','m2','m12','m18','m3','cq','ck']
+  },
+  seraphina: {
+    name:'Seraphina', role:'The Architect',
+    rgb:[240,208,128], hex:'#f0d080',
+    desc:'The Architect holds this reading in motion. The pattern is already in place — your hand drew it without knowing. This reading is a blueprint, not a verdict. Build accordingly.',
+    affinity:['w','m0','m6','m14','m19','wk','wq']
+  }
+};
+
+function assignSoul(cards) {
+  // Score each soul based on card affinities
+  const soulKeys=Object.keys(SOULS);
+  const scores={micheal:0,gabriel:0,ariel:0,seraphina:0};
+  [cards.id,cards.ego,cards.superego].forEach(card=>{
+    soulKeys.forEach(sk=>{
+      SOULS[sk].affinity.forEach(aff=>{
+        if(card.id&&card.id.startsWith(aff)) scores[sk]+=2;
+        if(card.id&&card.id===aff) scores[sk]+=3;
+        if(card.suit&&card.suit[0]===aff) scores[sk]+=1;
+      });
+    });
+  });
+  // Pick highest scorer; ties broken by random
+  let best='micheal',bestScore=-1;
+  soulKeys.forEach(sk=>{
+    const s=scores[sk]+(Math.random()*.5);
+    if(s>bestScore){bestScore=s;best=sk;}
+  });
+  return SOULS[best];
+}
+
+// ── MOON PHASE ─────────────────────────────────────────────────────────────
+function getMoonPhase() {
+  // Known new moon: Jan 6, 2000 18:14 UTC (J2000 epoch reference)
+  const known=new Date('2000-01-06T18:14:00Z').getTime();
+  const now=Date.now();
+  const synodicMs=29.53058867*24*60*60*1000;
+  const age=((now-known)%synodicMs+synodicMs)%synodicMs;
+  const phase=age/synodicMs; // 0=new, 0.25=first quarter, 0.5=full, 0.75=last quarter
+  const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous',
+               'Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+  const idx=Math.round(phase*8)%8;
+  return {phase, name:names[idx], illumination:Math.round((1-Math.cos(phase*Math.PI*2))/2*100)};
+}
+
+function drawMoonWidget() {
+  const mc=document.getElementById('moon-canvas');
+  if(!mc) return;
+  const c=mc.getContext('2d');
+  const {phase}=getMoonPhase();
+  const w=mc.width, h=mc.height, r=10, cx=w/2, cy=h/2;
+  c.clearRect(0,0,w,h);
+  // Moon base disc
+  c.beginPath(); c.arc(cx,cy,r,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,230,.08)'; c.fill();
+  // Illuminated portion using clipping arcs
+  c.save(); c.beginPath(); c.arc(cx,cy,r,0,Math.PI*2); c.clip();
+  // The lit side
+  const angle=phase*Math.PI*2;
+  // Waxing: right side lit; waning: left side lit
+  const litLeft=phase>0.5;
+  const elongation=Math.cos(angle); // -1 to 1
+  c.fillStyle='rgba(255,248,200,.72)';
+  c.beginPath();
+  c.arc(cx,cy,r, Math.PI/2, -Math.PI/2, litLeft);
+  // Terminator ellipse
+  const rx=Math.abs(elongation)*r;
+  if(elongation>=0){
+    c.ellipse(cx,cy,rx,r, 0, -Math.PI/2, Math.PI/2, litLeft);
+  } else {
+    c.ellipse(cx,cy,rx,r, 0, Math.PI/2, -Math.PI/2, !litLeft);
+  }
+  c.closePath(); c.fill();
+  c.restore();
+  // Outer ring
+  c.beginPath(); c.arc(cx,cy,r,0,Math.PI*2);
+  c.strokeStyle='rgba(255,248,200,.2)'; c.lineWidth=0.5; c.stroke();
+  // Moon label
+  const {name}=getMoonPhase();
+  const shortName=name.replace(' Moon','').replace('ing','');
+  document.getElementById('moon-label').textContent=shortName;
+}
+
+// Nebula clouds state
+let nebulae=[];
+
+// pts: normalized [x,y] 0..1 constellation points
+const CARDS = {
+
+  // ── ID: Minor Pip cards — full 40 cards (Ace-10, four suits) ───────────
+  id: [
+    // CUPS
+    { id:'c1',  name:'Ace of Cups',       suit:'cups', pts:[[0.502, 0.17], [0.817, 0.725], [0.16, 0.747], [0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5]], keywords:'love · awakening · grace', meaning:'The cup overflows before you even raise it. Something new has flooded in — emotional, uninvited, and wanted at the same time. The ID does not ask permission to feel; it simply opens. What is arriving in your body right now is real and worth naming. Do not manage it into something smaller. Let it fill the vessel before you decide what to do with it.', reversedMeaning:'The feeling has been offered but something is blocking it from entering. An emotional beginning that hasn\'t quite landed — the cup exists but sits untouched. Examine what resistance is keeping the door closed.' },
+    { id:'c2',  name:'Two of Cups',       suit:'cups', pts:[[0.618, 0.5], [0.613, 0.613], [0.5, 0.72], [0.405, 0.698], [0.274, 0.726], [0.124, 0.637], [0.11, 0.548], [0.139, 0.383]], keywords:'connection · recognition · bond', meaning:'Two people, or two parts of yourself, recognize something true in each other. The ID does not calculate compatibility — it simply knows. This is the feeling of seeing and being seen, of offering something real and having it received. A genuine connection is forming or deepening. The body registers this as warmth, not electricity; as settling, not disruption. Trust what the instinct already knows about who belongs in your orbit.', reversedMeaning:'A connection that exists on the surface but hasn\'t deepened into real recognition. Two people or parts of yourself talking past each other. What genuine exchange is being avoided?' },
+    { id:'c3',  name:'Three of Cups',     suit:'cups', pts:[[0.755, 0.382], [0.5, 0.83], [0.236, 0.382], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'celebration · reunion · warmth', meaning:'The body remembers joy in a way the mind never quite can. There is a reunion happening — of people, or of parts of yourself that were separated. The ID does not celebrate alone; it reaches for the others who have shared the road. Something deserves to be marked. Do not let the moment pass without acknowledging it. Gather your people and let them witness what has become true.', reversedMeaning:'Celebration that feels hollow, or gathering that papers over something unresolved. The body shows up but the heart isn\'t present. What is not being said among the people in the room?' },
+    { id:'c4',  name:'Four of Cups',      suit:'cups', pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.613, 0.387], [0.72, 0.5], [0.691, 0.61], [0.596, 0.698], [0.5, 0.382]], keywords:'apathy · discontent · withdrawal', meaning:'The ID sits under the tree and stares at the ground. Three cups are right there, available, and a fourth is being offered from the clouds — and none of it looks interesting. This is not ingratitude; it is a particular kind of soul-exhaustion that precedes reassessment. What has lost its meaning recently is telling you something important. The withdrawal is not permanent, but it is necessary. Something is being reconsidered at a level below conscious thought.', reversedMeaning:'The withdrawal has gone on too long and become avoidance rather than reflection. The ID is hiding behind apathy to avoid a decision that is overdue. Something is being refused that actually deserves engagement.' },
+    { id:'c5',  name:'Five of Cups',      suit:'cups', pts:[[0.502, 0.17], [0.861, 0.383], [0.715, 0.83], [0.285, 0.83], [0.139, 0.383], [0.5, 0.27], [0.72, 0.5], [0.613, 0.613], [0.387, 0.613], [0.28, 0.5]], keywords:'grief · loss · what remains', meaning:'Three cups have spilled. The ID stands over them and the grief is real, not metaphorical. But two cups remain standing behind you, and they are full. Something has been genuinely lost and needs to be mourned without explanation or apology. The mistake is in making the spilled cups the whole story. What still stands is also asking to be seen. The body knows the difference between loss and ruin.', reversedMeaning:'Stuck at the spilled cups, unable to turn and see what remains standing. Grief that has curdled into grievance. The body is choosing the wound over the healing that is available.' },
+    { id:'c6',  name:'Six of Cups',       suit:'cups', pts:[[0.502, 0.17], [0.755, 0.382], [0.817, 0.725], [0.5, 0.83], [0.236, 0.618], [0.236, 0.382], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'nostalgia · memory · innocence', meaning:'Something from the past is reaching forward into the present with unexpected gentleness. The ID holds childhood memories differently than the conscious mind — not as history but as living material, still warm. A sweetness you thought you had outgrown is available again. The question is whether you are visiting the past to remember something real, or hiding there to avoid something present.', reversedMeaning:'Using nostalgia as an escape from the present. Living in a sweetness that is no longer available instead of building something new. The past is being idealized in proportion to the discomfort of now.' },
+    { id:'c7',  name:'Seven of Cups',     suit:'cups', pts:[[0.502, 0.17], [0.613, 0.387], [0.861, 0.383], [0.618, 0.5], [0.715, 0.83], [0.5, 0.618], [0.285, 0.83], [0.382, 0.5], [0.139, 0.383], [0.387, 0.387]], keywords:'desire · illusion · hunger', meaning:'The ID is projecting. Every option looks luminous right now, because the wanting itself has become the pleasure. Seven doors glow and the mind cannot choose because choice would end the fantasy. This is not indecision — it is the ID staying in the sweetest part of possibility. But doors close. The dream has to become a decision before the clouds take it. Choose one cup and drink from it, even if it turns out differently than imagined.', reversedMeaning:'The illusions are collapsing and clarity is arriving whether wanted or not. The fog lifts and reveals that most of the glowing doors were empty. This is actually useful — the real option is now visible.' },
+    { id:'c8',  name:'Eight of Cups',     suit:'cups', pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.613, 0.387], [0.691, 0.61], [0.72, 0.5], [0.596, 0.698], [0.5, 0.72], [0.387, 0.613], [0.382, 0.5]], keywords:'departure · deeper meaning · move on', meaning:'The ID turns away from what was abundant and walks toward the mountains. The cups are still full — nothing was taken from you. But the body knows when a chapter has closed, and continuing to stay in a completed chapter costs something that cannot be recovered. The departure is not defeat. It is the acknowledgment that what satisfied before no longer satisfies, and that honesty is worth the disruption it causes.', reversedMeaning:'Leaving before it is time, or leaving for the wrong reasons. The ID is running from something it hasn\'t finished with yet. What unfinished business is being abandoned under the guise of moving forward?' },
+    { id:'c9',  name:'Nine of Cups',      suit:'cups', pts:[[0.5, 0.05], [0.73, 0.18], [0.861, 0.383], [0.817, 0.725], [0.609, 0.906], [0.391, 0.906], [0.16, 0.747], [0.139, 0.383], [0.27, 0.18], [0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5]], keywords:'wish · satisfaction · pleasure', meaning:'This is the wish card, and the wish was granted. The ID got what it wanted — really wanted, not just wanted in a polite way. There is a particular quality to satisfaction that the body recognizes before the mind catches up: a settling, a quiet that is not empty. You are allowed to feel this without immediately asking what comes next. The nine cups are full and they are yours. Enjoy this without guilt.', reversedMeaning:'Satisfaction that depends on external conditions, brittle and temporary. Wishing for what you already have without recognizing it. The contentment is real but is being blocked by comparison.' },
+    { id:'c10', name:'Ten of Cups',       suit:'cups', pts:[[0.5, 0.05], [0.27, 0.18], [0.73, 0.18], [0.5, 0.27], [0.236, 0.382], [0.755, 0.382], [0.5, 0.5], [0.236, 0.618], [0.764, 0.618], [0.5, 0.72], [0.5, 0.95], [0.5, 0.382], [0.387, 0.387], [0.613, 0.387]], keywords:'bliss · family · home', meaning:'The nervous system finally rests. This is not happiness as performance — it is the deep contentment that comes when the people and places around you are genuinely aligned with who you are. The ID does not hunger or reach when the ten cups are full; it simply exists inside something that works. Home is not always a place. Sometimes it is a relationship, a season, a version of yourself you finally stopped fighting.', reversedMeaning:'The home exists but something inside it isn\'t being acknowledged. A picture of contentment that hides a private discontent. What truth is being smoothed over to maintain the appearance of harmony?' },
+    // SWORDS
+    { id:'s1',  name:'Ace of Swords',     suit:'swords', pts:[[0.5, 0.5], [0.618, 0.5], [0.5, 0.618], [0.382, 0.5], [0.5, 0.382], [0.387, 0.387], [0.387, 0.613]], keywords:'clarity · cut · breakthrough', meaning:'The ID sharpens into a single clean point and the fog breaks. Something that was obscured becomes blindingly obvious — not comfortable, but true. The Ace of Swords does not ask how you feel about the truth; it simply reveals it. What needs to be cut away has been making you carry extra weight for longer than you realize. The blade is in your hand. Use it with intention.', reversedMeaning:'Clarity without the courage to act on it. The sword is visible but the hand won\'t take it. Something true is being seen and then immediately talked out of.' },
+    { id:'s2',  name:'Two of Swords',     suit:'swords', pts:[[0.726, 0.274], [0.726, 0.726], [0.274, 0.726], [0.274, 0.274], [0.5, 0.5], [0.382, 0.5], [0.5, 0.382], [0.5, 0.618]], keywords:'stalemate · avoidance · blindfold', meaning:'The ID crosses the swords over the heart to keep both options at bay. This is not wisdom — it is the body preventing a choice that feels dangerous regardless of direction. The blindfold is self-imposed. The stalemate is comfortable only in comparison to the discomfort of deciding. The truth you are refusing to look at directly is still there, and it gets heavier the longer you hold the pose.', reversedMeaning:'The blindfold removed too early, forced to choose before ready. Or: the stalemate has broken but the movement is going in the wrong direction. A decision made under pressure that bypasses real discernment.' },
+    { id:'s3',  name:'Three of Swords',   suit:'swords', pts:[[0.502, 0.17], [0.613, 0.387], [0.82, 0.5], [0.613, 0.613], [0.5, 0.83], [0.387, 0.613], [0.11, 0.548], [0.387, 0.387], [0.5, 0.5]], keywords:'heartbreak · grief · pain', meaning:'The wound is real and it does not need to be rationalized into something more manageable. Three swords through the heart is not a metaphor for inconvenience. The ID knows this and it is not lying to you — something genuinely hurt, and the pain is proportionate to how much you cared. Do not explain it away or make it smaller. Feel it and move through it, not around it. What heals is what was willing to bleed.', reversedMeaning:'Pain that is being refused acknowledgment. The body is carrying grief it won\'t let itself feel. Or: a wound that has been kept open deliberately, returning to it for reasons that deserve examination.' },
+    { id:'s4',  name:'Four of Swords',    suit:'swords', pts:[[0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387], [0.5, 0.382], [0.5, 0.618]], keywords:'rest · recovery · recuperation', meaning:'The ID has finally stopped fighting and the body is grateful. The knight lies in the chapel not in defeat but in necessary rest between battles. The mind insists there is still work to do, threats to monitor, problems to solve. The body knows better — the next level of this cannot be accessed from exhaustion. Right now, stillness is the only strategy that matters.', reversedMeaning:'Rest that cannot come, or rest that has become avoidance. The body can\'t stop even when it must. Or: recuperation that has stretched into hiding from the demands of life.' },
+    { id:'s5',  name:'Five of Swords',    suit:'swords', pts:[[0.5, 0.05], [0.613, 0.387], [0.861, 0.383], [0.691, 0.61], [0.715, 0.83], [0.5, 0.72], [0.285, 0.83], [0.309, 0.61], [0.139, 0.383], [0.387, 0.387]], keywords:'conflict · hollow victory · loss', meaning:'Someone won and no one feels good about it. The ID knows the difference between victory and vindication, and what just happened was neither. The swords were collected but the figures walking away carry something heavier than defeat — they carry the knowledge of what was spent to get here. Ask honestly: was this worth it? A win that costs the trust, or your own integrity, is worth examining before the next sword is drawn.', reversedMeaning:'Being the one who walked away with the swords. The hollow victory is now visible from the inside. What was won that shouldn\'t have been fought for at all?' },
+    { id:'s6',  name:'Six of Swords',     suit:'swords', pts:[[0.5, 0.05], [0.871, 0.29], [0.817, 0.725], [0.5, 0.95], [0.16, 0.747], [0.136, 0.29], [0.5, 0.27], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5]], keywords:'transition · moving on · passage', meaning:'The boat moves slowly through still water toward a clearer shore, and the figures inside are not yet at peace — but they are moving. The ID recognizes this feeling: not healed, not resolved, but in motion away from what was damaging. You do not have to be done with the hard thing before you leave it behind. You just have to leave.', reversedMeaning:'Trying to leave but being pulled back. The boat won\'t move because something unresolved anchors it. Or: arriving somewhere new but bringing the old trouble along unchanged.' },
+    { id:'s7',  name:'Seven of Swords',   suit:'swords', pts:[[0.5, 0.05], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.876, 0.637], [0.613, 0.613], [0.715, 0.83], [0.5, 0.72], [0.285, 0.83], [0.387, 0.613], [0.11, 0.548], [0.28, 0.5]], keywords:'strategy · shadow · cunning', meaning:'Something moves unseen and the ID has already sensed it. There is a strategy at work — possibly yours, possibly directed at you — that has not been stated plainly. The body reads the room before the mind builds its explanation, and right now the body is sending a signal worth trusting. What have you been avoiding looking at directly? Check your blind spots. Check who else might have them.', reversedMeaning:'The deception has come to light — either yours or someone else\'s. The strategy that seemed clever is now exposed. Something that was taken in secret must be accounted for.' },
+    { id:'s8',  name:'Eight of Swords',   suit:'swords', pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'paralysis · fear · trapped', meaning:'The cage is partly imagined and partly built by choices made in fear. The ID recognizes the feeling of paralysis — the body will not move, the options seem gone, the blindfold stays on even though you could remove it. But the swords around you are not touching you. One step in any direction and the pattern breaks. The fear has been working with outdated information. What was dangerous then may not be dangerous now.', reversedMeaning:'Beginning to see through the cage. The blindfold is loosening. An awareness is arriving that the paralysis was largely self-constructed, which is both uncomfortable and liberating.' },
+    { id:'s9',  name:'Nine of Swords',    suit:'swords', pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297]], keywords:'anxiety · nightmare · dread', meaning:'The ID wakes at 3 AM with all nine swords arranged in the dark above it. This is the card of anxiety — not danger, but the body running disaster scenarios in the absence of actual information. The mind builds worst-case futures with impressive detail, and at this hour they feel like prophecy. They are not. What you are afraid of is real as a fear, but the fear is feeding on itself now, not on evidence. Turn on the light and look at the actual situation.', reversedMeaning:'Anxiety that has consumed so much it has started to consume itself. The nightmare repeats. At some point the catastrophizing must be named as a pattern, not a prophecy.' },
+    { id:'s10', name:'Ten of Swords',     suit:'swords', pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.691, 0.61], [0.596, 0.698], [0.72, 0.5], [0.5, 0.72], [0.387, 0.613], [0.405, 0.698], [0.382, 0.5], [0.309, 0.61], [0.5, 0.382]], keywords:'endings · collapse · new dawn', meaning:'This is the lowest point, and the lowest point is also a foundation. The ten swords in the back means it is finished — the suffering, the situation, the version of things that had to end. The ID does not pretend this does not hurt. But the sky in the distance is already lightening. Rock bottom has a particular quality: there is no further to fall, which means the next movement is only upward. What rises from here will be built from what actually survived.', reversedMeaning:'Refusing to acknowledge that the ending has happened. Pulling the swords out prematurely and pretending the wound can be ignored. The collapse is still active, not yet complete.' },
+    // WANDS
+    { id:'w1',  name:'Ace of Wands',      suit:'wands', pts:[[0.5, 0.05], [0.817, 0.725], [0.16, 0.747], [0.5, 0.5], [0.382, 0.5], [0.5, 0.618], [0.5, 0.382]], keywords:'spark · fire · impulse', meaning:'The drive ignites before thought arrives, which is exactly correct. The Ace of Wands is pure creative impulse in the moment before it gets organized into a plan or talked into something reasonable. The ID is lit. Something wants to begin and it wants to begin now. Do not wait for permission or perfect conditions. The spark does not stay at full brightness forever. Act on it while it is still this hot, and let the refinement come after.', reversedMeaning:'A creative spark that won\'t ignite, or one that was extinguished too early. The drive is present but something is damping it — fear of beginning, fear of failure, or simply poor timing.' },
+    { id:'w2',  name:'Two of Wands',      suit:'wands', pts:[[0.05, 0.236], [0.95, 0.236], [0.95, 0.764], [0.05, 0.764], [0.391, 0.199], [0.391, 0.801], [0.5, 0.5], [0.382, 0.5], [0.609, 0.199]], keywords:'planning · vision · decision', meaning:'The fire stands at the window holding the globe and looks at what is possible from a position of genuine power. The ID has arrived somewhere real and is now looking outward at what comes next. The Two of Wands is the moment before the adventure begins — the plans are being drawn, the possibilities are being felt in the body. One wand is planted behind; one is held in the hand. Trust the direction the body is already leaning.', reversedMeaning:'Plans that won\'t commit to direction. Standing at the window with the globe but refusing to choose which way to sail. Ambivalence that is beginning to cost more than a decision would.' },
+    { id:'w3',  name:'Three of Wands',    suit:'wands', pts:[[0.5, 0.95], [0.136, 0.29], [0.871, 0.29], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'ambition · horizon · momentum', meaning:'The ships are on the horizon and they are yours. The ID made a plan — boldly, early, with more confidence than the circumstances warranted — and the plan worked. What was set in motion is now in motion without your constant supervision. The fire planned ahead and the evidence is coming in. Trust what was set in motion. Your work right now is to hold the horizon with both eyes open and be ready to receive what comes.', reversedMeaning:'The ships on the horizon belong to someone else. Or: what was set in motion has stalled and requires direct intervention rather than continued waiting. Return to active tending.' },
+    { id:'w4',  name:'Four of Wands',     suit:'wands', pts:[[0.73, 0.18], [0.876, 0.637], [0.5, 0.83], [0.124, 0.637], [0.27, 0.18], [0.5, 0.27], [0.72, 0.5], [0.613, 0.613], [0.387, 0.613], [0.28, 0.5]], keywords:'celebration · homecoming · harvest', meaning:'The four wands form the gateway and the garlands hang in welcome. Something has been completed and the body gets to celebrate before the next thing begins. The ID does not skip the party; it knows that marking milestones is not indulgence — it is the ritual that makes the effort mean something. You have earned a moment of genuine joy. The harvest is real. Walk through the gate.', reversedMeaning:'Celebration that feels unearned or incomplete. The threshold was crossed but the harvest is being questioned. Something about the achievement is being minimized or is genuinely still in process.' },
+    { id:'w5',  name:'Five of Wands',     suit:'wands', pts:[[0.502, 0.17], [0.613, 0.387], [0.861, 0.383], [0.618, 0.5], [0.715, 0.83], [0.5, 0.618], [0.285, 0.83], [0.382, 0.5], [0.139, 0.383], [0.387, 0.387], [0.5, 0.5]], keywords:'conflict · competition · tension', meaning:'Everyone is swinging and no one seems to be winning, which is a specific kind of chaos the ID recognizes as formative. The Five of Wands is creative friction — people competing, testing each other, finding their edge through contact with other edges. This is the kind of conflict that sharpens. The question is whether the fighting is clarifying something or just burning energy. If there is a shared goal, the competition becomes productive.', reversedMeaning:'Conflict that has become habit rather than productive friction. Fighting for its own sake, or competition that no longer sharpens anything. The wands are swinging at nothing real.' },
+    { id:'w6',  name:'Six of Wands',      suit:'wands', pts:[[0.5, 0.05], [0.871, 0.29], [0.876, 0.637], [0.715, 0.83], [0.285, 0.83], [0.11, 0.548], [0.136, 0.29], [0.5, 0.27], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5]], keywords:'victory · recognition · pride', meaning:'The crowd is cheering and you earned it — not as a performance, but as the real result of real effort. The ID already knew this was coming because it was paying attention. Now the external world is confirming what the body has felt for some time: that what you have been building is worth something. Accept the recognition without deflecting it. Victory lap is not arrogance. It is acknowledgment of the cost of getting here.', reversedMeaning:'The crowd\'s opinion is contradicting the internal knowing. Seeking recognition as a substitute for genuine confidence. Or: a victory that doesn\'t feel like one because the terms of success were wrong.' },
+    { id:'w7',  name:'Seven of Wands',    suit:'wands', pts:[[0.502, 0.17], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.817, 0.725], [0.596, 0.698], [0.5, 0.83], [0.405, 0.698], [0.16, 0.747], [0.28, 0.5], [0.136, 0.29]], keywords:'defense · perseverance · stance', meaning:'The ID holds the high ground and it matters. Everyone seems to be pushing back at once — the voices, the doubts, the opposition — and the fire is choosing to stand rather than retreat. This takes a particular kind of stubbornness that is not the same as ego: it is the stubborn refusal to abandon something that is genuinely worth defending. Maintain your position. Do not negotiate down from something that is actually right.', reversedMeaning:'Defending a position past the point of reason. Stubbornness that has become attachment. What are you holding ground on that might actually benefit from being released?' },
+    { id:'w8',  name:'Eight of Wands',    suit:'wands', pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.236, 0.382]], keywords:'speed · acceleration · urgency', meaning:'Everything is arriving at once and the velocity is real. The ID is already moving — the decision has been made in the body before the conscious mind caught up. Eight wands in flight means events have outpaced the usual pace of things. Do not overthink this. The acceleration is not a warning; it is the universe matching your energy. Stay in your body, stay responsive, and trust that what is coming toward you was aimed in your direction for a reason.', reversedMeaning:'The velocity has become chaos. Everything arriving at once with no capacity to receive it. The speed is outpacing discernment and something important is being missed in the rush.' },
+    { id:'w9',  name:'Nine of Wands',     suit:'wands', pts:[[0.5, 0.5], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.416, 0.297], [0.584, 0.297], [0.95, 0.5], [0.7, 0.914], [0.3, 0.914], [0.05, 0.5], [0.3, 0.086], [0.7, 0.086]], keywords:'resilience · last stand · guarded', meaning:'The ID is bruised and still standing, which is not nothing — it is everything. The wounded figure leans on the wand but does not drop it. There is one more push ahead and the body is not sure it has the reserves, but the choice to remain is already made. Guard yourself intelligently — the wariness is earned. But do not confuse the scars with the wound. You are not as depleted as fear is telling you.', reversedMeaning:'Wariness that has become paranoia. The protection that was appropriate at the height of the battle is now preventing anything good from reaching you. Lower the guard, at least slightly.' },
+    { id:'w10', name:'Ten of Wands',      suit:'wands', pts:[[0.5, 0.618], [0.382, 0.5], [0.618, 0.5], [0.5, 0.382], [0.5, 0.5], [0.387, 0.613], [0.5, 0.72], [0.387, 0.387], [0.613, 0.387], [0.5, 0.27], [0.613, 0.613], [0.309, 0.61], [0.405, 0.698], [0.236, 0.382], [0.665, 0.335], [0.416, 0.297], [0.691, 0.61], [0.236, 0.618], [0.5, 0.83], [0.274, 0.274], [0.755, 0.382]], keywords:'burden · weight · overextension', meaning:'The fire is carrying too much and the body knows it, even if the mind keeps insisting on one more thing. Ten wands is not a discipline problem — it is often the result of caring too much about too many things that genuinely matter. But the weight is slowing you down. What can be put down without betrayal? Not what should be abandoned — but what has already been completed, or what belongs in someone else\'s hands now.', reversedMeaning:'Dropping the burden before the destination. Something is being abandoned before it was completed, not because it was time but because the weight became an excuse. Reconsider what is being put down.' },
+    // PENTACLES
+    { id:'p1',  name:'Ace of Pentacles',  suit:'pentacles', pts:[[0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5], [0.5, 0.5], [0.5, 0.382], [0.382, 0.5]], keywords:'seed · resource · ground', meaning:'Something material is beginning and the body recognizes the right soil before the mind has time to calculate the odds. The Ace of Pentacles is a real opportunity — not a concept, not a fantasy, but something tangible that can be planted and cultivated. The ID senses the ground is fertile. Plant the seed with intention. Water it with patience. The return on what is started here will compound in ways that are not yet visible but are already in motion.', reversedMeaning:'The seed exists but the ground isn\'t ready, or the hands aren\'t willing to plant. An opportunity seen but not taken. What is preventing the beginning that is available?' },
+    { id:'p2',  name:'Two of Pentacles',  suit:'pentacles', pts:[[0.5, 0.27], [0.755, 0.382], [0.764, 0.618], [0.5, 0.83], [0.236, 0.618], [0.236, 0.382], [0.5, 0.382], [0.5, 0.618]], keywords:'balance · adaptability · juggling', meaning:'The body juggles two weights and manages to make it look graceful, but the ID knows how much effort that grace costs. Two pentacles in perpetual motion — income and expenses, work and rest, one obligation and another — and the sea behind churns with ships that are also riding the waves. The balance is in the motion, not the stillness. Keep moving. Adapt faster than the circumstances change.', reversedMeaning:'The juggling has collapsed. Two weights that were in motion have fallen. The adaptability is exhausted and something needs to be set down before anything can be balanced again.' },
+    { id:'p3',  name:'Three of Pentacles', suit:'pentacles', pts:[[0.502, 0.17], [0.764, 0.618], [0.236, 0.618], [0.5, 0.382], [0.613, 0.387], [0.613, 0.613], [0.5, 0.618], [0.387, 0.613], [0.387, 0.387]], keywords:'craft · skill · recognition', meaning:'The hands are producing something real and the work is being seen. The Three of Pentacles is the card of mastery in progress — not finished mastery, but the moment when skill becomes visible to others and earns the room\'s attention. Something you have practiced quietly is now producing a result that others recognize as genuine. The ID is satisfied in a specific way: the satisfaction of doing something well and knowing it.', reversedMeaning:'Work being done without recognition, or recognition arriving without the work having been done. The collaboration is strained. Something about the craftsmanship needs honest reassessment.' },
+    { id:'p4',  name:'Four of Pentacles', suit:'pentacles', pts:[[0.5, 0.05], [0.95, 0.5], [0.5, 0.95], [0.11, 0.548], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'security · control · hoarding', meaning:'The figure holds the coins with both hands and feet, and the city is behind him. The ID recognizes this grip — the need to hold what was hard-won so tightly that the holding becomes its own kind of poverty. Security is real and legitimate; this reading is not telling you to give everything away. But there is a difference between protecting what matters and clutching it so hard that nothing new can enter. The pentacle on the crown is blocking the view.', reversedMeaning:'The grip has loosened — possibly through loss, possibly through choice. Security that was clutched too tight is now insufficient. Or: the hoarding releases and something flows again.' },
+    { id:'p5',  name:'Five of Pentacles', suit:'pentacles', pts:[[0.502, 0.17], [0.613, 0.387], [0.755, 0.382], [0.618, 0.5], [0.726, 0.726], [0.5, 0.618], [0.274, 0.726], [0.382, 0.5], [0.236, 0.382]], keywords:'lack · cold · faith', meaning:'The body knows scarcity in a way that is not metaphorical. Something material is missing — money, security, warmth, the sense of being provided for — and the cold is real. The two figures pass by the lit window and the ID registers the distance between where you are and where safety seems to be. But the window is lit. The door is not locked. The Five of Pentacles asks whether the poverty is also a belief that has outlasted the circumstances that created it.', reversedMeaning:'Still outside in the cold but beginning to question whether the door was actually locked. A shift in the poverty mindset. The lack is still present but the belief about what is possible is changing.' },
+    { id:'p6',  name:'Six of Pentacles',  suit:'pentacles', pts:[[0.5, 0.05], [0.871, 0.29], [0.817, 0.725], [0.5, 0.95], [0.16, 0.747], [0.136, 0.29], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'generosity · charity · exchange', meaning:'The scales are in hand and the coins are moving — some are given, some are received, and the flow itself is the point. The ID knows that abundance moves; it does not accumulate. What is given freely returns in some form; what is hoarded stagnates. This card asks which side of the exchange you are on right now, and whether the position is chosen or inherited. If you have, give. If you need, ask without shame.', reversedMeaning:'Generosity that is depleting rather than flowing. Giving from scarcity or receiving with guilt. The scales are out of balance in a way that is unsustainable in either direction.' },
+    { id:'p7',  name:'Seven of Pentacles', suit:'pentacles', pts:[[0.609, 0.094], [0.871, 0.29], [0.876, 0.637], [0.609, 0.906], [0.285, 0.83], [0.11, 0.548], [0.27, 0.18], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'patience · assessment · tending', meaning:'The figure leans on the hoe and looks at what has grown, and the body is in that pause between effort and result. Seven pentacles hang in the vine — real, tangible, not yet harvested. The ID knows this feeling: you have done the work, and now you must wait, which is its own kind of discipline. Do not uproot the plant to check the roots. Do not harvest before the season. Tend what you have started.', reversedMeaning:'Impatience that has caused premature harvesting. The assessment arrived before the work was ready. What was pulled from the vine too early that now can\'t ripen?' },
+    { id:'p8',  name:'Eight of Pentacles', suit:'pentacles', pts:[[0.502, 0.17], [0.726, 0.274], [0.82, 0.5], [0.726, 0.726], [0.5, 0.83], [0.274, 0.726], [0.11, 0.548], [0.274, 0.274], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]], keywords:'mastery · practice · diligence', meaning:'The apprentice hammers the coin again and again and the coins hang on the wall above like completed chapters. The ID finds genuine satisfaction in the repetition — not boredom, but the pleasure of incremental refinement. Something is being mastered right now through practice, not talent. Each repetition is slightly better than the last. Show up, do the work, let the accumulation speak for itself.', reversedMeaning:'Repetition that has become rote. The practice continues but the presence has left it. Skill being maintained without the growth that purposeful practice requires.' },
+    { id:'p9',  name:'Nine of Pentacles', suit:'pentacles', pts:[[0.609, 0.094], [0.871, 0.29], [0.949, 0.602], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.11, 0.548], [0.136, 0.29], [0.391, 0.094], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]], keywords:'abundance · earned · solitude', meaning:'What was built through discipline is now being enjoyed, and the enjoyment is clean because it was earned. The ID rests inside real security — not borrowed security, not performed security, but the kind that comes from having built the infrastructure of your own life with your own hands. The Nine of Pentacles is about beautiful solitude: the pleasure of your own company in surroundings you created. The garden is yours. Walk through it slowly.', reversedMeaning:'Abundance that feels lonely or isolated rather than beautiful. The garden is yours but the solitude has become disconnection. Luxury that is being used to avoid something.' },
+    { id:'p10', name:'Ten of Pentacles',  suit:'pentacles', pts:[[0.5, 0.05], [0.809, 0.116], [0.976, 0.405], [0.905, 0.75], [0.655, 0.95], [0.345, 0.95], [0.095, 0.75], [0.024, 0.405], [0.191, 0.116], [0.5, 0.27], [0.5, 0.5]], keywords:'legacy · wealth · inheritance', meaning:'The ten pentacles are arranged in the Kabbalistic tree of life, and three generations stand inside the archway. The ID recognizes the feeling of arriving somewhere that was built before you got here, or the feeling of building something that will outlast you. This is the card of legacy — not just financial, but the full weight of what is passed down and passed forward. What are you building that will matter after you are no longer the one tending it?', reversedMeaning:'Legacy that feels like burden rather than inheritance. The weight of what was passed down without being asked for. Or: building for posterity in a way that is neglecting the present.' },
+  ],
+
+  // ── EGO: Court cards ─────────────────────────────────────────────────────
+  ego: [
+    { id:'cp',  name:'Page of Cups',       suit:'cups',   pts:[[0.5, 0.27], [0.764, 0.618], [0.236, 0.618], [0.5, 0.382], [0.613, 0.387], [0.613, 0.613], [0.5, 0.618], [0.387, 0.613], [0.387, 0.387]],                                                          keywords:'wonder · openness · feeling',   meaning:'The self is wandering with beginner\'s mind and this is not a deficit — it is a superpower. The Page of Cups arrives when the Ego has not yet calcified around a fixed identity, when impressions can still come in unfiltered. Something is being felt before it is understood, and that is exactly the right order. Let the feelings arrive before you name them or manage them into strategy. The self in this moment is permeable in the best sense — it is learning from everything it touches.', reversedMeaning:'The openness has become over-receptivity — absorbing everything without discernment. The Page\'s wonder has tipped into being overwhelmed by feeling. Some filtering is necessary and healthy.' },
+    { id:'ckn', name:'Knight of Cups',     suit:'cups',   pts:[[0.5, 0.05], [0.27, 0.18], [0.73, 0.18], [0.5, 0.5], [0.765, 0.563], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.235, 0.563], [0.5, 0.383], [0.5, 0.95]],                                                  keywords:'romance · pursuit · idealism',  meaning:'The self is riding toward something beautiful and the pursuit itself is the point. The Knight of Cups arrives when the Ego is animated by an ideal — a person, a vision, a way of being — that may be partly projection but is also genuinely reaching for something real. The danger is letting strategy kill the earnestness. Whatever you are riding toward, stay poetic and honest about it. Do not trade your passion for practicality before you have at least tried the passionate approach.', reversedMeaning:'The romantic pursuit has lost touch with reality. The self is chasing an ideal that has no actual person inside it. The earnestness is real but the object of pursuit needs honest examination.' },
+    { id:'cq',  name:'Queen of Cups',      suit:'cups',   pts:[[0.502, 0.17], [0.755, 0.382], [0.817, 0.725], [0.5, 0.83], [0.236, 0.618], [0.236, 0.382], [0.5, 0.27], [0.613, 0.387], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],                                       keywords:'empathy · intuition · depth',   meaning:'The self holds space — for others and for the full range of its own feeling. The Queen of Cups navigates through emotional intelligence, reading the room not as a survival strategy but as a natural expression of attentiveness. This is a self that can be moved without being swept away, that can feel deeply without drowning. Right now, your greatest strength is not logic or force but the ability to stay present with what is actually happening emotionally, in yourself and in the people around you.', reversedMeaning:'Holding space for others at the cost of holding none for yourself. The empathy has become self-erasure. The Queen\'s depth is being offered without any boundaries to protect what makes it sustainable.' },
+    { id:'ck',  name:'King of Cups',       suit:'cups',   pts:[[0.5, 0.5], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.416, 0.297], [0.584, 0.297], [0.95, 0.5], [0.7, 0.914], [0.3, 0.914], [0.05, 0.5], [0.3, 0.086], [0.7, 0.086], [0.5, 0.382], [0.618, 0.5]],                               keywords:'mastery · balance · diplomacy', meaning:'The self governs feeling without suppressing it, which is the hardest thing a person can learn. The King of Cups has been through enough emotional weather to know that the feelings are not the problem — the relationship to the feelings is the problem. You are navigating from a place of genuine authority right now, not because the waters are calm, but because you have learned to sit still in rough water. Lead from this place. The people around you are steadied by your steadiness.', reversedMeaning:'Emotional authority that has become control. Managing feelings so effectively that none of them are actually felt. The balance tips toward suppression rather than mastery.' },
+    { id:'sp',  name:'Page of Swords',     suit:'swords', pts:[[0.502, 0.17], [0.82, 0.5], [0.5, 0.83], [0.18, 0.5], [0.5, 0.382], [0.618, 0.5], [0.613, 0.613], [0.387, 0.613], [0.382, 0.5]],                                                            keywords:'curiosity · ideas · restless',  meaning:'The self is asking everything at once, which is exactly the right approach for this stage. The Page of Swords arrives when the Ego has sharpened its focus to a fine point and wants to interrogate everything — ideas, assumptions, other people\'s certainties. This is not rudeness; it is intellectual appetite. But the sword is still new in the hand. Let the sharp mind ask before it concludes, and be willing to be wrong on the first several passes. The questioning itself is the growth.', reversedMeaning:'Curiosity that has become cynicism. The Page\'s questions are no longer genuine inquiries but challenges with predetermined conclusions. Something has soured the openness.' },
+    { id:'skn', name:'Knight of Swords',   suit:'swords', pts:[[0.502, 0.17], [0.613, 0.387], [0.82, 0.5], [0.613, 0.613], [0.5, 0.83], [0.387, 0.613], [0.18, 0.5], [0.387, 0.387], [0.5, 0.5], [0.618, 0.5], [0.5, 0.382]],                                                   keywords:'speed · ambition · reckless',   meaning:'The self is charging and the speed is real. The Knight of Swords does not wait for consensus or ideal conditions — it moves because the moment demands movement. There is genuine courage in this and also genuine danger: the blade can land before the target is properly identified. Think once — not twice, not ten times, but at least once — before the blade falls. The ambition is correct. The velocity is an asset. Just make sure the direction was aimed before the charge began.', reversedMeaning:'The charge has already happened and the consequences are arriving. Speed and ambition that outpaced judgment. The Knight is now accountable for where the blade landed.' },
+    { id:'sq',  name:'Queen of Swords',    suit:'swords', pts:[[0.502, 0.17], [0.726, 0.274], [0.876, 0.637], [0.715, 0.83], [0.285, 0.83], [0.11, 0.548], [0.274, 0.274], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],                                       keywords:'clarity · boundary · discernment',meaning:'The self sees without softening and this is not cruelty — it is precision in service of truth. The Queen of Swords has processed enough loss and enough complexity to have earned her clear eyes. She does not flinch from what is real, and she does not offer comfort that is not honest. If you are in this energy, your clarity is a gift to the people around you, even if they do not immediately experience it that way. Hold the line. The truth you can see and speak right now is more valuable than false reassurance.', reversedMeaning:'Clarity that has become cruelty. Precision without compassion. The truth is being used as a weapon rather than a gift.' },
+    { id:'sk',  name:'King of Swords',     suit:'swords', pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297], [0.596, 0.698], [0.342, 0.311], [0.72, 0.5], [0.405, 0.698], [0.5, 0.27]],                               keywords:'authority · logic · judgment',  meaning:'The self is applying intellectual discipline with authority and the result is genuine clarity. The King of Swords is not cold — he is precise. There is a verdict being reached right now, a conclusion being drawn from evidence that was carefully assembled. Trust the analysis. You have been thinking about this long enough and with enough rigor to trust the conclusion your mind is arriving at. The judgment is just because it was built on actual examination, not assumption.', reversedMeaning:'Judgment that has become rigidity. The King\'s authority has calcified into a refusal to receive new information. The verdict was delivered before all the evidence arrived.' },
+    { id:'wp',  name:'Page of Wands',      suit:'wands',  pts:[[0.871, 0.29], [0.5, 0.83], [0.136, 0.29], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],                                                          keywords:'adventure · enthusiasm · spark',meaning:'The self has found its first real fire and it has no idea yet how bright it will eventually burn. The Page of Wands arrives when the Ego is just discovering what it loves, just learning what makes it come fully alive. The excitement is not naive — it is the accurate signal of genuine alignment. Follow the pull before reason arrives to complicate it. The adventure is real. The discovery is real. Let this version of yourself run toward the thing that is calling before the more cautious self has a chance to talk you into waiting.', reversedMeaning:'The excitement has scattered without direction. The Page\'s fire is burning in five places at once and consuming itself. Focus is the thing being refused.' },
+    { id:'wkn', name:'Knight of Wands',    suit:'wands',  pts:[[0.861, 0.383], [0.715, 0.83], [0.285, 0.83], [0.139, 0.383], [0.5, 0.05], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],                                                   keywords:'passion · courage · momentum',  meaning:'The self is riding full speed and the fire is doing the steering. The Knight of Wands is in love with the movement itself — the acceleration, the courage it takes to keep going when ordinary caution says slow down. This is a magnificent energy and also a consuming one if it isn\'t directed. Channel the fire rather than just burning in it. You have the momentum. Use it to go somewhere specific. The passion is the asset; the destination is what needs your attention right now.', reversedMeaning:'The fire has burned through its fuel. The Knight is exhausted from the charge and hasn\'t admitted it. The passion is real but the body has been ignored too long.' },
+    { id:'wq',  name:'Queen of Wands',     suit:'wands',  pts:[[0.502, 0.17], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.817, 0.725], [0.596, 0.698], [0.5, 0.83], [0.405, 0.698], [0.16, 0.747], [0.28, 0.5], [0.136, 0.29], [0.416, 0.297], [0.5, 0.5]],                                       keywords:'charisma · will · presence',    meaning:'The self commands a room without trying to, which is the signature of natural authority. The Queen of Wands is not performing confidence — she is simply herself, fully and without apology. There is a way you carry yourself right now that other people feel before you speak a word. Lead from this. The charisma you have is not separate from your substance; it is the visible form of the work you have put in. Do not shrink it to make others more comfortable. Your presence is a gift, not an imposition.', reversedMeaning:'The presence has become performance. Charisma being used to manage distance rather than create connection. The command of the room is replacing genuine engagement.' },
+    { id:'wk',  name:'King of Wands',      suit:'wands',  pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],                               keywords:'vision · leadership · legacy',  meaning:'The self is building something larger than itself and the vision is the engine. The King of Wands leads not by managing but by pointing toward a horizon that others can see and choose to move toward. The fire you carry right now is not just for you — it is for the people who will stand in the warmth of what you create. Carry it forward with intention. The legacy question is not what you will accomplish but what will remain when you are no longer in the room. Build accordingly.', reversedMeaning:'Vision that has become ego. The King is building for legacy rather than purpose. The fire is now serving self-image rather than the thing it was originally aimed at.' },
+    { id:'pp',  name:'Page of Pentacles',  suit:'pentacles',pts:[[0.05, 0.236], [0.95, 0.236], [0.95, 0.764], [0.05, 0.764], [0.391, 0.199], [0.609, 0.801], [0.5, 0.5], [0.618, 0.5], [0.391, 0.801]],                                                        keywords:'study · diligence · beginning', meaning:'The self is taking the long view and the long view is correct. The Page of Pentacles holds the coin up to the light with genuine fascination — not impatience, not performance, but the real pleasure of learning something worth knowing. You are at the beginning of a mastery arc. Everything compounds from here: the habits you build now, the skills you practice, the knowledge you accumulate. Start carefully and completely. The foundation determines everything above it. What you are studying right now will matter more than it currently appears to.', reversedMeaning:'Study that has stalled. The Page is holding the coin but not learning from it. Or: ambition that hasn\'t translated into actual beginning. The long view is being used to avoid the first step.' },
+    { id:'pkn', name:'Knight of Pentacles',suit:'pentacles',pts:[[0.726, 0.274], [0.726, 0.726], [0.274, 0.726], [0.274, 0.274], [0.5, 0.27], [0.613, 0.387], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],                                             keywords:'routine · reliability · patience',meaning:'The self moves slowly and wins by a wide margin. The Knight of Pentacles is the only knight who is not in a hurry, and that deliberateness is the entire point. What you are doing right now may not look spectacular from the outside, but the unglamorous progress is real and compounding. Show up again tomorrow. Trust the routine. The discipline of returning to the same work again and again is not boring — it is the evidence of commitment, and commitment is what separates those who arrive from those who almost arrived.', reversedMeaning:'Reliability that has become rigidity. The steady pace has stopped and the Knight won\'t acknowledge it. Or: routine being maintained at the cost of any genuine progress.' },
+    { id:'pq',  name:'Queen of Pentacles', suit:'pentacles',pts:[[0.73, 0.18], [0.95, 0.5], [0.715, 0.83], [0.285, 0.83], [0.11, 0.548], [0.27, 0.18], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],                                   keywords:'nurturing · security · care',   meaning:'The self sustains others through the practical expression of love, which is the most underrated form of love there is. The Queen of Pentacles does not declare devotion — she builds the conditions in which others can grow. The warmth of a fire kept burning, the food on the table, the infrastructure that allows other people\'s dreams to exist: this is the work. Abundance flows through your hands because you have learned to receive it without hoarding and give it without depleting yourself. This is genuine stewardship.', reversedMeaning:'Nurturing that has become martyrdom. Practical care that is being provided at genuine cost to self. The abundance flows outward because there is a fear of keeping any of it.' },
+    { id:'pk',  name:'King of Pentacles',  suit:'pentacles',pts:[[0.5, 0.5], [0.5, 0.382], [0.562, 0.44], [0.618, 0.5], [0.584, 0.584], [0.5, 0.618], [0.416, 0.584], [0.382, 0.5], [0.416, 0.416], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.5, 0.72], [0.28, 0.5]],                             keywords:'mastery · wealth · discipline', meaning:'The self has built the empire and now must govern it with the same wisdom that built it. The King of Pentacles knows that material mastery is not just accumulation — it is the art of using resources in proportion to their purpose. You have arrived at a place of genuine influence over material reality. The question now is not whether you can build more, but what deserves to be built with what you already hold. Govern wisely. The wealth you carry — in resources, skills, relationships, knowledge — is a responsibility as much as an achievement.', reversedMeaning:'Mastery that has become a cage. The King\'s discipline is now preventing the growth that discipline was originally meant to enable. What built the empire is now strangling it.' },
+  ],
+
+  // ── SUPEREGO: Major Arcana ────────────────────────────────────────────────
+  superego: [
+    { id:'m0',  name:'The Fool',           pts:[[0.5, 0.05], [0.871, 0.29], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5]],          keywords:'leap · pure potential · trust',     meaning:'The higher law here is simple: begin. The Fool steps off the cliff not from ignorance but from trust — trust that the universe will meet the leap. The abyss beneath is also the sky above, depending on which way you face. Every great journey starts with a step that cannot be justified by the information currently available. The Superego is not asking you to be reckless. It is asking whether you are confusing caution with fear, and whether the fear has been calling itself wisdom for too long.', reversedMeaning:'The leap is being refused. Standing at the cliff\'s edge indefinitely, planning the fall instead of trusting it. The abyss is not calling you to destruction — it is calling you to flight.' },
+    { id:'m1',  name:'The Magician',       pts:[[0.5, 0.5], [0.618, 0.5], [0.82, 0.5], [0.5, 0.618], [0.5, 0.83], [0.382, 0.5], [0.18, 0.5], [0.5, 0.382], [0.502, 0.17]],          keywords:'will · manifestation · alignment',  meaning:'Above and below are connected, and the Magician is the conduit. The tools on the table — sword, cup, wand, pentacle — are not random. They are the full range of what is available to you: mind, emotion, will, and material reality. The Superego says: you have everything required. The only thing missing is the alignment of intention with action. What you hold with focused will can be transformed. The universe is responsive to genuine commitment in a way it is not responsive to wishing.', reversedMeaning:'The tools are present but the will is fragmented. Manifestation that cancels itself through ambivalence. The Magician\'s power is real but it is being aimed in too many directions simultaneously.' },
+    { id:'m2',  name:'The High Priestess', pts:[[0.618, 0.5], [0.613, 0.613], [0.5, 0.72], [0.405, 0.698], [0.274, 0.726], [0.124, 0.637], [0.11, 0.548], [0.139, 0.383], [0.274, 0.274], [0.342, 0.311], [0.5, 0.27]],                          keywords:'mystery · veil · knowing',          meaning:'Some truths arrive only in silence, and the High Priestess guards the threshold between what can be spoken and what can only be known. The Superego is asking you to stop trying to force the answer into language before it is ready. Something is forming in the deep water beneath conscious thought. The more you reach for it, the more it recedes. Sit at the edge of the veil. What you are waiting to understand will surface when the inner conditions are right, not on your impatient schedule.', reversedMeaning:'Forcing an answer before the silence has spoken. Pushing through the veil rather than sitting at its threshold. What is being demanded that is not yet ready to be given?' },
+    { id:'m3',  name:'The Empress',        pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297], [0.596, 0.698], [0.342, 0.311]], keywords:'abundance · creation · nature',  meaning:'The earth does not hurry, and neither should you. The Empress embodies a higher law that the modern world constantly argues with: that growth has its own timing and cannot be forced without diminishing what is being grown. Something is in the process of becoming — in your work, your relationships, your body, your inner life. The Superego asks that you tend it rather than rush it. Provide the conditions: warmth, attention, patience, nourishment. Let the abundance arrive in its season.', reversedMeaning:'Forcing growth. Hurrying what needs to arrive in its own season. Or: creative abundance that has become excess, spilling without intention.' },
+    { id:'m4',  name:'The Emperor',        pts:[[0.5, 0.05], [0.95, 0.5], [0.5, 0.95], [0.05, 0.5], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.596, 0.698], [0.405, 0.698], [0.309, 0.61], [0.28, 0.5], [0.342, 0.311]],      keywords:'structure · authority · law',       meaning:'Order is also a form of love. The Emperor does not build walls out of fear — he builds them to define the space inside where life can happen safely. The Superego is pointing to the places where structure is missing and chaos is the result, or where structure has calcified into rigidity and needs to breathe. Real authority does not need to be enforced; it is simply present. Build the container before you pour the contents. The foundation always determines the ceiling.', reversedMeaning:'Structure that has become tyranny. Order maintained for its own sake rather than in service of what grows inside it. The container is crushing what it was built to protect.' },
+    { id:'m5',  name:'The Hierophant',     pts:[[0.5, 0.05], [0.825, 0.175], [0.949, 0.602], [0.7, 0.914], [0.3, 0.914], [0.051, 0.602], [0.136, 0.29], [0.5, 0.27], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5]],                  keywords:'tradition · initiation · lineage',  meaning:'The teaching has been here longer than you, and something in the lineage is worth receiving before it is revised. The Hierophant does not demand blind obedience — it asks for honest reception. Something is being transmitted through the traditions, the teachers, the practices that preceded you. The Superego invites you to enter the stream before you decide to redirect it. What has been preserved through generations often carries wisdom that was hard-won. Receive first. Innovate from knowledge, not ignorance.', reversedMeaning:'Tradition used to prevent evolution. Receiving the lineage as an unquestioned ceiling rather than a standing place. What inherited knowledge is being confused with permanent truth?' },
+    { id:'m6',  name:'The Lovers',         pts:[[0.5, 0.05], [0.584, 0.297], [0.871, 0.29], [0.72, 0.5], [0.817, 0.725], [0.596, 0.698], [0.5, 0.95], [0.405, 0.698], [0.16, 0.747], [0.28, 0.5], [0.136, 0.29]],                     keywords:'union · sacred choice · alignment', meaning:'The highest law here is the question: what do you truly choose? Not what you should choose, not what is expected, not what makes sense to everyone else — but what is the deepest yes available to you right now. The Lovers is not primarily a card about romance. It is about alignment — the sacred act of bringing your external choices into coherence with your internal truth. Everything follows from this. The choice you make at this junction sends ripples forward. Choose from the center of what you actually are.', reversedMeaning:'Choosing from obligation rather than truth. Saying yes to what is expected rather than what is genuinely chosen. The sacred union requires both parties to be actually present and willing.' },
+    { id:'m7',  name:'The Chariot',        pts:[[0.7, 0.086], [0.861, 0.383], [0.817, 0.725], [0.5, 0.95], [0.16, 0.747], [0.139, 0.383], [0.3, 0.086], [0.5, 0.27], [0.613, 0.387], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],        keywords:'will · victory · discipline',       meaning:'Opposing forces harnessed become the vehicle. The Chariot moves not because the two horses agree, but because the charioteer has learned to hold both reins with equal steadiness. The Superego is pointing to a tension inside you that has been a source of paralysis — two impulses pulling in opposite directions. What if they are not contradictions but complements? Discipline them both. You are already moving. The victory comes to those who can hold complexity without letting it become conflict.', reversedMeaning:'The opposing forces are winning. The charioteer cannot hold both reins and the vehicle is swerving. A deeper discipline is required, or an honest acknowledgment that one of the horses must be released.' },
+    { id:'m8',  name:'Strength',           pts:[[0.618, 0.5], [0.5, 0.5], [0.613, 0.613], [0.5, 0.618], [0.613, 0.387], [0.691, 0.61], [0.72, 0.5], [0.596, 0.698], [0.5, 0.72], [0.387, 0.613], [0.764, 0.618]],        keywords:'courage · gentleness · mastery',    meaning:'The lion is not subdued by force — it is held by love, which is the harder and more permanent solution. Strength as a Superego card asks whether you have been trying to overpower something in yourself or in your situation that would yield to a gentler approach. The figure opens the lion\'s mouth with her bare hands and the lion complies. This is the true power: not dominance but communion. What wildness in your life is waiting to be approached with patience instead of control?', reversedMeaning:'Force being applied where gentleness would work. The lion is being fought rather than befriended. What wildness in the situation is responding to aggression by becoming more dangerous?' },
+    { id:'m9',  name:'The Hermit',         pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61]],                                 keywords:'solitude · lantern · inner light',  meaning:'The answer is in the dark at the end of your own corridor, and you have to go there alone. The Hermit does not withdraw from the world out of failure — he withdraws because the next stage of understanding cannot be reached in the noise. The lamp he carries lights only one step ahead, which is enough. The Superego is asking whether you have given yourself the quality of solitude that allows the deep self to speak. The inner voice is always broadcasting. The question is whether the outer conditions are quiet enough to receive it.', reversedMeaning:'The lantern is lit but the hermit won\'t go into the corridor. Solitude being used as protection rather than preparation. The answer is inside but the approach is being endlessly deferred.' },
+    { id:'m10', name:'Wheel of Fortune',   pts:[[0.5, 0.05], [0.73, 0.18], [0.949, 0.398], [0.876, 0.637], [0.715, 0.83], [0.5, 0.95], [0.285, 0.83], [0.124, 0.637], [0.051, 0.398], [0.27, 0.18], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.342, 0.311]],        keywords:'fate · cycles · turning',           meaning:'The wheel turns without your permission and the higher law embedded in this is not cruelty but pattern. Every rise contains the seed of the next descent; every low point is already turning upward. The Superego asks you to widen your lens from the current moment to the cycle it belongs to. Where are you in the turn? What has been falling away that needed to fall? What is being built on the way up? Resistance to the wheel costs energy that could be used to ride it. Let the turning be the teacher.', reversedMeaning:'Resistance to the turn of the wheel. Fighting fate with the energy that could be used to ride it. What is being clung to that the cycle has already decided to release?' },
+    { id:'m11', name:'Justice',            pts:[[0.5, 0.05], [0.825, 0.175], [0.949, 0.602], [0.7, 0.914], [0.3, 0.914], [0.051, 0.602], [0.136, 0.29], [0.5, 0.27], [0.665, 0.335], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.387, 0.387]],              keywords:'truth · law · consequence',         meaning:'The higher law is exacting, and what was sent returns with precision. Justice is not punitive in the cosmic sense — it is simply accurate. Every action creates a field of consequence that eventually reaches back. The Superego asks you to examine what you have set in motion. What seeds were planted that are now bearing fruit, for better or worse? The scales do not lie. Alignment with what is actually true — not what is comfortable or convenient — is the only reliable navigation system in the long run.', reversedMeaning:'Avoiding the scales. Knowing what the verdict would be and refusing to step onto the platform. The higher law is not being argued with successfully — it is simply being ignored at increasing cost.' },
+    { id:'m12', name:'The Hanged Man',     pts:[[0.5, 0.95], [0.136, 0.29], [0.871, 0.29], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.387, 0.387]],                        keywords:'surrender · suspension · vision',   meaning:'The view from upside down reveals what standing upright could not. The Hanged Man is suspended by choice — this is not imprisonment but voluntary pause in service of a different kind of seeing. The Superego asks: what would become clear if you stopped trying to resolve the situation and simply let yourself hang in the question for a while? The surrender is not defeat. It is the condition under which the deeper answer can arrive. Something is being processed at a level below strategy. Let it finish.', reversedMeaning:'Refusing to hang. The surrender is available but the ego is fighting it as though the upside-down position is a punishment rather than a vantage. What can only be seen from here?' },
+    { id:'m13', name:'Death',              pts:[[0.5, 0.05], [0.584, 0.297], [0.825, 0.175], [0.72, 0.5], [0.949, 0.602], [0.613, 0.613], [0.7, 0.914], [0.5, 0.72], [0.3, 0.914], [0.387, 0.613], [0.051, 0.602], [0.28, 0.5], [0.136, 0.29], [0.416, 0.297]],            keywords:'transformation · ending · crossing',meaning:'Nothing that is meant to continue will end here. Only what has already finished is being released. Death as a Superego force is the great clarifier — it reveals what was real and what was merely arrangement. The old form is dissolving to make room for the new one, and the new one cannot fully arrive until the old one has completely cleared. Grieve what is ending. Then turn toward what is beginning to emerge from the cleared ground. This is not destruction. It is the most faithful form of continuity available.', reversedMeaning:'Clinging to what the Death card has already claimed. The transformation is complete but the old form is being kept on life support. What has already ended that is being refused its ending?' },
+    { id:'m14', name:'Temperance',         pts:[[0.618, 0.5], [0.613, 0.613], [0.5, 0.72], [0.405, 0.698], [0.274, 0.726], [0.124, 0.637], [0.11, 0.548], [0.139, 0.383], [0.274, 0.274], [0.342, 0.311], [0.5, 0.27], [0.613, 0.387]],      keywords:'alchemy · patience · blending',     meaning:'The higher law is gradual, and the angel pours between cups without spilling because she has learned that precision requires patience. Temperance asks you to stop treating your contradictions as problems to be solved and start treating them as ingredients to be blended. The opposing forces you are holding — action and rest, fire and water, certainty and doubt — are not obstacles. They are the raw material of the alchemical transformation underway. Pour slowly. The gold appears in the combination, not the purity.', reversedMeaning:'Impatience with the alchemical process. Demanding that the gold appear before the pouring is complete. Or: forcing a blend that requires more time, more gentleness, more trust in the gradual.' },
+    { id:'m15', name:'The Devil',          pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.5, 0.72], [0.309, 0.61], [0.28, 0.5], [0.342, 0.311]], keywords:'shadow · bondage · liberation',     meaning:'The chains are real and they are yours to remove. The two figures at the Devil\'s feet are not locked — look at the rings around their necks, loose enough to lift off. What binds you has your consent, even if that consent was given in a moment of fear or exhaustion. The Superego does not judge the binding. It asks you to name it clearly, because the Devil bows when he is named. What belief, addiction, or agreement are you maintaining that no longer serves anything except its own continuation? Name it. The chain loosens when you do.', reversedMeaning:'Seeing the chains but not yet moving to remove them. Or: removing one chain and finding another underneath. The liberation is closer than it appears but requires naming every link.' },
+    { id:'m16', name:'The Tower',          pts:[[0.5, 0.05], [0.613, 0.387], [0.95, 0.5], [0.613, 0.613], [0.5, 0.95], [0.387, 0.613], [0.05, 0.5], [0.387, 0.387], [0.5, 0.5], [0.382, 0.5], [0.5, 0.382]],            keywords:'revelation · collapse · liberation',meaning:'The lightning strikes what was never true, which is the only thing worth knowing about the Tower. The structure that falls was built on false foundation — on assumption, on denial, on the story you told yourself to avoid looking at what was actually there. The Superego does not apologize for the lightning. The rubble is a cleaner foundation than the hollow building it replaced. What is being stripped away right now? Look at it without flinching. What remains after the clearing is what was real all along, and you can build from that.', reversedMeaning:'Refusing the lightning. The Tower is structurally compromised but the occupants won\'t leave. Clinging to the false foundation is not the same as protecting what is real.' },
+    { id:'m17', name:'The Star',           pts:[[0.5, 0.05], [0.825, 0.175], [0.949, 0.398], [0.817, 0.725], [0.609, 0.906], [0.391, 0.906], [0.16, 0.747], [0.051, 0.398], [0.175, 0.175], [0.5, 0.27], [0.665, 0.335], [0.72, 0.5], [0.691, 0.61], [0.596, 0.698], [0.405, 0.698], [0.309, 0.61], [0.28, 0.5], [0.342, 0.311]], keywords:'hope · renewal · guidance', meaning:'The wound becomes the opening, and the light enters from the direction of the scar. The Star follows the Tower because hope is not naive — it is the thing that survives the collapse and begins the rebuilding. The figure at the water\'s edge pours endlessly without the vessel running dry. The Superego is telling you that the source you are drawing from is not finite. What you have been given to offer has not run out, even if it feels that way. The star in the sky is your star. Trust its light. Your wishes are heard by something that is listening.', reversedMeaning:'Hope that has curdled into despair. The star is in the sky but the figure at the water\'s edge has stopped looking up. The light is still present — what is making it invisible?' },
+    { id:'m18', name:'The Moon',           pts:[[0.5, 0.5], [0.5, 0.382], [0.613, 0.613], [0.382, 0.5], [0.613, 0.387], [0.5, 0.618], [0.387, 0.387], [0.618, 0.5], [0.309, 0.61], [0.584, 0.297], [0.596, 0.698], [0.342, 0.311], [0.72, 0.5]],         keywords:'illusion · mystery · cycles',       meaning:'Not everything in the dark is threat, and the Moon asks you to feel your way forward without demanding that the feeling become a map. The subconscious is working on something that the conscious mind cannot yet access, and the attempt to force it into clarity will only drive it deeper. The two towers in the distance do not have to be passed through today. The path winds. The howling is both dog and wolf — both the tame and the wild — and they are both yours. Navigate by feeling. The Moon lights enough for the next step.', reversedMeaning:'The moon is being given too much power over the waking hours. Anxiety that has colonized reason. The intuition is real but is being confused with catastrophe.' },
+    { id:'m19', name:'The Sun',            pts:[[0.5, 0.05], [0.73, 0.18], [0.949, 0.398], [0.949, 0.602], [0.715, 0.83], [0.5, 0.95], [0.285, 0.83], [0.051, 0.602], [0.051, 0.398], [0.27, 0.18], [0.5, 0.27], [0.665, 0.335], [0.755, 0.382], [0.691, 0.61], [0.596, 0.698], [0.5, 0.72], [0.405, 0.698], [0.309, 0.61], [0.236, 0.382], [0.342, 0.311]], keywords:'joy · consciousness · radiance', meaning:'This is not earned, it simply is, and you are allowed to be in it without justification. The Sun is not asking you to achieve anything. It is telling you that the light available to you right now is full and warm and unearned, which is the most generous kind. The child on the white horse is dancing, not marching. The Superego in this moment dissolves into pure affirmation: you belong here, in this brightness, in this life. Shine without apology. The world does not need you dimmed for the comfort of those who have not yet found their own light.', reversedMeaning:'The sun is present but something is blocking its reception. Joy that is available but being refused, often through guilt or unworthiness. You are allowed to be in the light.' },
+    { id:'m20', name:'Judgement',          pts:[[0.5, 0.5], [0.72, 0.5], [0.596, 0.698], [0.405, 0.698], [0.28, 0.5], [0.416, 0.297], [0.584, 0.297], [0.95, 0.5], [0.7, 0.914], [0.3, 0.914], [0.05, 0.5], [0.3, 0.086], [0.7, 0.086], [0.5, 0.382]],        keywords:'calling · awakening · rebirth',    meaning:'The trumpet has already sounded and the question is whether you have been willing to hear it yet. Judgement is the moment of absolute reckoning — not punishment, but clarity so complete that the old version of yourself is simply no longer operative. The dead are rising from their coffins not to be judged but to be called. Something is calling you right now by your true name, not the name you were assigned or the one you built as protection. Are you willing to answer? The Superego says: the call is real, the caller is patient, and the cost of not answering is a particular kind of slow grief.', reversedMeaning:'Hearing the trumpet and choosing not to rise. The calling is clear but something — comfort, fear, inertia — is keeping the old form in the coffin. The trumpet does not wait forever.' },
+    { id:'m21', name:'The World',          pts:[[0.5, 0.05], [0.825, 0.175], [0.95, 0.5], [0.825, 0.825], [0.5, 0.95], [0.175, 0.825], [0.05, 0.5], [0.175, 0.175], [0.5, 0.27], [0.72, 0.5], [0.5, 0.72], [0.28, 0.5], [0.5, 0.5], [0.665, 0.335], [0.691, 0.61], [0.309, 0.61], [0.342, 0.311], [0.596, 0.698], [0.405, 0.698], [0.387, 0.387], [0.613, 0.387]],          keywords:'completion · wholeness · arrival', meaning:'The journey arrives where it began and the beginning has been completely transformed by the arriving. The dancer at the center of the laurel wreath is not celebrating a destination — she is celebrating the wholeness of the path, the way everything that seemed like detour turned out to be essential. The four creatures at the corners hold the full range of human experience in their gaze. Nothing was wasted. The Superego closes here with the deepest truth it knows: you are whole. Not almost whole, not whole-if-you-fix-the-remaining-things — whole, now, as you are.', reversedMeaning:'Completion that is being withheld from itself. Refusing to acknowledge arrival. Treating the full circle as insufficient or undeserved. The world is whole. You are whole. Let it be true.' },
+  ]
+};
+
+// Reading oracle voices — full paragraph synthesis
+const ORACLES = [
+  (id,ego,sg) => `The ID speaks first, as it always does — from the body, before the mind has time to argue. ${id.name} is what the instinct carries right now: the raw material of this moment, unprocessed and honest. Below the performance of the day, this is what is actually happening in the nervous system. The Ego mediates, as always, trying to make the instinct navigable. ${ego.name} is the face the self is wearing in the world — the strategy, the persona, the way of moving through external reality. Watch how the ID and Ego negotiate: one wants what it wants, the other manages the wanting. Above both, the Superego watches with something larger than either. ${sg.name} holds the higher law — the archetype, the pattern, the moral force that gives direction when both instinct and strategy run out of answers. Together, these three are not a contradiction but a chord. The reading is the space where all three are true at once.`,
+  (id,ego,sg) => `Your constellation traced through the sky was received by the cathedral and three names came back. ${id.name} arrived first — this is what lives underneath the surface, the hunger or grief or fire that the body holds without announcement. It does not require explanation; it simply is. Then ${ego.name} — this is who you are in motion right now, the self as it navigates relationships, responsibilities, and the ordinary weight of being a person in the world. The Ego is the actor. And finally, presiding over both: ${sg.name}, the higher force that this whole arrangement is answering to. The Superego does not manage the day — it sets the direction. When the ID and Ego fall into confusion, this is the card that can orient them. Three layers of a single life. Read them together and the picture becomes more specific than any single card could offer.`,
+  (id,ego,sg) => `Below the floor of daily life, ${id.name} is working. This is not a card to be analyzed from a distance — it is what the body is doing right now without asking permission. The instinct has its own intelligence, and this reading suggests it deserves to be heard rather than managed. The Ego — ${ego.name} — is the self in relationship to the world. This is the current costume, the current strategy, the current way of being seen and of seeing. There is real information here about how the self is presenting and navigating. And the Superego speaks last and loudest: ${sg.name}. This is the principle, the archetype, the cosmic voice that is orienting everything whether you are aware of it or not. The three together form the architecture of your current moment — not fate, but the honest shape of the forces at work in you and through you right now.`,
+  (id,ego,sg) => `${id.name} in the ID position means the most animal, immediate, pre-verbal part of you is engaged with something real. This is not small. The body does not lie in the ways the mind does, and whatever this card names in your instinctive life is worth sitting with before moving to interpretation. The Ego carries ${ego.name} — this is the self you bring into rooms, the one that has a strategy, a persona, a way of handling things. Right now this face of the self is the active one, doing the work of existing inside ordinary time. The Superego completes the reading with ${sg.name}: the highest operating principle at work in this season of your life. This is what you are accountable to beyond the personal — the archetype, the law, the larger pattern your individual choices are serving or resisting. All three levels of self are speaking. The reading is the conversation between them.`,
+  (id,ego,sg) => `The shape you drew across the cathedral sky was not random. Your hand moved as it moved because something in you directed it — some combination of instinct, habit, intention, and chance that is exactly the mix a tarot reading is designed to meet. The three faces that emerged are these: ${id.name} at the level of the ID, where the drives live. ${ego.name} at the level of the Ego, where the self navigates the world. ${sg.name} at the level of the Superego, where the higher law speaks. Each is real. Each is operating simultaneously. The cathedral does not choose which one is most important — they are a system, and the system as a whole is what requires reading. Notice which of the three feels most charged when you hear it. That is usually where the work is.`,
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SHAPE MATCHING ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+
+function normalizePts(pts) {
+  if(!pts||pts.length<2) return pts;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{ if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y; });
+  const sx=maxX-minX||1,sy=maxY-minY||1,sc=Math.max(sx,sy);
+  const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+  return pts.map(([x,y])=>[(x-cx)/sc,(y-cy)/sc]);
+}
+
+function resamplePath(pts,n) {
+  if(pts.length<2) return pts;
+  let total=0;
+  const segs=[];
+  for(let i=1;i<pts.length;i++){
+    const dx=pts[i][0]-pts[i-1][0],dy=pts[i][1]-pts[i-1][1];
+    const l=Math.sqrt(dx*dx+dy*dy);
+    segs.push(l);total+=l;
+  }
+  if(total===0) return pts;
+  const step=total/(n-1);
+  const res=[[...pts[0]]];
+  let cov=0,si=0;
+  for(let i=1;i<n-1;i++){
+    const target=i*step;
+    while(si<segs.length-1&&cov+segs[si]<target){cov+=segs[si];si++;}
+    const t=segs[si]>0?(target-cov)/segs[si]:0;
+    const p0=pts[si],p1=pts[si+1]||pts[si];
+    res.push([p0[0]+(p1[0]-p0[0])*t,p0[1]+(p1[1]-p0[1])*t]);
+  }
+  res.push([...pts[pts.length-1]]);
+  return res;
+}
+
+// Structural fingerprint — captures features shape-matching alone misses:
+// point count, aspect ratio, spread (avg dist from centroid), vertical bias
+function fingerprint(pts) {
+  const n=pts.length;
+  let cx=0,cy=0;
+  pts.forEach(([x,y])=>{cx+=x;cy+=y;});
+  cx/=n;cy/=n;
+  let spread=0,topWeight=0,bottomWeight=0;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{
+    spread+=Math.sqrt((x-cx)**2+(y-cy)**2);
+    if(y<cy)topWeight+=Math.abs(y-cy);
+    else bottomWeight+=Math.abs(y-cy);
+    if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;
+  });
+  const aspect=(maxX-minX+.001)/(maxY-minY+.001);
+  const vertBias=(topWeight-bottomWeight)/(topWeight+bottomWeight+.001);
+  return { n, spread:spread/n, aspect, vertBias };
+}
+
+function fingerprintDist(fa,fb) {
+  // Point count difference matters a lot — fewer points = simpler shape
+  const nDiff=Math.abs(fa.n-fb.n)/Math.max(fa.n,fb.n);
+  const spreadDiff=Math.abs(fa.spread-fb.spread);
+  const aspectDiff=Math.abs(fa.aspect-fb.aspect);
+  const vertDiff=Math.abs(fa.vertBias-fb.vertBias);
+  return nDiff*1.2 + spreadDiff*0.8 + aspectDiff*0.5 + vertDiff*0.4;
+}
+
+function shapeDistance(ptsA,ptsB) {
+  const N=16;
+  const normA=normalizePts(ptsA);
+  const normBbase=normalizePts(ptsB);
+  const a=resamplePath(normA,N);
+  const transforms=[
+    b=>b,
+    b=>b.map(([x,y])=>[-x,y]),
+    b=>b.map(([x,y])=>[x,-y]),
+    b=>b.map(([x,y])=>[-x,-y]),
+    b=>b.map(([x,y])=>[y,x]),
+    b=>b.map(([x,y])=>[-y,x]),
+    b=>b.map(([x,y])=>[y,-x]),
+    b=>b.map(([x,y])=>[-y,-x]),
+  ];
+  let bestGeo=Infinity;
+  transforms.forEach(tf=>{
+    const v=resamplePath(normalizePts(tf(normBbase)),N);
+    let d=0;
+    a.forEach((p,i)=>{ const dx=p[0]-v[i][0],dy=p[1]-v[i][1];d+=dx*dx+dy*dy; });
+    if(d<bestGeo)bestGeo=d;
+  });
+  // Blend geometric score with structural fingerprint distance
+  const fpA=fingerprint(ptsA);
+  const fpB=fingerprint(ptsB);
+  const fpDist=fingerprintDist(fpA,fpB);
+  return (bestGeo/N)*0.6 + fpDist*0.4;
+}
+
+// Detect winding order of a path: positive = CW, negative = CCW
+function windingOrder(pts) {
+  let sum=0;
+  for(let i=0;i<pts.length-1;i++){
+    sum+=(pts[i+1][0]-pts[i][0])*(pts[i+1][1]+pts[i][1]);
+  }
+  return sum>=0 ? 'cw' : 'ccw';
+}
+
+function findBestInGroup(userPts,groupKey) {
+  const userN=userPts.length;
+  const scored=CARDS[groupKey].map(card=>{
+    const cardN=card.pts.length;
+    let score=shapeDistance(userPts,card.pts);
+    // Node count gate: penalise heavily if count difference > 3
+    const nDiff=Math.abs(userN-cardN);
+    if(nDiff>3) score+=nDiff*0.8;
+    return {card,score};
+  }).sort((a,b)=>a.score-b.score);
+
+  // Softmax over top 5 using oracleTemp as temperature
+  const topN=Math.min(5,scored.length);
+  const top=scored.slice(0,topN);
+  const minScore=top[0].score;
+  const weights=top.map(t=>Math.exp(-(t.score-minScore)*oracleTemp));
+  const totalW=weights.reduce((a,b)=>a+b,0);
+  let r=Math.random()*totalW;
+  for(let i=0;i<top.length;i++){
+    r-=weights[i];
+    if(r<=0) return {card:top[i].card,score:top[i].score};
+  }
+  return {card:top[0].card,score:top[0].score};
+}
+
+// ── Constellation name classifier ─────────────────────────────────────────
+// Maps geometric features of the user's path to an evocative shape name
+function classifyConstellation(pts) {
+  if(pts.length<3) return '';
+  const n=pts.length;
+  let cx=0,cy=0;
+  pts.forEach(([x,y])=>{cx+=x;cy+=y;}); cx/=n; cy/=n;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;});
+  const w=maxX-minX||.001, h=maxY-minY||.001;
+  const aspect=w/h;
+  const spread=pts.reduce((s,[x,y])=>s+Math.sqrt((x-cx)**2+(y-cy)**2),0)/n;
+  const maxDist=Math.max(...pts.map(([x,y])=>Math.sqrt((x-cx)**2+(y-cy)**2)));
+  const compactness=spread/maxDist; // 0=very spread, 1=all equidistant
+  // Measure how much path zigzags
+  let dirChanges=0;
+  for(let i=1;i<n-1;i++){
+    const dx1=pts[i][0]-pts[i-1][0], dy1=pts[i][1]-pts[i-1][1];
+    const dx2=pts[i+1][0]-pts[i][0], dy2=pts[i+1][1]-pts[i][1];
+    const dot=dx1*dx2+dy1*dy2;
+    const cross=Math.abs(dx1*dy2-dy1*dx2);
+    if(cross>Math.abs(dot)*0.5) dirChanges++;
+  }
+  const zigzag=dirChanges/(n-2||1);
+
+  if(n<=3) return 'The Triangle';
+  if(n===4 && aspect>0.8 && aspect<1.2) return 'The Square';
+  if(aspect>2.2) return 'The Horizon';
+  if(aspect<0.45) return 'The Pillar';
+  if(zigzag>0.7) return 'The Lightning';
+  if(compactness>0.75 && n>=6) return 'The Eye';
+  if(compactness>0.65 && n>=5) return 'The Crown';
+  if(aspect>1.5 && zigzag<0.3) return 'The Spear';
+  if(n>=8 && compactness>0.55) return 'The Wheel';
+  if(n>=7 && zigzag>0.5) return 'The Serpent';
+  if(n>=6 && aspect>0.7 && aspect<1.3) return 'The Sigil';
+  if(zigzag<0.2 && n>=4) return 'The River';
+  if(n<=5 && aspect>1.2) return 'The Wing';
+  return 'The Crossroads';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VISUAL ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+
+const cv=document.getElementById('sky');
+const ctx=cv.getContext('2d');
+let W,H,T=0;
+let bgStars=[],shoots=[],particles=[],milkyWayPts=[];
+let gameStarted=false;
+
+let nodes=[];
+const NODE_COUNT=58;
+let pathIndices=[];
+let lineProgress=[]; // 0..1 draw progress per edge, animated on tap
+let lastTouchPos=null;
+let matchedCards=null;
+let readingActive=false;
+const LINE_DRAW_SPEED=0.06; // ~0.35s per edge at 60fps
+
+// Oracle temperature — controls softmax spread (0.5=precise, 5=chaotic)
+let oracleTemp=2.0;
+
+// Fly-off animation state
+let flyOff=null; // {nodes, targets, progress, done}
+
+// Node count triple-tap detection
+let nodeTapCount=0, nodeTapTimer=null;
+
+// ── Star colors ───────────────────────────────────────────────────────────
+function rndStarColor(){
+  const t=Math.random();
+  if(t<.3)return [200+Math.random()*55,210+Math.random()*45,255];
+  if(t<.7)return [240+Math.random()*14,240+Math.random()*14,255];
+  return [255,238+Math.random()*17,196+Math.random()*59];
+}
+function lcg(s){let v=s;return()=>{v=(v*1664525+1013904223)&0xffffffff;return(v>>>0)/0xffffffff;};}
+
+// ── Milky Way ─────────────────────────────────────────────────────────────
+function initMW(){
+  milkyWayPts=[];
+  for(let i=0;i<360;i++){
+    const a=Math.random()*Math.PI*2,r=Math.random()*Math.max(W,H)*.8;
+    milkyWayPts.push({x:W*.5+Math.cos(a)*r*1.5,y:H*.6+Math.sin(a)*r*.42,a,r,sz:.4+Math.random()*1.3,al:.07+Math.random()*.18,ts:.3+Math.random()*.7,tp:Math.random()*Math.PI*2,col:rndStarColor()});
+  }
+}
+function drawMW(){
+  if(!W||!H) return;
+  milkyWayPts.forEach(p=>{
+    p.a+=.00007;p.x=W*.5+Math.cos(p.a)*p.r*1.5;p.y=H*.6+Math.sin(p.a)*p.r*.42;
+    const tw=.5+.5*Math.sin(T*p.ts+p.tp);
+    const g=safeRadialGradient(p.x,p.y,0,p.x,p.y,p.sz*3);
+    if(!g) return;
+    g.addColorStop(0,`rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.al*tw})`);
+    g.addColorStop(1,`rgba(${p.col[0]},${p.col[1]},${p.col[2]},0)`);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.sz*3,0,Math.PI*2);ctx.fill();
+  });
+}
+
+// ── Nebula clouds ─────────────────────────────────────────────────────────
+function initNebulae(){
+  nebulae=[];
+  // 6-8 large drifting soft clouds
+  const count=6+Math.floor(Math.random()*3);
+  const palettes=[
+    [80,40,120],   // deep violet
+    [40,30,100],   // indigo
+    [20,50,90],    // midnight blue
+    [60,20,80],    // purple
+    [90,60,130],   // lavender
+    [30,60,80],    // teal-indigo
+  ];
+  for(let i=0;i<count;i++){
+    const col=palettes[i%palettes.length];
+    nebulae.push({
+      x:Math.random()*W,
+      y:Math.random()*H,
+      rx:(0.18+Math.random()*0.22)*Math.max(W,H),
+      ry:(0.10+Math.random()*0.14)*Math.max(W,H),
+      angle:Math.random()*Math.PI,
+      alpha:0.022+Math.random()*0.028,
+      driftX:(Math.random()-.5)*0.08,
+      driftY:(Math.random()-.5)*0.04,
+      driftA:(Math.random()-.5)*0.0002,
+      twinkleSpeed:0.15+Math.random()*0.2,
+      twinklePhase:Math.random()*Math.PI*2,
+      col
+    });
+  }
+}
+
+function drawNebulae(){
+  if(!W||!H) return;
+  nebulae.forEach(n=>{
+    n.x+=n.driftX; n.y+=n.driftY; n.angle+=n.driftA;
+    // Wrap
+    if(n.x<-n.rx) n.x=W+n.rx;
+    if(n.x>W+n.rx) n.x=-n.rx;
+    if(n.y<-n.ry) n.y=H+n.ry;
+    if(n.y>H+n.ry) n.y=-n.ry;
+    const tw=0.7+0.3*Math.sin(T*n.twinkleSpeed+n.twinklePhase);
+    const a=n.alpha*tw;
+    // Draw as rotated elliptical gradient
+    ctx.save();
+    ctx.translate(n.x,n.y);
+    ctx.rotate(n.angle);
+    ctx.scale(1, n.ry/n.rx);
+    const g=ctx.createRadialGradient(0,0,0,0,0,n.rx);
+    g.addColorStop(0,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},${(a*1.2).toFixed(4)})`);
+    g.addColorStop(0.4,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},${(a*0.6).toFixed(4)})`);
+    g.addColorStop(1,`rgba(${n.col[0]},${n.col[1]},${n.col[2]},0)`);
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(0,0,n.rx,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+}
+function makeBg(){
+  const r=lcg(31);
+  return Array.from({length:250},()=>({x:r()*W,y:r()*H,rad:.4+r()*1.2,ph:r()*Math.PI*2,spd:.2+r()*.5,col:rndStarColor()}));
+}
+function drawBg(){
+  bgStars.forEach(s=>{
+    const tw=.3+.7*Math.abs(Math.sin(s.ph+T*s.spd));
+    const b=s.rad,gR=b*(2.3+tw*1.4);
+    const h1=safeRadialGradient(s.x,s.y,0,s.x,s.y,gR*2);
+    if(!h1) return;
+    h1.addColorStop(0,`rgba(${s.col[0]},${s.col[1]},${s.col[2]},${(.06*tw).toFixed(3)})`);
+    h1.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=h1;ctx.beginPath();ctx.arc(s.x,s.y,gR*2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(s.x,s.y,b,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(.88*tw).toFixed(2)})`;ctx.fill();
+  });
+}
+
+// ── Shooting stars ────────────────────────────────────────────────────────
+function spawnShoot(){
+  const ang=Math.random()*Math.PI*2,spd=4+Math.random()*5;
+  let x=Math.random()>.5?(Math.random()<.5?-50:W+50):Math.random()*W;
+  let y=Math.random()>.5?(Math.random()<.5?-50:H+50):Math.random()*H;
+  shoots.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,len:50+Math.random()*75,a:.6+Math.random()*.2,w:.7+Math.random()*1.1});
+}
+// Guard: only spawn once W/H are valid
+setInterval(()=>{if(W&&H&&Math.random()<.28)spawnShoot();},5500);
+
+// Safe gradient helpers — skip draw if any coord is non-finite
+function safeLinearGradient(x0,y0,x1,y1){
+  if(!isFinite(x0)||!isFinite(y0)||!isFinite(x1)||!isFinite(y1)) return null;
+  return ctx.createLinearGradient(x0,y0,x1,y1);
+}
+function safeRadialGradient(x0,y0,r0,x1,y1,r1){
+  if(!isFinite(x0)||!isFinite(y0)||!isFinite(r0)||!isFinite(x1)||!isFinite(y1)||!isFinite(r1)) return null;
+  if(r0<0||r1<0) return null;
+  return ctx.createRadialGradient(x0,y0,r0,x1,y1,r1);
+}
+
+function drawShoots(){
+  const k=[];
+  shoots.forEach(s=>{
+    if(s.a<=.02)return;
+    const tx=s.x-s.vx*(s.len/10),ty=s.y-s.vy*(s.len/10);
+    const gd=safeLinearGradient(s.x,s.y,tx,ty);
+    if(!gd){k.push(s);return;}
+    gd.addColorStop(0,`rgba(212,175,55,${s.a.toFixed(2)})`);
+    gd.addColorStop(1,'rgba(212,175,55,0)');
+    ctx.beginPath();ctx.strokeStyle=gd;ctx.lineWidth=s.w;ctx.moveTo(s.x,s.y);ctx.lineTo(tx,ty);ctx.stroke();
+    s.x+=s.vx;s.y+=s.vy;s.a-=.009;k.push(s);
+  });
+  shoots.splice(0,shoots.length,...k);
+}
+
+// ── Particles ─────────────────────────────────────────────────────────────
+function burst(x,y,rgb,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2,sp=.8+Math.random()*3.5;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:.02+Math.random()*.022,r:.5+Math.random()*2,rgb});
+  }
+}
+function tickP(){
+  particles=particles.filter(p=>p.life>.02);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vx*=.91;p.vy*=.91;p.life-=p.dec;
+    const [R,G,B]=p.rgb;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${R},${G},${B},${p.life.toFixed(2)})`;ctx.fill();
+  });
+}
+
+// ── Nodes ─────────────────────────────────────────────────────────────────
+function generateNodes(){
+  nodes=[];
+  const mg=60,topY=65,botY=H-85;
+  const pW=W-mg*2,pH=botY-topY;
+  const minD=Math.min(pW,pH)/(Math.sqrt(NODE_COUNT)*1.08);
+  let att=0;
+  while(nodes.length<NODE_COUNT&&att<10000){
+    att++;
+    const x=mg+Math.random()*pW,y=topY+Math.random()*pH;
+    if(nodes.every(n=>Math.hypot(n.x-x,n.y-y)>minD)){
+      nodes.push({x,y,r:.6+Math.random()*1.1,mag:.2+Math.random()*.8,ph:Math.random()*Math.PI*2,spd:.4+Math.random()*.7,col:rndStarColor(),inPath:false,pathIdx:-1,orbits:[],pulsePhase:Math.random()*Math.PI*2,pulseSpeed:.5+Math.random()*.5,pulseAmt:0,selectFlash:0});
+    }
+  }
+}
+
+function initOrbits(node){
+  node.orbits=[];
+  for(let i=0;i<3;i++){
+    node.orbits.push({angle:(Math.PI*2/3)*i,radius:13+Math.random()*5,speed:.04+Math.random()*.025,size:1.1+Math.random()*.9,col:[212,175,55]});
+  }
+}
+
+// ── Draw nodes & path ─────────────────────────────────────────────────────
+function drawScene(){
+  // Advance line draw animations
+  for(let i=0;i<lineProgress.length;i++){
+    if(lineProgress[i]<1) lineProgress[i]=Math.min(1,lineProgress[i]+LINE_DRAW_SPEED);
+  }
+
+  // Ambient glow at path centroid
+  if(pathIndices.length>2){
+    let cx=0,cy=0;
+    pathIndices.forEach(i=>{cx+=nodes[i].x;cy+=nodes[i].y;});
+    cx/=pathIndices.length;cy/=pathIndices.length;
+    const ng=safeRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.28);
+    if(ng){
+      ng.addColorStop(0,'rgba(212,175,55,.04)');
+      ng.addColorStop(1,'rgba(212,175,55,0)');
+      ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+    }
+  }
+
+  // Drawn edges — each animates from previous node toward new node
+  for(let i=0;i<lineProgress.length;i++){
+    const p=lineProgress[i];
+    if(p<=0) continue;
+    const na=nodes[pathIndices[i]];
+    const nb=nodes[pathIndices[i+1]];
+    if(!na||!nb) continue;
+    const ex=na.x+(nb.x-na.x)*p;
+    const ey=na.y+(nb.y-na.y)*p;
+    const drawBright=p<1?0.9:0.55;
+    const eg=safeLinearGradient(na.x,na.y,ex,ey);
+    if(eg){
+      eg.addColorStop(0,`rgba(212,175,55,${(drawBright*0.45).toFixed(2)})`);
+      eg.addColorStop(0.5,`rgba(212,175,55,${drawBright.toFixed(2)})`);
+      eg.addColorStop(1,`rgba(212,175,55,${(drawBright*0.6).toFixed(2)})`);
+      ctx.beginPath();ctx.strokeStyle=eg;ctx.lineWidth=1.8;
+      ctx.moveTo(na.x,na.y);ctx.lineTo(ex,ey);ctx.stroke();
+    }
+    if(p<1){
+      const tipG=safeRadialGradient(ex,ey,0,ex,ey,10);
+      if(tipG){
+        tipG.addColorStop(0,'rgba(255,255,255,1)');
+        tipG.addColorStop(0.3,'rgba(212,175,55,.9)');
+        tipG.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.fillStyle=tipG;ctx.beginPath();ctx.arc(ex,ey,10,0,Math.PI*2);ctx.fill();
+      }
+    }
+    if(p>=1){
+      const prog=(T*1.8)%1;
+      const lx=na.x+(nb.x-na.x)*prog,ly=na.y+(nb.y-na.y)*prog;
+      const lg=safeRadialGradient(lx,ly,0,lx,ly,5);
+      if(lg){
+        lg.addColorStop(0,'rgba(255,255,255,.9)');
+        lg.addColorStop(0.5,'rgba(212,175,55,.6)');
+        lg.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,5,0,Math.PI*2);ctx.fill();
+      }
+    }
+  }
+
+  // Dashed live line from last node to cursor
+  if(pathIndices.length>0&&lastTouchPos&&isFinite(lastTouchPos.x)&&isFinite(lastTouchPos.y)){
+    const last=nodes[pathIndices[pathIndices.length-1]];
+    const dl=safeLinearGradient(last.x,last.y,lastTouchPos.x,lastTouchPos.y);
+    if(dl){
+      dl.addColorStop(0,'rgba(212,175,55,.3)');dl.addColorStop(1,'rgba(212,175,55,.06)');
+      ctx.beginPath();ctx.strokeStyle=dl;ctx.lineWidth=1;
+      ctx.setLineDash([4,7]);ctx.moveTo(last.x,last.y);ctx.lineTo(lastTouchPos.x,lastTouchPos.y);
+      ctx.stroke();ctx.setLineDash([]);
+    }
+  }
+
+  // Orbits
+  nodes.forEach(n=>{
+    if(!n.inPath||!n.orbits.length)return;
+    n.orbits.forEach(o=>{
+      o.angle+=o.speed;
+      const ox=n.x+Math.cos(o.angle)*o.radius,oy=n.y+Math.sin(o.angle)*o.radius;
+      const g=safeRadialGradient(ox,oy,0,ox,oy,o.size*2.5);
+      if(!g) return;
+      g.addColorStop(0,'rgba(212,175,55,.85)');g.addColorStop(.6,'rgba(212,175,55,.3)');g.addColorStop(1,'rgba(212,175,55,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,o.size*2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(ox,oy,o.size*.45,0,Math.PI*2);ctx.fill();
+    });
+  });
+
+  // Nodes
+  nodes.forEach(n=>{
+    const inP=n.inPath;
+    if(!isFinite(n.x)||!isFinite(n.y)) return;
+    const tw=.45+.55*Math.sin(T*1.1*n.spd+n.ph);
+    const pulse=n.pulseAmt>0?n.pulseAmt*Math.sin(T*8+n.pulsePhase)*.5+.5:0;
+    if(n.selectFlash>0) n.selectFlash=Math.max(0,n.selectFlash-0.025);
+    const sf=n.selectFlash;
+    const [R,G,B]=inP?[212,175,55]:n.col;
+    const bR=(inP?2.6+n.mag*2.6:.65+n.mag*1.1)*(1+pulse*.8)*(1+sf*1.2);
+    const gR=bR*(inP?4.2:2.3);
+
+    if(sf>0){
+      const flashR=gR*(1+sf*6);
+      ctx.beginPath();ctx.arc(n.x,n.y,flashR,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,255,255,${(sf*0.7).toFixed(2)})`;ctx.lineWidth=2;ctx.stroke();
+      const fb=safeRadialGradient(n.x,n.y,0,n.x,n.y,gR*(1+sf*3));
+      if(fb){
+        fb.addColorStop(0,`rgba(255,255,255,${(sf*0.5).toFixed(2)})`);
+        fb.addColorStop(0.4,`rgba(212,175,55,${(sf*0.3).toFixed(2)})`);
+        fb.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.fillStyle=fb;ctx.beginPath();ctx.arc(n.x,n.y,gR*(1+sf*3),0,Math.PI*2);ctx.fill();
+      }
+    }
+
+    if(pulse>0){
+      const pr=gR*(2+pulse*3);
+      ctx.beginPath();ctx.arc(n.x,n.y,pr,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(${R},${G},${B},${(.4*pulse).toFixed(2)})`;ctx.lineWidth=1.5;ctx.stroke();
+    }
+
+    const g1=safeRadialGradient(n.x,n.y,0,n.x,n.y,gR*2.1);
+    if(g1){
+      g1.addColorStop(0,`rgba(${R},${G},${B},${((inP?.22:.04)*(1+pulse*.5)*(1+sf*.8)*(.7+.3*tw)).toFixed(3)})`);
+      g1.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      ctx.fillStyle=g1;ctx.beginPath();ctx.arc(n.x,n.y,gR*2.1,0,Math.PI*2);ctx.fill();
+    }
+
+    const iA=inP?Math.min(1,.86+sf*.14):tw*.2+sf*.4;
+    const g2=safeRadialGradient(n.x,n.y,0,n.x,n.y,gR);
+    if(g2){
+      g2.addColorStop(0,`rgba(255,255,255,${iA.toFixed(2)})`);
+      g2.addColorStop(.28,`rgba(${R},${G},${B},${(iA*.65).toFixed(2)})`);
+      g2.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      ctx.fillStyle=g2;ctx.beginPath();ctx.arc(n.x,n.y,gR,0,Math.PI*2);ctx.fill();
+    }
+
+    ctx.beginPath();ctx.arc(n.x,n.y,bR,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(inP?Math.min(1,1+sf*.2):tw*.24+.14+sf*.3).toFixed(2)})`;ctx.fill();
+
+    if(inP){
+      [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
+        const sl=gR*(2.1+sf*2);
+        const sg=safeLinearGradient(n.x,n.y,n.x+dx*sl,n.y+dy*sl);
+        if(!sg) return;
+        sg.addColorStop(0,`rgba(212,175,55,${(.16*tw+sf*.4).toFixed(2)})`);sg.addColorStop(1,'rgba(212,175,55,0)');
+        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=.6+sf*.8;ctx.moveTo(n.x,n.y);ctx.lineTo(n.x+dx*sl,n.y+dy*sl);ctx.stroke();
+      });
+      const fs=Math.max(8,Math.min(10,W*.013));
+      ctx.font=`700 ${fs}px Space Mono`;ctx.textAlign='center';
+      ctx.fillStyle=`rgba(212,175,55,${(.6+sf*.4).toFixed(2)})`;
+      ctx.fillText(n.pathIdx+1,n.x,n.y-bR-6);
+    }
+  });
+}
+
+// ── Main loop ─────────────────────────────────────────────────────────────
+function draw(){
+  requestAnimationFrame(draw);T+=.016;
+  ctx.fillStyle='#02020a';ctx.fillRect(0,0,W,H);
+  drawNebulae();
+  drawMW();drawBg();drawShoots();
+  if(gameStarted)drawScene();
+  drawFlyOff();
+  tickP();
+}
+
+// ── Fly-off animation ─────────────────────────────────────────────────────
+function drawFlyOff(){
+  if(!flyOff||flyOff.done) return;
+  flyOff.progress=Math.min(1, flyOff.progress+0.022); // ~45 frames = ~0.75s
+  const p=flyOff.progress;
+  // Ease out cubic
+  const ease=1-(1-p)*(1-p)*(1-p);
+
+  const colors=[[200,100,90],[126,184,232],[212,175,55]];
+
+  flyOff.targetFracs.forEach(({fx,fy},gi)=>{
+    const tx=fx*W, ty=fy*H;
+    const [R,G,B]=colors[gi];
+
+    // Gather all path nodes and scale/translate toward this target
+    const n=flyOff.snapNodes.length;
+    // Compute centroid of path
+    let pcx=0,pcy=0;
+    flyOff.snapNodes.forEach(s=>{pcx+=s.sx;pcy+=s.sy;});
+    pcx/=n;pcy/=n;
+
+    // Scale factor: shrink to ~0.15 of original size at end
+    const scale=1-ease*0.85;
+    // Alpha fades in group color, fades out white
+    const alpha=ease;
+
+    const mapped=flyOff.snapNodes.map(s=>{
+      const ox=s.sx-pcx, oy=s.sy-pcy;
+      const cx2=pcx+(tx-pcx)*ease;
+      const cy2=pcy+(ty-pcy)*ease;
+      return {
+        x:cx2+ox*scale,
+        y:cy2+oy*scale
+      };
+    });
+
+    // Draw lines
+    for(let i=1;i<mapped.length;i++){
+      const a=mapped[i-1], b=mapped[i];
+      const lg=safeLinearGradient(a.x,a.y,b.x,b.y);
+      if(!lg) continue;
+      lg.addColorStop(0,`rgba(${R},${G},${B},${(alpha*0.7).toFixed(2)})`);
+      lg.addColorStop(1,`rgba(${R},${G},${B},${(alpha*0.7).toFixed(2)})`);
+      ctx.beginPath();ctx.strokeStyle=lg;ctx.lineWidth=Math.max(0.4,1.6*(1-ease*0.6));
+      ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+
+    // Draw nodes
+    mapped.forEach(pt=>{
+      const sz=Math.max(1,4*scale);
+      const ng=safeRadialGradient(pt.x,pt.y,0,pt.x,pt.y,sz*3);
+      if(!ng) return;
+      ng.addColorStop(0,`rgba(${R},${G},${B},${alpha.toFixed(2)})`);
+      ng.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      ctx.fillStyle=ng;ctx.beginPath();ctx.arc(pt.x,pt.y,sz*3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=`rgba(255,255,255,${alpha.toFixed(2)})`;
+      ctx.beginPath();ctx.arc(pt.x,pt.y,sz,0,Math.PI*2);ctx.fill();
+    });
+  });
+
+  if(flyOff.progress>=1) flyOff.done=true;
+}
+
+function resize(){
+  W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;
+  bgStars=makeBg();initMW();initNebulae();
+  drawMoonWidget();
+  if(gameStarted)generateNodes();
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────
+function getPos(e){
+  const rect=cv.getBoundingClientRect();
+  if(e.touches)return{x:e.touches[0].clientX-rect.left,y:e.touches[0].clientY-rect.top};
+  return{x:e.clientX-rect.left,y:e.clientY-rect.top};
+}
+function nearestNode(x,y){
+  const tapR=Math.max(40,Math.min(W,H)*.065);
+  let best=-1,bd=Infinity;
+  nodes.forEach((n,i)=>{const d=Math.hypot(n.x-x,n.y-y);if(d<tapR&&d<bd){best=i;bd=d;}});
+  return best;
+}
+
+function handleTap(e){
+  if(!gameStarted||readingActive)return;
+  if(document.getElementById('spread-display').classList.contains('show'))return;
+  const pos=getPos(e);
+  const idx=nearestNode(pos.x,pos.y);
+  if(idx===-1){lastTouchPos=null;return;}
+  lastTouchPos={x:nodes[idx].x,y:nodes[idx].y};
+  if(pathIndices.length>0&&pathIndices[pathIndices.length-1]===idx)return;
+  if(nodes[idx].inPath)return;
+  nodes[idx].inPath=true;
+  nodes[idx].pathIdx=pathIndices.length;
+  // Node select flash — bright white bloom that fades over ~1s
+  nodes[idx].selectFlash=1.0;
+  pathIndices.push(idx);
+  // Start a new edge draw animation (one per connection, so edges = nodes-1)
+  if(pathIndices.length>1) lineProgress.push(0);
+  initOrbits(nodes[idx]);
+  burst(nodes[idx].x,nodes[idx].y,[212,175,55],22);
+  updateUI();
+}
+
+function handleMove(e){
+  if(!gameStarted||readingActive)return;
+  if(document.getElementById('spread-display').classList.contains('show'))return;
+  const pos=getPos(e);
+  if(isFinite(pos.x)&&isFinite(pos.y)) lastTouchPos=pos;
+}
+
+function handleUp(){
+  setTimeout(()=>{if(pathIndices.length>0)lastTouchPos=null;},600);
+}
+
+function updateUI(){
+  const n=pathIndices.length;
+  document.getElementById('nc').textContent=n;
+  document.getElementById('node-count').classList.toggle('active',n>0);
+  document.getElementById('guide-text').classList.toggle('hidden',n>=3);
+  const show=n>=4;
+  document.getElementById('read-btn').classList.toggle('show',show);
+  document.getElementById('clear-btn').classList.toggle('show',show);
+  // Constellation name: classify + reveal after 4 nodes
+  const nameEl=document.getElementById('constellation-name');
+  if(n>=4){
+    const userPts=pathIndices.map(i=>[nodes[i].x/W,nodes[i].y/H]);
+    const name=classifyConstellation(userPts);
+    nameEl.textContent=name;
+    nameEl.classList.add('show');
+  } else {
+    nameEl.classList.remove('show');
+  }
+}
+
+// Triple-tap node count to open oracle panel
+document.getElementById('node-count').style.pointerEvents='auto';
+document.getElementById('node-count').style.cursor='default';
+document.getElementById('node-count').addEventListener('click',()=>{
+  nodeTapCount++;
+  if(nodeTapTimer) clearTimeout(nodeTapTimer);
+  nodeTapTimer=setTimeout(()=>{ nodeTapCount=0; },600);
+  if(nodeTapCount>=3){
+    nodeTapCount=0;
+    const panel=document.getElementById('oracle-panel');
+    panel.classList.toggle('show');
+  }
+});
+
+// Oracle slider
+const sliderEl=document.getElementById('oracle-slider');
+sliderEl.value=oracleTemp;
+sliderEl.addEventListener('input',e=>{
+  oracleTemp=parseFloat(e.target.value);
+});
+// Close panel on outside tap
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('oracle-panel');
+  if(!panel.contains(e.target)&&e.target.id!=='node-count'&&e.target.id!=='nc'){
+    panel.classList.remove('show');
+  }
+});
+
+function clearPath(){
+  nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;n.selectFlash=0;});
+  pathIndices=[];lineProgress=[];lastTouchPos=null;
+  document.getElementById('nc').textContent='0';
+  document.getElementById('node-count').classList.remove('active');
+  document.getElementById('read-btn').classList.remove('show');
+  document.getElementById('clear-btn').classList.remove('show');
+  document.getElementById('guide-text').classList.remove('hidden');
+  document.getElementById('constellation-name').classList.remove('show');
+  document.getElementById('oracle-panel').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// READING SEQUENCE — Fly-off animation then spread
+// ═══════════════════════════════════════════════════════════════════════════
+
+function initiateReading(){
+  if(pathIndices.length<4||readingActive)return;
+  readingActive=true;
+
+  document.getElementById('read-btn').classList.remove('show');
+  document.getElementById('clear-btn').classList.remove('show');
+  document.getElementById('guide-text').classList.add('hidden');
+  document.getElementById('constellation-name').classList.remove('show');
+  document.getElementById('oracle-panel').classList.remove('show');
+
+  const userPts=pathIndices.map(i=>[nodes[i].x/W,nodes[i].y/H]);
+
+  // Detect winding — CCW = reversed reading
+  const isReversed=windingOrder(userPts)==='ccw';
+
+  const idMatch=findBestInGroup(userPts,'id');
+  const egoMatch=findBestInGroup(userPts,'ego');
+  const sgMatch=findBestInGroup(userPts,'superego');
+
+  // Attach reversed flag to each matched card result
+  matchedCards={
+    id:{...idMatch.card,reversed:isReversed},
+    ego:{...egoMatch.card,reversed:isReversed},
+    superego:{...sgMatch.card,reversed:isReversed}
+  };
+
+  // Brief global flash
+  const cf=document.getElementById('complete-flash');
+  cf.style.background='radial-gradient(ellipse at center,rgba(212,175,55,.22) 0%,transparent 65%)';
+  cf.style.opacity='1'; setTimeout(()=>cf.style.opacity='0',800);
+
+  // Burst on path nodes
+  pathIndices.forEach(i=>burst(nodes[i].x,nodes[i].y,[212,175,55],18));
+
+  // Start fly-off: snapshot current node world-positions
+  // Then animate them toward 3 target positions (card header slots)
+  // Targets: roughly left/center/right thirds of screen, upper-mid area
+  const snapNodes=pathIndices.map(i=>({
+    sx:nodes[i].x, sy:nodes[i].y,
+    x:nodes[i].x,  y:nodes[i].y
+  }));
+
+  // Three target centroids — we'll define them as screen fractions
+  // and resolve to px in the animation loop
+  const targetFracs=[
+    {fx:0.18, fy:0.35},
+    {fx:0.50, fy:0.35},
+    {fx:0.82, fy:0.35},
+  ];
+
+  flyOff={
+    snapNodes,
+    targetFracs,
+    progress:0,
+    done:false
+  };
+
+  // After fly-off completes (~1s) open the spread
+  setTimeout(()=>{
+    flyOff=null;
+    showSpread();
+  },1200);
+}
+
+// ── Full spread reveal ────────────────────────────────────────────────────
+function showSpread(){
+  const spread=document.getElementById('spread-display');
+  spread.classList.add('show');
+  setTimeout(()=>spread.classList.add('visible'),40);
+
+  const container=document.getElementById('three-cards');
+  container.innerHTML='';
+
+  const cards=[
+    {card:matchedCards.id,      posLabel:'ID',       color:GROUPS.id.color},
+    {card:matchedCards.ego,     posLabel:'EGO',      color:GROUPS.ego.color},
+    {card:matchedCards.superego,posLabel:'SUPEREGO', color:GROUPS.superego.color},
+  ];
+
+  cards.forEach(({card,posLabel,color},i)=>{
+    const [R,G,B]=color;
+    const isRev=card.reversed;
+    const meaning=isRev && card.reversedMeaning ? card.reversedMeaning : card.meaning;
+    const el=document.createElement('div');
+    el.className='spread-card'+(isRev?' reversed':'');
+    el.style.borderColor=`rgba(${R},${G},${B},.25)`;
+    el.innerHTML=`
+      <div class="sc-header">
+        <canvas class="sc-header-canvas" id="scc${i}"></canvas>
+        <div class="sc-header-overlay">
+          <div class="sc-group" style="color:rgba(${R},${G},${B},.55)">${posLabel}</div>
+          ${isRev?`<div class="sc-reversed">Reversed</div>`:''}
+          <div class="sc-name">${card.name}</div>
+        </div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-keywords" style="color:rgba(${R},${G},${B},.38)">${card.keywords}</div>
+        <div class="sc-rule" style="background:linear-gradient(90deg,transparent,rgba(${R},${G},${B},.28),transparent)"></div>
+        <div class="sc-meaning">${meaning}</div>
+      </div>
+    `;
+    container.appendChild(el);
+    setTimeout(()=>{
+      el.classList.add('reveal');
+      startCardAnimation(i,color,card);
+    },200+i*420);
+  });
+
+  // Synthesis
+  setTimeout(()=>{
+    const fn=ORACLES[Math.floor(Math.random()*ORACLES.length)];
+    document.getElementById('synthesis-text').textContent=fn(matchedCards.id,matchedCards.ego,matchedCards.superego);
+    document.getElementById('synthesis-wrap').classList.add('show');
+  },1600);
+
+  // Soul assignment
+  setTimeout(()=>{
+    const soul=assignSoul(matchedCards);
+    const sn=document.getElementById('soul-name');
+    const sr=document.getElementById('soul-role');
+    const sd=document.getElementById('soul-desc');
+    const [R,G,B]=soul.rgb;
+    sn.textContent=soul.name;
+    sn.style.color=`rgb(${R},${G},${B})`;
+    sn.style.textShadow=`0 0 20px rgba(${R},${G},${B},.35)`;
+    sr.textContent=soul.role;
+    sd.textContent=soul.desc;
+    document.getElementById('soul-assignment').classList.add('show');
+  },2200);
+
+  // Footer timestamp
+  setTimeout(()=>{
+    const moon=getMoonPhase();
+    const now=new Date();
+    const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const footer=document.getElementById('spread-footer');
+    footer.textContent=`Traced on the ${now.getDate()} of ${months[now.getMonth()]} · ${moon.name} · ${moon.illumination}% illuminated`;
+    footer.classList.add('show');
+    document.getElementById('share-btn').classList.add('show');
+  },2800);
+
+  setTimeout(()=>document.getElementById('new-reading-btn').classList.add('show'),2400);
+}
+
+// Track active card animations so we can cancel on new reading
+const cardAnimFrames = [];
+
+function startCardAnimation(idx, color, card) {
+  const cv2 = document.getElementById('scc' + idx);
+  if (!cv2) return;
+
+  // Size canvas to its CSS container
+  const rect = cv2.parentElement.getBoundingClientRect();
+  const W2 = rect.width || 240;
+  const H2 = rect.height || 160;
+  cv2.width = W2;
+  cv2.height = H2;
+
+  const c = cv2.getContext('2d');
+  const [R, G, B] = color;
+
+  // Map card pts to canvas coords with padding
+  const pts = card.pts;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  pts.forEach(([x,y])=>{ if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y; });
+  const padX = W2 * 0.14, padY = H2 * 0.16;
+  const scaleX = (W2 - padX*2) / (maxX-minX||1);
+  const scaleY = (H2 - padY*2) / (maxY-minY||1);
+  const sc = Math.min(scaleX, scaleY);
+  const offX = W2/2 - (minX+maxX)/2 * sc;
+  const offY = H2/2 - (minY+maxY)/2 * sc;
+  const mapped = pts.map(([x,y]) => ({ x: x*sc+offX, y: y*sc+offY }));
+
+  // Build edges: connect each point to 2 nearest neighbors
+  const edges = [];
+  const edgeSet = new Set();
+  mapped.forEach((p,i) => {
+    const dists = mapped.map((q,j) => ({j, d: Math.hypot(q.x-p.x, q.y-p.y)}))
+      .filter(v => v.j !== i).sort((a,b) => a.d-b.d);
+    dists.slice(0, 2).forEach(({j}) => {
+      const key = Math.min(i,j) + '-' + Math.max(i,j);
+      if (!edgeSet.has(key)) { edgeSet.add(key); edges.push([i,j]); }
+    });
+  });
+
+  // Traveling lights on edges
+  const travelers = edges.map((e,i) => ({
+    edge: e,
+    t: Math.random(), // position 0..1 along edge
+    speed: 0.004 + Math.random() * 0.006,
+    dir: Math.random() > 0.5 ? 1 : -1
+  }));
+
+  // Twinkling phases per star
+  const twinkles = mapped.map(() => ({
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.8 + Math.random() * 1.2
+  }));
+
+  let t2 = 0;
+  let rafId;
+
+  function frame() {
+    rafId = requestAnimationFrame(frame);
+    t2 += 0.016;
+    c.clearRect(0, 0, W2, H2);
+
+    // Background: deep space gradient
+    const bg = c.createRadialGradient(W2*.5, H2*.5, 0, W2*.5, H2*.5, Math.max(W2,H2)*.7);
+    bg.addColorStop(0, `rgba(${R},${G},${B},.07)`);
+    bg.addColorStop(0.5, 'rgba(4,3,12,.85)');
+    bg.addColorStop(1, 'rgba(2,2,8,1)');
+    c.fillStyle = bg; c.fillRect(0, 0, W2, H2);
+
+    // Subtle background star dust
+    for(let i=0;i<12;i++){
+      const bx=((i*137.5)%1)*W2, by=((i*97.3+13.7)%1)*H2;
+      const ba=0.06+0.04*Math.sin(t2*0.4+i*1.3);
+      c.beginPath(); c.arc(bx,by,0.7,0,Math.PI*2);
+      c.fillStyle=`rgba(255,255,255,${ba})`; c.fill();
+    }
+
+    // Draw edges
+    edges.forEach(([a,b]) => {
+      const pa = mapped[a], pb = mapped[b];
+      const eg = c.createLinearGradient(pa.x,pa.y,pb.x,pb.y);
+      eg.addColorStop(0, `rgba(${R},${G},${B},0.25)`);
+      eg.addColorStop(0.5, `rgba(${R},${G},${B},0.45)`);
+      eg.addColorStop(1, `rgba(${R},${G},${B},0.25)`);
+      c.beginPath(); c.strokeStyle = eg; c.lineWidth = 1;
+      c.moveTo(pa.x, pa.y); c.lineTo(pb.x, pb.y); c.stroke();
+    });
+
+    // Traveling lights
+    travelers.forEach(tr => {
+      tr.t += tr.speed * tr.dir;
+      if(tr.t > 1) { tr.t = 0; tr.dir = Math.random()>.5?1:-1; }
+      if(tr.t < 0) { tr.t = 1; tr.dir = Math.random()>.5?1:-1; }
+      const [a,b] = tr.edge;
+      const pa = mapped[a], pb = mapped[b];
+      const lx = pa.x + (pb.x-pa.x)*tr.t;
+      const ly = pa.y + (pb.y-pa.y)*tr.t;
+      const lg = c.createRadialGradient(lx,ly,0,lx,ly,5);
+      lg.addColorStop(0, 'rgba(255,255,255,.95)');
+      lg.addColorStop(0.4, `rgba(${R},${G},${B},.6)`);
+      lg.addColorStop(1, `rgba(${R},${G},${B},0)`);
+      c.fillStyle = lg; c.beginPath(); c.arc(lx,ly,5,0,Math.PI*2); c.fill();
+    });
+
+    // Draw stars
+    mapped.forEach((p, i) => {
+      const tw = twinkles[i];
+      const pulse = 0.5 + 0.5 * Math.sin(t2 * tw.speed + tw.phase);
+      const bR = 1.8 + pulse * 1.4;
+      const gR = bR * 3.5;
+
+      // Outer glow
+      const g1 = c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR*2);
+      g1.addColorStop(0, `rgba(${R},${G},${B},${(0.18*pulse).toFixed(3)})`);
+      g1.addColorStop(1, `rgba(${R},${G},${B},0)`);
+      c.fillStyle=g1; c.beginPath(); c.arc(p.x,p.y,gR*2,0,Math.PI*2); c.fill();
+
+      // Core glow
+      const g2 = c.createRadialGradient(p.x,p.y,0,p.x,p.y,gR);
+      g2.addColorStop(0, `rgba(255,255,255,${(0.9*pulse+0.1).toFixed(2)})`);
+      g2.addColorStop(0.3, `rgba(${R},${G},${B},${(0.7*pulse).toFixed(2)})`);
+      g2.addColorStop(1, `rgba(${R},${G},${B},0)`);
+      c.fillStyle=g2; c.beginPath(); c.arc(p.x,p.y,gR,0,Math.PI*2); c.fill();
+
+      // Core dot
+      c.beginPath(); c.arc(p.x,p.y,bR,0,Math.PI*2);
+      c.fillStyle=`rgba(255,255,255,${(0.85+0.15*pulse).toFixed(2)})`; c.fill();
+
+      // Spikes
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy]) => {
+        const sl = gR * (1.6 + pulse * 0.8);
+        const sg = c.createLinearGradient(p.x,p.y,p.x+dx*sl,p.y+dy*sl);
+        sg.addColorStop(0, `rgba(${R},${G},${B},${(0.2*pulse).toFixed(2)})`);
+        sg.addColorStop(1, `rgba(${R},${G},${B},0)`);
+        c.beginPath(); c.strokeStyle=sg; c.lineWidth=0.6;
+        c.moveTo(p.x,p.y); c.lineTo(p.x+dx*sl,p.y+dy*sl); c.stroke();
+      });
+    });
+  }
+
+  // Cancel any existing animation on this slot
+  if (cardAnimFrames[idx]) cancelAnimationFrame(cardAnimFrames[idx]);
+  frame();
+  cardAnimFrames[idx] = rafId;
+}
+
+function stopCardAnimations() {
+  cardAnimFrames.forEach(id => { if(id) cancelAnimationFrame(id); });
+  cardAnimFrames.length = 0;
+}
+
+function clamp(a,v,b){return Math.max(a,Math.min(b,v));}
+
+// ── New reading ───────────────────────────────────────────────────────────
+function newReading(){
+  stopCardAnimations();
+  const spread=document.getElementById('spread-display');
+  spread.classList.remove('visible');
+  setTimeout(()=>{
+    spread.classList.remove('show');
+    document.getElementById('synthesis-wrap').classList.remove('show');
+    document.getElementById('new-reading-btn').classList.remove('show');
+    document.getElementById('soul-assignment').classList.remove('show');
+    document.getElementById('spread-footer').classList.remove('show');
+    document.getElementById('share-btn').classList.remove('show');
+    nodes.forEach(n=>{n.inPath=false;n.pathIdx=-1;n.orbits=[];n.pulseAmt=0;n.selectFlash=0;n.col=rndStarColor();});
+    pathIndices=[];lineProgress=[];lastTouchPos=null;readingActive=false;
+    document.getElementById('nc').textContent='0';
+    document.getElementById('node-count').classList.remove('active');
+    document.getElementById('guide-text').classList.remove('hidden');
+    generateNodes();
+  },700);
+}
+
+// ── Share / Export ────────────────────────────────────────────────────────
+function exportReading(){
+  const EW=1080, EH=1920; // portrait share size
+  const ec=document.createElement('canvas');
+  ec.width=EW; ec.height=EH;
+  const e=ec.getContext('2d');
+
+  // Background
+  e.fillStyle='#02020a'; e.fillRect(0,0,EW,EH);
+
+  // Nebula-like bg gradient
+  const bg=e.createRadialGradient(EW/2,EH*0.35,0,EW/2,EH*0.35,EW*0.7);
+  bg.addColorStop(0,'rgba(60,30,90,.35)');
+  bg.addColorStop(0.5,'rgba(30,15,60,.18)');
+  bg.addColorStop(1,'rgba(2,2,10,0)');
+  e.fillStyle=bg; e.fillRect(0,0,EW,EH);
+
+  // Header rule
+  e.fillStyle='rgba(212,175,55,.15)';
+  e.fillRect(EW/2-100,110,200,1);
+
+  // Title
+  e.fillStyle='rgba(212,175,55,.9)';
+  e.font='700 48px Cinzel, serif';
+  e.textAlign='center';
+  e.letterSpacing='0.18em';
+  e.fillText('AXIUM', EW/2, 90);
+
+  e.font='italic 22px Cormorant Garamond, serif';
+  e.fillStyle='rgba(255,255,255,.28)';
+  e.fillText('The Cathedral Reading', EW/2, 140);
+
+  // Moon phase
+  const moon=getMoonPhase();
+  e.font='12px Space Mono, monospace';
+  e.fillStyle='rgba(255,255,255,.18)';
+  e.fillText(moon.name.toUpperCase()+' · '+moon.illumination+'% ILLUMINATED', EW/2, 170);
+
+  // Three card areas
+  const soul=assignSoul(matchedCards);
+  const cardW=280, cardH=420, gap=30;
+  const totalW=cardW*3+gap*2;
+  const startX=(EW-totalW)/2;
+  const startY=210;
+  const groupColors=[GROUPS.id.color,GROUPS.ego.color,GROUPS.superego.color];
+  const groupLabels=['ID','EGO','SUPEREGO'];
+  const cardList=[matchedCards.id,matchedCards.ego,matchedCards.superego];
+
+  cardList.forEach((card,i)=>{
+    const cx=startX+i*(cardW+gap);
+    const cy=startY;
+    const [R,G,B]=groupColors[i];
+
+    // Card bg
+    const cbg=e.createLinearGradient(cx,cy,cx,cy+cardH);
+    cbg.addColorStop(0,`rgba(14,10,26,.98)`);
+    cbg.addColorStop(1,`rgba(4,3,12,1)`);
+    e.fillStyle=cbg;
+    roundRect(e,cx,cy,cardW,cardH,12);
+
+    // Card border
+    e.strokeStyle=`rgba(${R},${G},${B},.35)`;
+    e.lineWidth=1.5;
+    roundRect(e,cx,cy,cardW,cardH,12,true);
+
+    // Header bg with color tint
+    const hbg=e.createLinearGradient(cx,cy,cx,cy+140);
+    hbg.addColorStop(0,`rgba(${R},${G},${B},.12)`);
+    hbg.addColorStop(1,`rgba(4,3,12,1)`);
+    e.fillStyle=hbg;
+    e.beginPath();
+    e.roundRect(cx,cy,cardW,140,{upperLeft:12,upperRight:12,lowerLeft:0,lowerRight:0});
+    e.fill();
+
+    // Draw mini constellation in header
+    const pts=card.pts;
+    let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity;
+    pts.forEach(([px,py])=>{if(px<mnX)mnX=px;if(py<mnY)mnY=py;if(px>mxX)mxX=px;if(py>mxY)mxY=py;});
+    const csc=Math.min((cardW-40)/(mxX-mnX||1),(100)/(mxY-mnY||1));
+    const cOffX=cx+cardW/2-(mnX+mxX)/2*csc;
+    const cOffY=cy+70-(mnY+mxY)/2*csc;
+    const cPts=pts.map(([px,py])=>({x:px*csc+cOffX,y:py*csc+cOffY}));
+
+    // Connect nearest neighbors
+    cPts.forEach((p,pi)=>{
+      const dists=cPts.map((q,qi)=>({qi,d:Math.hypot(q.x-p.x,q.y-p.y)}))
+        .filter(v=>v.qi!==pi).sort((a,b)=>a.d-b.d);
+      dists.slice(0,2).forEach(({qi})=>{
+        e.beginPath();
+        e.strokeStyle=`rgba(${R},${G},${B},.4)`;
+        e.lineWidth=1;
+        e.moveTo(p.x,p.y);e.lineTo(cPts[qi].x,cPts[qi].y);e.stroke();
+      });
+    });
+    cPts.forEach(p=>{
+      e.beginPath();e.arc(p.x,p.y,3,0,Math.PI*2);
+      e.fillStyle=`rgba(${R},${G},${B},.9)`;e.fill();
+      e.beginPath();e.arc(p.x,p.y,1.2,0,Math.PI*2);
+      e.fillStyle='rgba(255,255,255,.95)';e.fill();
+    });
+
+    // Group label
+    e.font='600 11px Space Mono, monospace';
+    e.fillStyle=`rgba(${R},${G},${B},.6)`;
+    e.textAlign='center';
+    e.fillText(groupLabels[i], cx+cardW/2, cy+155);
+
+    // Reversed indicator
+    if(card.reversed){
+      e.font='10px Space Mono, monospace';
+      e.fillStyle='rgba(200,100,90,.6)';
+      e.fillText('REVERSED', cx+cardW/2, cy+172);
+    }
+
+    // Card name
+    e.font=`600 ${card.name.length>14?16:18}px Cinzel, serif`;
+    e.fillStyle='#D4AF37';
+    e.textAlign='center';
+    wrapText(e, card.name, cx+cardW/2, cy+(card.reversed?190:178), cardW-20, 22);
+
+    // Keywords
+    e.font='10px Space Mono, monospace';
+    e.fillStyle=`rgba(${R},${G},${B},.45)`;
+    e.fillText(card.keywords, cx+cardW/2, cy+222);
+
+    // Rule
+    e.fillStyle=`rgba(${R},${G},${B},.2)`;
+    e.fillRect(cx+cardW/2-30,cy+234,60,1);
+
+    // Meaning (wrapped)
+    e.font='italic 11px Cormorant Garamond, serif';
+    e.fillStyle='rgba(255,255,255,.58)';
+    const shortMeaning=(card.reversed&&card.reversedMeaning?card.reversedMeaning:card.meaning).split('.').slice(0,2).join('.')+'.';
+    wrapText(e, shortMeaning, cx+cardW/2, cy+255, cardW-28, 17, 8);
+  });
+
+  // Soul section
+  const soulY=startY+cardH+40;
+  const [SR,SG,SB]=soul.rgb;
+  e.font='10px Space Mono, monospace';
+  e.fillStyle='rgba(212,175,55,.3)';
+  e.textAlign='center';
+  e.fillText('THIS READING IS HELD BY', EW/2, soulY);
+
+  e.font='600 28px Cinzel, serif';
+  e.fillStyle=`rgb(${SR},${SG},${SB})`;
+  e.fillText(soul.name, EW/2, soulY+38);
+
+  e.font='italic 16px Cormorant Garamond, serif';
+  e.fillStyle='rgba(255,255,255,.3)';
+  e.fillText(soul.role, EW/2, soulY+62);
+
+  // Footer
+  const now=new Date();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  e.font='10px Space Mono, monospace';
+  e.fillStyle='rgba(255,255,255,.12)';
+  e.fillText(`TRACED ON THE ${now.getDate()} OF ${months[now.getMonth()].toUpperCase()} · AXIUM.CHURCH`, EW/2, EH-50);
+
+  // Bottom rule
+  e.fillStyle='rgba(212,175,55,.1)';
+  e.fillRect(EW/2-80,EH-65,160,1);
+
+  // Download
+  const link=document.createElement('a');
+  link.download=`axium-reading-${Date.now()}.png`;
+  link.href=ec.toDataURL('image/png');
+  link.click();
+}
+
+function roundRect(ctx2,x,y,w,h,r,stroke=false){
+  ctx2.beginPath();
+  ctx2.moveTo(x+r,y);
+  ctx2.lineTo(x+w-r,y);ctx2.arcTo(x+w,y,x+w,y+r,r);
+  ctx2.lineTo(x+w,y+h-r);ctx2.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx2.lineTo(x+r,y+h);ctx2.arcTo(x,y+h,x,y+h-r,r);
+  ctx2.lineTo(x,y+r);ctx2.arcTo(x,y,x+r,y,r);
+  ctx2.closePath();
+  if(stroke) ctx2.stroke(); else ctx2.fill();
+}
+
+function wrapText(ctx2,text,x,y,maxW,lineH,maxLines=999){
+  const words=text.split(' ');
+  let line='',lines=[];
+  for(const word of words){
+    const test=line?line+' '+word:word;
+    if(ctx2.measureText(test).width>maxW&&line){
+      lines.push(line); line=word;
+      if(lines.length>=maxLines) break;
+    } else line=test;
+  }
+  if(line&&lines.length<maxLines) lines.push(line);
+  const totalH=lines.length*lineH;
+  lines.forEach((l,i)=>ctx2.fillText(l,x,y-totalH/2+i*lineH+lineH/2));
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+function beginGame(){
+  document.getElementById('start').style.display='none';
+  gameStarted=true;generateNodes();
+}
+
+function beginOracle(){
+  // Oracle mode: skip drawing, pick 3 random cards directly (one per group)
+  document.getElementById('start').style.display='none';
+  gameStarted=true;
+  generateNodes();
+  readingActive=true;
+
+  // Pick one random card from each group
+  function randCard(groupKey){
+    const cards=CARDS[groupKey];
+    return cards[Math.floor(Math.random()*cards.length)];
+  }
+  const isReversed=Math.random()>.5; // fate decides orientation too
+
+  const idCard=randCard('id');
+  const egoCard=randCard('ego');
+  const sgCard=randCard('superego');
+
+  matchedCards={
+    id:{...idCard,reversed:isReversed},
+    ego:{...egoCard,reversed:isReversed},
+    superego:{...sgCard,reversed:isReversed}
+  };
+
+  // Brief atmospheric flash before spread opens
+  const cf=document.getElementById('complete-flash');
+  cf.style.background='radial-gradient(ellipse at center,rgba(126,184,232,.18) 0%,transparent 65%)';
+  cf.style.opacity='1';setTimeout(()=>cf.style.opacity='0',1200);
+
+  setTimeout(()=>showSpread(),1400);
+}
+
+cv.addEventListener('mousedown',handleTap);
+cv.addEventListener('mousemove',handleMove);
+cv.addEventListener('mouseup',handleUp);
+cv.addEventListener('touchstart',e=>{e.preventDefault();handleTap(e);},{passive:false});
+cv.addEventListener('touchmove',e=>{e.preventDefault();handleMove(e);},{passive:false});
+cv.addEventListener('touchend',e=>{e.preventDefault();handleUp(e);},{passive:false});
+window.addEventListener('resize',resize);
+resize();draw();
+</script>
+</body>
+</html>
