@@ -1,19 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
+<head>
     <meta charset="UTF-8">
-    <title>three.js Earth</title>
-    <link rel="stylesheet" href="./style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Civ Guardian: Earth</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        canvas { display: block; }
+        #ui { position: absolute; top: 10px; left: 10px; color: white; pointer-events: none; text-shadow: 1px 1px 2px black; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div>Population: <span id="pop-count">150</span></div>
+        <div>Global Tension: <span id="tension-level">Low</span></div>
+    </div>
 
-  </head>
+    <script src="./three.js"></script>
+    <script src="./orbit.js"></script>
+    <script>
+    'use strict';
 
-  <body>
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1500);
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+    var orbitControls;
+    var cameraAutoRotation = true;
+    var cameraRotationSpeed = 0;
 
-    <script src='./three.js'></script>
-<script src='./orbit.js'></script>
-<script  src="./script.js"></script>
+    // Lights
+    var spotLight = new THREE.SpotLight(0xffffff, 50); // Higher intensity for modern Three.js
+    spotLight.position.set(5, 3, 5);
+    var ambientLight = new THREE.AmbientLight(0x404040, 2);
+    scene.add(spotLight, ambientLight);
 
-  </body>
+    // Texture Loader
+    var textureLoader = new THREE.TextureLoader();
 
+    // Civilization Data
+    var civCount = 150;
+    var civPoints;
+    var civData = []; // Stores { aggression, health, enlightened }
+
+    var planetProto = {
+        sphere: (size) => new THREE.SphereGeometry(size, 32, 32),
+        material: (options) => {
+            var mat = new THREE.MeshPhongMaterial();
+            if (options) Object.assign(mat, options);
+            return mat;
+        }
+    };
+
+    var createPlanet = function(options) {
+        var surface = new THREE.Mesh(planetProto.sphere(options.surface.size), planetProto.material(options.surface.material));
+        var atmosphere = new THREE.Mesh(planetProto.sphere(options.surface.size + options.atmosphere.size), planetProto.material({ transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
+
+        var planet = new THREE.Object3D();
+        surface.name = 'surface';
+        atmosphere.name = 'atmosphere';
+        planet.add(surface, atmosphere);
+
+        // Load textures
+        textureLoader.load(options.surface.textures.map, tex => { surface.material.map = tex; surface.material.needsUpdate = true; });
+        textureLoader.load(options.atmosphere.textures.map, tex => { atmosphere.material.map = tex; atmosphere.material.needsUpdate = true; });
+
+        return planet;
+    };
+
+    var earth = createPlanet({
+        surface: { size: 0.5, material: { shininess: 10 }, textures: { map: './earthmap1k.jpg' } },
+        atmosphere: { size: 0.01, textures: { map: './earthcloudmap.jpg' } }
+    });
+    scene.add(earth);
+
+    // Create Civilization Particles
+    function initCiv() {
+        var geo = new THREE.BufferGeometry();
+        var positions = new Float32Array(civCount * 3);
+        var colors = new Float32Array(civCount * 3);
+
+        for (var i = 0; i < civCount; i++) {
+            var phi = Math.acos(-1 + (2 * i) / civCount);
+            var theta = Math.sqrt(civCount * Math.PI) * phi;
+
+            positions[i*3] = 0.51 * Math.cos(theta) * Math.sin(phi);
+            positions[i*3+1] = 0.51 * Math.sin(theta) * Math.sin(phi);
+            positions[i*3+2] = 0.51 * Math.cos(phi);
+
+            colors[i*3] = 1; colors[i*3+1] = 1; colors[i*3+2] = 1;
+            civData.push({ aggression: Math.random(), health: 1.0, enlightened: 0 });
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        var mat = new THREE.PointsMaterial({ size: 0.02, vertexColors: true });
+        civPoints = new THREE.Points(geo, mat);
+        earth.add(civPoints);
+    }
+    initCiv();
+
+    // Interaction logic
+    function onInteraction(event) {
+        if (cameraAutoRotation) {
+            orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+            cameraAutoRotation = false;
+        }
+
+        // Handle both touch and mouse
+        var x = event.touches ? event.touches[0].clientX : event.clientX;
+        var y = event.touches ? event.touches[0].clientY : event.clientY;
+
+        mouse.x = (x / window.innerWidth) * 2 - 1;
+        mouse.y = -(y / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObject(earth, true);
+
+        if (intersects.length > 0) {
+            // Heal nearby particles on click
+            civData.forEach(d => { d.aggression *= 0.5; d.enlightened += 0.1; });
+            document.getElementById('tension-level').innerText = "CALMED";
+            setTimeout(() => { document.getElementById('tension-level').innerText = "Low"; }, 1000);
+        }
+    }
+
+    window.addEventListener('pointerdown', onInteraction);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var render = function() {
+        earth.getObjectByName('surface').rotation.y += 0.001;
+        earth.getObjectByName('atmosphere').rotation.y += 0.0015;
+
+        // Simulation Loop
+        var colors = civPoints.geometry.attributes.color.array;
+        for (var i = 0; i < civCount; i++) {
+            civData[i].aggression += Math.random() * 0.001; // Tension grows naturally
+
+            if (civData[i].aggression > 0.8) {
+                colors[i*3] = 1; colors[i*3+1] = 0; colors[i*3+2] = 0; // Conflict (Red)
+            } else if (civData[i].enlightened > 0.5) {
+                colors[i*3] = 0; colors[i*3+1] = 1; colors[i*3+2] = 1; // Enlightened (Cyan)
+            } else {
+                colors[i*3] = 1; colors[i*3+1] = 1; colors[i*3+2] = 1; // Normal
+            }
+        }
+        civPoints.geometry.attributes.color.needsUpdate = true;
+
+        if (cameraAutoRotation) {
+            cameraRotationSpeed += 0.002;
+            camera.position.set(2 * Math.sin(cameraRotationSpeed), 1, 2 * Math.cos(cameraRotationSpeed));
+            camera.lookAt(earth.position);
+        }
+
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    };
+
+    render();
+    </script>
+</body>
 </html>
