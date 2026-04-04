@@ -605,11 +605,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
                 <button class="tc-reset" onclick="resetTime()">&#8634; Reset to Now</button>
             </div>
             <div class="hm-pane" id="hm-pane-3">
-                <div class="hm-pane-label">Music</div>
-                <div>
-<iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2184015935&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe><div style="font-size: 10px; color: #cccccc;line-break: anywhere;word-break: normal;overflow: hidden;white-space: nowrap;text-overflow: ellipsis; font-family: Interstate,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Garuda,Verdana,Tahoma,sans-serif;font-weight: 100;"><a href="https://soundcloud.com/micheal-salmon-1" title="Micheal Salmon" target="_blank" style="color: #cccccc; text-decoration: none;">Micheal Salmon</a> · <a href="https://soundcloud.com/micheal-salmon-1/sets/god-tier" title="God Tier" target="_blank" style="color: #cccccc; text-decoration: none;">God Tier</a></div>
-                </div>
-            </div>
+    <div class="hm-pane-label">Music</div>
+    <div id="sc-target">
+        </div>
+</div>
 
 
         </div>
@@ -663,6 +662,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     </div>
     <div class="panel-body" id="panel-body"></div>
 </div>
+
+
+
+<script src="cards.js"></script>
+<script src="game.js"></script>
+
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"}}</script>
 <script type="module">
@@ -879,8 +884,8 @@ document.getElementById('panel-drag').addEventListener('touchstart',e=>{window._
 document.getElementById('panel-drag').addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-(window._dS||0)>55)closePanel();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
 
-function openPlanetPanel(p,ec,retro){
-    // Cthulhu partial defense on planet click
+function openPlanetPanel(p, ec, retro) {
+    // 1. Cthulhu & Constellation Logic (Keep existing)
     if (cthulhuState && cthulhuState.attacking && cthulhuState.targetPlanetIdx !== null) {
         const targetPlanet = planetMeshes[cthulhuState.targetPlanetIdx];
         if (targetPlanet && targetPlanet.userData.planet.name === p.name) {
@@ -888,72 +893,76 @@ function openPlanetPanel(p,ec,retro){
             updateCthulhuHUD();
         }
     }
-    // Constellation: record visit, light next node
-    const required = CONSTELLATION_REQUIRED[p.name];
+
     constState[p.name].visits++;
     const prevLit = constState[p.name].lit;
-    if (constState[p.name].lit < required) {
+    if (constState[p.name].lit < CONSTELLATION_REQUIRED[p.name]) {
         lightNextConstNode(p.name);
         updateHUDDots(p.name);
-        if (checkAllComplete()) {
-            setTimeout(triggerInitiation, 1200);
-        }
+        if (checkAllComplete()) setTimeout(triggerInitiation, 1200);
     }
-    document.querySelectorAll('.planet-label').forEach(el=>el.classList.remove('active'));
-    document.querySelectorAll(`.planet-label[data-planet="${p.name}"]`).forEach(el=>el.classList.add('active'));
-    const mesh=planetMeshes.find(m=>m.userData.planet.name===p.name);
-    if(mesh){const s=mesh.scale.x;mesh.scale.setScalar(s*1.5);setTimeout(()=>mesh.scale.setScalar(s),400);}
-    const pos=engine.getZodiacPosition(ec);
-    const hintIdx = Math.min(prevLit, (p.hints||[]).length-1);
-    const hintStr = p.hints && p.hints[hintIdx] ? `✦ ${p.hints[hintIdx]}` : p.astroRole;
+
+    // 2. UI Highlights
+    document.querySelectorAll('.planet-label').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll(`.planet-label[data-planet="${p.name}"]`).forEach(el => el.classList.add('active'));
+
+    // 3. Data Prep
+    const pos = engine.getZodiacPosition(ec);
     const soul = SOULS_CONFIG[activeSoul];
-    const soulVoice = soul && soul.planetVoice && soul.planetVoice[p.name];
-    const soulBadgeHTML = soul ? `
+    const soulVoice = soul?.planetVoice?.[p.name];
+
+    // Get the dynamic Cards from cards.js
+    const cardMatrixHTML = getCardsForPlanet(p.name, activeSoul);
+
+    // 4. Build the HTML (Restoring the 'Layers' and 'Callouts' you lost)
+    const content = `
         <div class="soul-voice-badge" style="border-color:rgba(${soul.rgb},0.3);--soul-rgb:${soul.rgb}">
             <span class="soul-voice-icon">${soul.icon}</span>
             <div class="soul-voice-meta">
                 <span class="soul-voice-speaking">Speaking through this dimension</span>
                 <span class="soul-voice-name" style="color:${soul.hex}">${soul.name} · ${soul.role}</span>
             </div>
-        </div>` : '';
-    const interpretationHTML = soulVoice ? `
-        <div style="margin-bottom:14px;">
-            <div class="blk-label">${soulVoice.label}</div>
-            <p class="info-body" style="color:rgba(255,255,255,.68);font-style:italic;">${soulVoice.text}</p>
         </div>
-        <div style="margin-bottom:14px;">
-            <div class="blk-label">Celestial Record</div>
-            <p class="info-body">${p.desc}</p>
-        </div>` :
-        `<div style="margin-bottom:14px;"><div class="blk-label">Celestial Interpretation</div><p class="info-body">${p.desc}</p></div>`;
-    openPanel(`Axium ${p.axiumNum} \u00b7 ${p.liturgy}`,p.name,hintStr,`
-        ${soulBadgeHTML}
+
         <div class="planet-hero">
             <div class="planet-orb" style="background:radial-gradient(circle at 35% 35%,${p.hex}55,${p.hex}11);box-shadow:0 0 22px ${p.glow};">
-                <span class="planet-symbol">${p.symbol}</span></div>
-            <div><div class="planet-name-big">${p.name}${retro?'<span class="retro-badge">\u211e Retro</span>':''}</div>
+                <span class="planet-symbol">${p.symbol}</span>
+            </div>
+            <div>
+                <div class="planet-name-big">${p.name}${retro ? '<span class="retro-badge">℟ Retro</span>' : ''}</div>
                 <div class="planet-role-sm">${p.domain}</div>
-                <div class="planet-pos-badge">${pos.degree}\u00b0 ${pos.name} ${pos.symbol} \u00b7 ${pos.element}</div></div>
+                <div class="planet-pos-badge">${pos.degree}° ${pos.name} ${pos.symbol} · ${pos.element}</div>
+            </div>
         </div>
+
         <div class="axium-callout">
-            <div class="axium-num-sm">Axium ${p.axiumNum} \u00b7 ${p.liturgy} Liturgy</div>
+            <div class="axium-num-sm">Axium ${p.axiumNum} · ${p.liturgy} Liturgy</div>
             <div class="axium-name-sm">${p.axiumName}</div>
-            <div class="axium-principle-sm">\u201c${p.principle}\u201d</div>
+            <p class="axium-principle-sm">"${p.principle}"</p>
         </div>
-        ${interpretationHTML}
-        ${p.layers?`<div style="margin-bottom:14px;">
-            ${p.layers.map(l=>`<div class="layer-block"><div class="layer-lbl">${l.lbl}</div><div class="layer-body">${l.txt}</div></div>`).join('')}
-        </div>`:''}
-        <div class="stat-grid2">
-            <div class="sg-item"><div class="sg-label">Ecliptic Long.</div><div class="sg-value">${ec.toFixed(2)}\u00b0</div></div>
-            <div class="sg-item"><div class="sg-label">Zodiac Sign</div><div class="sg-value">${pos.symbol} ${pos.name}</div></div>
-            <div class="sg-item"><div class="sg-label">Degree</div><div class="sg-value">${pos.degree}\u00b0 ${pos.minute}'</div></div>
-            <div class="sg-item"><div class="sg-label">Element</div><div class="sg-value">${pos.element}</div></div>
+
+        <div class="blk-label">Soul Interpretation</div>
+        <p class="info-body" style="margin-bottom:15px; font-style:italic; color:rgba(255,255,255,0.7);">${soulVoice ? soulVoice.text : p.desc}</p>
+
+        <div class="blk-label">Recursive Layers</div>
+        ${p.layers.map(l => `
+            <div class="layer-block">
+                <div class="layer-lbl">${l.lbl}</div>
+                <div class="layer-body">${l.txt}</div>
+            </div>
+        `).join('')}
+
+        <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+            ${cardMatrixHTML}
         </div>
+
         <div class="const-progress-bar" id="const-bar-${p.name}">
-            <div class="cpb-track"><div class="cpb-fill" style="width:${Math.round((constState[p.name].lit/CONSTELLATION_REQUIRED[p.name])*100)}%;background:${p.hex};box-shadow:0 0 8px ${p.hex}88;"></div></div>
-            <div class="cpb-label">${constState[p.name].lit < CONSTELLATION_REQUIRED[p.name] ? `<span style="color:${p.hex};opacity:.7">${CONSTELLATION_REQUIRED[p.name]-constState[p.name].lit} discovery${CONSTELLATION_REQUIRED[p.name]-constState[p.name].lit>1?'s':''} remaining</span>` : '<span style="color:#D4AF37">✦ Constellation complete</span>'}</div>
-        </div>`);
+            <div class="cpb-track"><div class="cpb-fill" style="width:${Math.round((constState[p.name].lit / CONSTELLATION_REQUIRED[p.name]) * 100)}%;background:${p.hex};"></div></div>
+            <div class="cpb-label">${constState[p.name].lit < CONSTELLATION_REQUIRED[p.name] ? 'Discovery in progress...' : '✦ Constellation Complete'}</div>
+        </div>
+    `;
+
+    openPanel(`Axium ${p.axiumNum} · ${p.liturgy}`, p.name, `✦ ${p.hints[Math.min(prevLit, p.hints.length-1)]}`, content);
 }
 
 window.openInfoPanel=function(startTab){
@@ -1432,7 +1441,16 @@ window.switchHudTab = function(idx, btn) {
     document.querySelectorAll('.hm-tab').forEach(t => t.classList.remove('on'));
     document.querySelectorAll('.hm-pane').forEach(p => p.classList.remove('on'));
     btn.classList.add('on');
-    document.getElementById('hm-pane-' + idx).classList.add('on');
+    const targetPane = document.getElementById('hm-pane-' + idx);
+    targetPane.classList.add('on');
+
+    // Fix for SoundCloud: Only load iframe when tab is active
+    if(idx === 3) {
+        document.getElementById('sc-target').innerHTML = `
+            <iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay"
+            src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/2184015935&color=%23D4AF37&auto_play=false&visual=true">
+            </iframe>`;
+    }
 };
 // Close modal on outside click
 document.addEventListener('click', function(e) {
@@ -1690,6 +1708,42 @@ function renderTicker() {
         </div>`;
     }).join('');
     track.innerHTML = items + items;
+}
+
+/**
+ * Injects Cards from cards.js into the Planet Panel
+ * Based on current activeSoul and the Planet's Axium
+ */
+function getCardsForPlanet(planetName, soulKey) {
+    // 1. Filter cards by suit or layer based on the planet's theme
+    let relatedCards = [];
+
+    if (planetName === 'Sun' || planetName === 'Pluto') {
+        // High Axium / Major Arcana
+        relatedCards = PLAYER_CARDS.filter(c => c.axiumScore >= 9);
+    } else if (planetName === 'Mercury' || planetName === 'Saturn') {
+        // Logic & Structure (Swords/Pentacles)
+        relatedCards = EGO_CARDS.filter(c => c.suit === 'swords' || c.suit === 'pentacles');
+    } else {
+        // Emotion & Drive (Cups/Wands)
+        relatedCards = ID_CARDS.filter(c => c.suit === 'cups' || c.suit === 'wands').slice(0, 5);
+    }
+
+    // 2. Format the HTML for the card display
+    return `
+        <div class="blk-label">Axium Card Matrix</div>
+        <div class="card-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+            ${relatedCards.map(card => `
+                <div class="axium-card-ui" style="border:1px solid ${card.color || 'var(--gold)'}; padding:8px; background:rgba(0,0,0,0.4); border-radius:4px;">
+                    <div style="font-family:'Space Mono'; font-size:9px; color:${card.color}; opacity:0.8;">${card.layer.toUpperCase()}</div>
+                    <div style="font-family:'Cinzel'; font-size:11px; color:#fff;">${card.name}</div>
+                    <div style="font-family:'Cormorant Garamond'; font-size:10px; color:rgba(255,255,255,0.6); font-style:italic;">
+                        ${card.keywords || card.shieldDesc || card.rechargeDesc}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 renderTicker();

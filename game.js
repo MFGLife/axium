@@ -1,145 +1,198 @@
-
 // ═══════════════════════════════════════════════════════════════
-// GAME STATE
+// AXIUM — GAME ENGINE v6.1
+// Both sides draw from the same card pool (PLAYER_CARDS).
+// CHAPTER_CONFIG.enemyDeck = array of card IDs the enemy uses.
+// CHAPTER_CONFIG.enemyStart / enemyMax = enemy attention values.
 // ═══════════════════════════════════════════════════════════════
-const HAND_SIZE = 4;
-const MIN_ATTN  = 5;
-const MAX_ATTN  = 98;
-const CURRENT_CHAPTER = 1;
 
+const CHAPTER_CONFIG = window.CHAPTER_CONFIG || {
+  id:           1,
+  label:        '01 · Binding of Ego',
+  title:        'Binding of Ego',
+  axium:        '"The absence of love binds ego, allowing the awareness of God."',
+  narrative:    "Build a constellation of cards. Stage them, then Resolve.",
+  shopChapter:  1,
+  playerStart:  100,
+  baseMaxAttn:  100,
+  handSize:     6,
+  winAttn:      90,
+  loseAttn:     10,
+  enemyStart:   80,
+  enemyMax:     100,
+  enemyDeck:    ['fool','magician','high_priestess','empress','emperor','lovers'],
+  enemyHandSize: 3,
+  winTitle:     'Attention Held',
+  winDesc:      'Your constellation held. The chapter is complete.',
+  winBtn:       'Visit the Shop',
+  loseTitle:    'Attention Lost',
+  loseDesc:     'Your attention collapsed. Try again.',
+  loseBtn:      'Try Again',
+  battleTiming: { charge: 2000, nodeCycle: 500, done: 1800 },
+};
+
+const STARTING_HAND   = CHAPTER_CONFIG.handSize    || 6;
+const ENEMY_HAND_SIZE = CHAPTER_CONFIG.enemyHandSize || 3;
+const MAX_STAGED      = 10;
+const MIN_ATTN        = 5;
+const BASE_MAX_ATTN   = CHAPTER_CONFIG.baseMaxAttn  || 100;
+const CURRENT_CHAPTER = CHAPTER_CONFIG.id           || 1;
+
+// ── GAME STATE ───────────────────────────────────────────────
 const S = {
-  playerAttn:       55,
-  traumaCoherence:  80,
-  turn:             1,
-  phase:            'player',   // 'player' | 'resolving'
-  playerHand:       [],
-  playerDeck:       [],
-  traumaDeck:       [],
-  playerPlayed:     [null, null],
-  traumaPlayed:     [null, null],
-  extraDraw:        0,
-  // Status flags
-  shieldActive:     false,
-  shieldCount:      0,    // how many hits left to block
-  spaceSkip:        false,
-  centeringActive:  false,
-  monologueSkip:    false,
-  monologueDouble:  false,
-  attnFloorTurns:   0,
-  attnFloor:        0,
-  // Meta
-  modalCard:        null,
-  dragCard:         null,
-  dragging:         false,
-  won:              false,
-  lost:             false,
+  playerAttn:   CHAPTER_CONFIG.playerStart,
+  maxAttn:      BASE_MAX_ATTN,
+  enemyAttn:    CHAPTER_CONFIG.enemyStart || 80,
+  enemyMaxAttn: CHAPTER_CONFIG.enemyMax   || 100,
+  turn:         1,
+  phase:        'build',
+  playerDeck:   [],
+  playerHand:   [],
+  playerPlayed: [],
+  enemyDeck:    [],
+  enemyHand:    [],
+  enemyPlayed:  [],
+  modalCard:    null,
+  won:          false,
+  lost:         false,
 };
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 function startChapter() {
-  document.getElementById('intro').style.display = 'none';
+  const introEl = el('intro');
+  if (introEl) introEl.style.display = 'none';
 
-  // Build decks from cards.js
-  S.playerDeck  = [...PLAYER_CARDS];
-  S.traumaDeck  = getTraumaDeck(CURRENT_CHAPTER);
-  S.playerAttn  = 55;
-  S.traumaCoherence = 80;
-  S.turn = 1;
-  S.phase = 'player';
+  const gameEl = el('game');
+  if (gameEl) gameEl.style.display = 'grid';
 
+  const config = window.CHAPTER_CONFIG || CHAPTER_CONFIG;
+
+  S.playerDeck   = shuffle([...PLAYER_CARDS]);
+  S.playerAttn   = config.playerStart;
+
+  const eDeckIds = config.enemyDeck || [];
+  S.enemyDeck    = eDeckIds.map(id => PLAYER_CARDS.find(c => c.id === id)).filter(Boolean);
+
+  S.enemyAttn    = config.enemyStart || 80;
+  S.enemyMaxAttn = config.enemyMax   || 100;
+
+  S.turn         = 1;
+  S.phase        = 'build';
+  S.playerPlayed = [];
+  S.enemyPlayed  = [];
+  S.playerHand   = [];
+
+  recalcMaxAttn();
   initBars();
-  initDropZones();
   dealHand();
   renderField();
-  updateStatusStrip();
+  updatePhaseUI();
 
-  log('── Chapter 1: Binding of Ego ──', 'sys');
-  log('Drag cards to the field, then Resolve.', 'sys');
+  log(`── Chapter Started: ${config.title} ──`, 'sys');
+}
+
+function recalcMaxAttn() {
+  const cap = calculateCapacity(S.playerDeck);
+  S.maxAttn = clamp(BASE_MAX_ATTN + cap, 20, 300);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// BAR SYSTEM — uses ATTN_STATES from cards.js
+// BARS
 // ═══════════════════════════════════════════════════════════════
 function initBars() {
   buildPips('player-pips');
-  buildPips('trauma-pips');
+  buildPips('enemy-pips');
   updateBars();
 }
 
 function buildPips(id) {
-  const el = document.getElementById(id);
-  el.innerHTML = '';
+  const c = el(id); if (!c) return; c.innerHTML = '';
   ATTN_STATES.forEach(s => {
-    const pip = document.createElement('div');
-    pip.className = 'bar-pip';
-    pip.style.left = (s.pos * 100) + '%';
-    pip.style.setProperty('--pip-col', s.col);
-    el.appendChild(pip);
+    const p = document.createElement('div');
+    p.className = 'bar-pip';
+    p.style.left = (s.pos * 100) + '%';
+    p.style.setProperty('--pip-col', s.col);
+    c.appendChild(p);
   });
 }
 
 function updateBars() {
-  const pp = clamp(S.playerAttn, 0, 100);
-  const tp = clamp(S.traumaCoherence, 0, 100);
+  const ppPct = clamp(S.playerAttn / S.maxAttn * 100, 0, 100);
+  const pFill = el('player-fill'); if (pFill) pFill.style.width = ppPct + '%';
+  const pCur  = el('player-cursor'); if (pCur) pCur.style.left = ppPct + '%';
+  const ps    = getAttnState(ppPct);
+  const pLbl  = el('player-state-lbl');
+  if (pLbl) { pLbl.textContent = ps.label; pLbl.style.color = ps.col; }
+  updatePips('player-pips', ppPct);
 
-  document.getElementById('player-fill').style.width  = pp + '%';
-  document.getElementById('player-cursor').style.left = pp + '%';
-  document.getElementById('trauma-fill').style.width  = tp + '%';
-  document.getElementById('trauma-cursor').style.left = tp + '%';
-
-  const ps = getAttnState(pp);
-  const ts = getAttnState(tp);
-
-  el('player-state-lbl').textContent = ps.label;
-  el('player-state-lbl').style.color = ps.col;
-  el('trauma-state-lbl').textContent = ts.label;
-  el('trauma-state-lbl').style.color = ts.col;
-
-  updatePips('player-pips', pp);
-  updatePips('trauma-pips', tp);
+  const epPct = clamp(S.enemyAttn / S.enemyMaxAttn * 100, 0, 100);
+  const eFill = el('enemy-fill'); if (eFill) eFill.style.width = epPct + '%';
+  const eCur  = el('enemy-cursor'); if (eCur) eCur.style.left = epPct + '%';
+  const es    = getAttnState(epPct);
+  const eLbl  = el('enemy-state-lbl');
+  if (eLbl) { eLbl.textContent = es.label; eLbl.style.color = es.col; }
+  updatePips('enemy-pips', epPct);
 }
 
-function updatePips(id, val) {
-  const pct = val / 100;
-  document.querySelectorAll(`#${id} .bar-pip`).forEach((pip, i) => {
-    pip.classList.toggle('lit', ATTN_STATES[i] && ATTN_STATES[i].pos <= pct);
+function updatePips(id, pct) {
+  document.querySelectorAll(`#${id} .bar-pip`).forEach((p, i) => {
+    p.classList.toggle('lit', ATTN_STATES[i] && ATTN_STATES[i].pos <= pct / 100);
   });
 }
+
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 
 function shiftPlayer(delta) {
-  let next = S.playerAttn + delta;
-  // Apply floor if active
-  if (S.attnFloorTurns > 0 && delta < 0) {
-    next = Math.max(next, S.attnFloor);
-  }
-  S.playerAttn = clamp(next, MIN_ATTN, MAX_ATTN);
-  updateBars();
-}
-
-function shiftTrauma(delta) {
-  S.traumaCoherence = clamp(S.traumaCoherence + delta, 0, 100);
+  S.playerAttn = clamp(S.playerAttn + delta, MIN_ATTN, S.maxAttn);
   updateBars();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// STATUS STRIP
+// STATUS + PHASE UI
 // ═══════════════════════════════════════════════════════════════
 function updateStatusStrip() {
-  const strip = el('status-strip');
-  strip.innerHTML = '';
-  const pills = [];
-  if (S.shieldActive)     pills.push({cls:'shield',   txt:'Shield Active'});
-  if (S.spaceSkip)        pills.push({cls:'space',    txt:'Space Held'});
-  if (S.centeringActive)  pills.push({cls:'centering',txt:'Centering Debuff'});
-  if (S.attnFloorTurns>0) pills.push({cls:'shield',   txt:`Floor ×${S.attnFloorTurns}`});
-  pills.forEach(p => {
+  const strip = el('status-strip'); if (!strip) return; strip.innerHTML = '';
+  if (S.playerPlayed.length) {
     const d = document.createElement('div');
-    d.className = `status-pill ${p.cls}`;
-    d.textContent = p.txt;
+    d.className = 'status-pill shield';
+    d.textContent = `${S.playerPlayed.length} staged`;
     strip.appendChild(d);
-  });
+  }
+}
+
+function updatePhaseUI() {
+  const n  = S.playerPlayed.length;
+  const rb = el('resolve-btn');
+  if (rb) rb.classList.toggle('show', n > 0 && S.phase === 'build');
+  const pb = el('pass-btn');
+  if (pb) pb.disabled = S.phase !== 'build';
+  const pm = el('phase-msg');
+  if (pm) pm.textContent = n === 0
+    ? 'Open your hand to choose cards'
+    : n >= MAX_STAGED ? 'Hand full — Resolve!'
+    : `${n} card${n > 1 ? 's' : ''} staged · Resolve or add more`;
+  const tn = el('turn-n');
+  if (tn) tn.textContent = S.turn;
+  updateAxiumMeter();
+  updateStatusStrip();
+}
+
+function updateAxiumMeter() {
+  const n   = S.playerPlayed.length;
+  const avg = n ? S.playerPlayed.reduce((s, c) => s + (c.axiumScore || 0), 0) / n : 0;
+  const lit = Math.round(avg);
+  for (let i = 0; i < 10; i++) {
+    const p = el(`axp-${i}`); if (p) p.classList.toggle('lit', i < lit);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAFE HEX ALPHA
+// ═══════════════════════════════════════════════════════════════
+function hexA(val) {
+  const v = Math.max(0, Math.min(255, Math.round(val)));
+  return v.toString(16).padStart(2, '0');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -147,1017 +200,855 @@ function updateStatusStrip() {
 // ═══════════════════════════════════════════════════════════════
 const cardAnimations = new Map();
 
-// ── Card label: the small coloured tag above the name ──────────
-// Major Arcana  → "Superego · VII"
-// Court cards   → "Ego · Cups"
-// Pip / ID cards→ "ID · Wands"   (or the traumaRole if set)
-// Corruption    → "Corrupt"
 function cardLabel(card) {
-  if (card.corrupted)    return 'Corrupt';
-  if (card.traumaRole)   return card.traumaRole;
   const layer = card.layer || '';
   if (layer === 'Superego') {
     const num = card.number !== undefined ? numberToRoman(card.number) : '';
     return num ? `Superego · ${num}` : 'Superego';
   }
-  if (layer === 'Ego') {
-    const suit = card.suit ? cap(card.suit) : '';
-    return suit ? `Ego · ${suit}` : 'Ego';
-  }
-  if (layer === 'ID') {
-    const suit = card.suit ? cap(card.suit) : '';
-    return suit ? `ID · ${suit}` : 'ID';
-  }
+  if (layer === 'Ego') return `Ego · ${cap(card.suit || '')}`;
+  if (layer === 'ID')  return `ID · ${cap(card.suit || '')}`;
   return layer || 'Card';
 }
-
-// ── Card subtitle: the italic line in the modal ─────────────────
-// Uses keywords if present; falls back to layer descriptor.
-// Appends " · Corrupted" for corruption cards.
-function cardSubtitle(card) {
-  let base = '';
-  if (card.keywords)   base = card.keywords;
-  else if (card.upright) base = card.upright.slice(0, 60) + (card.upright.length > 60 ? '…' : '');
-  else                   base = card.layer || '';
-  return base + (card.corrupted ? ' · Corrupted' : '');
-}
-
-function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : s; }
-
+function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
 function numberToRoman(n) {
-  const map = [[21,'XXI'],[20,'XX'],[19,'XIX'],[18,'XVIII'],[17,'XVII'],[16,'XVI'],
-               [15,'XV'],[14,'XIV'],[13,'XIII'],[12,'XII'],[11,'XI'],[10,'X'],
-               [9,'IX'],[8,'VIII'],[7,'VII'],[6,'VI'],[5,'V'],[4,'IV'],
-               [3,'III'],[2,'II'],[1,'I'],[0,'0']];
-  const hit = map.find(([v]) => v === n);
-  return hit ? hit[1] : String(n);
+  const map = [[21,'XXI'],[20,'XX'],[19,'XIX'],[18,'XVIII'],[17,'XVII'],[16,'XVI'],[15,'XV'],
+               [14,'XIV'],[13,'XIII'],[12,'XII'],[11,'XI'],[10,'X'],[9,'IX'],[8,'VIII'],
+               [7,'VII'],[6,'VI'],[5,'V'],[4,'IV'],[3,'III'],[2,'II'],[1,'I'],[0,'0']];
+  return (map.find(([v]) => v === n) || [n, String(n)])[1];
 }
 
 function makeCard(card, classes = []) {
-  const isTrauma  = classes.includes('trauma-placed');
-  const nameColor = isTrauma ? 'rgba(220,120,120,.95)' : '#fff';
-
+  const isEnemy  = classes.includes('enemy-placed');
+  const nameCol  = isEnemy ? 'rgba(220,120,120,.95)' : '#fff';
+  const layerCol = card.layer === 'Superego' ? '#D4AF37' : card.layer === 'Ego' ? '#7EB8E8' : '#86EFAC';
   const el2 = document.createElement('div');
   el2.className = 'card ' + classes.join(' ');
   el2.dataset.id = card.id;
-  if (card.corrupted) el2.classList.add('corrupted-card');
-
-  const glow = document.createElement('div');
-  glow.className = 'card-glow';
+  const glow = document.createElement('div'); glow.className = 'card-glow';
   glow.style.background = `radial-gradient(ellipse at 35% 25%, ${card.color}44, transparent 65%)`;
   el2.appendChild(glow);
-
-  const top = document.createElement('div');
-  top.className = 'card-top';
-  top.innerHTML = `
-    <div class="card-axium-lbl" style="color:${card.color}">${cardLabel(card)}</div>
-    <div class="card-name" style="color:${nameColor}">${card.name}</div>
-  `;
+  const top = document.createElement('div'); top.className = 'card-top';
+  top.innerHTML = `<div class="card-axium-lbl" style="color:${layerCol}">${cardLabel(card)}</div><div class="card-name" style="color:${nameCol}">${card.name}</div>`;
   el2.appendChild(top);
-
-  const cvs = document.createElement('canvas');
-  cvs.className = 'card-cvs';
-  el2.appendChild(cvs);
-
+  const cvs = document.createElement('canvas'); cvs.className = 'card-cvs'; el2.appendChild(cvs);
   const cardType = card.type || 'compression';
-  const cardInt  = card.intensity !== undefined ? card.intensity : card.traumaShift !== undefined ? '—' : '?';
-  const bot = document.createElement('div');
-  bot.className = 'card-bot';
-  bot.innerHTML = `
-    <span class="card-type-pip ${cardType}">${cardType.slice(0,4)}</span>
-    <span class="card-intensity">${cardInt}</span>
-  `;
+  const axium    = card.axiumScore !== undefined ? card.axiumScore : '?';
+  const bot = document.createElement('div'); bot.className = 'card-bot';
+  bot.innerHTML = `<span class="card-type-pip ${cardType}">${cardType.slice(0, 4)}</span><span class="card-intensity">⬡${axium}</span>`;
   el2.appendChild(bot);
-
-  if (card.corrupted) {
-    const badge = document.createElement('div');
-    badge.className = 'card-corrupt-badge';
-    el2.appendChild(badge);
-  }
-
   setTimeout(() => animateCardCanvas(cvs, card), 20);
   return el2;
 }
 
 function animateCardCanvas(canvas, card) {
   if (!canvas || !canvas.parentElement) return;
-  const W = canvas.offsetWidth || 78;
-  const H = canvas.offsetHeight || 34;
+  const W = canvas.offsetWidth || 70, H = canvas.offsetHeight || 50;
   if (W < 4 || H < 4) return;
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
-
-  const pts = card.pts;
-  if (!pts || !pts.length) return;
-
+  const pts = card.pts; if (!pts || !pts.length) return;
   let mnX=1e9,mnY=1e9,mxX=-1e9,mxY=-1e9;
   pts.forEach(([x,y])=>{if(x<mnX)mnX=x;if(y<mnY)mnY=y;if(x>mxX)mxX=x;if(y>mxY)mxY=y;});
-  const pad=6, sc=Math.min((W-pad*2)/(mxX-mnX||1),(H-pad*2)/(mxY-mnY||1));
+  const pad=4, sc=Math.min((W-pad*2)/(mxX-mnX||1),(H-pad*2)/(mxY-mnY||1));
   const oX=W/2-(mnX+mxX)/2*sc, oY=H/2-(mnY+mxY)/2*sc;
-  const mapped = pts.map(([x,y])=>({x:x*sc+oX, y:y*sc+oY}));
-
+  const mapped=pts.map(([x,y])=>({x:x*sc+oX,y:y*sc+oY}));
   const edgeSet=new Set(), edges=[];
   mapped.forEach((p,i)=>{
     mapped.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)}))
-      .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d)
-      .slice(0,2).forEach(({j})=>{
-        const k=Math.min(i,j)+'-'+Math.max(i,j);
-        if(!edgeSet.has(k)){edgeSet.add(k);edges.push([i,j]);}
-      });
+      .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d).slice(0,2)
+      .forEach(({j})=>{ const k=Math.min(i,j)+'-'+Math.max(i,j); if(!edgeSet.has(k)){edgeSet.add(k);edges.push([i,j]);} });
   });
-
-  const phases = mapped.map((_,i)=>i*0.8+Math.random()*Math.PI*2);
+  const phases=mapped.map((_,i)=>i*0.8+Math.random()*Math.PI*2);
   let t=0, rafId;
-
   function frame(){
     if(!canvas.isConnected){cancelAnimationFrame(rafId);cardAnimations.delete(canvas);return;}
-    t+=0.015;
-    ctx.clearRect(0,0,W,H);
+    t+=0.018; ctx.clearRect(0,0,W,H);
     edges.forEach(([a,b])=>{
-      const pulse=0.18+0.08*Math.sin(t*1.1+(a+b)*0.5);
-      ctx.beginPath();
-      ctx.strokeStyle=card.color+Math.round(pulse*255).toString(16).padStart(2,'0');
-      ctx.lineWidth=0.7;
-      ctx.moveTo(mapped[a].x,mapped[a].y);
-      ctx.lineTo(mapped[b].x,mapped[b].y);
-      ctx.stroke();
+      const pulse=0.15+0.08*Math.sin(t+(a+b)*0.5);
+      ctx.beginPath(); ctx.strokeStyle=card.color+hexA(pulse*255); ctx.lineWidth=0.6;
+      ctx.moveTo(mapped[a].x,mapped[a].y); ctx.lineTo(mapped[b].x,mapped[b].y); ctx.stroke();
     });
     mapped.forEach((p,i)=>{
-      const tw=0.55+0.45*Math.sin(t*0.95+phases[i]);
-      const r=1.5+tw*0.65;
-      ctx.beginPath();ctx.arc(p.x,p.y,r*2.6,0,Math.PI*2);
-      ctx.fillStyle=card.color+Math.round(tw*32).toString(16).padStart(2,'0');ctx.fill();
-      ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);
-      ctx.fillStyle=card.color+'cc';ctx.fill();
-      ctx.beginPath();ctx.arc(p.x,p.y,0.8,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,.88)';ctx.fill();
+      const tw=0.55+0.45*Math.sin(t*0.95+phases[i]); const r=1.2+tw*0.5;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r*2.5,0,Math.PI*2); ctx.fillStyle=card.color+hexA(tw*28); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fillStyle=card.color+'bb'; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,0.7,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fill();
     });
-    if(edges.length>0){
-      const ei=Math.floor(t*0.5)%edges.length;
-      const [ea,eb]=edges[ei];
-      const prog=(t*0.5)%1;
-      const lx=mapped[ea].x+(mapped[eb].x-mapped[ea].x)*prog;
-      const ly=mapped[ea].y+(mapped[eb].y-mapped[ea].y)*prog;
-      ctx.beginPath();ctx.arc(lx,ly,1.8,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();
-    }
-    rafId=requestAnimationFrame(frame);
-    cardAnimations.set(canvas,rafId);
+    rafId=requestAnimationFrame(frame); cardAnimations.set(canvas,rafId);
   }
   if(cardAnimations.has(canvas)) cancelAnimationFrame(cardAnimations.get(canvas));
   frame();
 }
 
 function animateModalCanvas(card) {
-  const canvas = document.getElementById('modal-canvas');
-  const W = canvas.offsetWidth || 280;
-  const H = 150;
+  const canvas = el('modal-canvas'); if (!canvas) return;
+  const W = canvas.offsetWidth || 280, H = 140;
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
-  const pts = card.pts;
-  if (!pts) return;
-
+  const pts = card.pts; if (!pts) return;
   let mnX=1e9,mnY=1e9,mxX=-1e9,mxY=-1e9;
   pts.forEach(([x,y])=>{if(x<mnX)mnX=x;if(y<mnY)mnY=y;if(x>mxX)mxX=x;if(y>mxY)mxY=y;});
-  const pad=22, sc=Math.min((W-pad*2)/(mxX-mnX||1),(H-pad*2)/(mxY-mnY||1));
+  const pad=20, sc=Math.min((W-pad*2)/(mxX-mnX||1),(H-pad*2)/(mxY-mnY||1));
   const oX=W/2-(mnX+mxX)/2*sc, oY=H/2-(mnY+mxY)/2*sc;
   const mapped=pts.map(([x,y])=>({x:x*sc+oX,y:y*sc+oY}));
   const edgeSet=new Set(), edges=[];
   mapped.forEach((p,i)=>{
     mapped.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)}))
-      .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d)
-      .slice(0,2).forEach(({j})=>{
-        const k=Math.min(i,j)+'-'+Math.max(i,j);
-        if(!edgeSet.has(k)){edgeSet.add(k);edges.push([i,j]);}
-      });
+      .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d).slice(0,2)
+      .forEach(({j})=>{ const k=Math.min(i,j)+'-'+Math.max(i,j); if(!edgeSet.has(k)){edgeSet.add(k);edges.push([i,j]);} });
   });
   const phases=mapped.map((_,i)=>i*0.8+Math.random()*Math.PI*2);
-  let t2=0, raf2;
-  const key='modal-'+card.id;
-
+  let t2=0, raf2; const key='modal-'+card.id;
   function frame(){
     if(!canvas.isConnected){cancelAnimationFrame(raf2);cardAnimations.delete(key);return;}
-    t2+=0.018;
-    ctx.clearRect(0,0,W,H);
-    const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.6);
-    bg.addColorStop(0,card.color+'0a');bg.addColorStop(1,'rgba(3,3,14,0)');
-    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    t2+=0.018; ctx.clearRect(0,0,W,H);
+    const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.55);
+    bg.addColorStop(0,card.color+'10'); bg.addColorStop(1,'rgba(3,3,14,0)');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
     edges.forEach(([a,b])=>{
-      const pulse=0.3+0.12*Math.sin(t2*1.1+(a+b)*0.5);
-      const g=ctx.createLinearGradient(mapped[a].x,mapped[a].y,mapped[b].x,mapped[b].y);
-      g.addColorStop(0,card.color+Math.round(pulse*255).toString(16).padStart(2,'0'));
-      g.addColorStop(1,card.color+Math.round(pulse*200).toString(16).padStart(2,'0'));
-      ctx.beginPath();ctx.strokeStyle=g;ctx.lineWidth=1.2;
-      ctx.moveTo(mapped[a].x,mapped[a].y);ctx.lineTo(mapped[b].x,mapped[b].y);ctx.stroke();
+      const pulse=0.28+0.1*Math.sin(t2+(a+b)*0.5);
+      ctx.beginPath(); ctx.strokeStyle=card.color+hexA(pulse*255); ctx.lineWidth=1.1;
+      ctx.moveTo(mapped[a].x,mapped[a].y); ctx.lineTo(mapped[b].x,mapped[b].y); ctx.stroke();
     });
     mapped.forEach((p,i)=>{
-      const tw=0.6+0.4*Math.sin(t2*0.95+phases[i]);
-      const r=2.6+tw*1.3;
-      ctx.beginPath();ctx.arc(p.x,p.y,r*3,0,Math.PI*2);
-      ctx.fillStyle=card.color+Math.round(tw*26).toString(16).padStart(2,'0');ctx.fill();
-      ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);
-      ctx.fillStyle=card.color+'dd';ctx.fill();
-      ctx.beginPath();ctx.arc(p.x,p.y,1.1,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,.95)';ctx.fill();
-      [[1,0],[0,1],[-1,0],[0,-1]].forEach(([dx,dy])=>{
-        const sl=r*3+tw*4;
-        const sg=ctx.createLinearGradient(p.x,p.y,p.x+dx*sl,p.y+dy*sl);
-        sg.addColorStop(0,card.color+Math.round(tw*42).toString(16).padStart(2,'0'));
-        sg.addColorStop(1,card.color+'00');
-        ctx.beginPath();ctx.strokeStyle=sg;ctx.lineWidth=0.65;
-        ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+dx*sl,p.y+dy*sl);ctx.stroke();
-      });
+      const tw=0.6+0.4*Math.sin(t2*0.95+phases[i]); const r=2.2+tw*1.2;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r*3,0,Math.PI*2); ctx.fillStyle=card.color+hexA(tw*22); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fillStyle=card.color+'cc'; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,1,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.95)'; ctx.fill();
     });
-    if(edges.length>0){
-      const ei=Math.floor(t2*0.4)%edges.length;
-      const [ea,eb]=edges[ei];
-      const prog=(t2*0.4)%1;
-      const lx=mapped[ea].x+(mapped[eb].x-mapped[ea].x)*prog;
-      const ly=mapped[ea].y+(mapped[eb].y-mapped[ea].y)*prog;
-      ctx.beginPath();ctx.arc(lx,ly,2.8,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,.95)';ctx.fill();
-    }
-    raf2=requestAnimationFrame(frame);
-    cardAnimations.set(key,raf2);
+    raf2=requestAnimationFrame(frame); cardAnimations.set(key,raf2);
   }
   if(cardAnimations.has(key)) cancelAnimationFrame(cardAnimations.get(key));
   frame();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// HAND & FIELD RENDER
+// HAND PICKER
 // ═══════════════════════════════════════════════════════════════
-function renderHand() {
-  const handEl = document.getElementById('hand');
-  handEl.innerHTML = '';
+function openHandPicker() {
+  const modal = el('hand-picker');
+  const list  = el('hand-picker-list');
+  list.innerHTML = '';
+
   S.playerHand.forEach(card => {
-    const cardEl = makeCard(card, ['hand-card']);
-    cardEl.addEventListener('click', e => { e.stopPropagation(); openModal(card); });
-    attachDrag(cardEl, card);
-    handEl.appendChild(cardEl);
+    const isStaged = !!S.playerPlayed.find(c => c.id === card.id);
+    const row = document.createElement('div');
+    row.className  = 'picker-row' + (isStaged ? ' picker-staged' : '');
+    row.dataset.id = card.id;
+    const layerCol = card.layer==='Superego' ? '#D4AF37' : card.layer==='Ego' ? '#7EB8E8' : '#86EFAC';
+    const mechanic = card.layer === 'Superego'
+      ? `Shield +${card.shieldVal||0}` + (card.capacityVal ? ` · Cap ${card.capacityVal>0?'+':''}${card.capacityVal}` : '')
+      : card.layer === 'Ego'
+        ? [(card.chunkFlat?`+${card.chunkFlat} flat`:''),(card.chunkPct?`×${card.chunkPct}`:''),(card.studyMult?`Study ×${card.studyMult}`:'')].filter(Boolean).join(' ')
+        : `Recharge +${card.rechargeVal||0}/stack`;
+    row.innerHTML = `
+      <div class="picker-check${isStaged?' checked':''}" id="chk-${card.id}">
+        <svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <canvas class="picker-mini-cvs" data-card="${card.id}" width="44" height="44"></canvas>
+      <div class="picker-info">
+        <div class="picker-name" style="color:${card.color}">${card.name}</div>
+        <div class="picker-layer" style="color:${layerCol}">${cardLabel(card)}</div>
+        <div class="picker-mechanic">${mechanic}</div>
+        <div class="picker-keywords">${card.keywords||''}</div>
+      </div>
+      <div class="picker-axium" style="color:${card.color}">⬡${card.axiumScore||'?'}</div>
+    `;
+    row.addEventListener('click', () => toggleStageCard(card, row));
+    list.appendChild(row);
+    setTimeout(() => {
+      const cvs = row.querySelector('.picker-mini-cvs');
+      if (cvs) animatePickerCanvas(cvs, card);
+    }, 40);
   });
+
+  el('picker-count').textContent = `${S.playerPlayed.length}/${MAX_STAGED}`;
+  modal.classList.add('show');
 }
 
-function renderField() {
-  [0,1].forEach(i => {
-    // Player slot
-    const pSlot = document.getElementById(`player-slot-${i}`);
-    const pOld  = pSlot.querySelector('.card');
-    if (pOld) pOld.remove();
-    pSlot.classList.toggle('has-card', !!S.playerPlayed[i]);
-    if (S.playerPlayed[i]) {
-      const cardEl = makeCard(S.playerPlayed[i], ['field-card','player-placed']);
-      cardEl.addEventListener('click', e => { e.stopPropagation(); openModal(S.playerPlayed[i]); });
-      pSlot.appendChild(cardEl);
-    }
-    // Trauma slot
-    const tSlot = document.getElementById(`trauma-slot-${i}`);
-    const tOld  = tSlot.querySelector('.card');
-    if (tOld) tOld.remove();
-    tSlot.classList.toggle('has-card', !!S.traumaPlayed[i]);
-    if (S.traumaPlayed[i]) {
-      const cardEl = makeCard(S.traumaPlayed[i], ['field-card','trauma-placed']);
-      cardEl.addEventListener('click', e => { e.stopPropagation(); openModal(S.traumaPlayed[i]); });
-      tSlot.appendChild(cardEl);
-    }
+function animatePickerCanvas(canvas, card) {
+  if (!canvas) return;
+  const W=44, H=44; canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const pts=card.pts; if(!pts||!pts.length) return;
+  let mnX=1e9,mnY=1e9,mxX=-1e9,mxY=-1e9;
+  pts.forEach(([x,y])=>{if(x<mnX)mnX=x;if(y<mnY)mnY=y;if(x>mxX)mxX=x;if(y>mxY)mxY=y;});
+  const pad=3, sc=Math.min((W-pad*2)/(mxX-mnX||1),(H-pad*2)/(mxY-mnY||1));
+  const oX=W/2-(mnX+mxX)/2*sc, oY=H/2-(mnY+mxY)/2*sc;
+  const mapped=pts.map(([x,y])=>({x:x*sc+oX,y:y*sc+oY}));
+  const edgeSet=new Set(), edges=[];
+  mapped.forEach((p,i)=>{
+    mapped.map((q,j)=>({j,d:Math.hypot(q.x-p.x,q.y-p.y)}))
+      .filter(v=>v.j!==i).sort((a,b)=>a.d-b.d).slice(0,2)
+      .forEach(({j})=>{ const k=Math.min(i,j)+'-'+Math.max(i,j); if(!edgeSet.has(k)){edgeSet.add(k);edges.push([i,j]);} });
   });
+  const phases=mapped.map(()=>Math.random()*Math.PI*2);
+  let t=0, rafId; const key='picker-'+card.id;
+  function frame(){
+    if(!canvas.isConnected){cancelAnimationFrame(rafId);cardAnimations.delete(key);return;}
+    t+=0.02; ctx.clearRect(0,0,W,H);
+    edges.forEach(([a,b])=>{
+      const p=0.18+0.08*Math.sin(t+(a+b)*0.5);
+      ctx.beginPath(); ctx.strokeStyle=card.color+hexA(p*180); ctx.lineWidth=0.7;
+      ctx.moveTo(mapped[a].x,mapped[a].y); ctx.lineTo(mapped[b].x,mapped[b].y); ctx.stroke();
+    });
+    mapped.forEach((p,i)=>{
+      const tw=0.5+0.5*Math.sin(t+phases[i]); const r=1+tw*0.6;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fillStyle=card.color+'cc'; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,0.5,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.85)'; ctx.fill();
+    });
+    rafId=requestAnimationFrame(frame); cardAnimations.set(key,rafId);
+  }
+  if(cardAnimations.has(key)) cancelAnimationFrame(cardAnimations.get(key));
+  frame();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// DRAG SYSTEM
-// ═══════════════════════════════════════════════════════════════
-function attachDrag(cardEl, card) {
-  function onStart(e) {
-    e.preventDefault();
-    const pt = e.touches ? e.touches[0] : e;
-    S.dragCard = card;
-    const ghost = document.getElementById('drag-ghost');
-    ghost.innerHTML = '';
-    const clone = makeCard(card, ['field-card','player-placed']);
-    clone.style.width = '80px';
-    ghost.style.width = '80px';
-    ghost.style.height = '112px';
-    ghost.appendChild(clone);
-    ghost.style.left = (pt.clientX - 40) + 'px';
-    ghost.style.top  = (pt.clientY - 56) + 'px';
-    ghost.classList.add('show');
-    cardEl.style.opacity = '.32';
-  }
-  function onMove(e) {
-    if (!S.dragCard) return;
-    e.preventDefault();
-    const pt = e.touches ? e.touches[0] : e;
-    const ghost = document.getElementById('drag-ghost');
-    ghost.style.left = (pt.clientX - 40) + 'px';
-    ghost.style.top  = (pt.clientY - 56) + 'px';
-    document.querySelectorAll('.drop-zone.player-zone').forEach(z => {
-      const r = z.getBoundingClientRect();
-      z.classList.toggle('drag-over',
-        pt.clientX >= r.left && pt.clientX <= r.right &&
-        pt.clientY >= r.top  && pt.clientY <= r.bottom);
-    });
-    S.dragging = true;
-  }
-  function onEnd(e) {
-    if (!S.dragCard) return;
-    const pt = e.changedTouches ? e.changedTouches[0] : e;
-    document.getElementById('drag-ghost').classList.remove('show');
-    cardEl.style.opacity = '';
-    document.querySelectorAll('.drop-zone.player-zone').forEach(z => {
-      z.classList.remove('drag-over');
-      const r = z.getBoundingClientRect();
-      if (pt.clientX >= r.left && pt.clientX <= r.right &&
-          pt.clientY >= r.top  && pt.clientY <= r.bottom) {
-        placeCardInSlot(S.dragCard, parseInt(z.dataset.slot));
-      }
-    });
-    S.dragCard = null; S.dragging = false;
-  }
-  cardEl.addEventListener('touchstart', onStart, {passive:false});
-  cardEl.addEventListener('touchmove',  onMove,  {passive:false});
-  cardEl.addEventListener('touchend',   onEnd,   {passive:false});
-  cardEl.addEventListener('mousedown',  onStart);
-  window.addEventListener('mousemove',  onMove);
-  window.addEventListener('mouseup',    onEnd);
-}
+function toggleStageCard(card, rowEl) {
+  const already = S.playerPlayed.findIndex(c => c.id === card.id);
+  const attnPct = clamp(S.playerAttn / S.maxAttn * 100, 0, 100);
+  const state   = getAttnState(attnPct);
+  const limit   = state.debuff?.maxActiveCards || MAX_STAGED;
 
-function placeCardInSlot(card, slotIdx) {
-  if (S.phase !== 'player') return;
-  if (S.playerPlayed[slotIdx]) { toast('Slot Occupied', 'Choose an empty slot'); return; }
-  if (!S.playerHand.find(c => c.id === card.id)) return;
-
-  // Anger debuff: only one card per turn
-  const angState = getAttnState(S.playerAttn);
-  if (angState.id === 'anger' && S.playerPlayed.filter(Boolean).length >= 1) {
-    toast('Anger State', 'Only one card can be played — attention too narrow'); return;
+  if (already >= 0) {
+    S.playerPlayed.splice(already, 1);
+    rowEl.classList.remove('picker-staged');
+    rowEl.querySelector('.picker-check')?.classList.remove('checked');
+  } else {
+    if (S.playerPlayed.length >= limit)      { toast('Limit Reached', `Max ${limit} cards in this state`); return; }
+    if (S.playerPlayed.length >= MAX_STAGED) { toast('Hand Full', 'Maximum 10 cards per battle');          return; }
+    S.playerPlayed.push(card);
+    rowEl.classList.add('picker-staged');
+    rowEl.querySelector('.picker-check')?.classList.add('checked');
   }
-
-  S.playerPlayed[slotIdx] = card;
-  S.playerHand = S.playerHand.filter(c => c.id !== card.id);
-  renderHand();
+  el('picker-count').textContent = `${S.playerPlayed.length}/${MAX_STAGED}`;
+  updatePhaseUI();
   renderField();
-  checkShowResolve();
-  log(`You play ${card.name}`, 'p');
-  burst(window.innerWidth/2, window.innerHeight * 0.65, card.color, 12);
 }
 
-function checkShowResolve() {
-  const hasPlayed = S.playerPlayed.filter(Boolean).length > 0;
-  document.getElementById('resolve-btn').classList.toggle('show', hasPlayed);
-  document.getElementById('phase-msg').textContent = hasPlayed
-    ? 'Resolve when ready — or play another card'
-    : 'Drag a card to the field to play it';
+function closeHandPicker() { el('hand-picker').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════════════
+// FIELD RENDER
+// ═══════════════════════════════════════════════════════════════
+function renderField() {
+  const pField = el('field-player'); if (!pField) return;
+  pField.innerHTML = '';
+  if (!S.playerPlayed.length) {
+    pField.innerHTML = '<div class="field-empty">— no cards staged —</div>';
+  } else {
+    S.playerPlayed.forEach((card, i) => {
+      const chip = document.createElement('div'); chip.className = 'field-chip';
+      chip.style.borderColor = card.color + '55'; chip.style.color = card.color;
+      const icon = card.layer==='Superego' ? '◈' : card.layer==='Ego' ? '◇' : '○';
+      chip.innerHTML = `<span class="chip-icon">${icon}</span><span class="chip-name">${card.name}</span><span class="chip-remove" title="Remove">×</span>`;
+      chip.querySelector('.chip-remove').addEventListener('click', e => { e.stopPropagation(); unstageCard(i); });
+      pField.appendChild(chip);
+    });
+  }
+
+  const eField = el('field-enemy');
+  if (eField) {
+    eField.innerHTML = '';
+    if (!S.enemyHand.length) {
+      eField.innerHTML = '<div class="field-empty enemy-empty">— enemy awaiting —</div>';
+    } else {
+      S.enemyHand.forEach(card => {
+        const chip = document.createElement('div'); chip.className = 'field-chip enemy-chip';
+        chip.style.borderColor = card.color + '55'; chip.style.color = card.color;
+        const icon = card.layer==='Superego' ? '◈' : card.layer==='Ego' ? '◇' : '○';
+        chip.innerHTML = `<span class="chip-icon">${icon}</span><span class="chip-name">${card.name}</span>`;
+        eField.appendChild(chip);
+      });
+    }
+  }
+
+  updatePhaseUI();
+}
+
+function unstageCard(idx) {
+  const card = S.playerPlayed[idx]; if (!card) return;
+  S.playerPlayed.splice(idx, 1);
+  const row = el('hand-picker')?.querySelector(`[data-id="${card.id}"]`);
+  if (row) { row.classList.remove('picker-staged'); row.querySelector('.picker-check')?.classList.remove('checked'); }
+  el('picker-count').textContent = `${S.playerPlayed.length}/${MAX_STAGED}`;
+  log(`${card.name} removed`, 'sys');
+  renderField();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CARD MODAL
+// CARD DETAIL MODAL
 // ═══════════════════════════════════════════════════════════════
 function openModal(card) {
   S.modalCard = card;
-  el('modal-axium').textContent     = cardLabel(card);
-  el('modal-axium').style.color     = card.color;
-  el('modal-name').textContent      = card.name;
-  el('modal-name').style.color      = card.color;
-  el('modal-liturgy').textContent   = cardSubtitle(card);
-  // effectDesc exists on player/ego cards; trauma cards use traumaDesc; ID cards use upright
-  el('modal-effect').textContent    = card.effectDesc || card.traumaDesc || card.upright || '';
-  el('modal-type').textContent      = card.type || 'compression';
-  el('modal-int').textContent       = card.intensity !== undefined ? card.intensity + ' / 10' : '—';
-  const shift = card.attnShift !== undefined ? card.attnShift : (card.traumaShift || 0);
-  el('modal-shift').textContent     = (shift > 0 ? '+' : '') + shift;
-  el('modal-shift').style.color     = shift > 0 ? '#86EFAC' : '#e05555';
-  el('modal-exhaust').textContent   = (card.exhaustion || 0) + ' dmg';
-
-  // Synergies from cards.js
-  const myIds  = S.playerHand.map(c => c.id).concat(card.id);
+  el('modal-axium').textContent = cardLabel(card); el('modal-axium').style.color = card.color;
+  el('modal-name').textContent  = card.name;       el('modal-name').style.color  = card.color;
+  el('modal-liturgy').textContent = card.keywords || '';
+  let effectText = '';
+  if (card.layer==='Superego') effectText = (card.shieldDesc||'') + (card.capacityDesc ? '\n\n'+card.capacityDesc : '');
+  else if (card.layer==='Ego') effectText = (card.chunkDesc||'') + (card.divideDesc ? '\n\nReversed: '+card.divideDesc : '');
+  else if (card.layer==='ID')  effectText = card.rechargeDesc || card.drainDesc || '';
+  else effectText = card.effectDesc || '';
+  el('modal-effect').textContent = effectText;
+  el('modal-type').textContent   = card.type || '—';
+  el('modal-int').textContent    = card.axiumScore !== undefined ? card.axiumScore+' / 10' : '—';
+  let shiftEst = 0;
+  if (card.layer==='Superego') shiftEst = card.shieldVal   || 0;
+  if (card.layer==='ID')       shiftEst = card.rechargeVal || 0;
+  if (card.layer==='Ego')      shiftEst = card.chunkFlat   || 0;
+  el('modal-shift').textContent  = (shiftEst >= 0 ? '+' : '') + shiftEst;
+  el('modal-shift').style.color  = shiftEst >= 0 ? '#86EFAC' : '#e05555';
+  el('modal-exhaust').textContent = card.tier ? `Tier ${card.tier}` : '—';
+  const myIds  = S.playerPlayed.map(c => c.id).concat(card.id);
   const active = SYNERGIES.filter(s => s.cards.includes(card.id) && s.cards.every(id => myIds.includes(id)));
   const potent = SYNERGIES.filter(s => s.cards.includes(card.id) && !active.includes(s));
   let synTxt = '';
-  if (active.length) synTxt += '✦ ' + active.map(s=>s.name).join(' · ') + ' (ready) ';
-  if (potent.length) synTxt += 'Synergies: ' + potent.map(s=>s.cards.filter(id=>id!==card.id).join('+')).join(' | ');
-  el('modal-synergies').textContent = synTxt || (card.synergies ? 'Synergies: ' + card.synergies.join(' · ') : '');
-
-  const isPlayerCard = S.playerHand.find(c => c.id === card.id);
-  el('modal-play-btn').style.display = isPlayerCard ? 'block' : 'none';
-
-  document.getElementById('card-modal').classList.add('show');
+  if (active.length) synTxt += '✦ ' + active.map(s => s.name).join(' · ') + ' (ready!) ';
+  if (potent.length) synTxt += (active.length ? '  ' : '') + 'Needs: ' + potent.map(s => s.cards.filter(id => id !== card.id).join('+')).join(' / ');
+  el('modal-synergies').textContent = synTxt || (card.synergies ? card.synergies.join(' · ') : '');
+  el('card-modal').classList.add('show');
   setTimeout(() => animateModalCanvas(card), 50);
 }
 
 function closeModal(e) {
-  if (e && e.target !== document.getElementById('card-modal') && !e.target.id?.includes('modal-close')) return;
-  document.getElementById('card-modal').classList.remove('show');
-  S.modalCard = null;
-}
-
-function playFromModal() {
-  const card = S.modalCard;
-  if (!card) return;
-  closeModal();
-  const slotIdx = !S.playerPlayed[0] ? 0 : !S.playerPlayed[1] ? 1 : -1;
-  if (slotIdx === -1) { toast('Field Full', 'Both slots occupied'); return; }
-  placeCardInSlot(card, slotIdx);
+  if (e && e.target !== el('card-modal') && !String(e.target.id).includes('modal-close')) return;
+  el('card-modal').classList.remove('show'); S.modalCard = null;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// TRAUMA AI — uses cards.js getTraumaDeck + strategy
+// DEAL HANDS
 // ═══════════════════════════════════════════════════════════════
-function traumaChooseCards() {
-  const deck  = shuffle([...S.traumaDeck]);
-  const count = S.traumaCoherence > 60 ? 2 : 1;
-  const hand  = deck.slice(0, count + 2);
-  let chosen  = [];
+function dealHand() {
+  const attnPct = clamp(S.playerAttn / S.maxAttn * 100, 0, 100);
+  const state   = getAttnState(attnPct);
+  const drawMod = state.debuff?.drawMod || 0;
+  const size    = clamp(STARTING_HAND + drawMod, 1, STARTING_HAND);
 
-  if (S.traumaCoherence < 35) {
-    // Desperate — fire Collapse or heal
-    const collapse = hand.find(c => c.id === 't_collapse');
-    if (collapse) {
-      chosen.push(collapse);
-    } else {
-      const healer = hand.find(c => (c.traumaHealing || 0) > 0);
-      chosen.push(healer || hand[0]);
-    }
-  } else if (S.traumaCoherence < 55) {
-    const healer   = hand.find(c => (c.traumaHealing || 0) > 0);
-    const attacker = hand.find(c => c.attnShift < -8);
-    if (healer)                     chosen.push(healer);
-    if (attacker && chosen.length < count) chosen.push(attacker);
-    if (!chosen.length)             chosen.push(hand[0]);
-  } else {
-    // Target player's current state weakness
-    const state    = getAttnState(S.playerAttn);
-    const targeted = hand.filter(c => c.attnTarget === state.id);
-    chosen.push(targeted[0] || hand.find(c => c.type === 'compression') || hand[0]);
-    if (chosen.length < count) {
-      const second = hand.find(c => !chosen.includes(c) && ((c.traumaHealing||0) > 0 || c.attnShift < -5));
-      if (second) chosen.push(second);
-    }
-  }
+  const available = S.playerDeck.filter(c => !S.playerPlayed.find(p => p.id === c.id));
+  S.playerHand = shuffle(available).slice(0, size);
+  S.playerPlayed.forEach(c => { if (!S.playerHand.find(h => h.id === c.id)) S.playerHand.unshift(c); });
 
-  S.traumaPlayed = [chosen[0] || null, chosen[1] || null];
+  S.enemyHand = shuffle([...S.enemyDeck]).slice(0, CHAPTER_CONFIG.enemyHandSize || 3);
+
   renderField();
-  chosen.forEach(c => log(`Trauma plays ${c.name}`, 't'));
 }
 
 // ═══════════════════════════════════════════════════════════════
-// RESOLVE ROUND
+// RESOLVE
 // ═══════════════════════════════════════════════════════════════
 function resolveRound() {
-  if (S.phase !== 'player') return;
-  if (!S.playerPlayed.filter(Boolean).length) return;
-
-  S.phase = 'resolving';
+  if (S.phase !== 'build') return;
+  if (!S.playerPlayed.length) { toast('No Cards', 'Stage at least one card'); return; }
+  S.enemyPlayed = [...S.enemyHand];
+  S.phase = 'battling';
+  closeHandPicker();
   el('resolve-btn').classList.remove('show');
   el('pass-btn').disabled = true;
-
-  if (!S.monologueSkip) {
-    traumaChooseCards();
-  } else {
-    S.monologueSkip   = false;
-    S.monologueDouble = true;
-    log('Trauma skips (monologue) — next hit doubles', 't');
-  }
-
-  setTimeout(() => applyAllEffects(), 700);
-}
-
-function applyAllEffects() {
-  let playerNetShift  = 0;
-  let traumaNetDamage = 0;
-  const playedIds     = S.playerPlayed.filter(Boolean).map(c => c.id);
-
-  // ── Check synergies from cards.js ──
-  const activeSynergies = getSynergies(playedIds);
-  activeSynergies.forEach(syn => {
-    flashSynergy(syn);
-    log(`✦ Synergy: ${syn.name}`, 'synerg');
-  });
-
-  // ── Player cards ──
-  S.playerPlayed.filter(Boolean).forEach(card => {
-    let shift = card.attnShift;
-
-    // Centering debuff
-    if (S.centeringActive && shift > 0) {
-      shift = Math.max(0, shift - 3);
-      if (card.id === 'mirror') { S.centeringActive = false; log('Mirror clears Centering', 's'); }
-    }
-
-    playerNetShift  += shift;
-    traumaNetDamage += (card.exhaustion || 0);
-
-    // Card-specific effects
-    switch (card.id) {
-      case 'shield':
-        S.shieldActive = true; S.shieldCount = 1;
-        log('Shield armed — next trauma blocked', 's'); break;
-      case 'shield_plus':
-        S.shieldActive = true; S.shieldCount = 2;
-        log('Shield+ armed — 2 trauma hits blocked', 's'); break;
-      case 'space':
-        S.spaceSkip = true;
-        log('Space: trauma skips next turn', 's'); break;
-      case 'space_plus':
-        S.spaceSkip = true;
-        S.attnFloorTurns = 3;
-        S.attnFloor = S.playerAttn;
-        log('Space+: skip + attention floor set', 's'); break;
-      case 'mirror':
-      case 'mirror_plus':
-        S.extraDraw += 1;
-        if (S.traumaPlayed[0]) {
-          const bonus = Math.abs(S.traumaPlayed[0].attnShift * (card.id==='mirror_plus' ? 1.0 : 0.5));
-          playerNetShift += bonus;
-          log(`Mirror copies ${bonus.toFixed(0)} attn from trauma`, 's');
-        }
-        if (card.id === 'mirror_plus' && S.traumaPlayed[0]) {
-          // Negate the trauma card's shift too
-          S.traumaPlayed[0] = { ...S.traumaPlayed[0], attnShift: 0 };
-          log('Mirror+ negates trauma shift', 's');
-        }
-        break;
-      case 'witness':
-      case 'witness_plus':
-        S.traumaPlayed.forEach(tc => { if (tc) tc.intensity = Math.max(1, tc.intensity - (card.id==='witness_plus'?4:3)); });
-        log('Witness reduces trauma intensity', 's'); break;
-      case 'truth':
-      case 'truth_plus':
-        S.traumaDeck = S.traumaDeck.filter(c => !c.tags?.includes('fabricate'));
-        traumaNetDamage += card.id === 'truth_plus' ? 25 : 15;
-        log('Truth destroys fabrication — extra trauma damage', 's'); break;
-      case 'void':
-        if (S.traumaCoherence < 50) { playerNetShift -= 4; log('Void risk — chaos reflected back', 'sys'); }
-        break;
-      case 'void_plus':
-        // Risk removed in the + version
-        break;
-      case 'inversion':
-      case 'inversion_plus': {
-        const lastTrauma = S.traumaPlayed[0];
-        if (lastTrauma) {
-          const copy = Math.abs(lastTrauma.attnShift);
-          playerNetShift += copy;
-          log(`Inversion copies ${copy} from ${lastTrauma.name}`, 's');
-          if (card.id === 'inversion_plus' && S.traumaPlayed[1]) {
-            const copy2 = Math.abs(S.traumaPlayed[1].attnShift);
-            playerNetShift += copy2;
-            log(`Inversion+ copies second: +${copy2}`, 's');
-          }
-          S.traumaPlayed[0] = { ...lastTrauma, attnShift: 0 };
-        }
-        break;
-      }
-      case 'release':
-      case 'release_plus': {
-        const corruptIdx = S.playerDeck.findIndex(c => c.corrupted);
-        if (corruptIdx >= 0) {
-          const removed = S.playerDeck.splice(corruptIdx, 1)[0];
-          if (card.id === 'release_plus') {
-            // Remove ALL corruption
-            let count = 1;
-            while (true) {
-              const i = S.playerDeck.findIndex(c => c.corrupted);
-              if (i < 0) break;
-              S.playerDeck.splice(i, 1); count++;
-            }
-            playerNetShift += count * 3;
-            log(`Release+ cleared ${count} corruption cards, +${count*3} attn`, 's');
-          } else {
-            playerNetShift += 4;
-            log(`Release removes ${removed.name}, +4 attn bonus`, 's');
-          }
-        } else {
-          playerNetShift += card.id === 'release_plus' ? 0 : 4;
-        }
-        break;
-      }
-      case 'patient':
-      case 'patient_plus':
-        S.traumaPlayed.forEach(tc => { if (tc) tc.intensity = Math.max(1, tc.intensity - (card.id==='patient_plus'?3:2)); });
-        log('Patience reduces trauma intensity', 's'); break;
-    }
-  });
-
-  // ── Synergy overrides ──
-  if (activeSynergies.some(s => s.id === 'fortified_ground')) {
-    // Block ALL trauma shifts
-    S.traumaPlayed = S.traumaPlayed.map(c => c ? {...c, attnShift:0} : null);
-    toast('Fortified Ground', 'All trauma negated');
-  }
-  if (activeSynergies.some(s => s.id === 'clear_sight')) {
-    if (S.traumaPlayed[0]) {
-      playerNetShift += Math.abs(S.traumaPlayed[0].attnShift);
-      S.traumaPlayed[0] = {...S.traumaPlayed[0], attnShift:0};
-      log('Clear Sight: next trauma card used for you', 's');
-    }
-  }
-  if (activeSynergies.some(s => s.id === 'shadow_flip')) {
-    S.traumaPlayed.forEach(tc => {
-      if (tc) { playerNetShift += Math.abs(tc.attnShift) * 2; tc.attnShift = 0; }
-    });
-    log('Shadow Flip: trauma confusion heals you at 2×', 's');
-  }
-  if (activeSynergies.some(s => s.id === 'full_exposure')) {
-    traumaNetDamage += 20;
-    S.traumaDeck = S.traumaDeck.filter(c => !c.tags?.includes('fabricate'));
-    log('Full Exposure: fabrications destroyed +20 coherence dmg', 's');
-  }
-  if (activeSynergies.some(s => s.id === 'open_field')) {
-    S.spaceSkip = true;
-    S.attnFloorTurns = 2; S.attnFloor = S.playerAttn;
-    log('Open Field: trauma skip + 2-turn floor', 's');
-  }
-  if (activeSynergies.some(s => s.id === 'patient_release')) {
-    playerNetShift += 5;
-    log('Steady Release: bonus +5 shift', 's');
-  }
-  if (activeSynergies.some(s => s.id === 'deep_mirror')) {
-    S.traumaPlayed.forEach(tc => {
-      if (tc) { shiftTrauma(tc.attnShift); tc.attnShift = 0; } // trauma takes own hit
-    });
-    log('Deep Mirror: trauma receives its own card', 's');
-  }
-  if (activeSynergies.some(s => s.id === 'constellation_complete')) {
-    traumaNetDamage += 30;
-    playerNetShift  += 15;
-    toast('The Constellation', 'All three anchors aligned');
-    log('✦✦ Constellation Complete — +30 trauma dmg, +15 attn', 'synerg');
-  }
-  if (activeSynergies.some(s => s.id === 'full_spectrum')) {
-    S.spaceSkip = true;
-    playerNetShift += 20;
-    toast('Full Spectrum', 'Trauma stunned 2 turns');
-    log('✦✦ Full Spectrum — trauma stunned, +20 attn', 'synerg');
-  }
-
-  // ── Trauma cards ──
-  let traumaNetShift = 0;
-  if (S.spaceSkip && !activeSynergies.some(s => ['open_field','full_spectrum'].includes(s.id))) {
-    S.spaceSkip = false;
-    log('Space holds — trauma turn skipped', 's');
-    toast('Space Holds', 'Trauma skips this round');
-  } else if (!S.spaceSkip) {
-    S.traumaPlayed.filter(Boolean).forEach(card => {
-      // Shield block
-      if (S.shieldActive && S.shieldCount > 0) {
-        S.shieldCount--;
-        if (S.shieldCount <= 0) S.shieldActive = false;
-        log(`Shield absorbs ${card.name}`, 's');
-        if (card.traumaHealing) shiftTrauma(+card.traumaHealing);
-        return;
-      }
-
-      let shift = card.attnShift;
-      if (S.monologueDouble) { shift *= 2; S.monologueDouble = false; log('Monologue double fires!', 't'); }
-
-      // Fragmented state: synergies blocked but no extra trauma penalty
-      traumaNetShift += shift;
-
-      if (card.traumaHealing) {
-        shiftTrauma(+card.traumaHealing);
-        log(`Trauma heals +${card.traumaHealing} coherence`, 't');
-      }
-
-      // Trauma special effects
-      switch (card.id) {
-        case 't_monologue':   S.monologueSkip = true; break;
-        case 't_centering':   S.centeringActive = true; log('Centering: your cards -3 shift until Mirror', 't'); break;
-        case 't_performance': S.extraDraw = Math.max(-1, S.extraDraw - 1); log('Performance: draw -1 next turn', 't'); break;
-        case 't_collapse':
-          if (S.traumaCoherence > 30) {
-            // Collapse only fires at desperation threshold — ignore it
-            traumaNetShift -= shift; // cancel
-            log('Collapse: not desperate enough — fizzles', 'sys');
-          }
-          break;
-      }
-    });
-    S.spaceSkip = false;
-  }
-
-  // ── Apply everything ──
-  setTimeout(() => {
-    const totalShift = playerNetShift + traumaNetShift;
-    shiftPlayer(totalShift);
-    shiftTrauma(-traumaNetDamage);
-
-    if (S.attnFloorTurns > 0) S.attnFloorTurns--;
-    updateStatusStrip();
-
-    if (totalShift > 0) log(`Attention +${totalShift.toFixed(0)}`, 'p');
-    else if (totalShift < 0) log(`Attention ${totalShift.toFixed(0)}`, 't');
-    if (traumaNetDamage > 0) log(`Trauma −${traumaNetDamage} coherence`, 'p');
-
-    // Resolution pop
-    const pop   = document.getElementById('resolve-pop');
-    const state = getAttnState(S.playerAttn);
-    pop.textContent    = state.label;
-    pop.style.color    = state.col;
-    pop.classList.add('show');
-    burst(window.innerWidth/2, window.innerHeight*0.5, state.col, 16);
-
-    setTimeout(() => { pop.classList.remove('show'); checkWinLose(); }, 1000);
-  }, 400);
+  setTimeout(() => startBattleSequence(), 700);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// WIN / LOSE
+// BATTLE SEQUENCE
+// ═══════════════════════════════════════════════════════════════
+function startBattleSequence() {
+  const BT = CHAPTER_CONFIG.battleTiming;
+
+  const ppPct   = clamp(S.playerAttn / S.maxAttn * 100, 0, 100);
+  const psState = getAttnState(ppPct);
+  const epPct   = clamp(S.enemyAttn / S.enemyMaxAttn * 100, 0, 100);
+  const esState = getAttnState(epPct);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'battle-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:#03030e;opacity:0;transition:opacity .5s;pointer-events:all;display:flex;flex-direction:column;';
+
+  overlay.innerHTML = `
+    <canvas id="battle-cvs" style="position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;"></canvas>
+    <div id="ovr-bars" style="position:relative;z-index:10;flex-shrink:0;padding:14px 18px 10px;background:linear-gradient(180deg,rgba(3,3,14,.95) 0%,rgba(3,3,14,.85) 70%,rgba(3,3,14,0) 100%);border-bottom:1px solid rgba(255,255,255,.06);pointer-events:none;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(212,175,55,.55);">Your Attention</span>
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <span id="ovr-player-val" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(212,175,55,.65);">${Math.round(S.playerAttn)} / ${S.maxAttn}</span>
+            <span id="ovr-player-state" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:${psState.col};">${psState.label}</span>
+          </div>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;position:relative;border:1px solid rgba(255,255,255,.08);">
+          <div id="ovr-player-fill" style="height:100%;border-radius:3px;width:${ppPct}%;background:linear-gradient(90deg,rgba(107,33,168,.7) 0%,rgba(29,78,216,.7) 18%,rgba(55,65,81,.7) 35%,rgba(126,184,232,.8) 52%,rgba(212,175,55,.9) 70%,rgba(134,239,172,.9) 85%,rgba(255,255,255,1) 100%);transition:width 0.3s;"></div>
+          <div id="ovr-player-cursor" style="position:absolute;top:-5px;left:${ppPct}%;width:14px;height:14px;border-radius:50%;background:white;transform:translateX(-50%);transition:left 0.3s;border:2px solid #D4AF37;box-shadow:0 0 10px #D4AF37;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(224,85,85,.55);">Enemy Attention</span>
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <span id="ovr-enemy-val" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(224,85,85,.65);">${Math.round(S.enemyAttn)} / ${S.enemyMaxAttn}</span>
+            <span id="ovr-enemy-state" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:${esState.col};">${esState.label}</span>
+          </div>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;position:relative;border:1px solid rgba(255,255,255,.08);">
+          <div id="ovr-enemy-fill" style="height:100%;border-radius:3px;width:${epPct}%;background:linear-gradient(90deg,rgba(107,33,168,.7) 0%,rgba(220,38,38,.85) 55%,rgba(249,115,22,.9) 80%,rgba(255,200,50,1) 100%);transition:width 0.3s;"></div>
+          <div id="ovr-enemy-cursor" style="position:absolute;top:-5px;left:${epPct}%;width:14px;height:14px;border-radius:50%;background:white;transform:translateX(-50%);transition:left 0.3s;border:2px solid #e05555;box-shadow:0 0 10px #e05555;"></div>
+        </div>
+      </div>
+    </div>
+    <div id="constellation-area" style="flex:1;position:relative;z-index:5;min-height:0;">
+      <div id="battle-phase-lbl" style="position:absolute;left:50%;top:8%;transform:translateX(-50%);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(16px,4.5vw,24px);letter-spacing:.12em;color:#D4AF37;text-align:center;text-shadow:0 0 40px rgba(212,175,55,.6);pointer-events:none;transition:color .5s;z-index:11;white-space:nowrap;">Constellation Awakening...</div>
+    </div>
+    <div style="position:relative;z-index:10;display:flex;padding:14px;gap:10px;flex-shrink:0;background:linear-gradient(0deg,rgba(3,3,14,.95) 0%,rgba(3,3,14,0) 100%);pointer-events:none;">
+      <div id="battle-log" style="width:min(240px,45vw);display:flex;flex-direction:column;gap:4px;"></div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    const canvas = document.getElementById('battle-cvs');
+    const rect   = overlay.getBoundingClientRect();
+    canvas.width  = rect.width;
+    canvas.height = rect.height;
+    runBattleAnimation(canvas, BT);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BATTLE ANIMATION — clean, single frame function
+// ═══════════════════════════════════════════════════════════════
+function runBattleAnimation(canvas, BT) {
+  const ctx          = canvas.getContext('2d');
+  const W            = canvas.width;
+  const H            = canvas.height;
+  const barsPanel    = document.getElementById('ovr-bars');
+  const barsHeight   = barsPanel ? barsPanel.offsetHeight : 140;
+  const bottomPanel  = document.querySelector('#battle-overlay > div:last-child');
+  const bottomHeight = bottomPanel ? bottomPanel.offsetHeight : 60;
+  const phaseLbl     = document.getElementById('battle-phase-lbl');
+  const battleLogEl  = document.getElementById('battle-log');
+
+  const visibleTop    = barsHeight + 40;
+  const visibleBottom = H - bottomHeight - 30;
+  const midY          = visibleTop + (visibleBottom - visibleTop) * 0.5;
+
+  // ── Node pulse timings ──────────────────────────────────────
+  const NODE_CYCLE   = 600;  // ms for one node to pulse through
+  const NODE_STAGGER = 80;   // ms between successive node starts
+
+  // ── Layout helpers ──────────────────────────────────────────
+  function layoutCards(played, yPos) {
+    const count   = played.length;
+    const spacing = Math.min(W * 0.8 / Math.max(count, 1), 120);
+    const totalW  = spacing * (count - 1);
+    const startX  = (W - totalW) / 2;
+    return played.map((card, i) => {
+      const x   = startX + i * spacing;
+      const obj = { x, y: yPos, card, nodes: [], edges: [], nodePhases: [] };
+      if (card.pts) {
+        const pts = card.pts;
+        let mnX=1e9,mnY=1e9,mxX=-1e9,mxY=-1e9;
+        pts.forEach(([px,py])=>{if(px<mnX)mnX=px;if(py<mnY)mnY=py;if(px>mxX)mxX=px;if(py>mxY)mxY=py;});
+        const sc  = Math.min(0.8/(mxX-mnX||1), 0.4/(mxY-mnY||1));
+        const oX  = 0.5-(mnX+mxX)/2*sc;
+        const oY  = 0.25-(mnY+mxY)/2*sc;
+        obj.nodes = pts.map(([px,py]) => ({
+          x: x + (px*sc + oX - 0.5)*80,
+          y: yPos + (py*sc + oY - 0.25)*80,
+          cycling: false, cycled: false, cycleProgress: 0,
+        }));
+        obj.nodePhases = pts.map(() => Math.random() * Math.PI * 2);
+        const edgeSet = new Set();
+        obj.nodes.forEach((p, ni) => {
+          obj.nodes
+            .map((q, j) => ({ j, d: Math.hypot(q.x-p.x, q.y-p.y) }))
+            .filter(v => v.j !== ni)
+            .sort((a, b) => a.d - b.d)
+            .slice(0, 2)
+            .forEach(({ j }) => {
+              const k = Math.min(ni,j)+'-'+Math.max(ni,j);
+              if (!edgeSet.has(k)) { edgeSet.add(k); obj.edges.push([ni, j]); }
+            });
+        });
+      }
+      return obj;
+    });
+  }
+
+  const playerCards = layoutCards(S.playerPlayed, midY + (visibleBottom - midY) * 0.4);
+  const enemyCards  = layoutCards(S.enemyPlayed,  visibleTop + (midY - visibleTop) * 0.6);
+  const allCards    = [...playerCards, ...enemyCards];
+
+  // ── Helpers ─────────────────────────────────────────────────
+  function addLog(msg, type='sys') {
+    const d = document.createElement('div');
+    d.style.cssText = `font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.05em;line-height:1.5;color:${
+      type==='p' ? 'rgba(212,175,55,.85)' : type==='e' ? 'rgba(224,85,85,.75)' : 'rgba(255,255,255,.4)'};`;
+    d.textContent = msg;
+    battleLogEl.appendChild(d);
+    while (battleLogEl.children.length > 12) battleLogEl.removeChild(battleLogEl.firstChild);
+  }
+
+  function updateOverlayBars() {
+    const ppPct = clamp(S.playerAttn / S.maxAttn * 100, 0, 100);
+    const epPct = clamp(S.enemyAttn  / S.enemyMaxAttn * 100, 0, 100);
+    const ps    = getAttnState(ppPct);
+    const es    = getAttnState(epPct);
+    const pf = document.getElementById('ovr-player-fill');   if (pf) pf.style.width  = ppPct + '%';
+    const pc = document.getElementById('ovr-player-cursor'); if (pc) pc.style.left   = ppPct + '%';
+    const pv = document.getElementById('ovr-player-val');    if (pv) pv.textContent  = Math.round(S.playerAttn) + ' / ' + S.maxAttn;
+    const pl = document.getElementById('ovr-player-state');  if (pl) { pl.textContent = ps.label; pl.style.color = ps.col; }
+    const ef = document.getElementById('ovr-enemy-fill');    if (ef) ef.style.width  = epPct + '%';
+    const ec = document.getElementById('ovr-enemy-cursor');  if (ec) ec.style.left   = epPct + '%';
+    const ev = document.getElementById('ovr-enemy-val');     if (ev) ev.textContent  = Math.round(S.enemyAttn) + ' / ' + S.enemyMaxAttn;
+    const el2= document.getElementById('ovr-enemy-state');   if (el2){ el2.textContent = es.label; el2.style.color = es.col; }
+  }
+
+  function drawConstellation(cardData, alpha, timeSec, isEnemy) {
+    if (!cardData.nodes.length) return;
+
+    // Draw edges
+    cardData.edges.forEach(([a, b]) => {
+      const na = cardData.nodes[a], nb = cardData.nodes[b];
+      const pulse = 0.12 + 0.06 * Math.sin(timeSec * 2 + (a + b) * 0.5);
+      ctx.beginPath();
+      ctx.strokeStyle = cardData.card.color + hexA(pulse * 255 * alpha);
+      ctx.lineWidth   = 0.7;
+      ctx.moveTo(na.x, na.y);
+      ctx.lineTo(nb.x, nb.y);
+      ctx.stroke();
+    });
+
+    // Draw nodes
+    cardData.nodes.forEach((n) => {
+      let sz = 4;
+      let na = alpha * 0.75;
+      let col = cardData.card.color;
+
+      if (n.cycled) {
+        sz  = 2.5;
+        na  = alpha * 0.3;
+        col = '#888888';
+      } else if (n.cycling) {
+        sz = 4 + Math.sin(n.cycleProgress * Math.PI) * 5;
+        na = alpha * (0.5 + Math.sin(n.cycleProgress * Math.PI) * 0.5);
+      }
+
+      // Expand hex shorthand to full 6-char before appending alpha
+      const fullCol = col.length === 4
+        ? '#' + col[1]+col[1]+col[2]+col[2]+col[3]+col[3]
+        : col;
+
+      const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, sz * 3);
+      g.addColorStop(0, fullCol + hexA(na * 140));
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(n.x, n.y, sz * 3, 0, Math.PI * 2); ctx.fill();
+
+      ctx.beginPath(); ctx.arc(n.x, n.y, sz, 0, Math.PI * 2);
+      ctx.fillStyle = fullCol + hexA(na * 255); ctx.fill();
+
+      ctx.beginPath(); ctx.arc(n.x, n.y, sz * 0.35, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${na})`; ctx.fill();
+    });
+
+    // Card name label
+    ctx.font      = `bold 10px 'Space Mono',monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = `rgba(255,255,255,${alpha * 0.65})`;
+    ctx.fillText(cardData.card.name.slice(0, 14), cardData.x, cardData.y + (isEnemy ? -62 : 62));
+  }
+
+  // ── THE FRAME LOOP ───────────────────────────────────────────
+  let startTime = null;
+  let rafId     = null;
+  let finishing = false;
+
+  function frame(ts) {
+    if (!startTime) startTime = ts;
+    const t       = ts - startTime;
+    const timeSec = t / 1000;
+
+    // Clear & background
+    ctx.clearRect(0, 0, W, H);
+    const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.6);
+    bg.addColorStop(0, 'rgba(25,10,50,0.08)');
+    bg.addColorStop(1, 'rgba(3,3,14,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Divider
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,.05)';
+    ctx.lineWidth   = 1;
+    ctx.moveTo(40, midY);
+    ctx.lineTo(W - 40, midY);
+    ctx.stroke();
+
+    if (t < BT.charge) {
+      // ── CHARGE PHASE: fade all cards in ──
+      const prog = 1 - Math.pow(1 - t / BT.charge, 3);
+      if (phaseLbl) { phaseLbl.textContent = 'Constellation Awakening...'; phaseLbl.style.color = '#D4AF37'; }
+      allCards.forEach(c => drawConstellation(c, prog, timeSec, enemyCards.includes(c)));
+
+    } else {
+      // ── RESOLVE PHASE: all nodes ripple simultaneously ──
+      if (phaseLbl) { phaseLbl.textContent = '⚡ AXIUM RESONANCE ⚡'; phaseLbl.style.color = '#D4AF37'; }
+
+      let totalNodes    = 0;
+      let finishedNodes = 0;
+
+      allCards.forEach((cardData) => {
+        const isEnemy = enemyCards.includes(cardData);
+        totalNodes += cardData.nodes.length;
+
+        cardData.nodes.forEach((node, nIdx) => {
+          // All cards start simultaneously; only stagger within each card by node index
+          const nodeStart    = BT.charge + nIdx * NODE_STAGGER;
+          const nodeProgress = Math.min(1, Math.max(0, (t - nodeStart) / NODE_CYCLE));
+
+          if (nodeProgress > 0 && nodeProgress < 1) {
+            node.cycling       = true;
+            node.cycleProgress = nodeProgress;
+          } else if (nodeProgress >= 1 && !node.cycled) {
+            node.cycled  = true;
+            node.cycling = false;
+
+            // Fire drain/log once per card (on first node completing)
+            if (nIdx === 0) {
+              if (!isEnemy) {
+                const drain = Math.min(2, S.playerAttn - MIN_ATTN);
+                if (drain > 0) { S.playerAttn -= drain; updateOverlayBars(); }
+              } else {
+                const drain = Math.min(2, S.enemyAttn);
+                if (drain > 0) { S.enemyAttn -= drain; updateOverlayBars(); }
+              }
+              addLog(`${cardData.card.name} active`, isEnemy ? 'e' : 'p');
+            }
+          }
+
+          if (node.cycled) finishedNodes++;
+        });
+
+        drawConstellation(cardData, cardData.nodes.every(n => n.cycled) ? 0.4 : 1.0, timeSec, isEnemy);
+      });
+
+      // ── All done — wrap up ──
+      if (finishedNodes >= totalNodes && !finishing) {
+        finishing = true;
+        if (phaseLbl) {
+          phaseLbl.textContent = 'Constellation Complete';
+          phaseLbl.style.color = S.playerAttn >= S.enemyAttn ? '#86EFAC' : '#e05555';
+        }
+        setTimeout(() => {
+          cancelAnimationFrame(rafId);
+          document.getElementById('battle-overlay')?.remove();
+          finaliseBattle();
+        }, BT.done);
+        return; // stop scheduling new frames after we're done
+      }
+    }
+
+    rafId = requestAnimationFrame(frame);
+  }
+
+  // Kick off the loop
+  rafId = requestAnimationFrame(frame);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINALISE
+// ═══════════════════════════════════════════════════════════════
+function finaliseBattle() {
+  // Run the actual math
+  const attnPct = clamp(S.playerAttn / S.maxAttn * 100, 0, 100);
+  const stateId = getAttnState(attnPct).id;
+  const result  = resolveBattle(S.playerPlayed, S.enemyPlayed, S.playerAttn, stateId, S.playerDeck);
+
+  // Apply deltas
+  S.playerAttn = clamp(S.playerAttn + result.playerDelta, MIN_ATTN, S.maxAttn);
+  S.enemyAttn  = clamp(S.enemyAttn  - result.playerDelta * 0.5, 0, S.enemyMaxAttn);
+
+  result.log.forEach(entry => log(entry.msg, entry.type));
+  if (result.instantWin) { triggerWin(true); return; }
+
+  updateBars();
+  const pop   = el('resolve-pop');
+  const state = getAttnState(clamp(S.playerAttn / S.maxAttn * 100, 0, 100));
+  if (pop) { pop.textContent = state.label; pop.style.color = state.col; pop.classList.add('show'); }
+  burst(window.innerWidth/2, window.innerHeight*0.5, state.col, 22);
+  setTimeout(() => { if (pop) pop.classList.remove('show'); checkWinLose(); }, 1100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WIN / LOSE / NEXT TURN
 // ═══════════════════════════════════════════════════════════════
 function checkWinLose() {
-  if (S.traumaCoherence <= 0)        { triggerWin(); return; }
-  if (S.playerAttn <= MIN_ATTN + 3)  { triggerLose(); return; }
-  if (S.playerAttn >= 92)            { triggerWin(); return; } // Enlightened
-  setTimeout(() => nextTurn(), 600);
+  if (S.enemyAttn <= 0)                        { triggerWin(false); return; }
+  if (S.playerAttn <= CHAPTER_CONFIG.loseAttn)  { triggerLose();     return; }
+  if (S.playerAttn >= CHAPTER_CONFIG.winAttn)   { triggerWin(false); return; }
+  if (S.playerPlayed.length >= 10) {
+    const avg = S.playerPlayed.reduce((s,c) => s+(c.axiumScore||0), 0) / S.playerPlayed.length;
+    if (avg >= 10) { triggerWin(true); return; }
+  }
+  // Single-turn design: if no win condition met, it's a loss
+  triggerLose();
 }
 
-function triggerWin() {
-  S.won = true;
-  const o = document.getElementById('outcome');
-  el('out-title').textContent        = 'Attention Held';
-  el('out-title').style.color        = '#D4AF37';
-  el('out-title').style.textShadow   = '0 0 50px rgba(212,175,55,.4)';
-  el('out-desc').textContent         = 'The trauma found no purchase. Your attention held its center. Proceed to the shop.';
-  const btn = el('out-btn');
-  btn.textContent                    = 'Visit the Shop';
-  btn.style.background               = 'linear-gradient(135deg,#AA8C2C,#D4AF37,#AA8C2C)';
-  btn.style.color                    = '#0a0a0a';
-  btn.style.border                   = 'none';
-  setTimeout(() => o.classList.add('show'), 600);
-  burst(window.innerWidth/2, window.innerHeight/2, '#D4AF37', 40);
+function triggerWin(perfect=false) {
+  S.won = true; S.phase = 'done';
+  el('out-title').textContent      = perfect ? 'The Axium' : CHAPTER_CONFIG.winTitle;
+  el('out-title').style.color      = '#D4AF37';
+  el('out-title').style.textShadow = '0 0 50px rgba(212,175,55,.4)';
+  el('out-desc').textContent       = perfect ? 'Perfect constellation. The final boss awakens.' : CHAPTER_CONFIG.winDesc;
+  el('out-btn').textContent        = CHAPTER_CONFIG.winBtn;
+  el('out-btn').style.cssText      = 'background:linear-gradient(135deg,#AA8C2C,#D4AF37,#AA8C2C);color:#0a0a0a;border:none;padding:11px 34px;cursor:pointer;border-radius:2px;';
+  setTimeout(() => el('outcome').classList.add('show'), 600);
+  burst(window.innerWidth/2, window.innerHeight/2, '#D4AF37', 44);
   setTimeout(() => burst(window.innerWidth/2, window.innerHeight/2, '#86EFAC', 28), 500);
-  log('✦ Chapter complete — trauma exhausted', 's');
 }
 
 function triggerLose() {
-  S.lost = true;
-  // Inject a corruption card
-  const corrupt = CORRUPTION_CARDS[Math.floor(Math.random() * CORRUPTION_CARDS.length)];
-  S.playerDeck.push({...corrupt});
-  log(`Corruption enters deck: ${corrupt.name}`, 't');
-
-  const o = document.getElementById('outcome');
-  el('out-title').textContent        = 'Attention Lost';
-  el('out-title').style.color        = '#e05555';
-  el('out-title').style.textShadow   = '0 0 50px rgba(224,85,85,.4)';
-  el('out-desc').textContent         = `The trauma found its hold. ${corrupt.name} enters your deck. The chapter resets — but the corruption stays.`;
-  const btn = el('out-btn');
-  btn.textContent                    = 'Try Again';
-  btn.style.background               = 'rgba(224,85,85,.08)';
-  btn.style.color                    = '#e05555';
-  btn.style.border                   = '1px solid rgba(224,85,85,.3)';
-  setTimeout(() => o.classList.add('show'), 400);
+  S.lost = true; S.phase = 'done';
+  el('out-title').textContent      = CHAPTER_CONFIG.loseTitle;
+  el('out-title').style.color      = '#e05555';
+  el('out-title').style.textShadow = '0 0 50px rgba(224,85,85,.4)';
+  el('out-desc').textContent       = CHAPTER_CONFIG.loseDesc;
+  el('out-btn').textContent        = CHAPTER_CONFIG.loseBtn;
+  el('out-btn').style.cssText      = 'background:rgba(224,85,85,.08);color:#e05555;border:1px solid rgba(224,85,85,.3);padding:11px 34px;cursor:pointer;border-radius:2px;';
+  setTimeout(() => el('outcome').classList.add('show'), 400);
   burst(window.innerWidth/2, window.innerHeight/2, '#DC2626', 28);
 }
 
-function handleOutcome() {
-  document.getElementById('outcome').classList.remove('show');
-  if (S.won) openShop();
-  else       resetChapter();
-}
+function handleOutcome() { el('outcome').classList.remove('show'); if (S.won) openShop(); else resetChapter(); }
 
-// ═══════════════════════════════════════════════════════════════
-// TURN MANAGEMENT
-// ═══════════════════════════════════════════════════════════════
 function nextTurn() {
-  S.turn++;
-  S.phase        = 'player';
-  S.playerPlayed = [null, null];
-  S.traumaPlayed = [null, null];
-
-  el('turn-n').textContent    = S.turn;
-  el('phase-msg').textContent = 'Drag a card to the field to play it';
-  el('pass-btn').disabled     = false;
-
-  // Natural drift
-  const pState = getAttnState(S.playerAttn);
-  const pDrift = S.playerAttn < 50 ? +2 : S.playerAttn > 78 ? -1 : 0;
-  const tDrift = S.traumaCoherence > 70 ? -3 : S.traumaCoherence > 40 ? -2 : -1;
-  if (pDrift) shiftPlayer(pDrift);
-  shiftTrauma(tDrift);
-
-  updateStatusStrip();
-  dealHand();
-  renderField();
-  checkShowResolve();
+  S.turn++; S.phase = 'build'; S.playerPlayed = []; S.enemyPlayed = [];
+  const tn = el('turn-n'); if (tn) tn.textContent = S.turn;
+  const pb = el('pass-btn'); if (pb) pb.disabled = false;
+  recalcMaxAttn(); dealHand();
   log(`── Turn ${S.turn} ──`, 'sys');
 }
 
 function passAndEndTurn() {
-  if (S.phase !== 'player') return;
-  shiftPlayer(-5);
-  log('Pass — attention drifts −5', 'sys');
-
-  S.phase = 'resolving';
+  if (S.phase !== 'build') return;
+  shiftPlayer(-6); log('Passed — attention −6', 'sys');
+  S.playerPlayed = []; S.phase = 'battling';
   el('pass-btn').disabled = true;
   el('resolve-btn').classList.remove('show');
-
-  traumaChooseCards();
-  setTimeout(() => {
-    S.traumaPlayed.filter(Boolean).forEach(card => {
-      if (S.shieldActive) {
-        S.shieldCount--;
-        if (S.shieldCount <= 0) S.shieldActive = false;
-        log('Shield absorbs pass-turn trauma', 's'); return;
-      }
-      shiftPlayer(card.attnShift);
-      if (card.traumaHealing) shiftTrauma(+card.traumaHealing);
-      if (card.id === 't_centering') { S.centeringActive = true; }
-      if (card.id === 't_monologue') { S.monologueSkip = true; }
-      log(`Trauma: ${card.name} (${card.attnShift})`, 't');
-    });
-    updateStatusStrip();
-    checkWinLose();
-  }, 700);
+  setTimeout(() => checkWinLose(), 900);
 }
 
 function resetChapter() {
-  // Keep corruption in deck
-  const kept = S.playerDeck.filter(c => c.corrupted);
-  S.playerDeck  = [...PLAYER_CARDS, ...kept];
-  S.traumaDeck  = getTraumaDeck(CURRENT_CHAPTER);
-  S.playerAttn  = 55;
-  S.traumaCoherence = 80;
-  S.turn = 1; S.phase = 'player';
-  S.playerHand   = []; S.playerPlayed = [null,null]; S.traumaPlayed = [null,null];
-  S.extraDraw    = 0;  S.shieldActive = false; S.shieldCount = 0;
-  S.spaceSkip    = false; S.centeringActive = false;
-  S.monologueSkip = false; S.monologueDouble = false;
-  S.attnFloorTurns = 0; S.attnFloor = 0;
+  const eDeckIds  = CHAPTER_CONFIG.enemyDeck || [];
+  S.playerDeck    = shuffle([...PLAYER_CARDS]);
+  S.enemyDeck     = eDeckIds.map(id => PLAYER_CARDS.find(c => c.id === id)).filter(Boolean);
+  S.playerAttn    = CHAPTER_CONFIG.playerStart;
+  S.enemyAttn     = CHAPTER_CONFIG.enemyStart || 80;
+  S.enemyMaxAttn  = CHAPTER_CONFIG.enemyMax   || 100;
+  S.turn          = 1; S.phase = 'build';
+  S.playerHand    = []; S.playerPlayed = []; S.enemyHand = []; S.enemyPlayed = [];
   S.won = false; S.lost = false;
-
-  updateBars();
-  updateStatusStrip();
-  el('turn-n').textContent    = '1';
-  el('phase-msg').textContent = 'Drag a card to the field to play it';
+  recalcMaxAttn(); updateBars();
+  el('turn-n').textContent = '1';
+  el('pass-btn').disabled  = false;
   el('resolve-btn').classList.remove('show');
-  el('pass-btn').disabled     = false;
-  el('log').innerHTML         = '';
-  renderField();
-  dealHand();
-  if (kept.length) toast('Corruption Remains', `${kept.length} corruption card(s) in deck`);
-  log('── Chapter reset ──', 'sys');
+  const lg = el('log'); if (lg) lg.innerHTML = '';
+  dealHand(); log('── Chapter reset ──', 'sys');
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SHOP — uses cards.js getShopOffers + getShopNPC
+// SHOP
 // ═══════════════════════════════════════════════════════════════
 function openShop() {
-  const npc     = getShopNPC(CURRENT_CHAPTER);
-  const offers  = getShopOffers(CURRENT_CHAPTER).filter(Boolean);
-
-  el('sh-npc-name').textContent  = npc.name;
-  el('sh-npc-role').textContent  = npc.role;
-  el('sh-speech').textContent    = npc.speeches[Math.floor(Math.random() * npc.speeches.length)];
-
-  const cardsEl = el('sh-cards');
-  cardsEl.innerHTML = '';
-  offers.forEach(upg => {
-    if (!upg) return;
-    const wrap = document.createElement('div');
-    wrap.className = 'sh-card-wrap';
-    const cardEl = makeCard(upg, []);
-    cardEl.style.width = '86px';
-    wrap.appendChild(cardEl);
-    const lbl = document.createElement('div');
-    lbl.className   = 'sh-upgrade-lbl';
-    lbl.textContent = upg.upgradeDesc || upg.effectDesc.slice(0, 40) + '…';
+  const npc    = getShopNPC(CHAPTER_CONFIG.shopChapter || CURRENT_CHAPTER);
+  const offers = getShopOffers(CHAPTER_CONFIG.shopChapter || CURRENT_CHAPTER, 3).filter(Boolean);
+  el('sh-npc-name').textContent = npc.name; el('sh-npc-role').textContent = npc.role;
+  el('sh-speech').textContent   = npc.speeches[Math.floor(Math.random() * npc.speeches.length)];
+  const cardsEl = el('sh-cards'); cardsEl.innerHTML = '';
+  offers.forEach(card => {
+    if (!card) return;
+    const wrap = document.createElement('div'); wrap.className = 'sh-card-wrap';
+    wrap.appendChild(makeCard(card, []));
+    const desc = card.chunkDesc || card.shieldDesc || card.rechargeDesc || card.keywords || '';
+    const lbl  = document.createElement('div'); lbl.className = 'sh-upgrade-lbl';
+    lbl.textContent = desc.length > 52 ? desc.slice(0, 52) + '…' : desc;
     wrap.appendChild(lbl);
     wrap.addEventListener('click', () => {
-      acceptUpgrade(upg);
-      document.getElementById('shop').classList.remove('show');
+      if (!S.playerDeck.find(c => c.id === card.id)) { S.playerDeck.push(card); toast('Added', card.name); }
+      el('shop').classList.remove('show'); resetChapter();
     });
     cardsEl.appendChild(wrap);
   });
-
-  document.getElementById('shop').classList.add('show');
+  el('shop').classList.add('show');
 }
-
-function acceptUpgrade(upg) {
-  // Replace base card if upgrade, or push if new
-  const baseId = upg.id.replace('_plus','');
-  const idx    = S.playerDeck.findIndex(c => c.id === baseId);
-  if (idx >= 0) S.playerDeck[idx] = upg;
-  else          S.playerDeck.push(upg);
-  toast('Card Acquired', upg.name);
-  log(`Shop: ${upg.name} added to deck`, 's');
-}
-
-function skipShop() {
-  document.getElementById('shop').classList.remove('show');
-  log('Shop skipped', 'sys');
-}
+function skipShop() { el('shop').classList.remove('show'); resetChapter(); }
 
 // ═══════════════════════════════════════════════════════════════
 // SYNERGY FLASH
 // ═══════════════════════════════════════════════════════════════
 function flashSynergy(syn) {
-  const flash = document.getElementById('synergy-flash');
-  const msg   = document.getElementById('synergy-msg');
-  flash.style.background = `radial-gradient(ellipse at center, ${syn.visual}22 0%, transparent 70%)`;
+  const flash = el('synergy-flash'), msg = el('synergy-msg'); if (!flash || !msg) return;
+  flash.style.background = `radial-gradient(ellipse at center,${syn.visual||'#D4AF37'}22 0%,transparent 70%)`;
   el('synergy-msg-name').textContent = syn.name;
-  el('synergy-msg-desc').textContent = syn.desc;
-  el('synergy-msg-name').style.color = syn.visual;
-  flash.classList.add('show');
-  msg.classList.add('show');
-  setTimeout(() => { flash.classList.remove('show'); msg.classList.remove('show'); }, 1600);
+  el('synergy-msg-desc').textContent = syn.desc || '';
+  el('synergy-msg-name').style.color = syn.visual || '#D4AF37';
+  flash.classList.add('show'); msg.classList.add('show');
+  setTimeout(() => { flash.classList.remove('show'); msg.classList.remove('show'); }, 2100);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// DROP ZONES
+// UTILS
 // ═══════════════════════════════════════════════════════════════
-function initDropZones() {
-  [0,1].forEach(i => {
-    const slot = document.getElementById(`player-slot-${i}`);
-    slot.addEventListener('dragover',  e => { e.preventDefault(); slot.classList.add('drag-over'); });
-    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
-    slot.addEventListener('drop', e => {
-      e.preventDefault();
-      slot.classList.remove('drag-over');
-      if (S.dragCard) placeCardInSlot(S.dragCard, i);
-    });
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// UTILITIES
-// ═══════════════════════════════════════════════════════════════
-function el(id) { return document.getElementById(id); }
+function el(id)           { return document.getElementById(id); }
 function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
 
-function dealHand() {
-  // Fragmented state: draw -1
-  const state   = getAttnState(S.playerAttn);
-  const drawMod = (state.debuff?.drawMod || 0);
-  const size    = Math.max(1, HAND_SIZE + S.extraDraw + drawMod);
-  S.extraDraw   = 0;
-  S.playerHand  = shuffle(S.playerDeck).slice(0, size);
-  renderHand();
-}
-
 function log(msg, type='sys') {
-  const logEl = el('log');
-  const line  = document.createElement('div');
-  line.className  = `log-line ${type}`;
-  line.textContent = msg;
+  const logEl = el('log'); if (!logEl) return;
+  const line = document.createElement('div'); line.className = `log-line ${type}`; line.textContent = msg;
   logEl.appendChild(line);
-  while (logEl.children.length > 14) logEl.removeChild(logEl.firstChild);
+  while (logEl.children.length > 16) logEl.removeChild(logEl.firstChild);
 }
 
 let toastTimer;
 function toast(h, b) {
-  el('toast-h').textContent = h;
-  el('toast-b').textContent = b;
-  const t = el('toast');
-  t.classList.add('show');
-  clearTimeout(toastTimer);
+  el('toast-h').textContent = h; el('toast-b').textContent = b;
+  const t = el('toast'); t.classList.add('show'); clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
 function burst(x, y, color, n) {
   for (let i = 0; i < n; i++) {
-    const p   = document.createElement('div');
-    p.className = 'ptcl';
+    const p = document.createElement('div'); p.className = 'ptcl';
     const ang  = (Math.PI*2*i)/n + Math.random()*.5;
     const dist = 20 + Math.random()*65;
-    const dur  = 360 + Math.random()*240;
-    p.style.cssText = `left:${x}px;top:${y}px;width:${1.4+Math.random()*2.8}px;height:${1.4+Math.random()*2.8}px;background:${color};box-shadow:0 0 5px ${color};transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
+    const dur  = 380 + Math.random()*260;
+    p.style.cssText = `left:${x}px;top:${y}px;width:${1.4+Math.random()*2.8}px;height:${1.4+Math.random()*2.8}px;background:${color};box-shadow:0 0 5px ${color};transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;position:fixed;border-radius:50%;pointer-events:none;z-index:900;`;
     document.body.appendChild(p);
-    requestAnimationFrame(() => {
-      p.style.transform = `translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`;
-      p.style.opacity   = '0';
-    });
+    requestAnimationFrame(() => { p.style.transform=`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`; p.style.opacity='0'; });
     setTimeout(() => p.remove(), dur);
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// STAR BACKGROUND
-// ═══════════════════════════════════════════════════════════════
+// Stars
 (function(){
-  const cv  = document.getElementById('stars');
-  const ctx = cv.getContext('2d');
-  let W, H, stars = [];
+  const cv=el('stars'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  let W,H,stars=[];
   function resize(){
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
-    stars = Array.from({length:160}, () => ({
-      x:Math.random()*W, y:Math.random()*H,
-      r:.3+Math.random()*1.1, a:.07+Math.random()*.38,
-      sp:.22+Math.random()*.55, ph:Math.random()*Math.PI*2,
-    }));
+    W=cv.width=window.innerWidth; H=cv.height=window.innerHeight;
+    stars=Array.from({length:140},()=>({x:Math.random()*W,y:Math.random()*H,r:.3+Math.random()*1.1,a:.07+Math.random()*.36,sp:.22+Math.random()*.55,ph:Math.random()*Math.PI*2}));
   }
   function draw(t){
-    requestAnimationFrame(draw);
-    ctx.fillStyle='#03030e'; ctx.fillRect(0,0,W,H);
-    const g = ctx.createRadialGradient(W*.4,H*.35,0,W*.4,H*.35,W*.5);
-    g.addColorStop(0,'rgba(40,20,70,.16)'); g.addColorStop(1,'rgba(3,3,14,0)');
+    requestAnimationFrame(draw); ctx.fillStyle='#03030e'; ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(W*.4,H*.35,0,W*.4,H*.35,W*.5);
+    g.addColorStop(0,'rgba(40,20,70,.13)'); g.addColorStop(1,'rgba(3,3,14,0)');
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    stars.forEach(s=>{
-      const tw = .4+.6*Math.abs(Math.sin(t*.0008*s.sp+s.ph));
-      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,255,255,${s.a*tw})`; ctx.fill();
-    });
+    stars.forEach(s=>{ const tw=.4+.6*Math.abs(Math.sin(t*.0008*s.sp+s.ph)); ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,255,255,${s.a*tw})`; ctx.fill(); });
   }
-  resize(); window.addEventListener('resize', resize);
-  requestAnimationFrame(draw);
+  resize(); window.addEventListener('resize',resize); requestAnimationFrame(draw);
+})();
+
+(function(){
+  if(!document.getElementById('game-keyframes')){
+    const s=document.createElement('style'); s.id='game-keyframes';
+    s.textContent='@keyframes logSlide{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}';
+    document.head.appendChild(s);
+  }
 })();
