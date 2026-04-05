@@ -132,52 +132,115 @@ class ConstellationAnim {
     if (this.rafId) { CRAF(this.rafId); this.rafId = null; }
   }
 
+  // ── Charge API ───────────────────────────────────────────
+  // progress 0→1: nodes light up sequentially.
+  // At 1.0 all nodes blaze, then burstDecay kicks in.
+  // Call setCharge(0) to reset after a trigger fires.
+  setCharge(progress) {
+    this.charge      = clamp(progress, 0, 1);
+    this.burstDecay  = 0; // cleared; only set on trigger
+  }
+
+  triggerBurst() {
+    this.charge     = 0;
+    this.burstDecay = 1.0;
+  }
+
   _draw() {
     const { canvas, card, opts, mapped, edges, phases } = this;
+    if (!mapped.length) return;
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     this.t += opts.speed;
     const t = this.t;
     const [r,g,b] = hexRGB(card.color || '#ffffff');
 
-    ctx.clearRect(0,0,W,H);
+    // Charge state (0 if not in battle)
+    const charge     = this.charge     || 0;
+    const burst      = this.burstDecay || 0;
+    const nodeCount  = mapped.length;
 
-    // Subtle background radial glow
-    const bg = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
-    bg.addColorStop(0,`rgba(${r},${g},${b},.07)`);
-    bg.addColorStop(1,'rgba(2,2,10,0)');
-    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+    // Decay burst each frame
+    if (this.burstDecay > 0) {
+      this.burstDecay = Math.max(0, this.burstDecay - 0.055);
+    }
 
-    // Edges
-    edges.forEach(([a,b]) => {
-      const na = mapped[a], nb = mapped[b];
-      const pulse = opts.edgeAlpha + 0.12 * Math.sin(t * 1.4 + (a+b) * 0.6);
+    ctx.clearRect(0, 0, W, H);
+
+    // Background radial glow — intensifies with charge
+    const bgAlpha = 0.05 + charge * 0.12 + burst * 0.18;
+    const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H) * 0.55);
+    bg.addColorStop(0, `rgba(${r},${g},${b},${bgAlpha.toFixed(3)})`);
+    bg.addColorStop(1, 'rgba(2,2,10,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // How many nodes are "lit" based on charge progress
+    // e.g. charge=0.5 with 8 nodes → 4 nodes lit
+    const litCount = charge >= 1.0 ? nodeCount : Math.floor(charge * nodeCount);
+
+    // Edges — brighten between two lit nodes
+    edges.forEach(([a, eb]) => {
+      const aLit  = a  < litCount;
+      const bLit  = eb < litCount;
+      const edgeLit = aLit && bLit;
+      const baseAlpha = edgeLit
+        ? (opts.edgeAlpha * 2.5 + burst * 0.5)
+        : (opts.edgeAlpha + 0.12 * Math.sin(t * 1.4 + (a + eb) * 0.6));
+      const na = mapped[a], nb = mapped[eb];
       ctx.beginPath();
-      ctx.strokeStyle = `rgba(${r},${g},${b},${pulse.toFixed(3)})`;
-      ctx.lineWidth = 0.7;
-      ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = `rgba(${r},${g},${b},${Math.min(baseAlpha, 1).toFixed(3)})`;
+      ctx.lineWidth   = edgeLit ? 1.1 : 0.7;
+      ctx.moveTo(na.x, na.y);
+      ctx.lineTo(nb.x, nb.y);
       ctx.stroke();
     });
 
     // Nodes
     mapped.forEach((p, i) => {
-      const tw = 0.55 + 0.45 * Math.sin(t * 0.95 + phases[i]);
-      const sz = opts.nodeSize + tw * 0.7;
+      const isLit   = i < litCount;
+      const isFront = i === litCount; // the "charging" leading node
+      const tw      = 0.55 + 0.45 * Math.sin(t * 0.95 + phases[i]);
 
-      // Glow halo
-      const grad = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,sz * opts.glowMult);
-      grad.addColorStop(0, `rgba(${r},${g},${b},${(tw * 0.28).toFixed(3)})`);
-      grad.addColorStop(1, 'transparent');
-      ctx.beginPath(); ctx.arc(p.x, p.y, sz * opts.glowMult, 0, Math.PI*2);
-      ctx.fillStyle = grad; ctx.fill();
+      // Burst at trigger: all nodes flash white
+      const burstBoost = burst * (0.6 + 0.4 * Math.sin(i * 0.8));
 
-      // Core
-      ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(${r},${g},${b},${(0.75 + tw * 0.25).toFixed(3)})`; ctx.fill();
+      // Node size: lit nodes bigger, leading node pulses
+      let sz = opts.nodeSize + tw * 0.7;
+      if (isLit)   sz *= (1.0 + charge * 0.5 + burstBoost * 1.2);
+      if (isFront) sz *= (1.0 + 0.35 * Math.sin(t * 4)); // rapid pulse on leading node
 
-      // White centre
-      ctx.beginPath(); ctx.arc(p.x, p.y, sz * 0.38, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(255,255,255,${(0.7 + tw * 0.3).toFixed(3)})`; ctx.fill();
+      // Glow halo — skip for dim unlits to save draw calls
+      if (isLit || isFront || burst > 0.05) {
+        const glowR  = sz * (isLit ? opts.glowMult * 1.1 : opts.glowMult);
+        const glowA  = isLit
+          ? (tw * 0.28 + charge * 0.15 + burstBoost * 0.4)
+          : (tw * 0.12);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(glowA, 0.9).toFixed(3)})`;
+        ctx.fill();
+      }
+
+      // Core node
+      const coreAlpha = isLit
+        ? Math.min(0.95 + burstBoost * 0.5, 1)
+        : (0.55 + tw * 0.2);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
+      ctx.fillStyle = isLit
+        ? `rgba(${r},${g},${b},${coreAlpha.toFixed(3)})`
+        : `rgba(${r},${g},${b},${(0.45 + tw * 0.2).toFixed(3)})`;
+      ctx.fill();
+
+      // White centre — lit nodes get full-white, unlits get dim
+      const whiteAlpha = isLit
+        ? Math.min(0.85 + burstBoost, 1)
+        : (0.45 + tw * 0.2);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, sz * 0.38, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${whiteAlpha.toFixed(3)})`;
+      ctx.fill();
     });
   }
 
@@ -392,17 +455,14 @@ class CardParticles {
   border-radius: 10px; pointer-events: none; z-index: 2;
 }
 
-/* ── Header strip ───────────────────────── */
+/* ── Header strip — name only, no layer label ───────────────── */
 .axc-header {
   position: relative; z-index: 5;
-  padding: 6px 7px 4px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  padding: 5px 7px 4px;
   flex-shrink: 0;
 }
 .axc-layer-lbl {
-  font-family: 'Space Mono', monospace;
-  font-size: 5.5px; letter-spacing: .18em; text-transform: uppercase;
-  opacity: .45; margin-bottom: 2px; display: block;
+  display: none;
 }
 .axc-card-name {
   font-family: 'Cinzel', serif;
@@ -429,13 +489,9 @@ class CardParticles {
   width: 100%; height: 100%; display: block;
 }
 
-/* ── Footer strip ───────────────────────── */
+/* ── Footer strip — hidden, expand modal shows details ───────── */
 .axc-footer {
-  position: relative; z-index: 5;
-  padding: 3px 6px 5px;
-  border-top: 1px solid rgba(255,255,255,.05);
-  display: flex; justify-content: space-between; align-items: center;
-  flex-shrink: 0;
+  display: none;
 }
 .axc-type-pip {
   font-family: 'Space Mono', monospace;
@@ -841,10 +897,14 @@ class CardRenderer {
     borderGlow.className = 'axc-border-glow';
     el.appendChild(borderGlow);
 
-    // Particle canvas
-    const ptclCvs = document.createElement('canvas');
-    ptclCvs.className = 'axc-particle-cvs';
-    el.appendChild(ptclCvs);
+    // Particle canvas — only for picker/shop cards (md/lg/xl), not field cards (sm)
+    // Field cards use the constellation charge animation instead
+    let ptclCvs = null;
+    if (opts.size !== 'sm') {
+      ptclCvs = document.createElement('canvas');
+      ptclCvs.className = 'axc-particle-cvs';
+      el.appendChild(ptclCvs);
+    }
 
     // Header
     const header = document.createElement('div');
@@ -907,16 +967,20 @@ class CardRenderer {
       if (!constCvs.offsetWidth) return;
       const constAnim = new ConstellationAnim(constCvs, card, {
         speed:     0.016,
-        nodeSize:  opts.size === 'sm' ? 1.4 : opts.size === 'lg' ? 2.4 : 1.8,
-        edgeAlpha: 0.32,
-        glowMult:  opts.size === 'sm' ? 2.5 : 3.5,
+        nodeSize:  opts.size === 'sm' ? 1.1 : opts.size === 'lg' ? 2.4 : 1.8,
+        edgeAlpha: opts.size === 'sm' ? 0.22 : 0.32,
+        glowMult:  opts.size === 'sm' ? 1.2 : 3.5,
       });
       constAnim.start();
       this._anims.push(constAnim);
+      this._constAnim = constAnim; // direct ref for setCharge
 
-      const ptclAnim = new CardParticles(ptclCvs, card);
-      ptclAnim.start();
-      this._anims.push(ptclAnim);
+      // Particles only on non-field cards
+      if (ptclCvs) {
+        const ptclAnim = new CardParticles(ptclCvs, card);
+        ptclAnim.start();
+        this._anims.push(ptclAnim);
+      }
     });
 
     return el;
@@ -952,6 +1016,18 @@ class CardRenderer {
       this.el.style.borderColor = `rgba(${r},${g},${b},.25)`;
       this.el.style.boxShadow   = `0 0 18px rgba(${r},${g},${b},.1)`;
     }
+  }
+
+  // ── Charge / burst API (called from battle playback) ────────
+  // progress 0→1: lights constellation nodes sequentially.
+  // At 1.0 all nodes are fully lit — signals card is about to fire.
+  setCharge(progress) {
+    if (this._constAnim) this._constAnim.setCharge(progress);
+  }
+
+  // Called when the card fires — flashes all nodes white then resets.
+  triggerBurst() {
+    if (this._constAnim) this._constAnim.triggerBurst();
   }
 
   destroy() {

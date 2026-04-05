@@ -17,27 +17,34 @@
   s.id = 'axium-expand-styles';
   s.textContent = `
 
-/* ── Expand button on every card ──────────────────────── */
+/* ── Expand button — gold bar across bottom 30% of card ── */
 .axc-expand-btn {
   position: absolute;
-  top: 4px; right: 4px;
+  bottom: 0; left: 0; right: 0;
+  height: 30%;
   z-index: 30;
-  width: 22px; height: 22px;
-  border-radius: 4px;
-  background: rgba(0,0,0,.55);
-  border: 1px solid rgba(255,255,255,.12);
-  display: flex; align-items: center; justify-content: center;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(
+    180deg,
+    rgba(212,175,55,0) 0%,
+    rgba(212,175,55,.18) 35%,
+    rgba(212,175,55,.38) 100%
+  );
+  border: none;
+  border-top: 1px solid rgba(212,175,55,.15);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
   cursor: pointer;
-  /* Always visible — opacity controlled by touch vs pointer media */
   opacity: 0;
-  transition: opacity .2s, background .2s, border-color .2s, transform .15s;
-  font-size: 9px;
-  color: rgba(255,255,255,.55);
-  pointer-events: auto;
-  line-height: 1;
+  transition: opacity .22s, background .22s;
   font-family: 'Space Mono', monospace;
-  letter-spacing: 0;
-  /* Prevent the button tap from selecting text on the card */
+  font-size: 7px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(212,175,55,.85);
+  pointer-events: auto;
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -51,27 +58,30 @@
     opacity: 1;
   }
   .axc-expand-btn:hover {
-    background: rgba(212,175,55,.22);
-    border-color: rgba(212,175,55,.55);
+    background: linear-gradient(
+      180deg,
+      rgba(212,175,55,0) 0%,
+      rgba(212,175,55,.28) 30%,
+      rgba(212,175,55,.55) 100%
+    );
     color: #D4AF37;
-    transform: scale(1.12);
+    border-top-color: rgba(212,175,55,.35);
   }
 }
 
-/* Touch devices: always visible, bigger tap target */
+/* Touch devices: always visible */
 @media (hover: none), (pointer: coarse) {
   .axc-expand-btn {
     opacity: 1;
-    width: 28px; height: 28px;
-    font-size: 11px;
-    background: rgba(0,0,0,.65);
-    border-color: rgba(255,255,255,.18);
   }
   .axc-expand-btn:active {
-    background: rgba(212,175,55,.25);
-    border-color: rgba(212,175,55,.6);
+    background: linear-gradient(
+      180deg,
+      rgba(212,175,55,0) 0%,
+      rgba(212,175,55,.4) 30%,
+      rgba(212,175,55,.7) 100%
+    );
     color: #D4AF37;
-    transform: scale(0.93);
   }
 }
 
@@ -143,7 +153,6 @@
   padding: 18px 20px 14px;
   border-bottom: 1px solid rgba(255,255,255,.06);
   flex-shrink: 0;
-  position: relative;
 }
 .axc-exp-constellation {
   width: 88px;
@@ -220,9 +229,14 @@
   border: 1px solid rgba(255,255,255,.08);
   color: rgba(255,255,255,.22);
 }
+.axc-exp-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
 .axc-exp-close {
-  position: absolute;
-  top: 14px; right: 16px;
   width: 28px; height: 28px;
   border-radius: 50%;
   background: rgba(255,255,255,.05);
@@ -233,12 +247,34 @@
   display: flex; align-items: center; justify-content: center;
   transition: all .2s;
   font-family: 'Space Mono', monospace;
+  flex-shrink: 0;
 }
 .axc-exp-close:hover {
   background: rgba(224,85,85,.15);
   border-color: rgba(224,85,85,.4);
   color: #e05555;
 }
+/* Compact polarity toggle in header */
+.axc-exp-hdr-polarity {
+  display: flex;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.1);
+  overflow: hidden;
+}
+.axc-exp-hdr-pol-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.28);
+  transition: all .18s;
+  line-height: 1;
+}
+.axc-exp-hdr-pol-btn:first-child { border-right: 1px solid rgba(255,255,255,.08); }
+.axc-exp-hdr-pol-btn.active.upright  { background: rgba(212,175,55,.18); color: #D4AF37; box-shadow: inset 0 0 0 1px rgba(212,175,55,.4); }
+.axc-exp-hdr-pol-btn.active.reversed { background: rgba(224,85,85,.18);  color: #e05555; box-shadow: inset 0 0 0 1px rgba(224,85,85,.4); }
 
 /* Body scroll area */
 .axc-exp-body {
@@ -411,6 +447,74 @@
   color: rgba(255,255,255,.28);
 }
 
+/* ── Polarity toggle block ─────────────────────────────────── */
+.axc-exp-polarity-block {
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.axc-exp-pol-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.axc-exp-pol-btn {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background .2s, opacity .2s;
+  border: none;
+  background: rgba(255,255,255,.02);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+.axc-exp-pol-btn:first-child {
+  border-right: 1px solid rgba(255,255,255,.06);
+}
+.axc-exp-pol-btn.active.upright {
+  background: rgba(212,175,55,.1);
+  box-shadow: inset 0 0 0 1px rgba(212,175,55,.35);
+}
+.axc-exp-pol-btn.active.reversed {
+  background: rgba(224,85,85,.1);
+  box-shadow: inset 0 0 0 1px rgba(224,85,85,.35);
+}
+.axc-exp-pol-btn:not(.active) { opacity: .45; }
+.axc-exp-pol-arrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; font-weight: 700;
+}
+.axc-exp-pol-btn.upright  .axc-exp-pol-arrow { color: #D4AF37; }
+.axc-exp-pol-btn.reversed .axc-exp-pol-arrow { color: #e05555; }
+.axc-exp-pol-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px; letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+}
+.axc-exp-pol-effect {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  transition: background .25s;
+}
+.axc-exp-pol-effect.upright  { background: rgba(212,175,55,.04); }
+.axc-exp-pol-effect.reversed { background: rgba(224,85,85,.04); }
+.axc-exp-pol-effect-lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 6.5px; letter-spacing: .18em; text-transform: uppercase;
+  margin-bottom: 6px; display: block; transition: color .2s;
+}
+.axc-exp-pol-effect.upright  .axc-exp-pol-effect-lbl { color: rgba(212,175,55,.55); }
+.axc-exp-pol-effect.reversed .axc-exp-pol-effect-lbl { color: rgba(224,85,85,.5); }
+.axc-exp-pol-effect-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(12px, 2.5vw, 13px);
+  line-height: 1.8;
+  transition: color .2s;
+}
+.axc-exp-pol-effect.upright  .axc-exp-pol-effect-text { color: rgba(255,255,255,.62); }
+.axc-exp-pol-effect.reversed .axc-exp-pol-effect-text { color: rgba(224,120,120,.72); }
+
 `;
   document.head.appendChild(s);
 })();
@@ -439,7 +543,10 @@ function _getModal() {
           <span class="axc-exp-keywords"  id="axce-keywords"></span>
           <div class="axc-exp-badges"     id="axce-badges"></div>
         </div>
-        <button class="axc-exp-close" id="axce-close">×</button>
+        <div class="axc-exp-controls">
+          <button class="axc-exp-close" id="axce-close">×</button>
+          <div class="axc-exp-hdr-polarity" id="axce-hdr-polarity" style="display:none;"></div>
+        </div>
       </div>
       <div class="axc-exp-body" id="axce-body"></div>
     </div>
@@ -496,8 +603,11 @@ function _mechOverview(card) {
 
 // ─────────────────────────────────────────────────────────────
 // OPEN EXPAND MODAL
+// card    — the card object
+// context — optional { entry: {card, reversed}, onChange: fn }
+//           when provided, shows the live polarity toggle
 // ─────────────────────────────────────────────────────────────
-function openExpandModal(card) {
+function openExpandModal(card, context) {
   const el     = _getModal();
   const [r,g,b]= _hexRGB(card.color || '#ffffff');
   const lc     = _layerColor(card);
@@ -566,26 +676,13 @@ function openExpandModal(card) {
     body.appendChild(ov);
   }
 
-  // ── Upright effect ──
-  const uprightText = _uprightText(card);
-  if (uprightText) {
-    body.appendChild(_section('Upright Effect'));
-    const block = document.createElement('div');
-    block.className = 'axc-exp-effect-block';
-    block.style.borderLeftColor = `rgba(${r},${g},${b},.7)`;
-    block.innerHTML = `<span class="axc-exp-effect-title">${_uprightLabel(card)}</span><div class="axc-exp-effect-text">${uprightText}</div>`;
-    body.appendChild(block);
-  }
-
-  // ── Reversed effect ──
-  const revText = _reversedText(card);
-  if (revText) {
-    body.appendChild(_section('Reversed'));
-    const block = document.createElement('div');
-    block.className = 'axc-exp-effect-block reversed-block';
-    block.innerHTML = `<span class="axc-exp-effect-title" style="color:rgba(224,85,85,.6)">↓ Reversed Mechanic</span><div class="axc-exp-effect-text">${revText}</div>`;
-    body.appendChild(block);
-  }
+  // ── Active effect block — shows only the current polarity's text,
+  // refreshes whenever the header pill is toggled ──
+  const _effectContainer = document.createElement('div');
+  _effectContainer.id = 'axce-effect-block';
+  const _initReversed = context?.entry ? context.entry.reversed : false;
+  _renderEffectBlock(_effectContainer, card, _initReversed, r, g, b);
+  body.appendChild(_effectContainer);
 
   // ── Synergies ──
   const allSyns = (typeof SYNERGIES !== 'undefined') ? SYNERGIES.filter(s => s.cards.includes(card.id)) : [];
@@ -616,6 +713,8 @@ function openExpandModal(card) {
     });
   }
 
+  // Polarity toggle lives in the header — see _updateHdrPolarity.
+
   // ── Availability ──
   const metaChips = _buildMeta(card);
   if (metaChips.length) {
@@ -630,6 +729,9 @@ function openExpandModal(card) {
     });
     body.appendChild(metaRow);
   }
+
+  // ── Polarity toggle — rendered in header ──
+  _updateHdrPolarity(el, card, context);
 
   // Open
   el.classList.add('open');
@@ -707,6 +809,174 @@ function _buildMeta(card) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// POLARITY PREVIEW (read-only, for unstaged cards)
+// Shows both upright and reversed effects side-by-side with no toggle.
+// ─────────────────────────────────────────────────────────────
+function _buildPolarityPreview(card, r, g, b) {
+  const uprightText  = _uprightText(card)  || 'No upright effect.';
+  const reversedText = _reversedText(card) || 'No reversed effect.';
+  const uprightLbl   = _uprightLabel(card);
+
+  const block = document.createElement('div');
+  block.className = 'axc-exp-polarity-block';
+  block.innerHTML = `
+    <div class="axc-exp-pol-toggle">
+      <div class="axc-exp-pol-btn upright active" style="cursor:default;">
+        <span class="axc-exp-pol-arrow">↑</span>
+        <span class="axc-exp-pol-label">Normal</span>
+      </div>
+      <div class="axc-exp-pol-btn reversed active" style="cursor:default;">
+        <span class="axc-exp-pol-arrow">↓</span>
+        <span class="axc-exp-pol-label">Reversed</span>
+      </div>
+    </div>
+    <div class="axc-exp-pol-effect upright">
+      <span class="axc-exp-pol-effect-lbl">${uprightLbl} — benefits you</span>
+      <div class="axc-exp-pol-effect-text">${uprightText}</div>
+    </div>
+    <div class="axc-exp-pol-effect reversed" style="border-top:1px solid rgba(255,255,255,.05);">
+      <span class="axc-exp-pol-effect-lbl">↓ Reversed — attacks enemy</span>
+      <div class="axc-exp-pol-effect-text">${reversedText}</div>
+    </div>
+    <div style="padding:7px 14px;border-top:1px solid rgba(255,255,255,.04);font-family:'Space Mono',monospace;font-size:6.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.18);text-align:center;">Stage this card to set polarity</div>
+  `;
+  return block;
+}
+
+// ─────────────────────────────────────────────────────────────
+// EFFECT BLOCK RENDERER
+// Renders the active-polarity effect text into a container element.
+// Call on open and on every polarity toggle so the body stays in sync.
+// ─────────────────────────────────────────────────────────────
+function _renderEffectBlock(container, card, isReversed, r, g, b) {
+  if (r == null) { const c = _hexRGB(card.color || '#ffffff'); r=c[0]; g=c[1]; b=c[2]; }
+  container.innerHTML = '';
+  const uprightText = _uprightText(card);
+  const revText     = _reversedText(card);
+  const showText    = isReversed ? revText : uprightText;
+  if (!showText && !uprightText && !revText) return;
+
+  const sec = document.createElement('div');
+  sec.className = 'axc-exp-section-lbl';
+  sec.textContent = isReversed ? 'Reversed Effect' : 'Upright Effect';
+  container.appendChild(sec);
+
+  const block = document.createElement('div');
+  block.className = 'axc-exp-effect-block' + (isReversed ? ' reversed-block' : '');
+  if (!isReversed) block.style.borderLeftColor = `rgba(${r},${g},${b},.7)`;
+  const titleLabel = isReversed ? '↓ Reversed Mechanic' : _uprightLabel(card);
+  const titleColor = isReversed ? 'rgba(224,85,85,.6)' : '';
+  block.innerHTML = `
+    <span class="axc-exp-effect-title"${titleColor ? ` style="color:${titleColor}"` : ''}>${titleLabel}</span>
+    <div class="axc-exp-effect-text">${showText || '<em style="opacity:.4">No effect text.</em>'}</div>
+  `;
+  container.appendChild(block);
+}
+
+// ─────────────────────────────────────────────────────────────
+// HEADER POLARITY TOGGLE
+// Renders the ↑ NRM / ↓ REV pill next to the close button.
+// Always interactive — clicking switches polarity and updates
+// the body effect block. If the card is staged the live entry
+// is mutated; if not, a transient state object tracks the choice
+// so the effect block still shows the correct text.
+// ─────────────────────────────────────────────────────────────
+function _updateHdrPolarity(modalEl, card, context) {
+  const container = modalEl.querySelector('#axce-hdr-polarity');
+  if (!container) return;
+  container.innerHTML = '';
+  container.style.display = 'flex';
+
+  // Use a shared mutable state so we can track polarity even for unstaged cards.
+  // If the card is staged, this points directly at the live entry.
+  const state = context?.entry ?? { reversed: false };
+
+  function _renderPill() {
+    const rev = state.reversed;
+    container.innerHTML = '';
+    ['normal', 'reversed'].forEach(pol => {
+      const isActive = (pol === 'normal' && !rev) || (pol === 'reversed' && rev);
+      const btn = document.createElement('button');
+      btn.className = [
+        'axc-exp-hdr-pol-btn',
+        pol,
+        isActive ? ('active ' + (pol === 'normal' ? 'upright' : 'reversed')) : '',
+      ].join(' ').trim();
+      btn.textContent = pol === 'normal' ? '↑ NRM' : '↓ REV';
+      btn.title = pol === 'normal' ? 'Normal — ' + _uprightLabel(card) : 'Reversed — attacks enemy';
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const wantRev = pol === 'reversed';
+        if (state.reversed === wantRev) return;
+        state.reversed = wantRev;
+        _renderPill();
+        // Refresh body effect text to match new polarity
+        const eb = document.getElementById('axce-effect-block');
+        const [r2,g2,b2] = _hexRGB(card.color || '#ffffff');
+        if (eb) _renderEffectBlock(eb, card, wantRev, r2, g2, b2);
+        // Propagate to field/picker if card is staged
+        context?.onChange?.();
+      });
+      container.appendChild(btn);
+    });
+  }
+  _renderPill();
+}
+
+// ─────────────────────────────────────────────────────────────
+// POLARITY TOGGLE BLOCK
+// Shows ↑ Normal / ↓ Reversed toggle with live effect preview.
+// entry    — the {card, reversed} object from B.playerPlayed
+// onChange — callback fired after polarity flip, so field rerenders
+// ─────────────────────────────────────────────────────────────
+function _buildPolarityBlock(card, entry, onChange, r, g, b) {
+  const uprightText  = _uprightText(card)  || 'No upright effect.';
+  const reversedText = _reversedText(card) || 'No reversed effect.';
+  const uprightLbl   = _uprightLabel(card);
+
+  const block = document.createElement('div');
+  block.className = 'axc-exp-polarity-block';
+
+  function _render() {
+    const isRev = entry.reversed;
+    block.innerHTML = `
+      <div class="axc-exp-pol-toggle">
+        <button class="axc-exp-pol-btn upright ${!isRev ? 'active' : ''}" data-pol="normal">
+          <span class="axc-exp-pol-arrow">↑</span>
+          <span class="axc-exp-pol-label">Normal</span>
+        </button>
+        <button class="axc-exp-pol-btn reversed ${isRev ? 'active' : ''}" data-pol="reversed">
+          <span class="axc-exp-pol-arrow">↓</span>
+          <span class="axc-exp-pol-label">Reversed</span>
+        </button>
+      </div>
+      <div class="axc-exp-pol-effect ${isRev ? 'reversed' : 'upright'}">
+        <span class="axc-exp-pol-effect-lbl">
+          ${isRev ? '↓ Reversed — attacks enemy' : `${uprightLbl} — benefits you`}
+        </span>
+        <div class="axc-exp-pol-effect-text">
+          ${isRev ? reversedText : uprightText}
+        </div>
+      </div>
+    `;
+
+    block.querySelectorAll('.axc-exp-pol-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const wantReversed = btn.dataset.pol === 'reversed';
+        if (entry.reversed === wantReversed) return; // no change
+        entry.reversed = wantReversed;
+        _render(); // re-render the block with new state
+        onChange?.(); // notify field/picker to update visual
+      });
+    });
+  }
+
+  _render();
+  return block;
+}
+
+// ─────────────────────────────────────────────────────────────
 // ADD EXPAND BUTTON TO EXISTING + FUTURE CARDS
 // Uses MutationObserver to catch dynamically-created cards
 // ─────────────────────────────────────────────────────────────
@@ -718,13 +988,10 @@ function _addExpandBtn(cardEl) {
   const btn = document.createElement('button');
   btn.className = 'axc-expand-btn';
   btn.title = 'Expand card details';
-  btn.innerHTML = '⊞';
+  btn.innerHTML = '⊞ Details';
   btn.setAttribute('aria-label', 'Expand card details');
-  // Prevent the button's own touch from propagating to card drag/select
   btn.setAttribute('type', 'button');
 
-  // Use pointerdown + pointerup tracking so a short tap opens the modal
-  // but a scroll-drag on the card does NOT trigger it.
   let _pdX = 0, _pdY = 0;
   btn.addEventListener('pointerdown', e => {
     _pdX = e.clientX; _pdY = e.clientY;
@@ -736,21 +1003,38 @@ function _addExpandBtn(cardEl) {
     const dx = Math.abs(e.clientX - _pdX);
     const dy = Math.abs(e.clientY - _pdY);
     if (dx < 8 && dy < 8) {
-      // It's a tap, not a drag
       e.preventDefault();
       const card = (typeof getCard === 'function') ? getCard(cardId) : null;
-      if (card) openExpandModal(card);
+      if (!card) return;
+
+      // Look up whether this card is currently staged so we can pass
+      // a live polarity context to the expand modal.
+      const context = _getStagedContext(cardId);
+      openExpandModal(card, context);
     }
   });
 
-  // Also handle plain click for mouse users (already covered by pointerup,
-  // but this catches keyboard activation via Enter/Space)
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    e.preventDefault();
-  });
+  btn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
 
   cardEl.appendChild(btn);
+}
+
+// Returns { entry, onChange } if the card is currently in B.playerPlayed,
+// or null if it isn't staged (modal shows read-only in that case).
+function _getStagedContext(cardId) {
+  // B is the global battle state defined in battle.js
+  const B = window.B;
+  if (!B || !B.playerPlayed) return null;
+  const entry = B.playerPlayed.find(e => (e.card || e).id === cardId);
+  if (!entry) return null;
+  return {
+    entry,
+    onChange: () => {
+      // Re-render field + phase UI after a polarity flip
+      if (typeof axcRenderField === 'function')      axcRenderField();
+      if (typeof updateBattlePhaseUI === 'function') updateBattlePhaseUI(B);
+    },
+  };
 }
 
 function _scanAndAddBtns() {
@@ -787,12 +1071,12 @@ if (typeof MutationObserver !== 'undefined') {
 global.openExpandModal  = openExpandModal;
 global.closeExpandModal = closeExpandModal;
 
-// Also hook into AxiumCardDetail.open so long-press/right-click
-// on existing cards still routes through the richer panel
+// Hook into AxiumCardDetail.open so long-press / right-click routes
+// through the richer panel, with polarity context when staged.
 if (global.AxiumCardDetail) {
-  const _origOpen = global.AxiumCardDetail.open.bind(global.AxiumCardDetail);
   global.AxiumCardDetail.open = function(card, played, opts) {
-    openExpandModal(card);
+    const context = _getStagedContext(card.id);
+    openExpandModal(card, context);
   };
 }
 

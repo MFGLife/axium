@@ -454,10 +454,6 @@ function showSynergyIntro(synergies, onDone) {
         display:none;
       }
       .battle-surge-overlay.active { display:block; }
-      .card-ring-canvas {
-        position:absolute; inset:-4px; width:calc(100% + 8px); height:calc(100% + 8px);
-        pointer-events:none; z-index:15; border-radius:14px;
-      }
     `;
     document.head.appendChild(st);
   }
@@ -556,6 +552,8 @@ function showSynergyIntro(synergies, onDone) {
 // ─────────────────────────────────────────────────────────
 // BATTLE PLAYBACK
 // RAF loop that walks B.timeline and fires visual events.
+// Charge is visualised by lighting constellation nodes on
+// each field card — no separate ring canvas needed.
 // ─────────────────────────────────────────────────────────
 function startBattlePlayback() {
   const wrap = gel('battle-wrap');
@@ -568,16 +566,14 @@ function startBattlePlayback() {
     wrap.appendChild(surgeOverlay);
   }
 
-  // Build a map of cardId → ring canvas for charge animations
-  const ringMap = new Map();   // cardId → { canvas, ctx, lastProgress }
-  _buildRingCanvases(ringMap);
+  // Build cardId → CardRenderer map from FieldZones via cintegration
+  // axcGetFieldRenderer is exposed by cintegration.js
+  const _getRenderer = window.axcGetFieldRenderer || (() => null);
 
   // Sort events by time
   const events  = [...B.timeline].sort((a, b) => a.t - b.t);
   let evtIdx    = 0;
   let startTs   = null;
-  let rafId     = null;
-  let finished  = false;
 
   function frame(ts) {
     if (!startTs) startTs = ts;
@@ -585,155 +581,30 @@ function startBattlePlayback() {
 
     // Process all events up to elapsed
     while (evtIdx < events.length && events[evtIdx].t <= elapsed) {
-      _handlePlaybackEvent(events[evtIdx], surgeOverlay, ringMap);
+      _handlePlaybackEvent(events[evtIdx], surgeOverlay, _getRenderer);
       evtIdx++;
     }
 
-    // Draw ring charge animations each frame
-    _updateRingCanvases(ringMap, elapsed, events);
-
-    if (!finished && evtIdx < events.length) {
-      rafId = requestAnimationFrame(frame);
+    if (evtIdx < events.length) {
+      requestAnimationFrame(frame);
     }
   }
-  rafId = requestAnimationFrame(frame);
-}
-
-// ─────────────────────────────────────────────────────────
-// BUILD RING CANVASES
-// Attaches a canvas overlay to each field card for the charge ring.
-// ─────────────────────────────────────────────────────────
-function _buildRingCanvases(ringMap) {
-  ['field-player', 'field-enemy'].forEach(fieldId => {
-    const field = gel(fieldId); if (!field) return;
-    field.querySelectorAll('.axc-card').forEach(cardEl => {
-      const cardId = cardEl.dataset.cardId; if (!cardId) return;
-      if (ringMap.has(cardId)) return;
-
-      // Find the wrap div (FieldZone wraps each card)
-      const wrap = cardEl.closest('div[style*="position:relative"]') || cardEl.parentElement;
-
-      const cvs = document.createElement('canvas');
-      cvs.className = 'card-ring-canvas';
-      // Size after layout
-      requestAnimationFrame(() => {
-        const r   = cardEl.getBoundingClientRect();
-        cvs.width  = r.width  + 8;
-        cvs.height = r.height + 8;
-      });
-      wrap.style.position = 'relative';
-      wrap.appendChild(cvs);
-
-      const card = (typeof getCard === 'function') ? getCard(cardId) : null;
-      ringMap.set(cardId, {
-        canvas:       cvs,
-        ctx:          cvs.getContext('2d'),
-        progress:     0,
-        color:        card?.color || '#D4AF37',
-        lastTrigger:  0,
-        burstAlpha:   0,
-        side:         fieldId.includes('player') ? 'player' : 'enemy',
-      });
-    });
-  });
-}
-
-// ─────────────────────────────────────────────────────────
-// UPDATE RING CANVASES — called every RAF frame
-// ─────────────────────────────────────────────────────────
-function _updateRingCanvases(ringMap, elapsed, events) {
-  ringMap.forEach((ring, cardId) => {
-    const cvs = ring.canvas;
-    if (!cvs.width || !cvs.isConnected) return;
-
-    const ctx = ring.ctx;
-    const W   = cvs.width;
-    const H   = cvs.height;
-    ctx.clearRect(0, 0, W, H);
-
-    // Find most recent charge event for this card
-    let latestCharge = 0;
-    for (let i = events.length - 1; i >= 0; i--) {
-      const e = events[i];
-      if (e.type === 'card_charge' && e.cardId === cardId && e.t <= elapsed) {
-        latestCharge = e.progress;
-        break;
-      }
-    }
-    ring.progress = latestCharge;
-
-    // Decay burst
-    if (ring.burstAlpha > 0) ring.burstAlpha = Math.max(0, ring.burstAlpha - 0.04);
-
-    // Parse color
-    let r = 212, g = 175, b = 55;
-    try {
-      const rgb = _hexRGBSimple(ring.color);
-      r = rgb[0]; g = rgb[1]; b = rgb[2];
-    } catch(e) {}
-
-    const cx = W / 2;
-    const cy = H / 2;
-    const radius = Math.min(W, H) / 2 - 3;
-
-    // Background dim ring
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(${r},${g},${b},.08)`;
-    ctx.lineWidth   = 2.5;
-    ctx.stroke();
-
-    if (ring.progress > 0) {
-      // Charge arc
-      const startAngle = -Math.PI / 2;
-      const endAngle   = startAngle + ring.progress * Math.PI * 2;
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, startAngle, endAngle);
-      ctx.strokeStyle = `rgba(${r},${g},${b},${0.55 + ring.progress * 0.45})`;
-      ctx.lineWidth   = 2.5;
-      ctx.lineCap     = 'round';
-      ctx.stroke();
-
-      // Glow on the leading tip
-      if (ring.progress < 1) {
-        const tipX = cx + Math.cos(endAngle) * radius;
-        const tipY = cy + Math.sin(endAngle) * radius;
-        const grd  = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, 10);
-        grd.addColorStop(0, `rgba(${r},${g},${b},.9)`);
-        grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
-        ctx.beginPath();
-        ctx.arc(tipX, tipY, 10, 0, Math.PI * 2);
-        ctx.fillStyle = grd;
-        ctx.fill();
-      }
-    }
-
-    // Burst flash when card just triggered
-    if (ring.burstAlpha > 0) {
-      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius + 6);
-      grd.addColorStop(0, `rgba(${r},${g},${b},${ring.burstAlpha * 0.6})`);
-      grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius + 6, 0, Math.PI * 2);
-      ctx.fillStyle = grd;
-      ctx.fill();
-
-      // Full ring flash
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${r},${g},${b},${ring.burstAlpha})`;
-      ctx.lineWidth   = 4;
-      ctx.stroke();
-    }
-  });
+  requestAnimationFrame(frame);
 }
 
 // ─────────────────────────────────────────────────────────
 // HANDLE PLAYBACK EVENT — fires side effects for each event
+// getRenderer(cardId) → CardRenderer | null  (from cintegration)
 // ─────────────────────────────────────────────────────────
-function _handlePlaybackEvent(evt, surgeOverlay, ringMap) {
+function _handlePlaybackEvent(evt, surgeOverlay, getRenderer) {
   switch (evt.type) {
+
+    case 'card_charge': {
+      // Update constellation charge on the field card
+      const renderer = getRenderer(evt.cardId);
+      if (renderer) renderer.setCharge(evt.progress);
+      break;
+    }
 
     case 'surge_start': {
       surgeOverlay.classList.add('active');
@@ -750,7 +621,7 @@ function _handlePlaybackEvent(evt, surgeOverlay, ringMap) {
       B.playerMaxAttn = evt.newPlayerMax;
       B.enemyMaxAttn  = evt.newEnemyMax;
 
-      // Update bars (no floating label here — label spawns over the card below)
+      // Update bars
       const ppPct = clamp(B.playerAttn / B.playerMaxAttn * 100, 0, 100);
       const epPct = clamp(B.enemyAttn  / B.enemyMaxAttn  * 100, 0, 100);
       animateBarTo('player', B.playerAttn, B.playerMaxAttn);
@@ -762,12 +633,9 @@ function _handlePlaybackEvent(evt, surgeOverlay, ringMap) {
       const pm = gel('b-phase-msg');
       if (pm) { pm.textContent = evt.label; pm.style.color = evt.color; }
 
-      // Trigger ring burst
-      const ring = ringMap.get(evt.cardId);
-      if (ring) {
-        ring.burstAlpha = 1.0;
-        ring.progress   = 0;
-      }
+      // Trigger constellation burst on the firing card, reset charge
+      const renderer = getRenderer(evt.cardId);
+      if (renderer) renderer.triggerBurst();
 
       // Card highlight flash + floating label over the card
       _flashCard(evt.side, evt.cardId, evt.color);

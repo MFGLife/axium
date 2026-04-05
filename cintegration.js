@@ -175,6 +175,17 @@ window.renderBattleField = function (_B, _onUnstage) {
 };
 
 // ─────────────────────────────────────────────────────────────
+// axcGetFieldRenderer(cardId) → CardRenderer | null
+// Used by battle.js to drive constellation charge on field cards.
+// Looks in both player and enemy FieldZone renderer maps.
+// ─────────────────────────────────────────────────────────────
+window.axcGetFieldRenderer = function(cardId) {
+  if (_axcFieldP && _axcFieldP._renderers.has(cardId)) return _axcFieldP._renderers.get(cardId);
+  if (_axcFieldE && _axcFieldE._renderers.has(cardId)) return _axcFieldE._renderers.get(cardId);
+  return null;
+};
+
+// ─────────────────────────────────────────────────────────────
 // PATCH hand picker functions for HTML buttons + battle.js
 // These must be on window so HTML onclick= and battle.js can find them.
 // battle.js also declares openHandPickerBattle / closeHandPickerBattle
@@ -250,9 +261,9 @@ window.buildDeckReview = function () {
     const card = typeof getCard === 'function' ? getCard(id) : null; if (!card) return;
     const renderer = new CardRenderer(card, { size: 'sm', showTooltip: true, animDelay: i * 45 });
     renderer.el.style.cursor = 'default';
-    renderer.el.addEventListener('contextmenu', e => { e.preventDefault(); AxiumCardDetail.open(card, [], {}); });
+    renderer.el.addEventListener('contextmenu', e => { e.preventDefault(); openExpandModal(card); });
     let pt;
-    renderer.el.addEventListener('pointerdown', () => { pt = setTimeout(() => AxiumCardDetail.open(card, [], {}), 600); });
+    renderer.el.addEventListener('pointerdown', () => { pt = setTimeout(() => openExpandModal(card), 600); });
     renderer.el.addEventListener('pointerup',   () => clearTimeout(pt));
     renderer.el.addEventListener('pointermove', () => clearTimeout(pt));
     grid.appendChild(renderer.el);

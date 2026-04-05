@@ -584,7 +584,6 @@ body {
 .battle-surge-overlay { position:absolute; inset:0; pointer-events:none; z-index:70; background:radial-gradient(ellipse at center,rgba(212,175,55,.18) 0%,transparent 70%); animation:surgeFlash 1.2s ease-in-out infinite; display:none; }
 .battle-surge-overlay.active { display:block; }
 @keyframes surgeFlash { 0%,100%{opacity:0} 10%,90%{opacity:1} 50%{opacity:.7} }
-.card-ring-canvas { position:absolute; inset:-4px; width:calc(100% + 8px); height:calc(100% + 8px); pointer-events:none; z-index:15; border-radius:14px; }
 
 /* ── COMPACT BATTLE for very short screens ────────────────── */
 @media (max-height: 650px) {
