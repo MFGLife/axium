@@ -99,39 +99,34 @@ function axcRenderField() {
   }
 }
 
-// Add ↑ NRM / ↓ REV badges below each player field card
+// Polarity badges on field cards — injected after FieldZone renders
+// since FieldZone doesn't have access to B.playerPlayed entries.
 function _injectPolarityBadges() {
   const pf = document.getElementById('field-player');
   if (!pf) return;
-  // FieldZone wraps each card in a position:relative div
-  const wraps = pf.querySelectorAll('div[style*="position:relative"]');
-  wraps.forEach((wrap, i) => {
+
+  const cardEls = pf.querySelectorAll('.axc-card');
+  cardEls.forEach((cardEl, i) => {
     const entry = B.playerPlayed[i];
     if (!entry) return;
-    // Don't double-add
-    if (wrap.querySelector('.axc-pol-badge')) return;
 
-    const badge = document.createElement('div');
-    badge.className = 'axc-pol-badge';
+    // Always rebuild so label reflects current state
+    cardEl.querySelector('.axc-pol-pill')?.remove();
+
+    const pill = document.createElement('div');
     const isRev = entry.reversed;
-    badge.style.cssText = `
-      position:absolute; bottom:-8px; left:50%; transform:translateX(-50%);
-      font-family:'Space Mono',monospace; font-size:6.5px; letter-spacing:.06em;
-      padding:2px 7px; border-radius:10px; border:1px solid; cursor:pointer;
-      z-index:25; transition:all .18s; white-space:nowrap; user-select:none;
-      ${isRev
-        ? 'color:rgba(224,85,85,.9);border-color:rgba(224,85,85,.5);background:rgba(224,85,85,.12);'
-        : 'color:rgba(212,175,55,.85);border-color:rgba(212,175,55,.4);background:rgba(212,175,55,.1);'}
-    `;
-    badge.textContent = isRev ? '↓ REV' : '↑ NRM';
-    badge.title = isRev ? 'Reversed — tap to set Normal' : 'Normal — tap to set Reversed';
-    badge.addEventListener('click', e => {
+    pill.className = 'axc-pol-pill ' + (isRev ? 'reversed' : 'normal');
+    pill.textContent = isRev ? '↓ REV' : '↑ NRM';
+    pill.title = isRev ? 'Reversed — tap to set Normal' : 'Normal — tap to set Reversed';
+    pill.addEventListener('pointerdown', e => { e.stopPropagation(); }, { passive: true });
+    pill.addEventListener('click', e => {
       e.stopPropagation();
+      e.preventDefault();
       entry.reversed = !entry.reversed;
       axcRenderField();
       updateBattlePhaseUI(B);
     });
-    wrap.appendChild(badge);
+    cardEl.appendChild(pill);
   });
 }
 

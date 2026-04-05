@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
-<title>AXIUM — Chapter II · The Mirror</title>
+<title>AXIUM — Chapter III · Recursive Witness</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="axium.css">
 </head>
@@ -24,7 +24,7 @@
   <div id="battle-wrap">
 
     <div id="battle-hdr">
-      <div class="battle-chapter-lbl">Chapter 02 · The Mirror</div>
+      <div class="battle-chapter-lbl">Chapter 03 · Recursive Witness</div>
       <div class="battle-turn-lbl">T<span id="turn-n">1</span></div>
     </div>
 
@@ -40,7 +40,7 @@
     <div id="battle-bars">
       <div class="b-bar-row enemy-bar">
         <div class="b-bar-meta">
-          <span class="b-bar-owner enemy">The Mirror</span>
+          <span class="b-bar-owner enemy">The Shadow</span>
           <span class="b-bar-state enemy" id="enemy-state-lbl">Witness</span>
         </div>
         <div class="b-bar-track" id="enemy-bar-track">
@@ -64,7 +64,7 @@
     </div>
 
     <div id="battle-field">
-      <div id="field-enemy"><div class="field-empty field-enemy-empty">— the mirror awaits —</div></div>
+      <div id="field-enemy"><div class="field-empty field-enemy-empty">— the shadow is unexamined —</div></div>
       <div class="field-vs-line">
         <div class="field-vs-rule"></div>
         <div class="field-vs-lbl">VS</div>
@@ -90,20 +90,20 @@
 ════════════════════════════════════════════════════════════ -->
 <div id="screen-intro" class="axm-overlay axm-active">
   <div class="axm-scroll" style="text-align:center;">
-    <div class="i-sigil">The Cathedral · Chapter II</div>
-    <div class="i-num">02</div>
-    <div class="i-title">The Mirror</div>
+    <div class="i-sigil">The Cathedral · Chapter III</div>
+    <div class="i-num">03</div>
+    <div class="i-title">Recursive Witness</div>
     <div class="i-sub">Battle for Attention</div>
     <div class="i-rule"></div>
-    <div class="i-axium">"What you refuse to see in yourself, the world will show you."</div>
-    <div class="i-desc">Paste your seed from Chapter I to restore your constellation. Four souls have new offerings.</div>
+    <div class="i-axium">"Humility through confession bestows a recursive witness."</div>
+    <div class="i-desc">Chapter I removed the performer. Chapter II named the real question. Chapter III asks what you actually know about either of those things. Paste your AX2 seed to carry your constellation forward.</div>
     <button class="i-btn" onclick="showSeedLoad()">Restore Deck &amp; Enter</button>
     <div class="i-existing">
       <div class="i-actions-row">
-        <button class="i-existing-btn" onclick="beginFreshChapter2()">Skip Seed (Test)</button>
+        <button class="i-existing-btn" onclick="beginFreshChapter3()">Skip Seed (Test)</button>
         <button class="i-danger-btn"   onclick="purgeSaveData()">Clear Data</button>
       </div>
-      <div class="i-existing-hint">Skip seed only for testing — your Chapter I deck will not carry over.</div>
+      <div class="i-existing-hint">Skip seed only for testing — your Chapter II deck will not carry over.</div>
     </div>
   </div>
 </div>
@@ -115,7 +115,7 @@
 <div id="screen-seed-load" class="axm-overlay">
   <div class="axm-scroll" style="max-width:480px;width:100%;">
     <div class="sl-title">Restore Your Deck</div>
-    <div class="sl-sub">Paste your Chapter I seed to carry your constellation into The Mirror.</div>
+    <div class="sl-sub">Paste your Chapter II seed to carry your constellation into the Recursive Witness.</div>
     <textarea class="sl-input" id="seed-input" placeholder="AXIUM-1.0-eyJ..." rows="4"></textarea>
     <div class="sl-actions">
       <button class="sl-btn primary"   onclick="loadSeedInput()">Restore &amp; Continue</button>
@@ -140,7 +140,7 @@
         <canvas id="persona-avatar-canvas" width="80" height="80"></canvas>
       </div>
       <div id="persona-name">Micheal</div>
-      <div id="persona-title">The Anchor</div>
+      <div id="persona-title">The Witness</div>
     </div>
     <div id="persona-tagline"></div>
     <div class="persona-rule"></div>
@@ -157,9 +157,9 @@
     <div id="shop-header-row">
       <div id="shop-title-group">
         <div id="shop-main-title">Choose One Card</div>
-        <div id="shop-sub">Deepen your constellation</div>
+        <div id="shop-sub">Deepen the witness</div>
       </div>
-      <div id="shop-deck-count">Deck: <span id="deck-size-lbl">4</span></div>
+      <div id="shop-deck-count">Deck: <span id="deck-size-lbl">8</span></div>
     </div>
     <div id="shop-card-grid"></div>
     <!-- No footer / confirm button — inline card button handles confirm -->
@@ -179,14 +179,14 @@
 <div id="screen-deck-review" class="axm-overlay">
   <div class="axm-scroll" style="max-width:540px;width:100%;text-align:center;">
     <div class="dr-label">Your Constellation</div>
-    <div class="dr-title">Deck Ready</div>
-    <div class="dr-axium">Your deck carries over from Chapter I, deepened by new cards. Set polarity in the hand picker.</div>
+    <div class="dr-title">The Witness Is Ready</div>
+    <div class="dr-axium">The spark that watches the watcher. Your deck carries the full weight of what you have named. Set polarity in the hand picker.</div>
     <div class="deck-strip" style="max-height:none;">
       <div class="deck-strip-label">Full Deck</div>
       <div id="deck-review-grid"></div>
     </div>
     <div class="dr-actions">
-      <button class="dr-enter-btn" onclick="enterBattle()">Face The Mirror</button>
+      <button class="dr-enter-btn" onclick="enterBattle()">Face The Shadow</button>
     </div>
   </div>
 </div>
@@ -227,7 +227,7 @@
 ════════════════════════════════════════════════════════════ -->
 <div id="screen-outcome" class="axm-overlay">
   <div class="axm-scroll" style="max-width:500px;width:100%;text-align:center;">
-    <div class="oc-state" id="oc-state-lbl">Chapter II Complete</div>
+    <div class="oc-state" id="oc-state-lbl">Chapter III Complete</div>
     <div class="oc-title" id="oc-title"></div>
     <div class="oc-desc"  id="oc-desc"></div>
     <div class="oc-stats">
@@ -256,24 +256,42 @@
 
 <script>
 // ════════════════════════════════════════════════════════════
-// CHAPTER 2 CONFIG
+// CHAPTER 3 CONFIG
+// "You cannot integrate what you haven't named."
+// The Shadow is not dangerous because it is dark —
+// it is dangerous because it is unexamined.
+//
+// Enemy: The Shadow — runs the three layers of confession in reverse.
+// High-node cards fire fast. Ego reversals divide player gains hard.
+// Star + Sun + Judgement at the back = devastating capacity erosion.
+// Player needs a full deck (ch1 + ch2 + 4 new picks) to compete.
+// Win condition: 25% margin — the recursive witness demands certainty.
 // ════════════════════════════════════════════════════════════
 const CHAPTER_CONFIG = {
-  playerStart:   55,
-  enemyStart:    120,
-  enemyMax:      400,
-  baseMaxAttn:   200,
-  handSize:      8,
+  playerStart:   50,
+  enemyStart:    150,
+  enemyMax:      500,
+  baseMaxAttn:   250,
+  handSize:      10,
   loseAttn:      10,
-  winPctMargin:  0.20,
-  enemyHandSize: 8,
+  winPctMargin:  0.25,
+  enemyHandSize: 11,
   enemyDeck: [
-    'hanged_man',
-    'death',
-    'devil',
-    'tower',
-    'moon',
-    'nine_swords',
+  'death',
+  'devil',
+  'high_priestess',
+    // Layer I: the prepared confession — fast ID drain
+    'nine_swords',    // 10n T1 — anxiety, dread — highest drain ID
+    'ten_swords',     // 13n T1 — collapse — fires only when enemy weakened
+    // Layer II: the actual confession — Superego burst + cap erosion
+    'devil',          // 16n T1 — shadow, bondage — fastest Superego, cap −0.88/fire
+    'moon',           // 13n T1 — illusion — destabilises attention reads
+    'tower',          // 11n T1 — collapse — burst −17, then slow erosion
+    // Layer III: what you didn't know you were carrying — Ego division
+    'king_swords',    // 15n T2 — ×1.6 eDivisor — crushes player gains hardest
+    'queen_swords',   // 13n T2 — ×1.4 eDivisor — stacks with King
+    // The recursive witness — highest-node card in the game
+    'world',          // 21n T1 — fastest T1 card, burst −21, then −1.6 pMax/fire
   ],
 };
 
@@ -293,12 +311,12 @@ const APP = {
 };
 
 // ════════════════════════════════════════════════════════════
-// CHAPTER 2 ENTRY POINTS
+// CHAPTER 3 ENTRY POINTS
 // ════════════════════════════════════════════════════════════
 
 function showSeedLoad() { goTo('screen-seed-load'); }
 
-/** Primary path: paste a Chapter I seed. */
+/** Primary path: paste a Chapter II seed. */
 function loadSeedInput() {
   const raw = document.getElementById('seed-input')?.value?.trim();
   if (!raw) return;
@@ -307,12 +325,12 @@ function loadSeedInput() {
   if (save) {
     APP.save = save;
     if (msg) {
-      msg.textContent = '✓ Deck restored — entering Chapter II shop…';
+      msg.textContent = '✓ Deck restored — entering Chapter III shop…';
       msg.style.color = '#86EFAC';
       msg.classList.add('show');
     }
     APP.playerDeck = [...save.deck];
-    setTimeout(() => _startChapter2Shop(), 900);
+    setTimeout(() => _startChapter3Shop(), 900);
   } else {
     if (msg) {
       msg.textContent = '✗ Invalid seed — check and try again.';
@@ -324,20 +342,20 @@ function loadSeedInput() {
 }
 
 /** Test path: skip seed, use whatever is in localStorage or defaults. */
-function beginFreshChapter2() {
+function beginFreshChapter3() {
   APP.save = AxiumSave.getOrCreate();
   if (!APP.save.deck || APP.save.deck.length < 1) {
     APP.save.deck = [...STARTING_DECK_IDS];
     AxiumSave.set(APP.save);
   }
   APP.playerDeck = [...APP.save.deck];
-  _startChapter2Shop();
+  _startChapter3Shop();
 }
 
-/** Core shop launcher — skips shop if already completed for ch2. */
-function _startChapter2Shop() {
-  _patchShopForChapter2();
-  const doneShops = APP.save.shopHistory.filter(h => h.chapter === 2).length;
+/** Core shop launcher — skips if already completed for ch3. */
+function _startChapter3Shop() {
+  _patchShopForChapter3();
+  const doneShops = APP.save.shopHistory.filter(h => h.chapter === 3).length;
   if (doneShops >= 4) {
     buildDeckReview();
     goTo('screen-deck-review');
@@ -348,36 +366,40 @@ function _startChapter2Shop() {
 }
 
 /**
- * Patches AxiumSave.addCardToDeck and AxiumShop.getOffers so all
- * shop activity this session is recorded and filtered under chapter 2.
- * Called once before the shop opens; safe to call multiple times.
+ * Patches AxiumSave.addCardToDeck and AxiumShop.getOffers
+ * so all shop activity is recorded and filtered under chapter 3.
+ * Chapter 3 unlocks: Queen + King tier cards and chapter 3 Superego
+ * (sun, judgement, world — the axium-10 triumvirate).
  */
-function _patchShopForChapter2() {
-  if (AxiumSave._ch2Patched) return;
-  AxiumSave._ch2Patched = true;
+function _patchShopForChapter3() {
+  if (AxiumSave._ch3Patched) return;
+  AxiumSave._ch3Patched = true;
 
   const _origAdd = AxiumSave.addCardToDeck.bind(AxiumSave);
   AxiumSave.addCardToDeck = function(cardId, persona, _ignored) {
-    return _origAdd(cardId, persona, 2);
+    return _origAdd(cardId, persona, 3);
   };
 
   const _origGetOffers = AxiumShop.getOffers.bind(AxiumShop);
   AxiumShop.getOffers = function(personaId, _ignored, ownedDeck, count) {
-    return _origGetOffers(personaId, 2, ownedDeck, count);
+    return _origGetOffers(personaId, 3, ownedDeck, count);
   };
 }
 
 // ════════════════════════════════════════════════════════════
-// CHAPTER 2 OUTCOME
+// CHAPTER 3 OUTCOME
+// "The recursive witness is the faculty that makes it possible
+//  to get here — the part of you that can watch yourself
+//  confessing and notice what the confession is protecting."
 // ════════════════════════════════════════════════════════════
 function showOutcome(won, perfect, B) {
   const save = APP.save || AxiumSave.getOrCreate();
-  const attnEl    = document.getElementById('oc-stat-attn');
-  const deckEl    = document.getElementById('oc-stat-deck');
-  const synsEl    = document.getElementById('oc-stat-syns');
-  const stateEl   = document.getElementById('oc-state-lbl');
-  const titleEl   = document.getElementById('oc-title');
-  const descEl    = document.getElementById('oc-desc');
+  const attnEl     = document.getElementById('oc-stat-attn');
+  const deckEl     = document.getElementById('oc-stat-deck');
+  const synsEl     = document.getElementById('oc-stat-syns');
+  const stateEl    = document.getElementById('oc-state-lbl');
+  const titleEl    = document.getElementById('oc-title');
+  const descEl     = document.getElementById('oc-desc');
   const primaryBtn = document.getElementById('oc-primary-btn');
 
   if (attnEl) { attnEl.textContent = Math.round(B.playerAttn); attnEl.style.color = won ? '#86EFAC' : '#e05555'; }
@@ -385,19 +407,25 @@ function showOutcome(won, perfect, B) {
   if (synsEl)  synsEl.textContent  = B.synsFired;
 
   if (won) {
-    if (stateEl)  stateEl.textContent   = 'Chapter II Complete';
-    if (titleEl) { titleEl.textContent  = perfect ? 'The Axium' : 'The Mirror Cracked'; titleEl.style.color = '#D4AF37'; }
-    if (descEl)   descEl.textContent    = perfect
-      ? 'Perfect constellation. The mirror had nothing left to show you.'
-      : 'You held your attention against your own reflection. The descent awaits.';
+    if (stateEl)  stateEl.textContent  = 'Chapter III Complete';
+    if (titleEl) {
+      titleEl.textContent = perfect ? 'The Axium' : 'Recursive Witness';
+      titleEl.style.color = '#D4AF37';
+    }
+    if (descEl) descEl.textContent = perfect
+      ? 'The Axium. All three 10-score cards held. The witness became the thing witnessed.'
+      : 'You brought something forward you didn\'t know you were carrying. The shadow named is the shadow integrated. The descent continues.';
     if (primaryBtn) {
-      primaryBtn.textContent = 'Save & Continue to Chapter III';
-      primaryBtn.onclick     = () => toast('Seed Saved', 'Load your seed in Chapter III to continue.');
+      primaryBtn.textContent = 'Save & Continue to Chapter IV';
+      primaryBtn.onclick     = () => toast('Seed Saved', 'Load your seed in Chapter IV to continue.');
     }
   } else {
-    if (stateEl)  stateEl.textContent   = 'The Mirror Won';
-    if (titleEl) { titleEl.textContent  = 'Reflected'; titleEl.style.color = '#e05555'; }
-    if (descEl)   descEl.textContent    = 'The mirror showed you something you weren\'t ready to hold. Your deck is preserved.';
+    if (stateEl)  stateEl.textContent  = 'The Shadow Won';
+    if (titleEl) {
+      titleEl.textContent = 'Unexamined';
+      titleEl.style.color = '#e05555';
+    }
+    if (descEl) descEl.textContent = 'The shadow does not disappear because it is ignored. It becomes the pattern you enact without knowing you\'re enacting it. Return when you are ready to go deeper.';
     if (primaryBtn) {
       primaryBtn.textContent = 'Try Again';
       primaryBtn.onclick     = () => enterBattle();

@@ -259,17 +259,21 @@
 // ════════════════════════════════════════════════════════════
 // CHAPTER CONFIG
 // ════════════════════════════════════════════════════════════
+// Chapter 1: player builds their entire deck from the 4 shop picks.
+// Override the engine default so beginJourney resets to an empty slate.
+STARTING_DECK_IDS.length = 0;
+
 const CHAPTER_CONFIG = {
-  playerStart:   155,
-  enemyStart:    280,
-  enemyMax:      300,
-  baseMaxAttn:   200,
-  handSize:      6,
+  playerStart:   55,
+  enemyStart:    80,
+  enemyMax:      100,
+  baseMaxAttn:   100,
+  handSize:      4,
   winAttn:       90,
   loseAttn:      10,
-  enemyHandSize: 6,
-  enemyDeck:     ['fool','magician','high_priestess','empress','emperor','lovers'],
-  winPctMargin:  0.15,
+  enemyHandSize: 4,
+  enemyDeck:     ['fool','magician','high_priestess','empress'],
+  winPctMargin:  0.10,
 };
 
 // ════════════════════════════════════════════════════════════

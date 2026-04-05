@@ -1,46 +1,74 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * AXIUM — CARD MATRIX v3.0
- * "Battle for Attention"
+ * AXIUM — CARD MATRIX v4.0
+ * "Battle for Attention" — Node Resonance Engine
  *
- * MECHANIC ARCHITECTURE v3.0
+ * MECHANIC ARCHITECTURE v4.0
  * ───────────────────────────
- * BATTLE: Single 1-turn resolution. Both sides play their full hand.
- * Your constellation vs theirs. Cards must optimize each other.
- * Hand size: up to 10 cards drawn from your deck each encounter.
+ * BATTLE: Real-time simulation. All cards fire on repeating timers
+ * derived from their constellation node count and tier.
+ *
+ * SPEED (node resonance):
+ *   fireInterval = tierInterval(tier) / card.pts.length
+ *   More nodes = faster warmup AND faster cycle = more powerful.
+ *   Fool (7 nodes, T1) fires every ~1143ms.
+ *   World (21 nodes, T1) fires every ~381ms.
+ *   This is the primary differentiator between cards of the same tier.
+ *
+ * TIER BASE INTERVALS:
+ *   Tier 1 → 8000ms  |  Tier 2 → 4000ms  |  Tier 3 → 2000ms
+ *   Surge (t > 45s)  → ÷10 on all
  *
  * LAYER ROLES:
  *
- *   ID (40 Pip Cards) — The Unconscious
- *     UPRIGHT  → RECHARGE  : Stackable passive attention gain.
- *                             Gain +rechargeVal attn per stack while held.
- *                             Stacks accumulate across cards in hand.
- *     REVERSED → DRAIN     : Stackable passive attention loss.
- *                             Trauma plays these to erode your baseline.
+ *   ID (40 Pip Cards) — The Pulse
+ *     Fires continuously on its node-speed cycle.
+ *     UPRIGHT  → +rechargeVal × pMult + pFlat  to own attn each fire.
+ *     REVERSED → −drainVal  to enemy attn each fire.
+ *                drainVal < rechargeVal by design. Reversed attacks raw —
+ *                pMult does NOT apply. Aggression bypasses your own growth.
  *
- *   SUPEREGO (22 Major Arcana) — The Moral Center
- *     UPRIGHT  → SHIELD    : Temporary attention boost when played.
- *                             shieldVal = flat attn added for the battle.
- *     REVERSED → CAPACITY  : While held in deck, alters your max attention pool.
- *                             capacityVal > 0 = expands max pool.
- *                             capacityVal < 0 = corrupted, shrinks max pool.
+ *   SUPEREGO (22 Major Arcana) — The Architecture
+ *     Two-phase behavior:
+ *     UPRIGHT — First fire:  +shieldVal burst to own attn (amplified by pMult).
+ *               Subsequent:  +capacityVal × CAP_TICK_RATE added to pMax each fire.
+ *                            If capacityVal ≤ 0, subsequent fires do nothing.
+ *     REVERSED — First fire: −round(shieldVal × 0.6) burst to enemy attn.
+ *                Subsequent: if capacityVal > 0, −capacityVal × CAP_TICK_RATE
+ *                            subtracted from eMax each fire (collapsing their ceiling).
+ *     Enemy Superego reversed targets pMax (not eMax) on subsequent ticks.
  *
- *   EGO (16 Court Cards) — The Rational Mediator
- *     UPRIGHT  → CHUNK     : Multiplier on attention gains this battle.
- *                             chunkFlat = flat bonus added to all gains.
- *                             chunkPct  = % multiplier on all gains (e.g. 1.5 = 150%).
- *                             study     = research bonus, amplifies NEXT card played.
- *     REVERSED → DIVIDE    : Divisor on attention. Misinformation, occultism,
- *                             conspiracy. divideVal applied to next gain.
+ *   EGO (16 Court Cards) — The Multiplier
+ *     Fires ONCE only on first tick. No subsequent fires.
+ *     UPRIGHT  → pMult  *= (chunkPct || 1.0)
+ *                pFlat  += (chunkFlat || 0)
+ *                All future ID and Superego gains are now amplified.
+ *                Kings (15 nodes, T2) fire multiplier later than Pages
+ *                (9 nodes, T2) but deliver higher chunkPct — timing strategy.
+ *     REVERSED → eDivisor  *= (chunkPct || 1.0)
+ *                eDmgFlat  += (chunkFlat || 0)
+ *                All enemy gains are divided and reduced going forward.
+ *                Enemy Ego reversed divides player gains instead.
  *
- * AXIUM SCORE:
- *   Each card has an axiumScore (1-10). Perfect 10 = boss-unlock condition.
- *   A hand of 10 cards averaging axiumScore 10 = final boss trigger.
+ * SYNERGIES (at t=0, before any card fires):
+ *   Active when all named cards are in playerPlayed upright.
+ *   Apply attnBoost directly to pAttn.
+ *   Apply synergyMult into pMult (stacks multiplicatively).
+ *   Reward upright-heavy builds. Reversed cards do not trigger synergies.
  *
- * CARD TIERS:
- *   Tier 1 — Available from start of Chapter 1
- *   Tier 2 — Unlocked via shop after Chapter 1 win
- *   Tier 3 — Unlocked via shop after Chapter 2 win (approach final boss)
+ * POLARITY TRADEOFF:
+ *   Upright:  heal yourself + trigger synergies + benefit from pMult.
+ *   Reversed: attack enemy directly, but lose all upright benefits.
+ *             No pMult on reversed attacks — raw damage only.
+ *
+ * WIN/LOSE:
+ *   Early KO: enemy attn hits 0 (player wins) or player attn ≤ loseAttn.
+ *   Time expiry (60s): player wins if pAttn/pMax − eAttn/eMax ≥ winPctMargin.
+ *
+ * ENEMY DECK:
+ *   All enemy cards play reversed. Stages 1–10 scale in tier mix, node
+ *   density, and hand size. Enemy Ego reversed divides player gains.
+ *   Enemy Superego reversed burst-damages player then slowly drains pMax.
  *
  * ═══════════════════════════════════════════════════════════════
  */
@@ -1377,160 +1405,374 @@ const ALL_CARDS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// BATTLE RESOLUTION ENGINE — core calculation helpers
-// These are called by game.js during the single-turn resolution
+// NODE RESONANCE ENGINE — v4.0
+// Single source of truth for all battle math.
+// battle.js reads these constants and helpers directly.
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * calculateRecharge(hand, attnState)
- * Sum all recharge passives across held ID cards,
- * applying state buffs/debuffs.
+ * CAP_TICK_RATE — fraction of capacityVal applied to max pool
+ * on each subsequent Superego fire after the initial shield burst.
+ * With a 17-node Star (T1, interval ~470ms) and capacityVal 12,
+ * each tick adds 12 × 0.08 = 0.96 to pMax — roughly +57 pMax over
+ * the 60s battle if it fires continuously. Feels like slow growth.
  */
-function calculateRecharge(hand, attnState) {
-  const state = ATTN_STATES.find(s => s.id === attnState) || ATTN_STATES[5];
-  let total = 0;
-  hand.forEach(card => {
-    if (card.layer === 'ID' && card.rechargeVal) {
-      let val = card.rechargeVal;
-      if (state.debuff?.rechargeMod) val *= state.debuff.rechargeMod;
-      if (state.buff?.rechargeBonus) val += state.buff.rechargeBonus;
-      if (state.debuff?.passiveMod)  val *= state.debuff.passiveMod;
-      total += val;
-    }
-  });
-  return Math.max(0, total);
+const CAP_TICK_RATE = 0.08;
+
+/**
+ * nodeFireInterval(card, surge)
+ * The time in ms between fires for this card.
+ * Derived entirely from tier base interval and node count.
+ * More nodes = smaller interval = faster firing.
+ */
+function nodeFireInterval(card, surge) {
+  const tier     = card.tier || 1;
+  const base     = tier >= 3 ? 2000 : tier === 2 ? 4000 : 8000;
+  const interval = surge ? base / 10 : base;
+  const nodes    = (card.pts && card.pts.length) ? card.pts.length : 7;
+  return Math.round(interval / nodes);
 }
 
 /**
- * calculateDrain(traumaHand)
- * Sum all drain from trauma's played cards.
- */
-function calculateDrain(traumaHand) {
-  return traumaHand.reduce((sum, card) => sum + (card.drainApplied || card.drainVal || 0), 0);
-}
-
-/**
- * calculateShield(hand, attnState)
- * Sum all shield values from Superego cards,
- * applying Grounded x2 multiplier if active.
- */
-function calculateShield(hand, attnState) {
-  const state = ATTN_STATES.find(s => s.id === attnState) || ATTN_STATES[5];
-  const mult = state.buff?.shieldMult || 1;
-  return hand
-    .filter(c => c.layer === 'Superego' && c.shieldVal)
-    .reduce((sum, c) => sum + c.shieldVal * mult, 0);
-}
-
-/**
- * calculateCapacity(deck)
- * Sum all capacity modifiers from Superego cards in the deck.
- * Returns the adjustment to max attention pool.
- */
-function calculateCapacity(deck) {
-  return deck
-    .filter(c => c.layer === 'Superego' && c.capacityVal)
-    .reduce((sum, c) => sum + c.capacityVal, 0);
-}
-
-/**
- * calculateChunk(hand, baseGain, attnState)
- * Apply all Ego chunk modifiers to a base gain value.
- * Returns the final gain after flat bonuses and multipliers.
- */
-function calculateChunk(hand, baseGain, attnState) {
-  const state = ATTN_STATES.find(s => s.id === attnState) || ATTN_STATES[5];
-  let flatBonus = 0;
-  let pctMult = 1.0;
-  const chunkBonus = state.buff?.chunkBonus || 0;
-  const chunkMod   = state.debuff?.chunkMod || 0;
-
-  hand.filter(c => c.layer === 'Ego').forEach(card => {
-    if (card.chunkFlat) flatBonus += card.chunkFlat;
-    if (card.chunkPct)  pctMult  *= (card.chunkPct + chunkBonus + chunkMod);
-  });
-
-  return Math.max(0, (baseGain + flatBonus) * pctMult);
-}
-
-/**
- * resolveBattle(playerHand, traumaHand, playerAttn, attnState, deck)
- * Core battle resolution. Returns { playerDelta, traumaDelta, log[] }
+ * getSynergyBonuses(playerPlayedEntries)
+ * Evaluate all active synergies from upright cards in playerPlayed.
+ * Returns { attnBoost, pMultBonus, activeSynergies[] }
  *
- * Flow:
- *   1. Calc recharge from player's ID cards (passive baseline)
- *   2. Calc shield from player's Superego cards (attn boost)
- *   3. Calc chunk from player's Ego cards (multiplier)
- *   4. Calc drain from trauma's cards (attack)
- *   5. Check synergies for overrides
- *   6. Net: playerDelta = (recharge + shield) chunked - drain
+ * attnBoost   — flat attn added to player at t=0.
+ * pMultBonus  — multiplicative boost folded into pMult at battle start.
+ * activeSynergies — array of matched SYNERGIES objects for display.
  */
-function resolveBattle(playerHand, traumaHand, playerAttn, attnState, deck) {
-  const battleLog = [];
-  const add = (msg, type) => battleLog.push({ msg, type });
+function getSynergyBonuses(playerPlayedEntries) {
+  const uprightIds = playerPlayedEntries
+    .filter(e => !e.reversed)
+    .map(e => e.card.id);
 
-  // Check for disinterest synergy block
-  const state = ATTN_STATES.find(s => s.id === attnState) || ATTN_STATES[5];
-  const synBlocked = state.debuff?.synergiesBlocked || false;
+  const activeSynergies = SYNERGIES.filter(s =>
+    s.cards.every(id => uprightIds.includes(id))
+  );
 
-  // 1. Recharge — ID passives
-  const rechargeBase = calculateRecharge(playerHand, attnState);
-  add(`Recharge passives: +${rechargeBase.toFixed(1)}`, 'p');
+  let attnBoost  = 0;
+  let pMultBonus = 1.0;
 
-  // 2. Shield — Superego boosts
-  const shieldBase = calculateShield(playerHand, attnState);
-  add(`Shield total: +${shieldBase}`, 'p');
+  activeSynergies.forEach(syn => {
+    if (syn.effect?.attnBoost)   attnBoost  += syn.effect.attnBoost;
+    if (syn.effect?.synergyMult) pMultBonus *= syn.effect.synergyMult;
+    // doubleRecharge handled in sim as pMult * 2 on ID cards — represented here
+    if (syn.effect?.doubleRecharge) pMultBonus *= 2.0;
+    // instantWin handled in sim loop
+  });
 
-  // 3. Ego chunk
-  const baseGain  = rechargeBase + shieldBase;
-  const chunkedGain = calculateChunk(playerHand, baseGain, attnState);
-  if (chunkedGain !== baseGain) {
-    add(`Ego chunk applied: ${baseGain.toFixed(1)} → ${chunkedGain.toFixed(1)}`, 'p');
+  return { attnBoost, pMultBonus, activeSynergies };
+}
+
+/**
+ * computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat)
+ * Pure function — given a card entry and current global modifiers,
+ * returns what this card does when it fires.
+ *
+ * c = { card, reversed, side, firstFired }
+ * Returns { delta, capacityDelta, label, color, targetSide, egoEffect }
+ *   delta         — attn change on the target side
+ *   capacityDelta — pMax/eMax change (0 if none)
+ *   label         — display string
+ *   color         — display color
+ *   targetSide    — 'player' | 'enemy'
+ *   egoEffect     — null | { pMult, pFlat } | { eDivisor, eDmgFlat }
+ *                   only set on first Ego fire
+ */
+function computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat) {
+  const { card, reversed, side, firstFired } = c;
+  const layer = card.layer;
+
+  let delta         = 0;
+  let capacityDelta = 0;
+  let label         = '';
+  let color         = '#D4AF37';
+  let targetSide    = 'player';
+  let egoEffect     = null;
+
+  // ── ID ───────────────────────────────────────────────────────
+  if (layer === 'ID') {
+    if (side === 'player' && !reversed) {
+      // Upright player: amplified recharge
+      const raw = (card.rechargeVal || 0);
+      delta      = Math.round(raw * pMult + pFlat);
+      label      = `+${delta} Recharge`;
+      color      = '#86EFAC';
+      targetSide = 'player';
+    } else if (side === 'player' && reversed) {
+      // Reversed player: raw drain on enemy, no pMult
+      delta      = -(card.drainVal || 0);
+      label      = `${delta} Drain`;
+      color      = '#e05555';
+      targetSide = 'enemy';
+    } else {
+      // Enemy (always reversed): raw drain on player, reduced by eDivisor/eDmgFlat
+      const raw  = Math.max(0, (card.drainVal || 0) - eDmgFlat);
+      delta      = -Math.round(raw / eDivisor);
+      label      = `${delta} Pressure`;
+      color      = '#e05555';
+      targetSide = 'player';
+    }
   }
 
-  // 4. Drain — trauma attack
-  const drainTotal = calculateDrain(traumaHand);
-  add(`Trauma drain: -${drainTotal}`, 't');
-
-  // Trauma healing
-  let traumaHealing = 0;
-  traumaHand.forEach(tc => {
-    if (tc.traumaHealing) {
-      traumaHealing += tc.traumaHealing;
-      add(`Trauma heals +${tc.traumaHealing} coherence (${tc.traumaRole || tc.name})`, 't');
+  // ── SUPEREGO ─────────────────────────────────────────────────
+  else if (layer === 'Superego') {
+    if (side === 'player' && !reversed) {
+      if (!firstFired) {
+        // First fire: shield burst (amplified by pMult)
+        delta      = Math.round((card.shieldVal || 0) * pMult + pFlat);
+        label      = `+${delta} Shield`;
+        color      = '#D4AF37';
+        targetSide = 'player';
+      } else {
+        // Subsequent fires: capacity growth on pMax
+        const cv = card.capacityVal || 0;
+        if (cv > 0) {
+          capacityDelta = cv * CAP_TICK_RATE;
+          label         = `Max ↑`;
+          color         = '#D4AF37';
+          targetSide    = 'player';
+        }
+        // No attn delta on subsequent upright fires
+        delta = 0;
+      }
+    } else if (side === 'player' && reversed) {
+      if (!firstFired) {
+        // First fire: burst damage on enemy (60% of shield, raw)
+        delta      = -Math.round((card.shieldVal || 0) * 0.6);
+        label      = `${delta} Shatter`;
+        color      = '#e05555';
+        targetSide = 'enemy';
+      } else {
+        // Subsequent fires: if capacityVal > 0, erode enemy max
+        const cv = card.capacityVal || 0;
+        if (cv > 0) {
+          capacityDelta = -(cv * CAP_TICK_RATE);
+          label         = `Enemy Max ↓`;
+          color         = '#e05555';
+          targetSide    = 'enemy';
+        }
+        delta = 0;
+      }
+    } else {
+      // Enemy Superego reversed — targets player
+      if (!firstFired) {
+        // Burst damage on player (60% of shield, reduced by defenses)
+        const raw  = Math.max(0, Math.round((card.shieldVal || 0) * 0.6) - eDmgFlat);
+        delta      = -Math.round(raw / eDivisor);
+        label      = `${delta} Pressure`;
+        color      = '#e05555';
+        targetSide = 'player';
+      } else {
+        // Subsequent fires: erode player max
+        const cv = card.capacityVal || 0;
+        if (cv > 0) {
+          capacityDelta = -(cv * CAP_TICK_RATE);
+          label         = `Your Max ↓`;
+          color         = '#e05555';
+          targetSide    = 'player'; // pMax target signalled by targetSide='player' + negative capacityDelta
+        }
+        delta = 0;
+      }
     }
-  });
+  }
 
-  // 5. Synergies
-  const playerIds  = playerHand.map(c => c.id);
-  const activeSyns = synBlocked ? [] : getSynergies(playerIds);
-  let synergyGain  = 0;
+  // ── EGO — fires once, sets global modifiers ──────────────────
+  else if (layer === 'Ego') {
+    if (!firstFired) {
+      if (side === 'player' && !reversed) {
+        // Upright: boost player multipliers going forward
+        const newPMult = pMult * (card.chunkPct || 1.0);
+        const newPFlat = pFlat + (card.chunkFlat || 0);
+        egoEffect = { type: 'boost', pMult: newPMult, pFlat: newPFlat };
+        label     = `Chunk ×${(card.chunkPct||1).toFixed(1)}${card.chunkFlat ? ` +${card.chunkFlat}` : ''}`;
+        color     = '#7EB8E8';
+        targetSide = 'player';
+      } else if (side === 'player' && reversed) {
+        // Reversed player: divide enemy gains
+        const newEDiv  = eDivisor * (card.chunkPct || 1.0);
+        const newEFlat = eDmgFlat + (card.chunkFlat || 0);
+        egoEffect = { type: 'divide', eDivisor: newEDiv, eDmgFlat: newEFlat };
+        label     = `Divide ÷${(card.chunkPct||1).toFixed(1)}`;
+        color     = '#e05555';
+        targetSide = 'enemy';
+      } else {
+        // Enemy Ego reversed: divide player gains
+        const newEDiv  = eDivisor * (card.chunkPct || 1.0);
+        const newEFlat = eDmgFlat + (card.chunkFlat || 0);
+        egoEffect = { type: 'enemy_divide', eDivisor: newEDiv, eDmgFlat: newEFlat };
+        label     = `Enemy Chunk ÷${(card.chunkPct||1).toFixed(1)}`;
+        color     = '#e05555';
+        targetSide = 'player';
+      }
+    }
+    // After firstFired, Ego does nothing — fall through with delta=0
+  }
 
-  activeSyns.forEach(syn => {
-    add(`✦ Synergy: ${syn.name}`, 'synerg');
-    // Handle numeric synergy gains
-    if (syn.effect.rechargeBonus)       synergyGain += syn.effect.rechargeBonus * playerHand.filter(c=>c.layer==='ID').length;
-    if (syn.effect.attnFloorState)      add(`Floor set: ${syn.effect.attnFloorState}`, 's');
-    if (syn.effect.clearAllDrain)       add('All drain cleared by synergy', 's');
-    if (syn.effect.doubleRecharge)      synergyGain += rechargeBase; // doubles it
-    if (syn.effect.doubleShields)       synergyGain += shieldBase;   // doubles shields too
-    if (syn.effect.instantWin)          add('INSTANT WIN — The Axium triggered', 'synerg');
-  });
-
-  // 6. Net
-  const playerDelta   = chunkedGain + synergyGain - drainTotal;
-  const traumaDelta   = -traumaHealing; // trauma heals = coherence goes UP (we subtract from damage)
-
-  add(`Net attention delta: ${playerDelta >= 0 ? '+' : ''}${playerDelta.toFixed(1)}`, playerDelta >= 0 ? 'p' : 't');
-
-  return {
-    playerDelta,
-    traumaDelta,
-    synergies: activeSyns,
-    log: battleLog,
-    instantWin: activeSyns.some(s => s.effect?.instantWin),
-  };
+  return { delta, capacityDelta, label, color, targetSide, egoEffect };
 }
+
+// ═══════════════════════════════════════════════════════════════
+// STAGE ENEMY DECKS — 10 stages, escalating difficulty
+//
+// All enemy cards play reversed:
+//   ID reversed    → drainVal hits player attn each fire
+//   Superego rev   → shieldVal×0.6 burst then pMax erosion each tick
+//   Ego reversed   → divides player gains (one-shot on first fire)
+//
+// Stage design principles:
+//   Stage 1–3: Low-node ID only. Fast but small hits. Player learns timing.
+//   Stage 4–5: First Superego cards appear. Burst damage introduced.
+//   Stage 6–7: Ego cards enter. Player gains start getting divided.
+//   Stage 8–9: High-node high-magnitude cards. Real pressure.
+//   Stage 10:  Full optimised deck. Maximum node density. No mercy.
+//
+// enemyStart: enemy attn at battle start (player always starts lower)
+// enemyMax:   enemy max attn pool
+// handSize:   how many enemy cards deploy
+// ═══════════════════════════════════════════════════════════════
+const STAGE_ENEMY_DECKS = [
+
+  // ── Stage 1 — The Echo Chamber ────────────────────────────────
+  // Pure low-node ID. Fast drip, predictable rhythm. Learning stage.
+  {
+    stage:      1,
+    name:       'The Echo Chamber',
+    enemyStart: 60,
+    enemyMax:   100,
+    handSize:   4,
+    ids: ['ace_cups','ace_swords','ace_wands','ace_pents'],
+    // 4 × 7-node Tier 1 ID reversed
+    // Fire every 8000/7 ≈ 1143ms. drain 5,5,5,4 per hit.
+  },
+
+  // ── Stage 2 — The Performance ─────────────────────────────────
+  // More ID variety (mid-node), slightly harder hits.
+  {
+    stage:      2,
+    name:       'The Performance',
+    enemyStart: 65,
+    enemyMax:   100,
+    handSize:   5,
+    ids: ['three_cups','five_cups','three_swords','four_wands','two_pents'],
+    // Node range 8–10, drain 4–8. First card with drainVal 8 (three_swords).
+  },
+
+  // ── Stage 3 — The Approval Feed ───────────────────────────────
+  // Higher-node ID. Slower but hits count more.
+  {
+    stage:      3,
+    name:       'The Approval Feed',
+    enemyStart: 65,
+    enemyMax:   100,
+    handSize:   5,
+    ids: ['six_cups','seven_cups','six_swords','seven_wands','six_pents'],
+    // Node range 10–12, drain 3–6. Rhythm shifts — gaps between hits lengthen.
+  },
+
+  // ── Stage 4 — The Wound ───────────────────────────────────────
+  // First Superego card (Hermit reversed). Burst damage introduced.
+  {
+    stage:      4,
+    name:       'The Wound',
+    enemyStart: 70,
+    enemyMax:   100,
+    handSize:   6,
+    ids: ['eight_cups','nine_swords','ten_cups','seven_swords','hermit','fool'],
+    // hermit: 9 nodes, shieldVal 13 → burst −8 on first fire, then cap erosion.
+    // fool:   7 nodes, shieldVal 18 → burst −11 very early. No cap erosion (capVal −8).
+  },
+
+  // ── Stage 5 — The Mirror ──────────────────────────────────────
+  // Two Superego cards plus strong ID. Enemy max erosion begins.
+  {
+    stage:      5,
+    name:       'The Mirror',
+    enemyStart: 70,
+    enemyMax:   105,
+    handSize:   6,
+    ids: ['ten_swords','nine_cups','magician','high_priestess','eight_swords','five_swords'],
+    // magician (9n, shield 14, cap 6): burst −8, then slow pMax drain −0.48/fire.
+    // high_priestess (11n, shield 12, cap 5): burst −7, then −0.4/fire.
+  },
+
+  // ── Stage 6 — The Rationaliser ────────────────────────────────
+  // First Ego card (Page of Cups reversed). Player gains start dividing.
+  {
+    stage:      6,
+    name:       'The Rationaliser',
+    enemyStart: 75,
+    enemyMax:   105,
+    handSize:   7,
+    ids: ['ten_wands','empress','chariot','strength','page_cups','nine_wands','eight_wands'],
+    // page_cups (9n, T2, chunkPct 1.0, chunkFlat 4): divides player gains, +4 eDmgFlat.
+    // chariot (13n, shield 22, cap 9): burst −13, ongoing cap erosion −0.72/fire.
+    // empress (12n, shield 16, cap 8): burst −10, erosion −0.64/fire.
+  },
+
+  // ── Stage 7 — The Shadow ──────────────────────────────────────
+  // Devil + Tower reversed — dangerous capacity collapse combo.
+  {
+    stage:      7,
+    name:       'The Shadow',
+    enemyStart: 75,
+    enemyMax:   110,
+    handSize:   7,
+    ids: ['devil','tower','ten_cups','ten_wands','page_swords','nine_pents','eight_pents'],
+    // devil (16n, shield 25, cap 11): burst −15, erosion −0.88/fire. Fastest T1 Superego.
+    // tower (11n, shield 28, cap 10): burst −17, erosion −0.80/fire.
+    // page_swords (9n, T2): divide + eDmgFlat 3.
+  },
+
+  // ── Stage 8 — The Void ────────────────────────────────────────
+  // Star + Death reversed. High-node, high magnitude, Knight Ego.
+  {
+    stage:      8,
+    name:       'The Void',
+    enemyStart: 80,
+    enemyMax:   110,
+    handSize:   8,
+    ids: ['star','death','knight_cups','knight_swords','ten_swords','nine_swords','ten_pents','nine_cups'],
+    // star (18n, shield 20, cap 12): burst −12, fastest T1 outside sun/world/wheel.
+    // death (14n, shield 20, cap 12): burst −12, erosion −0.96/fire.
+    // knight_cups (11n, T2, chunkPct 1.3): ×1.3 eDivisor on player gains.
+    // knight_swords (11n, T2, chunkFlat 8): +8 eDmgFlat — every enemy hit +8 raw.
+  },
+
+  // ── Stage 9 — The Collapse ────────────────────────────────────
+  // Sun + Judgement reversed. Queen Ego. Maximum pressure.
+  {
+    stage:      9,
+    name:       'The Collapse',
+    enemyStart: 85,
+    enemyMax:   115,
+    handSize:   8,
+    ids: ['sun','judgement','queen_cups','queen_swords','wheel_of_fortune','moon','ten_wands','nine_wands'],
+    // sun (20n, shield 30, cap 15): burst −18 early (fast node), erosion −1.2/fire.
+    // judgement (14n, shield 26, cap 14): burst −16, erosion −1.12/fire.
+    // queen_cups (13n, T2, chunkPct 1.0, chunkFlat 6): +6 eDmgFlat.
+    // queen_swords (13n, T2, chunkPct 1.4): ×1.4 eDivisor. Player gains crushed.
+    // wheel_of_fortune (17n, shield 16, cap 7): fast erosion.
+  },
+
+  // ── Stage 10 — The Unchecked Ego ──────────────────────────────
+  // Full deck. World reversed hits hardest (21 nodes, fastest T1).
+  // King Ego cards. Complete optimised enemy build.
+  {
+    stage:      10,
+    name:       'The Unchecked Ego',
+    enemyStart: 90,
+    enemyMax:   120,
+    handSize:   8,
+    ids: ['world','sun','king_cups','king_swords','devil','star','wheel_of_fortune','ten_pents'],
+    // world (21n, shield 35, cap 20): burst −21 on first fire (fastest T1 card).
+    //   Subsequent fires: −1.6 pMax per fire. Over 60s ≈ −94 pMax total.
+    // king_cups (15n, T2, chunkPct 1.5): ×1.5 eDivisor. Player gains halved.
+    // king_swords (15n, T2, chunkPct 1.6): stacks with cups → ×2.4 total divisor.
+    // Combined Ego: player gains divided by up to 2.4 after both Kings fire.
+  },
+];
 
 // ───────────────────────────────────────────────────────────────
 // HELPERS
@@ -1567,6 +1809,15 @@ function getAttnState(val) {
   return best;
 }
 
+function getStageEnemyDeck(stage) {
+  const s = STAGE_ENEMY_DECKS.find(d => d.stage === stage);
+  if (!s) return STAGE_ENEMY_DECKS[0];
+  return {
+    ...s,
+    cards: s.ids.map(id => getCard(id)).filter(Boolean),
+  };
+}
+
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -1581,28 +1832,23 @@ function clampAttn(val, min = 0, max = 100) {
 }
 
 // ───────────────────────────────────────────────────────────────
-// EXPORT — works as ES module or plain script include
+// EXPORTS
 // ───────────────────────────────────────────────────────────────
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    ATTN_STATES, CARD_GLOSSARY,
+    ATTN_STATES, CARD_GLOSSARY, CAP_TICK_RATE,
     PLAYER_CARDS, EGO_CARDS, ID_CARDS,
     TRAUMA_DECKS, SHOP_OFFERINGS, SHOP_NPCS, CHAPTERS,
-    SYNERGIES, ALL_CARDS,
+    SYNERGIES, STAGE_ENEMY_DECKS, ALL_CARDS,
+    // Core engine
+    nodeFireInterval, getSynergyBonuses, computeCardFire,
     // Helpers
     getCard, getTraumaDeck, getShopOffers, getShopNPC,
-    getChapter, getSynergies, getAttnState, shuffle, clampAttn,
-    // Battle engine
-    calculateRecharge, calculateDrain, calculateShield,
-    calculateCapacity, calculateChunk, resolveBattle,
+    getChapter, getSynergies, getAttnState, getStageEnemyDeck,
+    shuffle, clampAttn,
   };
 }
 
-// At the end of cards.js
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { /* ... your existing exports ... */ };
-}
-
-// Explicitly attach to window for the browser engine to see it
-window.ALL_CARDS = ALL_CARDS;
-window.PLAYER_CARDS = PLAYER_CARDS;
+window.ALL_CARDS        = ALL_CARDS;
+window.PLAYER_CARDS     = PLAYER_CARDS;
+window.STAGE_ENEMY_DECKS = STAGE_ENEMY_DECKS;

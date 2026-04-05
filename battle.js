@@ -53,7 +53,8 @@ const B = {
 };
 
 // ─────────────────────────────────────────────────────────
-// TIER → INTERVAL
+// TIER INTERVAL — kept for surge transition reference only.
+// The actual per-card fire rate is nodeFireInterval() in cards.js.
 // ─────────────────────────────────────────────────────────
 function tierInterval(tier, surge) {
   const base = tier >= 3 ? 2000 : tier === 2 ? 4000 : 8000;
@@ -67,6 +68,9 @@ function enterBattle() {
   const save = AxiumSave.getOrCreate();
 
   B.playerDeck    = save.deck.map(id => getCard(id)).filter(Boolean);
+  B.enemyAttn     = CHAPTER_CONFIG.enemyStart;
+  B.enemyMaxAttn  = CHAPTER_CONFIG.enemyMax;
+  CHAPTER_CONFIG._stageApplied = false;  // allow stage def to override attn on buildEnemyHand
   B.enemyHand     = buildEnemyHand();
   B.playerAttn    = CHAPTER_CONFIG.playerStart;
   B.enemyAttn     = CHAPTER_CONFIG.enemyStart;
@@ -90,12 +94,32 @@ function enterBattle() {
 }
 
 function buildEnemyHand() {
-  const pool = CHAPTER_CONFIG.enemyDeck
-    ? CHAPTER_CONFIG.enemyDeck.map(id => getCard(id)).filter(Boolean)
-    : shuffle([...PLAYER_CARDS]).slice(0, CHAPTER_CONFIG.enemyHandSize || 4);
-  return pool.slice(0, CHAPTER_CONFIG.enemyHandSize || 4).map(card => ({
+  // Use CHAPTER_CONFIG.stage if set (supports 10-stage progression).
+  // Falls back to CHAPTER_CONFIG.enemyDeck for backward compatibility,
+  // then falls back to stage 1 if neither is defined.
+  const stage = CHAPTER_CONFIG.stage || 1;
+
+  let pool;
+  if (CHAPTER_CONFIG.enemyDeck) {
+    // Legacy explicit deck — still respected for custom chapter configs
+    pool = CHAPTER_CONFIG.enemyDeck.map(id => getCard(id)).filter(Boolean);
+  } else if (typeof getStageEnemyDeck === 'function') {
+    const stageDef = getStageEnemyDeck(stage);
+    // Override starting attn/max from stage definition if not explicitly set
+    if (!CHAPTER_CONFIG._stageApplied) {
+      B.enemyAttn    = stageDef.enemyStart ?? B.enemyAttn;
+      B.enemyMaxAttn = stageDef.enemyMax   ?? B.enemyMaxAttn;
+      CHAPTER_CONFIG._stageApplied = true;
+    }
+    pool = stageDef.cards || [];
+  } else {
+    pool = shuffle([...PLAYER_CARDS]).slice(0, CHAPTER_CONFIG.enemyHandSize || 4);
+  }
+
+  const handSize = CHAPTER_CONFIG.enemyHandSize || pool.length || 4;
+  return pool.slice(0, handSize).map(card => ({
     card,
-    reversed: true,   // enemy always plays reversed → attacks player
+    reversed: true,   // enemy always plays reversed — attacks player
   }));
 }
 
@@ -174,86 +198,114 @@ function resolveRound() {
 }
 
 // ─────────────────────────────────────────────────────────
-// PRE-SIMULATION
-// Runs the full 60s battle in a tight loop.
+// PRE-SIMULATION — Node Resonance Engine v4.0
+// Runs the full 60s battle synchronously.
 // Returns { events[], synergies[] }
+//
+// Fire speed = tierInterval / card.pts.length
+// ID:        fires continuously — recharge (upright) or drain (reversed)
+// Superego:  first fire = shield burst / enemy burst;
+//            subsequent fires = capacity growth / capacity erosion
+// Ego:       fires once — sets pMult/pFlat (upright) or eDivisor/eDmgFlat (reversed)
 // ─────────────────────────────────────────────────────────
 function preSimulateBattle() {
-  const STEP        = 100;   // ms resolution
+  const STEP        = 100;
   const NORMAL_END  = 45000;
   const BATTLE_END  = 60000;
   const LOSE_THRESH = CHAPTER_CONFIG.loseAttn;
-  // At time-expiry: player % of their max must exceed enemy % of their max by this margin.
-  // e.g. 0.15 means player needs to be 15 percentage points ahead.
-  const WIN_PCT_MARGIN = CHAPTER_CONFIG.winPctMargin ?? 0.15;
+  const WIN_PCT_MARGIN = CHAPTER_CONFIG.winPctMargin ?? 0.10;
 
   const events = [];
 
-  // Mutable sim state
+  // ── Mutable sim state ──────────────────────────────────
   let pAttn    = B.playerAttn;
   let eAttn    = B.enemyAttn;
   let pMax     = B.playerMaxAttn;
   let eMax     = B.enemyMaxAttn;
-  let pFlat    = 0;    // accumulated Ego chunk bonus for player gains
-  let eDmgFlat = 0;    // accumulated enemy damage flat bonus (enemy Ego cards)
+  let pMult    = 1.0;   // Ego upright multiplies all player gains
+  let pFlat    = 0;     // Ego upright flat bonus on every player gain
+  let eDivisor = 1.0;   // Ego reversed divides all player gains (when enemy Ego fires)
+  let eDmgFlat = 0;     // Ego reversed flat damage reduction on enemy hits
 
-  // Build card list with per-card state
+  // ── Build card entries ─────────────────────────────────
   const cards = [
-    ...B.playerPlayed.map(e => ({
-      id:       e.card.id,
-      card:     e.card,
-      reversed: e.reversed,
-      side:     'player',
-      tier:     e.card.tier || 1,
-      nextFire: tierInterval(e.card.tier || 1, false),
-      progress: 0,
-    })),
-    ...B.enemyHand.map(e => ({
-      id:       e.card.id,
-      card:     e.card,
-      reversed: true,
-      side:     'enemy',
-      tier:     e.card.tier || 1,
-      nextFire: tierInterval(e.card.tier || 1, false),
-      progress: 0,
-    })),
+    ...B.playerPlayed.map(e => {
+      const interval = nodeFireInterval(e.card, false);
+      return {
+        id:         e.card.id,
+        card:       e.card,
+        reversed:   e.reversed,
+        side:       'player',
+        tier:       e.card.tier || 1,
+        interval,
+        nextFire:   interval,   // first fire at t = interval
+        progress:   0,
+        firstFired: false,
+        isEgo:      e.card.layer === 'Ego',
+      };
+    }),
+    ...B.enemyHand.map(e => {
+      const interval = nodeFireInterval(e.card, false);
+      return {
+        id:         e.card.id,
+        card:       e.card,
+        reversed:   true,
+        side:       'enemy',
+        tier:       e.card.tier || 1,
+        interval,
+        nextFire:   interval,
+        progress:   0,
+        firstFired: false,
+        isEgo:      e.card.layer === 'Ego',
+      };
+    }),
   ];
 
-  // Detect synergies from player's upright cards
-  const playerUprightIds = B.playerPlayed
-    .filter(e => !e.reversed)
-    .map(e => e.card.id);
-  const synergies = typeof getSynergies === 'function'
-    ? getSynergies(playerUprightIds)
-    : [];
+  // ── Synergies at t=0 ───────────────────────────────────
+  const { attnBoost, pMultBonus, activeSynergies } = getSynergyBonuses(B.playerPlayed);
+  pAttn  = clamp(pAttn + attnBoost, 0, pMax);
+  pMult *= pMultBonus;
 
-  // Apply one-time synergy attn bonuses at t=0
-  synergies.forEach(syn => {
-    if (syn.effect?.attnBoost) pAttn = clamp(pAttn + syn.effect.attnBoost, 0, pMax);
-  });
+  // Instant win synergy (The Axium: sun+judgement+world)
+  if (activeSynergies.some(s => s.effect?.instantWin)) {
+    events.push({ t: 0, type: 'battle_end', winner: 'player', reason: 'instant_win' });
+    return { events, synergies: activeSynergies };
+  }
 
-  // ── Main simulation loop ──
+  if (attnBoost > 0) {
+    events.push({
+      t: 0, type: 'card_trigger', side: 'player', cardId: 'synergy',
+      delta: attnBoost, label: `✦ +${attnBoost} Synergy`, color: '#D4AF37',
+      targetSide: 'player',
+      newPlayerAttn: pAttn, newEnemyAttn: eAttn,
+      newPlayerMax: pMax,   newEnemyMax:  eMax,
+    });
+  }
+
+  // ── Main loop ──────────────────────────────────────────
   let battleEnded = false;
+
   for (let t = STEP; t <= BATTLE_END && !battleEnded; t += STEP) {
     const surge = t > NORMAL_END;
+
+    // Surge transition — recalibrate intervals and nextFire
     if (t === NORMAL_END + STEP) {
       events.push({ t, type: 'surge_start' });
-      // Recalculate next-fire for all cards into surge mode
-      // Preserve proportional progress through current interval
       cards.forEach(c => {
-        const oldInterval = tierInterval(c.tier, false);
-        const newInterval = tierInterval(c.tier, true);
-        const remaining   = c.nextFire - t + STEP;
-        const pct         = clamp(1 - remaining / oldInterval, 0, 1);
-        c.nextFire        = t + Math.round(newInterval * (1 - pct));
+        const oldInterval = nodeFireInterval(c.card, false);
+        const newInterval = nodeFireInterval(c.card, true);
+        c.interval = newInterval;
+        // Preserve proportional progress through current cycle
+        const elapsed  = oldInterval - (c.nextFire - t + STEP);
+        const pct      = clamp(elapsed / oldInterval, 0, 1);
+        c.nextFire     = t + Math.round(newInterval * (1 - pct));
       });
     }
 
-    // Emit charge-progress events for all cards
+    // Charge progress events for visual layer
     cards.forEach(c => {
-      const interval = tierInterval(c.tier, surge);
-      const elapsed  = interval - (c.nextFire - t);
-      c.progress     = clamp(elapsed / interval, 0, 1);
+      const elapsed = c.interval - (c.nextFire - t);
+      c.progress    = clamp(elapsed / c.interval, 0, 1);
       events.push({
         t,
         type:     'card_charge',
@@ -268,127 +320,82 @@ function preSimulateBattle() {
       if (battleEnded) break;
       if (t < c.nextFire) continue;
 
-      const card     = c.card;
-      const reversed = c.reversed;
-      const layer    = card.layer;
-      let delta      = 0;
-      let label      = '';
-      let color      = '#D4AF37';
-      let targetSide = 'player'; // which attn value changes
-
-      if (c.side === 'player') {
-        if (!reversed) {
-          // ── UPRIGHT: benefit player ──
-          if (layer === 'ID') {
-            delta      = (card.rechargeVal || 0) + pFlat;
-            label      = `+${delta} Recharge`;
-            color      = '#86EFAC';
-            targetSide = 'player';
-          } else if (layer === 'Superego') {
-            if (card.capacityVal) {
-              // Capacity: expand player max
-              pMax  = clamp(pMax + card.capacityVal, 10, 300);
-              delta = 0;
-              label = `Max +${card.capacityVal}`;
-              color = '#D4AF37';
-            }
-            const shieldGain = (card.shieldVal || 0) + pFlat;
-            pAttn      = clamp(pAttn + shieldGain, 0, pMax);
-            if (shieldGain) { delta = shieldGain; label = `+${shieldGain} Shield`; }
-            targetSide = 'player';
-          } else if (layer === 'Ego') {
-            // Chunk: add to flat bonus, recalculate current gains aren't retroactive
-            pFlat     += (card.chunkFlat || 0);
-            delta      = card.chunkFlat || 0;
-            label      = `+${delta} Chunk`;
-            color      = '#7EB8E8';
-            targetSide = 'player';
-          }
-        } else {
-          // ── REVERSED: attack enemy ──
-          if (layer === 'ID') {
-            delta      = -((card.rechargeVal || 0) + pFlat);
-            label      = `${delta} Drain`;
-            color      = '#e05555';
-            targetSide = 'enemy';
-          } else if (layer === 'Superego') {
-            if (card.capacityVal) {
-              eMax  = clamp(eMax - card.capacityVal, 10, 300);
-              eAttn = clamp(eAttn, 0, eMax);
-              label = `Enemy Max −${card.capacityVal}`;
-              color = '#e05555';
-            }
-            const debuff = -((card.shieldVal || 0) + pFlat);
-            delta      = debuff;
-            label      = label || `${delta} Debuff`;
-            color      = '#e05555';
-            targetSide = 'enemy';
-          } else if (layer === 'Ego') {
-            // Reversed Ego: reduce enemy damage flat bonus
-            eDmgFlat   = Math.max(0, eDmgFlat - (card.chunkFlat || 0));
-            delta      = -(card.chunkFlat || 0);
-            label      = `Enemy Dmg −${card.chunkFlat || 0}`;
-            color      = '#e05555';
-            targetSide = 'enemy';
-          }
-        }
-      } else {
-        // ── ENEMY CARD — always attacks player ──
-        if (layer === 'ID') {
-          // Drain: base card drain + accumulated enemy damage flat
-          delta      = -((card.rechargeVal || 0) + eDmgFlat);
-          label      = `${delta} Drain`;
-          color      = '#e05555';
-          targetSide = 'player';
-        } else if (layer === 'Superego') {
-          // Enemy Superego deals its shieldVal as a flat drain hit — it does NOT
-          // touch player max capacity (that value was designed for player upright use).
-          delta      = -((card.shieldVal || 0) + eDmgFlat);
-          label      = `${delta} Pressure`;
-          color      = '#e05555';
-          targetSide = 'player';
-        } else if (layer === 'Ego') {
-          // Enemy Ego grows the enemy damage flat bonus for all future hits
-          eDmgFlat  += (card.chunkFlat || 0);
-          delta      = -(card.chunkFlat || 0);
-          label      = `Enemy Escalates −${card.chunkFlat || 0}`;
-          color      = '#e05555';
-          targetSide = 'player';
-        }
+      // Ego fires once — skip if already fired
+      if (c.isEgo && c.firstFired) {
+        c.nextFire = Infinity; // park it — Ego is done
+        continue;
       }
 
-      // Apply delta
-      if (targetSide === 'player') {
-        pAttn = clamp(pAttn + delta, 0, pMax);
+      // Compute what this card does
+      const result = computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat);
+      const { delta, capacityDelta, label, color, targetSide, egoEffect } = result;
+
+      // Apply Ego modifier first if this is an Ego first-fire
+      if (egoEffect) {
+        if (egoEffect.type === 'boost') {
+          pMult = egoEffect.pMult;
+          pFlat = egoEffect.pFlat;
+        } else if (egoEffect.type === 'divide' || egoEffect.type === 'enemy_divide') {
+          eDivisor = egoEffect.eDivisor;
+          eDmgFlat = egoEffect.eDmgFlat;
+        }
+        c.firstFired = true;
+        c.nextFire   = Infinity; // Ego done after one fire
       } else {
-        eAttn = clamp(eAttn + delta, 0, eMax);
+        // Apply attn delta
+        if (delta !== 0) {
+          if (targetSide === 'player') {
+            pAttn = clamp(pAttn + delta, 0, pMax);
+          } else {
+            eAttn = clamp(eAttn + delta, 0, eMax);
+          }
+        }
+
+        // Apply capacity delta (sustained Superego growth/erosion)
+        if (capacityDelta !== 0) {
+          if (targetSide === 'player' && capacityDelta > 0) {
+            // Upright Superego: grow pMax
+            pMax = clamp(pMax + capacityDelta, 10, 400);
+          } else if (targetSide === 'player' && capacityDelta < 0) {
+            // Enemy Superego reversed: erode pMax
+            pMax  = clamp(pMax + capacityDelta, 10, 400);
+            pAttn = clamp(pAttn, 0, pMax); // cap attn to new max
+          } else if (targetSide === 'enemy' && capacityDelta < 0) {
+            // Player Superego reversed: erode eMax
+            eMax  = clamp(eMax + capacityDelta, 10, 400);
+            eAttn = clamp(eAttn, 0, eMax);
+          }
+        }
+
+        c.firstFired = true;
+
+        // Reset timer for next fire (Ego stays parked at Infinity)
+        c.nextFire = t + nodeFireInterval(c.card, surge);
+        c.progress = 0;
       }
 
-      // Record event
-      events.push({
-        t,
-        type:          'card_trigger',
-        side:          c.side,
-        cardId:        c.id,
-        reversed:      reversed,
-        delta,
-        label,
-        color,
-        targetSide,
-        newPlayerAttn: pAttn,
-        newEnemyAttn:  eAttn,
-        newPlayerMax:  pMax,
-        newEnemyMax:   eMax,
-        pFlat,
-        eDmgFlat,
-      });
+      // Record event (skip if nothing visible happened)
+      if (delta !== 0 || capacityDelta !== 0 || egoEffect) {
+        events.push({
+          t,
+          type:          'card_trigger',
+          side:          c.side,
+          cardId:        c.id,
+          reversed:      c.reversed,
+          delta,
+          capacityDelta,
+          label,
+          color,
+          targetSide,
+          newPlayerAttn: pAttn,
+          newEnemyAttn:  eAttn,
+          newPlayerMax:  pMax,
+          newEnemyMax:   eMax,
+          pMult, pFlat, eDivisor, eDmgFlat,
+        });
+      }
 
-      // Reset card timer
-      const nextInterval = tierInterval(c.tier, surge);
-      c.nextFire = t + nextInterval;
-      c.progress = 0;
-
-      // Early KO: first side to hit 0 loses immediately
+      // Early KO checks
       if (eAttn <= 0) {
         events.push({ t, type: 'battle_end', winner: 'player', reason: 'enemy_zero' });
         battleEnded = true;
@@ -402,16 +409,15 @@ function preSimulateBattle() {
     }
   }
 
-  // Time expiry: compare each side's attention as a % of their own max.
-  // Player wins only if they are ahead by WIN_PCT_MARGIN or more.
+  // Time expiry — percentage margin decides winner
   if (!battleEnded) {
-    const pPct = pAttn / pMax;
-    const ePct = eAttn / eMax;
+    const pPct   = pAttn / pMax;
+    const ePct   = eAttn / eMax;
     const winner = (pPct - ePct) >= WIN_PCT_MARGIN ? 'player' : 'enemy';
     events.push({ t: BATTLE_END, type: 'battle_end', winner, reason: 'time', pPct, ePct });
   }
 
-  return { events, synergies };
+  return { events, synergies: activeSynergies };
 }
 
 // ─────────────────────────────────────────────────────────

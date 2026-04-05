@@ -628,12 +628,13 @@ class CardParticles {
   font-size: 12px; color: rgba(255,255,255,.28);
 }
 
-/* Polarity toggle pill — shown on staged cards inside the picker */
+/* Polarity toggle pill — shown on staged cards inside the picker and on field cards */
 .axc-pol-pill {
-  position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
-  font-family: 'Space Mono', monospace; font-size: 7px; letter-spacing: .08em;
-  text-transform: uppercase; padding: 3px 9px; border-radius: 10px; border: 1px solid;
-  cursor: pointer; z-index: 20; white-space: nowrap; user-select: none;
+  position: absolute; top: 4px; left: 4px; transform: none;
+  font-family: 'Space Mono', monospace; font-size: 6px; letter-spacing: .05em;
+  text-transform: uppercase; padding: 2px 5px; border-radius: 6px; border: 1px solid;
+  cursor: pointer; z-index: 40; white-space: nowrap; user-select: none;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   transition: all .18s;
 }
 .axc-pol-pill.normal   { color:rgba(212,175,55,.9); border-color:rgba(212,175,55,.45); background:rgba(212,175,55,.12); }
