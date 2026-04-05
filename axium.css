@@ -390,3 +390,185 @@ html, body {
 #toast-b    { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:13px; color:rgba(255,255,255,.4); }
 
 .ptcl { position:fixed; border-radius:50%; pointer-events:none; z-index:800; }
+
+/* ═══════════════════════════════════════════════════════════
+   AXIUM — Mobile Fix Addendum  (append to bottom of axium.css)
+   Fixes: viewport overflow, footer resurrection, resolve layout
+═══════════════════════════════════════════════════════════ */
+
+/* ── Real viewport (set by mobile-fix.js via --vh) ────────── */
+html, body {
+  height: calc(var(--vh, 100vh));
+  max-height: calc(var(--vh, 100vh));
+  overflow: hidden;
+}
+
+/* All screens clamp to real viewport */
+.screen {
+  height: calc(var(--vh, 100vh));
+  max-height: calc(var(--vh, 100vh));
+}
+
+/* ── Shop footer — permanently removed ─────────────────────── */
+#shop-footer,
+#shop-confirm-btn {
+  display: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+}
+
+/* Shop main fills to bottom with no footer gap */
+#shop-main {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+}
+#shop-card-grid {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+}
+
+/* ── Legacy hand picker footer — removed ───────────────────── */
+#picker-footer,
+#picker-confirm {
+  display: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+/* ── Battle screen — strict column layout ──────────────────── */
+#screen-battle {
+  height: calc(var(--vh, 100vh));
+  max-height: calc(var(--vh, 100vh));
+  overflow: hidden;
+}
+#battle-wrap {
+  height: calc(var(--vh, 100vh));
+  max-height: calc(var(--vh, 100vh));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Fixed-height segments */
+#battle-hdr,
+#axium-row,
+#battle-bars,
+#battle-actions {
+  flex-shrink: 0;
+}
+
+/* Field expands to fill whatever is left */
+#battle-field {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Actions bar always at bottom, safe area aware */
+#battle-actions {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), clamp(8px, 2vh, 16px));
+  background: rgba(2, 2, 10, 0.97);
+  position: relative;
+  z-index: 10;
+}
+
+/* ── Hand pickers — full-cover inside battle-wrap ──────────── */
+#axc-hand-picker,
+#hand-picker {
+  position: absolute !important;
+  inset: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  z-index: 60;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+#axc-hand-picker.axc-open { display: flex !important; }
+#hand-picker.show          { display: flex !important; }
+
+/* Scroll areas inside pickers fill remaining space */
+.axc-picker-scroll,
+#picker-list {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.axc-picker-hdr,
+#picker-hdr,
+.axc-picker-tabs,
+.axc-picker-footer {
+  flex-shrink: 0;
+}
+
+/* ── Synergy intro overlay — viewport-clamped ──────────────── */
+#battle-synergy-intro {
+  position: absolute !important;
+  inset: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden;
+}
+
+/* ── Expand + detail modals — viewport-clamped ─────────────── */
+#axc-expand-modal {
+  height: calc(var(--vh, 100vh)) !important;
+  padding: clamp(8px, 2vw, 20px);
+}
+.axc-exp-panel {
+  max-height: calc(var(--vh, 100vh) - 32px) !important;
+}
+#axc-detail-modal {
+  height: calc(var(--vh, 100vh)) !important;
+}
+.axc-detail-scene {
+  max-height: calc(var(--vh, 100vh) - 32px) !important;
+}
+
+/* ── Outcome & deck review ─────────────────────────────────── */
+#screen-outcome {
+  height: calc(var(--vh, 100vh)) !important;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: max(env(safe-area-inset-top, 0px), 20px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+}
+#screen-deck-review {
+  height: calc(var(--vh, 100vh)) !important;
+  max-height: calc(var(--vh, 100vh)) !important;
+  overflow: hidden;
+  padding-top: max(env(safe-area-inset-top, 0px), 20px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+}
+#deck-review-grid {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Mobile button/bar size adjustments ────────────────────── */
+@media (max-width: 840px) {
+  .b-bar-state {
+    font-size: 14px;
+  }
+  .b-action-btn {
+    font-size: 11px;
+    padding: 8px 14px;
+  }
+  #b-phase-msg {
+    font-size: 7px;
+  }
+  /* Shop: no gap where footer was */
+  #shop-main {
+    gap: 6px;
+  }
+}
+@media (max-width: 380px) {
+  .b-action-btn {
+    font-size: 9px;
+    padding: 7px 10px;
+  }
+  .b-bar-state { font-size: 12px; }
+}
