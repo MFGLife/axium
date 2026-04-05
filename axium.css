@@ -88,6 +88,143 @@ html, body {
   gap:0; padding:0; overflow:hidden;
   flex-direction:row; align-items:stretch;
 }
+
+/* ── SHOP MOBILE OVERRIDES ───────────────────────────────── */
+@media (max-width: 600px) {
+  #screen-shop {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Collapse sidebar into a compact header strip */
+  #persona-sidebar {
+    width: 100% !important;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 8px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    flex-shrink: 0;
+  }
+
+  /* Hide verbose sidebar content on mobile */
+  #persona-desc,
+  #persona-mech-label,
+  #persona-mech-desc,
+  #persona-speech-bubble,
+  #persona-tagline,
+  .persona-rule {
+    display: none !important;
+  }
+
+  /* Avatar row: ring + name + title inline */
+  .persona-avatar-wrap {
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+  }
+
+  #persona-avatar-ring {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0;
+  }
+
+  #persona-name {
+    font-size: 15px !important;
+  }
+
+  #persona-title {
+    font-size: 7px;
+    text-align: left;
+  }
+
+  /* Mech type visible as a badge */
+  #persona-mech-type {
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid currentColor;
+    opacity: .7;
+    display: inline-block !important;
+  }
+
+  .persona-step-label {
+    margin-left: auto;
+    font-size: 7px;
+  }
+
+  /* Main area: column layout, card grid scrolls, footer stays visible */
+  #shop-main {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 12px 12px 0;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #shop-card-grid {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    align-content: start;
+    padding-bottom: 8px;
+  }
+
+  /* Cards: larger canvas, easier to tap */
+  .shop-card {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 180px;
+  }
+
+  /* Bigger check badge so it's visually clear */
+  .shop-card-check {
+    width: 22px;
+    height: 22px;
+    top: 6px;
+    right: 6px;
+  }
+
+  /* Footer: always visible at bottom of shop-main, never scrolls away */
+  #shop-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 0 14px;
+    flex-shrink: 0;
+  }
+
+  #shop-persona-dots {
+    justify-content: center;
+  }
+
+  #shop-selection-msg {
+    text-align: center;
+  }
+
+  #shop-confirm-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 13px;
+  }
+
+  /* Progress bar stays at top */
+  #shop-progress-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+}
 #shop-progress-bar  { position:absolute; top:0; left:0; right:0; height:2px; background:rgba(255,255,255,.04); z-index:20; }
 #shop-progress-fill { height:100%; background:linear-gradient(90deg,var(--persona-color,var(--gold)),rgba(255,255,255,.5)); transition:width .6s cubic-bezier(.22,1,.36,1); }
 
@@ -130,8 +267,9 @@ html, body {
 #shop-deck-count    { font-family:'JetBrains Mono',monospace; font-size:clamp(10px,2.5vw,13px); color:rgba(255,255,255,.25); }
 #shop-card-grid     { display:grid; grid-template-columns:repeat(auto-fill,minmax(clamp(100px,28vw,140px),1fr)); gap:clamp(8px,2vw,14px); flex:1; align-content:start; }
 
-.shop-card          { border-radius:10px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(160deg,rgba(12,10,26,.99),rgba(5,4,14,1)); display:flex; flex-direction:column; cursor:pointer; transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .22s,box-shadow .22s; position:relative; overflow:hidden; }
+.shop-card          { border-radius:10px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(160deg,rgba(12,10,26,.99),rgba(5,4,14,1)); display:flex; flex-direction:column; cursor:pointer; transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .22s,box-shadow .22s; position:relative; overflow:hidden; -webkit-tap-highlight-color:transparent; touch-action:manipulation; user-select:none; -webkit-user-select:none; }
 .shop-card:hover    { transform:translateY(-4px); box-shadow:0 8px 32px rgba(0,0,0,.6); }
+.shop-card:active   { transform:scale(.97); box-shadow:0 4px 20px rgba(0,0,0,.5); }
 .shop-card.selected { transform:translateY(-6px); }
 .shop-card-glow     { position:absolute; inset:0; border-radius:10px; pointer-events:none; opacity:.12; }
 .shop-card-check    { position:absolute; top:6px; right:6px; width:18px; height:18px; border-radius:50%; background:rgba(212,175,55,.15); border:1.5px solid rgba(212,175,55,.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; }

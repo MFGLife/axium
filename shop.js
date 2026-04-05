@@ -176,7 +176,14 @@ function renderShopCards(cards, persona) {
       <div class="shop-card-mech" style="color:${card.color}88">${mechStr}</div>
     `;
     el.style.borderColor = card.color + '22';
-    el.addEventListener('click', () => selectShopCard(card, el));
+    // Use both click and touchend for reliable mobile selection
+    let _pdX = 0, _pdY = 0;
+    el.addEventListener('pointerdown', e => { _pdX = e.clientX; _pdY = e.clientY; }, { passive: true });
+    el.addEventListener('pointerup', e => {
+      if (Math.abs(e.clientX - _pdX) < 10 && Math.abs(e.clientY - _pdY) < 10) {
+        selectShopCard(card, el);
+      }
+    });
     grid.appendChild(el);
 
     setTimeout(() => {
