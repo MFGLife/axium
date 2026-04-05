@@ -8,7 +8,7 @@
 'use strict';
 
 const PERSONA_ORDER = ['micheal', 'gabriel', 'ariel', 'seraphina'];
-const CHAPTER_ID    = 1;   // overridden per chapter if needed
+const CHAPTER_ID    = 1;
 
 // ─────────────────────────────────────────────────────────
 // INTRO / JOURNEY START
@@ -60,29 +60,25 @@ function startShopStep(step) {
   const save      = APP.save;
 
   // Progress bar
-  document.getElementById('shop-progress-fill').style.width = ((step / 4) * 100) + '%';
-  document.getElementById('screen-shop').style.setProperty('--persona-color', persona.color);
-  document.getElementById('shop-progress-fill').style.background =
-    `linear-gradient(90deg,${persona.color},rgba(255,255,255,.4))`;
+  gel('shop-progress-fill').style.width      = ((step / 4) * 100) + '%';
+  gel('shop-progress-fill').style.background = `linear-gradient(90deg,${persona.color},rgba(255,255,255,.4))`;
+  gel('screen-shop').style.setProperty('--persona-color', persona.color);
 
   // Sidebar
-  gel('persona-step-lbl').textContent    = `Shop ${step + 1} of 4`;
-  gel('persona-name').textContent        = persona.name;
-  gel('persona-name').style.color        = persona.color;
-  gel('persona-title').textContent       = persona.subtitle + ' · ' + persona.title;
-  gel('persona-tagline').textContent     = persona.tagline;
-  gel('persona-tagline').style.color     = persona.color + 'aa';
-  gel('persona-desc').textContent        = persona.description;
-  gel('persona-mech-type').textContent   = persona.cardType;
-  gel('persona-mech-type').style.color   = persona.color;
-  gel('persona-mech-desc').textContent   = persona.mechDesc;
-  gel('persona-glow-bg').style.background =
-    `radial-gradient(ellipse at 30% 30%,${persona.color} 0%,transparent 65%)`;
-  gel('persona-avatar-ring').style.borderColor = persona.color + '55';
-  gel('persona-avatar-ring').style.boxShadow   = `0 0 20px ${persona.color}22`;
-
-  const speeches = persona.speeches;
-  gel('persona-speech-bubble').textContent      = speeches[Math.floor(Math.random() * speeches.length)];
+  gel('persona-step-lbl').textContent             = `Shop ${step + 1} of 4`;
+  gel('persona-name').textContent                 = persona.name;
+  gel('persona-name').style.color                 = persona.color;
+  gel('persona-title').textContent                = persona.subtitle + ' · ' + persona.title;
+  gel('persona-tagline').textContent              = persona.tagline;
+  gel('persona-tagline').style.color              = persona.color + 'aa';
+  gel('persona-desc').textContent                 = persona.description;
+  gel('persona-mech-type').textContent            = persona.cardType;
+  gel('persona-mech-type').style.color            = persona.color;
+  gel('persona-mech-desc').textContent            = persona.mechDesc;
+  gel('persona-glow-bg').style.background         = `radial-gradient(ellipse at 30% 30%,${persona.color} 0%,transparent 65%)`;
+  gel('persona-avatar-ring').style.borderColor    = persona.color + '55';
+  gel('persona-avatar-ring').style.boxShadow      = `0 0 20px ${persona.color}22`;
+  gel('persona-speech-bubble').textContent        = persona.speeches[Math.floor(Math.random() * persona.speeches.length)];
   gel('persona-speech-bubble').style.borderLeftColor = persona.color + '44';
 
   // Progress dots
@@ -94,22 +90,27 @@ function startShopStep(step) {
     dot.style.setProperty('--persona-color', persona.color);
   });
 
-  // Avatar constellation
+  // Avatar
   animatePersonaAvatar(persona);
 
-  // Card offers
-  const offers  = AxiumShop.getOffers(personaId, CHAPTER_ID, save.deck, 4);
+  // Cards
+  const offers = AxiumShop.getOffers(personaId, CHAPTER_ID, save.deck, 4);
   APP.shopOffers = offers;
   renderShopCards(offers, persona);
 
-  // Footer reset
-  gel('shop-deck-count').innerHTML = `Deck: <span id="deck-size-lbl">${save.deck.length}</span>`;
-  gel('shop-selection-msg').textContent = 'Select a card to continue';
-  gel('shop-confirm-btn').classList.remove('ready');
+  // Header
+  gel('shop-deck-count').innerHTML   = `Deck: <span id="deck-size-lbl">${save.deck.length}</span>`;
   gel('shop-main-title').textContent = `${persona.name}'s Offering`;
-  gel('shop-sub').textContent = 'Choose one card for your deck';
+  gel('shop-sub').textContent        = 'Tap a card · tap again to add it';
+
+  // Hide the legacy footer — we no longer use it
+  const footer = gel('shop-footer');
+  if (footer) footer.style.display = 'none';
 }
 
+// ─────────────────────────────────────────────────────────
+// CONFIRM PICK — called by inline button or double-tap
+// ─────────────────────────────────────────────────────────
 function confirmShopPick() {
   if (!APP.shopSelectedCard) return;
   const card     = APP.shopSelectedCard;
@@ -126,18 +127,89 @@ function confirmShopPick() {
   }
 }
 
+// ─────────────────────────────────────────────────────────
+// SELECT SHOP CARD
+// First tap  → highlight card + slide in inline confirm button
+// Second tap → confirm immediately
+// ─────────────────────────────────────────────────────────
 function selectShopCard(card, el) {
+  const alreadySelected = APP.shopSelectedCard?.id === card.id;
+
+  // Clear all other cards
   document.querySelectorAll('.shop-card').forEach(c => {
+    if (c === el) return;
     c.classList.remove('selected');
-    c.style.borderColor = (APP.shopOffers.find(o => o.id === c.dataset.id)?.color || '#fff') + '22';
-    c.style.boxShadow = '';
+    const other = APP.shopOffers.find(o => o.id === c.dataset.id);
+    c.style.borderColor = (other?.color || '#fff') + '22';
+    c.style.boxShadow   = '';
+    c.querySelector('.shop-card-inline-btn')?.remove();
   });
+
+  if (alreadySelected) {
+    // Double-tap = confirm
+    confirmShopPick();
+    return;
+  }
+
+  // First tap
   APP.shopSelectedCard = card;
   el.classList.add('selected');
-  el.style.borderColor = card.color + '66';
-  el.style.boxShadow   = `0 0 22px ${card.color}33`;
-  gel('shop-selection-msg').textContent = `"${card.name}" selected`;
-  gel('shop-confirm-btn').classList.add('ready');
+  el.style.borderColor = card.color + '88';
+  el.style.boxShadow   = `0 0 28px ${card.color}44, 0 0 0 1.5px ${card.color}66`;
+
+  // Remove any stale inline button
+  el.querySelector('.shop-card-inline-btn')?.remove();
+
+  // Inject keyframe once
+  if (!document.getElementById('shop-btn-anim')) {
+    const st = document.createElement('style');
+    st.id = 'shop-btn-anim';
+    st.textContent = `
+      @keyframes shopBtnIn {
+        from { opacity:0; transform:translateY(8px) scale(.95); }
+        to   { opacity:1; transform:translateY(0) scale(1); }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  const btn = document.createElement('button');
+  btn.className = 'shop-card-inline-btn';
+  btn.innerHTML = `Add to Deck <span style="opacity:.7">✦</span>`;
+  btn.style.cssText = `
+    display: block;
+    width: calc(100% - 16px);
+    margin: 0 8px 8px;
+    padding: 11px 0;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #0a0a0a;
+    background: linear-gradient(135deg, #AA8C2C, ${card.color}, #AA8C2C);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    flex-shrink: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    animation: shopBtnIn .22s cubic-bezier(.22,1,.36,1) both;
+    box-shadow: 0 0 16px ${card.color}55;
+  `;
+
+  let _bpdX = 0, _bpdY = 0;
+  btn.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    _bpdX = e.clientX; _bpdY = e.clientY;
+  }, { passive: true });
+  btn.addEventListener('pointerup', e => {
+    e.stopPropagation();
+    if (Math.abs(e.clientX - _bpdX) < 14 && Math.abs(e.clientY - _bpdY) < 14) {
+      confirmShopPick();
+    }
+  });
+
+  el.appendChild(btn);
 }
 
 // ─────────────────────────────────────────────────────────
@@ -149,9 +221,10 @@ function renderShopCards(cards, persona) {
   APP.shopCanvasAnims.forEach((id, key) => { if (key.startsWith('shop-')) cancelAnimationFrame(id); });
 
   cards.forEach(card => {
-    const el       = document.createElement('div');
-    el.className   = 'shop-card';
-    el.dataset.id  = card.id;
+    const el      = document.createElement('div');
+    el.className  = 'shop-card';
+    el.dataset.id = card.id;
+
     const layerCol = card.layer === 'Superego' ? '#D4AF37' : card.layer === 'Ego' ? '#7EB8E8' : '#86EFAC';
     const mechStr  = card.layer === 'Superego'
       ? `Shield +${card.shieldVal || 0}`
@@ -161,9 +234,6 @@ function renderShopCards(cards, persona) {
 
     el.innerHTML = `
       <div class="shop-card-glow" style="background:radial-gradient(ellipse at 35% 25%,${card.color}44,transparent 65%)"></div>
-      <div class="shop-card-check">
-        <svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </div>
       <div class="shop-card-top">
         <div class="shop-card-layer" style="color:${layerCol}">${cardLabel(card)}</div>
         <div class="shop-card-name" style="color:${card.color}">${card.name}</div>
@@ -175,15 +245,19 @@ function renderShopCards(cards, persona) {
       </div>
       <div class="shop-card-mech" style="color:${card.color}88">${mechStr}</div>
     `;
+
     el.style.borderColor = card.color + '22';
-    // Use both click and touchend for reliable mobile selection
+
     let _pdX = 0, _pdY = 0;
-    el.addEventListener('pointerdown', e => { _pdX = e.clientX; _pdY = e.clientY; }, { passive: true });
+    el.addEventListener('pointerdown', e => {
+      _pdX = e.clientX; _pdY = e.clientY;
+    }, { passive: true });
     el.addEventListener('pointerup', e => {
-      if (Math.abs(e.clientX - _pdX) < 10 && Math.abs(e.clientY - _pdY) < 10) {
+      if (Math.abs(e.clientX - _pdX) < 12 && Math.abs(e.clientY - _pdY) < 12) {
         selectShopCard(card, el);
       }
     });
+
     grid.appendChild(el);
 
     setTimeout(() => {
@@ -226,7 +300,7 @@ function animatePersonaAvatar(persona) {
   function frame() {
     if (!canvas.isConnected) { APP.shopCanvasAnims.delete(key); return; }
     t += .018; ctx.clearRect(0, 0, W, H);
-    const bg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * .55);
+    const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*.55);
     bg.addColorStop(0, `rgba(${R},${G},${B},.12)`); bg.addColorStop(1, 'rgba(2,2,10,.9)');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     edges.forEach(([a, b]) => {
@@ -236,10 +310,10 @@ function animatePersonaAvatar(persona) {
     pts.forEach((p, i) => {
       const tw = .5 + .5 * Math.sin(t + phases[i]); const r = 1.2 + tw * .8;
       const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
-      g.addColorStop(0, `rgba(${R},${G},${B},${(.7 * tw).toFixed(2)})`); g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${(.8 + .2 * tw).toFixed(2)})`; ctx.fill();
+      g.addColorStop(0, `rgba(${R},${G},${B},${(.7*tw).toFixed(2)})`); g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r*3, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,255,${(.8+.2*tw).toFixed(2)})`; ctx.fill();
     });
     APP.shopCanvasAnims.set(key, requestAnimationFrame(frame));
   }
@@ -268,7 +342,7 @@ function buildDeckReview() {
 }
 
 // ─────────────────────────────────────────────────────────
-// OUTCOME HELPERS
+// OUTCOME
 // ─────────────────────────────────────────────────────────
 function showOutcome(won, perfect, B) {
   const save = APP.save || AxiumSave.getOrCreate();
@@ -278,19 +352,19 @@ function showOutcome(won, perfect, B) {
   gel('oc-stat-syns').textContent = B.synsFired;
 
   if (won) {
-    gel('oc-state-lbl').textContent = 'Chapter I Complete';
-    gel('oc-title').textContent     = perfect ? 'The Axium' : 'Attention Held';
-    gel('oc-title').style.color     = '#D4AF37';
-    gel('oc-desc').textContent      = perfect
+    gel('oc-state-lbl').textContent   = 'Chapter I Complete';
+    gel('oc-title').textContent       = perfect ? 'The Axium' : 'Attention Held';
+    gel('oc-title').style.color       = '#D4AF37';
+    gel('oc-desc').textContent        = perfect
       ? 'Perfect constellation. Your deck is forged in clarity.'
       : 'Your constellation held. The ego ran out of material.';
     gel('oc-primary-btn').textContent = 'Save & Continue';
     gel('oc-primary-btn').onclick     = () => toast('Deck Saved', 'Load your seed in Chapter 2 to continue');
   } else {
-    gel('oc-state-lbl').textContent = 'Attention Lost';
-    gel('oc-title').textContent     = 'Fragmented';
-    gel('oc-title').style.color     = '#e05555';
-    gel('oc-desc').textContent      = 'The ego outlasted you. Your deck is preserved — try again.';
+    gel('oc-state-lbl').textContent   = 'Attention Lost';
+    gel('oc-title').textContent       = 'Fragmented';
+    gel('oc-title').style.color       = '#e05555';
+    gel('oc-desc').textContent        = 'The ego outlasted you. Your deck is preserved — try again.';
     gel('oc-primary-btn').textContent = 'Try Again';
     gel('oc-primary-btn').onclick     = () => enterBattle();
   }
