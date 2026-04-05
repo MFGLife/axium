@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>AXIUM — Chapter I · Binding of Ego</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="axium.css">
+</head>
+<body>
+
+<!-- ════ SHARED OVERLAYS ════════════════════════════════════ -->
+<canvas id="stars"></canvas>
+<div id="fade-overlay"></div>
+<div id="synergy-flash"></div>
+<div id="synergy-msg"><div id="syn-name"></div><div id="syn-desc"></div></div>
+<div id="toast"><div id="toast-h"></div><div id="toast-b"></div></div>
+
+<!-- ════ SCREEN 1: INTRO ════════════════════════════════════ -->
+<div id="screen-intro" class="screen active">
+  <div class="i-sigil">The Cathedral · Chapter I</div>
+  <div class="i-num">01</div>
+  <div class="i-title">Binding of Ego</div>
+  <div class="i-sub">Battle for Attention</div>
+  <div class="i-rule"></div>
+  <div class="i-axium">"The absence of love binds ego, allowing the awareness of God."</div>
+  <div class="i-desc">Before you fight, you must build your constellation. Four souls await.</div>
+  <button class="i-btn" onclick="beginJourney()">Enter the Cathedral</button>
+  <div class="i-existing">
+    <div class="i-actions-row">
+      <button class="i-existing-btn" onclick="showSeedLoad()">Load Seed</button>
+      <button class="i-danger-btn"   onclick="purgeSaveData()">Clear Data</button>
+    </div>
+    <div class="i-existing-hint">Clear data to reset your constellation and progress.</div>
+  </div>
+</div>
+
+<!-- ════ SCREEN 1b: SEED LOADER ════════════════════════════ -->
+<div id="screen-seed-load" class="screen">
+  <div class="sl-title">Restore Your Deck</div>
+  <div class="sl-sub">Paste the seed from your previous session to restore your cards and progress.</div>
+  <textarea class="sl-input" id="seed-input" placeholder="AXIUM-1.0-eyJ..." rows="4"></textarea>
+  <div class="sl-actions">
+    <button class="sl-btn primary"   onclick="loadSeedInput()">Restore Deck</button>
+    <button class="sl-btn secondary" onclick="goTo('screen-intro')">Back</button>
+  </div>
+  <div id="sl-msg" class="sl-msg"></div>
+</div>
+
+<!-- ════ SCREEN 2: SHOP ════════════════════════════════════ -->
+<div id="screen-shop" class="screen">
+  <div id="shop-progress-bar"><div id="shop-progress-fill" style="width:0%"></div></div>
+
+  <div id="persona-sidebar">
+    <div id="persona-glow-bg"></div>
+    <div class="persona-step-label" id="persona-step-lbl">Shop 1 of 4</div>
+    <div class="persona-avatar-wrap">
+      <div id="persona-avatar-ring">
+        <canvas id="persona-avatar-canvas" width="80" height="80"></canvas>
+      </div>
+      <div id="persona-name">Micheal</div>
+      <div id="persona-title">The Anchor</div>
+    </div>
+    <div id="persona-tagline"></div>
+    <div class="persona-rule"></div>
+    <div id="persona-desc"></div>
+    <div>
+      <div id="persona-mech-label">Card Mechanic</div>
+      <div id="persona-mech-type"></div>
+      <div id="persona-mech-desc"></div>
+    </div>
+    <div id="persona-speech-bubble"></div>
+  </div>
+
+  <div id="shop-main">
+    <div id="shop-header-row">
+      <div id="shop-title-group">
+        <div id="shop-main-title">Choose One Card</div>
+        <div id="shop-sub">Add it to your starting constellation</div>
+      </div>
+      <div id="shop-deck-count">Deck: <span id="deck-size-lbl">6</span></div>
+    </div>
+    <div id="shop-card-grid"></div>
+    <div id="shop-footer">
+      <div id="shop-persona-dots">
+        <div class="p-dot current" id="pdot-0"></div>
+        <div class="p-dot"         id="pdot-1"></div>
+        <div class="p-dot"         id="pdot-2"></div>
+        <div class="p-dot"         id="pdot-3"></div>
+      </div>
+      <div id="shop-selection-msg">Select a card to continue</div>
+      <button id="shop-confirm-btn" onclick="confirmShopPick()">Add to Deck →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SCREEN 3: DECK REVIEW ════════════════════════════ -->
+<div id="screen-deck-review" class="screen">
+  <div class="dr-label">Your Constellation</div>
+  <div class="dr-title">Deck Complete</div>
+  <div class="dr-axium">You have chosen your cards. Each card can be played Normal or Reversed — set polarity in the hand picker.</div>
+  <div class="deck-strip" style="max-height:none;">
+    <div class="deck-strip-label">Starting Deck</div>
+    <div id="deck-review-grid"></div>
+  </div>
+  <div class="dr-actions">
+    <button class="dr-enter-btn" onclick="enterBattle()">Enter the Fight</button>
+  </div>
+</div>
+
+<!-- ════ SCREEN 4: BATTLE ══════════════════════════════════ -->
+<div id="screen-battle" class="screen">
+  <div id="battle-wrap">
+
+    <!-- Header -->
+    <div id="battle-hdr">
+      <div class="battle-chapter-lbl">Chapter 01 · Binding of Ego</div>
+      <div class="battle-turn-lbl">T<span id="turn-n">1</span></div>
+    </div>
+
+    <!-- Axium meter -->
+    <div id="axium-row">
+      <span class="axium-lbl">Axium</span>
+      <div class="axium-pip" id="axp-0"></div><div class="axium-pip" id="axp-1"></div>
+      <div class="axium-pip" id="axp-2"></div><div class="axium-pip" id="axp-3"></div>
+      <div class="axium-pip" id="axp-4"></div><div class="axium-pip" id="axp-5"></div>
+      <div class="axium-pip" id="axp-6"></div><div class="axium-pip" id="axp-7"></div>
+      <div class="axium-pip" id="axp-8"></div><div class="axium-pip" id="axp-9"></div>
+    </div>
+
+    <!-- Attention bars: enemy top, player bottom -->
+    <div id="battle-bars">
+      <div class="b-bar-row enemy-bar">
+        <div class="b-bar-meta">
+          <span class="b-bar-owner enemy">Enemy Attention</span>
+          <span class="b-bar-state enemy" id="enemy-state-lbl">Witness</span>
+        </div>
+        <div class="b-bar-track" id="enemy-bar-track">
+          <div class="b-bar-pips" id="enemy-pips"></div>
+          <div class="b-bar-fill enemy" id="enemy-fill" style="width:80%"></div>
+          <div class="b-bar-cursor enemy" id="enemy-cursor" style="left:80%"></div>
+        </div>
+      </div>
+      <div id="bars-vs-mid"><span>vs</span></div>
+      <div class="b-bar-row player-bar">
+        <div class="b-bar-meta">
+          <span class="b-bar-owner player">Your Attention</span>
+          <span class="b-bar-state player" id="player-state-lbl">Witness</span>
+        </div>
+        <div class="b-bar-track" id="player-bar-track">
+          <div class="b-bar-pips" id="player-pips"></div>
+          <div class="b-bar-fill player" id="player-fill" style="width:55%"></div>
+          <div class="b-bar-cursor player" id="player-cursor" style="left:55%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Battle field: enemy top, VS center, player bottom -->
+    <div id="battle-field">
+      <div id="field-enemy"><div class="field-empty field-enemy-empty">— enemy awaiting —</div></div>
+      <div class="field-vs-line">
+        <div class="field-vs-rule"></div>
+        <div class="field-vs-lbl">VS</div>
+        <div class="field-vs-rule"></div>
+      </div>
+      <div id="field-player"><div class="field-empty">— no cards staged —</div></div>
+      <div id="resolve-pop"></div>
+    </div>
+
+    <!-- Action bar -->
+    <div id="battle-actions">
+      <div id="b-phase-msg">Open your hand to choose cards</div>
+      <button class="b-action-btn open"    onclick="openHandPickerBattle()">Open Hand ✦</button>
+      <button class="b-action-btn resolve" id="resolve-btn" onclick="resolveRound()">Resolve</button>
+      <button class="b-action-btn pass"    id="pass-btn"    onclick="passAndEndTurn()" disabled>Pass</button>
+    </div>
+
+    <!-- Hand picker overlay (inside battle-wrap) -->
+    <div id="hand-picker">
+      <div id="picker-hdr">
+        <div id="picker-title-lbl">Your Hand</div>
+        <div id="picker-count-lbl">0/10</div>
+        <button class="picker-close-btn" onclick="closeHandPickerBattle()">Done</button>
+      </div>
+      <div id="picker-list"></div>
+      <div id="picker-footer">
+        <button id="picker-confirm" onclick="closeHandPickerBattle()">Confirm Selection</button>
+      </div>
+    </div>
+
+  </div><!-- /battle-wrap -->
+</div>
+
+<!-- ════ SCREEN 5: OUTCOME ════════════════════════════════ -->
+<div id="screen-outcome" class="screen">
+  <div class="oc-state" id="oc-state-lbl">Chapter I Complete</div>
+  <div class="oc-title" id="oc-title"></div>
+  <div class="oc-desc"  id="oc-desc"></div>
+  <div class="oc-stats">
+    <div class="oc-stat"><div class="oc-stat-val" id="oc-stat-attn">—</div><div class="oc-stat-lbl">Final Attn</div></div>
+    <div class="oc-stat"><div class="oc-stat-val" id="oc-stat-deck">—</div><div class="oc-stat-lbl">Deck Size</div></div>
+    <div class="oc-stat"><div class="oc-stat-val" id="oc-stat-syns">—</div><div class="oc-stat-lbl">Synergies</div></div>
+  </div>
+  <div id="seed-container"></div>
+  <div class="oc-actions">
+    <button class="oc-btn primary"   id="oc-primary-btn" onclick="enterBattle()">Try Again</button>
+    <button class="oc-btn secondary" onclick="goTo('screen-intro')">Return to Intro</button>
+  </div>
+</div>
+
+<!-- ════ SCRIPTS — load order matters ══════════════════════
+  1. cards.js        — card data + battle engine helpers
+  2. engine.js       — AxiumSave, AxiumSeed, AxiumShop, PERSONAS, STARTING_DECK_IDS
+  3. ui.js           — shared UI: nav, bars, canvas anims, utilities
+  4. shop.js         — shop flow, persona animations, deck review, outcome display
+  5. csystem.js      — card rendering engine (CardRenderer, HandPickerModal, FieldZone)
+  6. cintegration.js — wires csystem into battle screen; patches hand picker + field
+  7. battle.js       — enter battle, inline animation, resolve, win/lose
+  ══════════════════════════════════════════════════════════ -->
+<script src="cards.js"></script>
+<script src="card-expand-patch.js"></script>
+<script src="engine.js"></script>
+<script src="ui.js"></script>
+<script src="shop.js"></script>
+<script src="csystem.js"></script>
+<script src="cintegration.js"></script>
+<script src="battle.js"></script>
+
+
+<script>
+// ════════════════════════════════════════════════════════════
+// CHAPTER CONFIG — edit this block to configure each chapter.
+// All other files read from CHAPTER_CONFIG.
+// ════════════════════════════════════════════════════════════
+const CHAPTER_CONFIG = {
+  playerStart:   155,
+  enemyStart:    280,
+  enemyMax:      300,
+  baseMaxAttn:   200,
+  handSize:      6,
+  winAttn:       90,
+  loseAttn:      10,
+  enemyHandSize: 6,
+  enemyDeck:     ['fool','magician','high_priestess','empress','emperor','lovers'],
+  winPctMargin: 0.15,  // player must be 15% ahead of enemy at time expiry to win
+};
+
+// ════════════════════════════════════════════════════════════
+// APP STATE — global mutable state shared across modules
+// ════════════════════════════════════════════════════════════
+const APP = {
+  screen:           'intro',
+  save:             null,
+  shopStep:         0,
+  shopPicks:        [],
+  shopSelectedCard: null,
+  shopOffers:       [],
+  shopCanvasAnims:  new Map(),
+  cardAnimations:   new Map(),
+  playerDeck:       [],
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>AXIUM — Chapter II · The Mirror</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="axium.css">
+</head>
+<body>
+
+<!-- ════ SHARED OVERLAYS ════════════════════════════════════ -->
+<canvas id="stars"></canvas>
+<div id="fade-overlay"></div>
+<div id="synergy-flash"></div>
+<div id="synergy-msg"><div id="syn-name"></div><div id="syn-desc"></div></div>
+<div id="toast"><div id="toast-h"></div><div id="toast-b"></div></div>
+
+<!-- ════ SCREEN 1: INTRO ════════════════════════════════════
+     Chapter 2 entry: seed load is the primary path.
+     "Enter" still works for testing with a fresh deck.
+══════════════════════════════════════════════════════════ -->
+<div id="screen-intro" class="screen active">
+  <div class="i-sigil">The Cathedral · Chapter II</div>
+  <div class="i-num">02</div>
+  <div class="i-title">The Mirror</div>
+  <div class="i-sub">Battle for Attention</div>
+  <div class="i-rule"></div>
+  <div class="i-axium">"What you refuse to see in yourself, the world will show you."</div>
+  <div class="i-desc">Paste your seed from Chapter I to restore your constellation. Four souls have new offerings.</div>
+  <button class="i-btn" onclick="showSeedLoad()">Restore Deck &amp; Enter</button>
+  <div class="i-existing">
+    <div class="i-actions-row">
+      <button class="i-existing-btn" onclick="beginFreshChapter2()">Skip Seed (Test)</button>
+      <button class="i-danger-btn"   onclick="purgeSaveData()">Clear Data</button>
+    </div>
+    <div class="i-existing-hint">Skip seed only for testing — your Chapter I deck will not carry over.</div>
+  </div>
+</div>
+
+<!-- ════ SCREEN 1b: SEED LOADER ════════════════════════════ -->
+<div id="screen-seed-load" class="screen">
+  <div class="sl-title">Restore Your Deck</div>
+  <div class="sl-sub">Paste your Chapter I seed to carry your constellation into The Mirror.</div>
+  <textarea class="sl-input" id="seed-input" placeholder="AXIUM-1.0-eyJ..." rows="4"></textarea>
+  <div class="sl-actions">
+    <button class="sl-btn primary"   onclick="loadSeedInput()">Restore &amp; Continue</button>
+    <button class="sl-btn secondary" onclick="goTo('screen-intro')">Back</button>
+  </div>
+  <div id="sl-msg" class="sl-msg"></div>
+</div>
+
+<!-- ════ SCREEN 2: SHOP ════════════════════════════════════ -->
+<div id="screen-shop" class="screen">
+  <div id="shop-progress-bar"><div id="shop-progress-fill" style="width:0%"></div></div>
+
+  <div id="persona-sidebar">
+    <div id="persona-glow-bg"></div>
+    <div class="persona-step-label" id="persona-step-lbl">Shop 1 of 4</div>
+    <div class="persona-avatar-wrap">
+      <div id="persona-avatar-ring">
+        <canvas id="persona-avatar-canvas" width="80" height="80"></canvas>
+      </div>
+      <div id="persona-name">Micheal</div>
+      <div id="persona-title">The Anchor</div>
+    </div>
+    <div id="persona-tagline"></div>
+    <div class="persona-rule"></div>
+    <div id="persona-desc"></div>
+    <div>
+      <div id="persona-mech-label">Card Mechanic</div>
+      <div id="persona-mech-type"></div>
+      <div id="persona-mech-desc"></div>
+    </div>
+    <div id="persona-speech-bubble"></div>
+  </div>
+
+  <div id="shop-main">
+    <div id="shop-header-row">
+      <div id="shop-title-group">
+        <div id="shop-main-title">Choose One Card</div>
+        <div id="shop-sub">Deepen your constellation</div>
+      </div>
+      <div id="shop-deck-count">Deck: <span id="deck-size-lbl">10</span></div>
+    </div>
+    <div id="shop-card-grid"></div>
+    <div id="shop-footer">
+      <div id="shop-persona-dots">
+        <div class="p-dot current" id="pdot-0"></div>
+        <div class="p-dot"         id="pdot-1"></div>
+        <div class="p-dot"         id="pdot-2"></div>
+        <div class="p-dot"         id="pdot-3"></div>
+      </div>
+      <div id="shop-selection-msg">Select a card to continue</div>
+      <button id="shop-confirm-btn" onclick="confirmShopPick()">Add to Deck →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SCREEN 3: DECK REVIEW ════════════════════════════ -->
+<div id="screen-deck-review" class="screen">
+  <div class="dr-label">Your Constellation</div>
+  <div class="dr-title">Deck Ready</div>
+  <div class="dr-axium">Your deck carries over from Chapter I, deepened by new cards. Set polarity in the hand picker.</div>
+  <div class="deck-strip" style="max-height:none;">
+    <div class="deck-strip-label">Full Deck</div>
+    <div id="deck-review-grid"></div>
+  </div>
+  <div class="dr-actions">
+    <button class="dr-enter-btn" onclick="enterBattle()">Face The Mirror</button>
+  </div>
+</div>
+
+<!-- ════ SCREEN 4: BATTLE ══════════════════════════════════ -->
+<div id="screen-battle" class="screen">
+  <div id="battle-wrap">
+
+    <!-- Header -->
+    <div id="battle-hdr">
+      <div class="battle-chapter-lbl">Chapter 02 · The Mirror</div>
+      <div class="battle-turn-lbl">T<span id="turn-n">1</span></div>
+    </div>
+
+    <!-- Axium meter -->
+    <div id="axium-row">
+      <span class="axium-lbl">Axium</span>
+      <div class="axium-pip" id="axp-0"></div><div class="axium-pip" id="axp-1"></div>
+      <div class="axium-pip" id="axp-2"></div><div class="axium-pip" id="axp-3"></div>
+      <div class="axium-pip" id="axp-4"></div><div class="axium-pip" id="axp-5"></div>
+      <div class="axium-pip" id="axp-6"></div><div class="axium-pip" id="axp-7"></div>
+      <div class="axium-pip" id="axp-8"></div><div class="axium-pip" id="axp-9"></div>
+    </div>
+
+    <!-- Attention bars: enemy top, player bottom -->
+    <div id="battle-bars">
+      <div class="b-bar-row enemy-bar">
+        <div class="b-bar-meta">
+          <span class="b-bar-owner enemy">The Mirror</span>
+          <span class="b-bar-state enemy" id="enemy-state-lbl">Witness</span>
+        </div>
+        <div class="b-bar-track" id="enemy-bar-track">
+          <div class="b-bar-pips" id="enemy-pips"></div>
+          <div class="b-bar-fill enemy" id="enemy-fill" style="width:80%"></div>
+          <div class="b-bar-cursor enemy" id="enemy-cursor" style="left:80%"></div>
+        </div>
+      </div>
+      <div id="bars-vs-mid"><span>vs</span></div>
+      <div class="b-bar-row player-bar">
+        <div class="b-bar-meta">
+          <span class="b-bar-owner player">Your Attention</span>
+          <span class="b-bar-state player" id="player-state-lbl">Witness</span>
+        </div>
+        <div class="b-bar-track" id="player-bar-track">
+          <div class="b-bar-pips" id="player-pips"></div>
+          <div class="b-bar-fill player" id="player-fill" style="width:55%"></div>
+          <div class="b-bar-cursor player" id="player-cursor" style="left:55%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Battle field -->
+    <div id="battle-field">
+      <div id="field-enemy"><div class="field-empty field-enemy-empty">— the mirror awaits —</div></div>
+      <div class="field-vs-line">
+        <div class="field-vs-rule"></div>
+        <div class="field-vs-lbl">VS</div>
+        <div class="field-vs-rule"></div>
+      </div>
+      <div id="field-player"><div class="field-empty">— no cards staged —</div></div>
+      <div id="resolve-pop"></div>
+    </div>
+
+    <!-- Action bar -->
+    <div id="battle-actions">
+      <div id="b-phase-msg">Open your hand to choose cards</div>
+      <button class="b-action-btn open"    onclick="openHandPickerBattle()">Open Hand ✦</button>
+      <button class="b-action-btn resolve" id="resolve-btn" onclick="resolveRound()">Resolve</button>
+      <button class="b-action-btn pass"    id="pass-btn"    onclick="passAndEndTurn()" disabled>Pass</button>
+    </div>
+
+    <!-- Hand picker overlay -->
+    <div id="hand-picker">
+      <div id="picker-hdr">
+        <div id="picker-title-lbl">Your Hand</div>
+        <div id="picker-count-lbl">0/10</div>
+        <button class="picker-close-btn" onclick="closeHandPickerBattle()">Done</button>
+      </div>
+      <div id="picker-list"></div>
+      <div id="picker-footer">
+        <button id="picker-confirm" onclick="closeHandPickerBattle()">Confirm Selection</button>
+      </div>
+    </div>
+
+  </div><!-- /battle-wrap -->
+</div>
+
+<!-- ════ SCREEN 5: OUTCOME ════════════════════════════════ -->
+<div id="screen-outcome" class="screen">
+  <div class="oc-state" id="oc-state-lbl">Chapter II Complete</div>
+  <div class="oc-title" id="oc-title"></div>
+  <div class="oc-desc"  id="oc-desc"></div>
+  <div class="oc-stats">
+    <div class="oc-stat"><div class="oc-stat-val" id="oc-stat-attn">—</div><div class="oc-stat-lbl">Final Attn</div></div>
+    <div class="oc-stat"><div class="oc-stat-val" id="oc-stat-deck">—</div><div class="oc-stat-lbl">Deck Size</div></div>
+    <div class="oc-stat"><div class="oc-stat-val" id="oc-stat-syns">—</div><div class="oc-stat-lbl">Synergies</div></div>
+  </div>
+  <div id="seed-container"></div>
+  <div class="oc-actions">
+    <button class="oc-btn primary"   id="oc-primary-btn" onclick="enterBattle()">Try Again</button>
+    <button class="oc-btn secondary" onclick="goTo('screen-intro')">Return to Intro</button>
+  </div>
+</div>
+
+<!-- ════ SCRIPTS ════════════════════════════════════════════ -->
+<script src="cards.js"></script>
+<script src="card-expand-patch.js"></script>
+<script src="engine.js"></script>
+<script src="ui.js"></script>
+<script src="shop.js"></script>
+<script src="csystem.js"></script>
+<script src="cintegration.js"></script>
+<script src="battle.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// CHAPTER 2 CONFIG
+// ════════════════════════════════════════════════════════════
+const CHAPTER_CONFIG = {
+  playerStart:   55,
+  enemyStart:    120,
+  enemyMax:      400,
+  baseMaxAttn:   200,
+  handSize:      8,          // player draws more cards than Chapter 1
+  loseAttn:      10,
+  winPctMargin:  0.20,       // must be 20% ahead at time expiry — harder bar
+  enemyHandSize: 6,
+  enemyDeck: [
+    'hanged_man',   // Superego — surrender, vision — hits hard reversed
+    'death',        // Superego — transformation, clearing — strips drain protection
+    'devil',        // Superego — shadow, bondage — heavy pressure
+    'tower',        // Superego — collapse, revelation — clears both sides
+    'moon',         // Superego — illusion, cycles — destabilises attention reads
+    'nine_swords',  // ID Swords — anxiety, dread — high drain, hard to negate
+  ],
+};
+
+// ════════════════════════════════════════════════════════════
+// CHAPTER 2 OVERRIDES
+// These constants are read by shop.js — override them here
+// so the shop offers the right tier of cards for this chapter.
+// ════════════════════════════════════════════════════════════
+// Override CHAPTER_ID so shop.js records picks under chapter 2
+// and offers cards appropriate to this chapter's tier.
+// shop.js reads CHAPTER_ID as a module-level const — we shadow
+// it here in the inline script after shop.js has loaded, then
+// call beginChapter2() instead of beginJourney().
+const CHAPTER_ID_OVERRIDE = 2;
+
+// ════════════════════════════════════════════════════════════
+// APP STATE
+// ════════════════════════════════════════════════════════════
+const APP = {
+  screen:           'intro',
+  save:             null,
+  shopStep:         0,
+  shopPicks:        [],
+  shopSelectedCard: null,
+  shopOffers:       [],
+  shopCanvasAnims:  new Map(),
+  cardAnimations:   new Map(),
+  playerDeck:       [],
+};
+
+// ════════════════════════════════════════════════════════════
+// CHAPTER 2 ENTRY POINTS
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Primary path: player has pasted a seed.
+ * Restores their deck, runs the Chapter 2 shop, then battle.
+ */
+function loadSeedInput() {
+  const raw = document.getElementById('seed-input')?.value?.trim();
+  if (!raw) return;
+  const save = AxiumSeed.load(raw);
+  const msg  = document.getElementById('sl-msg');
+  if (save) {
+    APP.save = save;
+    if (msg) {
+      msg.textContent = '✓ Deck restored — entering Chapter II shop…';
+      msg.style.color = '#86EFAC';
+      msg.classList.add('show');
+    }
+    APP.playerDeck = [...save.deck];
+    setTimeout(() => _startChapter2Shop(), 900);
+  } else {
+    if (msg) {
+      msg.textContent = '✗ Invalid seed — check and try again.';
+      msg.style.color = '#e05555';
+      msg.classList.add('show');
+    }
+    setTimeout(() => msg?.classList.remove('show'), 3000);
+  }
+}
+
+/**
+ * Test / skip path: no seed, use the default starting deck.
+ * Skips seed screen entirely and goes straight to Chapter 2 shop.
+ */
+function beginFreshChapter2() {
+  APP.save = AxiumSave.getOrCreate();
+  // If save has no meaningful deck, seed it with STARTING_DECK_IDS
+  if (!APP.save.deck || APP.save.deck.length < 3) {
+    APP.save.deck = [...STARTING_DECK_IDS];
+    AxiumSave.set(APP.save);
+  }
+  APP.playerDeck = [...APP.save.deck];
+  _startChapter2Shop();
+}
+
+/**
+ * Core shop launcher for Chapter 2.
+ * Checks if the player has already done the Chapter 2 shop
+ * (e.g. returning after a loss) and skips straight to deck review.
+ */
+function _startChapter2Shop() {
+  const doneShops = APP.save.shopHistory.filter(h => h.chapter === 2).length;
+  if (doneShops >= 4) {
+    // Already shopped this chapter — go straight to deck review
+    buildDeckReview();
+    goTo('screen-deck-review');
+    return;
+  }
+  // Patch CHAPTER_ID in shop.js scope so all shop functions
+  // record picks and filter offers under chapter 2.
+  // shop.js declares CHAPTER_ID as a const so we can't reassign it,
+  // but AxiumShop.getOffers() accepts chapter as an argument —
+  // we override startShopStep to pass chapter 2 offers.
+  _patchShopForChapter2();
+  startShopStep(0);
+  goTo('screen-shop');
+}
+
+/**
+ * Monkey-patches AxiumShop.getOffers calls inside startShopStep
+ * so offers come from Chapter 2 tier (Tier 2 + Tier 3 knights/queens/kings
+ * and higher-tier Superego cards not yet owned).
+ *
+ * We do this by wrapping startShopStep to temporarily override the
+ * module-level CHAPTER_ID that shop.js uses when calling AxiumShop.getOffers.
+ */
+function _patchShopForChapter2() {
+  // confirmShopPick in shop.js calls AxiumSave.addCardToDeck(card.id, persona, CHAPTER_ID)
+  // We can't change that const, so we intercept addCardToDeck to force chapter=2.
+  const _origAdd = AxiumSave.addCardToDeck.bind(AxiumSave);
+  AxiumSave.addCardToDeck = function(cardId, persona, _ignoredChapter) {
+    return _origAdd(cardId, persona, 2);
+  };
+
+  // Override getOffers to always use chapter 2 pool.
+  // Chapter 2 unlocks: Knight + Queen + King cards (Tier 2),
+  // plus Chapter 2 Superego cards (hanged_man, death, devil, tower, star, moon).
+  const _origGetOffers = AxiumShop.getOffers.bind(AxiumShop);
+  AxiumShop.getOffers = function(personaId, _ignoredChapter, ownedDeck, count) {
+    return _origGetOffers(personaId, 2, ownedDeck, count);
+  };
+}
+
+// ════════════════════════════════════════════════════════════
+// CHAPTER 2 OUTCOME OVERRIDE
+// Replace showOutcome from shop.js with chapter-2-specific text.
+// ════════════════════════════════════════════════════════════
+function showOutcome(won, perfect, B) {
+  const save = APP.save || AxiumSave.getOrCreate();
+  const attnEl = document.getElementById('oc-stat-attn');
+  const deckEl = document.getElementById('oc-stat-deck');
+  const synsEl = document.getElementById('oc-stat-syns');
+  if (attnEl) { attnEl.textContent = Math.round(B.playerAttn); attnEl.style.color = won ? '#86EFAC' : '#e05555'; }
+  if (deckEl)   deckEl.textContent = save.deck.length;
+  if (synsEl)   synsEl.textContent = B.synsFired;
+
+  const stateEl   = document.getElementById('oc-state-lbl');
+  const titleEl   = document.getElementById('oc-title');
+  const descEl    = document.getElementById('oc-desc');
+  const primaryBtn = document.getElementById('oc-primary-btn');
+
+  if (won) {
+    if (stateEl) stateEl.textContent  = 'Chapter II Complete';
+    if (titleEl) { titleEl.textContent = perfect ? 'The Axium' : 'The Mirror Cracked'; titleEl.style.color = '#D4AF37'; }
+    if (descEl)  descEl.textContent   = perfect
+      ? 'Perfect constellation. The mirror had nothing left to show you.'
+      : 'You held your attention against your own reflection. The descent awaits.';
+    if (primaryBtn) {
+      primaryBtn.textContent = 'Save & Continue to Chapter III';
+      primaryBtn.onclick     = () => toast('Seed Saved', 'Load your seed in Chapter III to continue.');
+    }
+  } else {
+    if (stateEl) stateEl.textContent  = 'The Mirror Won';
+    if (titleEl) { titleEl.textContent = 'Reflected'; titleEl.style.color = '#e05555'; }
+    if (descEl)  descEl.textContent   = 'The mirror showed you something you weren\'t ready to hold. Your deck is preserved.';
+    if (primaryBtn) {
+      primaryBtn.textContent = 'Try Again';
+      primaryBtn.onclick     = () => enterBattle();
+    }
+  }
+
+  if (typeof renderSeedWidget === 'function') renderSeedWidget('seed-container', save);
+  goTo('screen-outcome');
+}
+
+// ════════════════════════════════════════════════════════════
+// SEED LOAD SHORTCUT — wire showSeedLoad for the intro button
+// ════════════════════════════════════════════════════════════
+function showSeedLoad() { goTo('screen-seed-load'); }
+</script>
+</body>
+</html>
