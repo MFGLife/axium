@@ -1,15 +1,21 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * AXIUM — UI.js  (Shared UI Utilities)
+ * AXIUM — UI.js  v2.0  (Overlay Navigation Architecture)
  * Depends on: cards.js (ATTN_STATES, getAttnState, getSynergies)
  * Must load BEFORE shop.js and battle.js
+ *
+ * KEY CHANGE v2.0:
+ *   goTo() no longer toggles .active on .screen elements.
+ *   Instead it toggles .axm-active on .axm-overlay elements.
+ *   #screen-battle is permanently visible as the base layer.
+ *   All other screens are position:fixed overlays.
  * ═══════════════════════════════════════════════════════════════
  */
 
 'use strict';
 
 // ─────────────────────────────────────────────────────────
-// CONSTANTS — set by chapter config in game.html
+// CONSTANTS
 // ─────────────────────────────────────────────────────────
 const MAX_STAGED = 10;
 const MIN_ATTN   = 5;
@@ -17,11 +23,11 @@ const MIN_ATTN   = 5;
 // ─────────────────────────────────────────────────────────
 // DOM HELPERS
 // ─────────────────────────────────────────────────────────
-function gel(id)          { return document.getElementById(id); }
-function clamp(v, a, b)   { return Math.max(a, Math.min(b, v)); }
-function lerp(a, b, t)    { return a + (b - a) * t; }
-function hexA(val)         { return Math.max(0, Math.min(255, Math.round(val))).toString(16).padStart(2, '0'); }
-function cap(s)            { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+function gel(id)        { return document.getElementById(id); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function lerp(a, b, t)  { return a + (b - a) * t; }
+function hexA(val)       { return Math.max(0, Math.min(255, Math.round(val))).toString(16).padStart(2, '0'); }
+function cap(s)          { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
 function numberToRoman(n) {
   const map = [[21,'XXI'],[20,'XX'],[19,'XIX'],[18,'XVIII'],[17,'XVII'],[16,'XVI'],[15,'XV'],
                [14,'XIV'],[13,'XIII'],[12,'XII'],[11,'XI'],[10,'X'],[9,'IX'],[8,'VIII'],
@@ -40,17 +46,57 @@ function cardLabel(card) {
 }
 
 // ─────────────────────────────────────────────────────────
-// SCREEN NAVIGATION
+// OVERLAY NAVIGATION  (replaces old screen .active switching)
+//
+// Overlay IDs that goTo() can manage:
+//   screen-intro, screen-seed-load, screen-shop,
+//   screen-deck-review, screen-outcome
+//   (screen-battle is always visible — never in this list)
+//   (screen-hand-picker is managed separately by picker functions)
 // ─────────────────────────────────────────────────────────
+const _MANAGED_OVERLAYS = [
+  'screen-intro',
+  'screen-seed-load',
+  'screen-shop',
+  'screen-deck-review',
+  'screen-outcome',
+];
+
+function _overlayOpen(id) {
+  const el = gel(id);
+  if (!el) return;
+  el.classList.add('axm-active');
+}
+
+function _overlayClose(id) {
+  const el = gel(id);
+  if (!el) return;
+  el.classList.remove('axm-active');
+}
+
+function _closeAllManaged() {
+  _MANAGED_OVERLAYS.forEach(_overlayClose);
+}
+
+/**
+ * goTo(screenId, afterFade?)
+ * Drop-in replacement for the old goTo().
+ * - 'screen-battle' → closes all overlays (battle shell is always visible)
+ * - anything else   → closes all overlays, opens the target
+ * afterFade callback fires after the transition delay.
+ */
 function goTo(screenId, afterFade) {
-  const overlay = gel('fade-overlay');
-  overlay.classList.add('dark');
-  setTimeout(() => {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    gel(screenId)?.classList.add('active');
-    overlay.classList.remove('dark');
-    afterFade?.();
-  }, 450);
+  _closeAllManaged();
+
+  if (screenId !== 'screen-battle') {
+    // Small rAF delay so the close transition starts before open
+    requestAnimationFrame(() => {
+      _overlayOpen(screenId);
+    });
+  }
+
+  // Match old goTo() timing (450ms fade) so callers' afterFade works correctly
+  setTimeout(() => afterFade?.(), 60);
 }
 
 // ─────────────────────────────────────────────────────────
@@ -156,12 +202,11 @@ function updatePips(id, pct) {
 }
 
 function setBar(which, pct, state) {
-  const fill = gel(which + '-fill');   if (fill)   fill.style.width  = pct + '%';
-  const cur  = gel(which + '-cursor'); if (cur)    cur.style.left   = pct + '%';
+  const fill = gel(which + '-fill');      if (fill) fill.style.width    = pct + '%';
+  const cur  = gel(which + '-cursor');   if (cur)  cur.style.left      = pct + '%';
   const lbl  = gel(which + '-state-lbl'); if (lbl) { lbl.textContent = state.label; lbl.style.color = state.col; }
 }
 
-/** Animate bar to new attention value */
 function animateBarTo(which, newAttn, maxAttn) {
   const pct = clamp(newAttn / maxAttn * 100, 0, 100);
   setBar(which, pct, getAttnState(pct));
@@ -183,10 +228,8 @@ function updateAxiumMeter(playerPlayed) {
 
 // ─────────────────────────────────────────────────────────
 // BATTLE FIELD RENDER
-// Expects B.playerPlayed as [{card, reversed}] and B.enemyHand as [{card, drain}]
 // ─────────────────────────────────────────────────────────
 function renderBattleField(B, onUnstage) {
-  // Player field
   const pf = gel('field-player');
   if (pf) {
     pf.innerHTML = '';
@@ -201,11 +244,10 @@ function renderBattleField(B, onUnstage) {
         chip.style.color = card.color;
         const icon = card.layer === 'Superego' ? '◈' : card.layer === 'Ego' ? '◇' : '○';
         chip.innerHTML = `<span>${icon}</span><span>${card.name}</span>`;
-        // Polarity toggle
         const polBtn = document.createElement('span');
         polBtn.className = 'f-chip-polarity ' + (reversed ? 'reversed' : 'normal');
         polBtn.textContent = reversed ? '↓' : '↑';
-        polBtn.title = reversed ? 'Reversed (drain)' : 'Normal (shield/gain)';
+        polBtn.title = reversed ? 'Reversed' : 'Normal';
         polBtn.onclick = e => {
           e.stopPropagation();
           entry.reversed = !entry.reversed;
@@ -213,7 +255,6 @@ function renderBattleField(B, onUnstage) {
           updateBattlePhaseUI(B);
         };
         chip.appendChild(polBtn);
-        // Remove
         const rm = document.createElement('span');
         rm.className = 'f-chip-remove'; rm.textContent = '×';
         rm.onclick = e => { e.stopPropagation(); onUnstage(i); };
@@ -223,7 +264,6 @@ function renderBattleField(B, onUnstage) {
     }
   }
 
-  // Enemy field
   const ef = gel('field-enemy');
   if (ef) {
     ef.innerHTML = '';
@@ -234,7 +274,7 @@ function renderBattleField(B, onUnstage) {
         const chip = document.createElement('div');
         chip.className = 'f-chip enemy';
         const icon = card.layer === 'Superego' ? '◈' : card.layer === 'Ego' ? '◇' : '○';
-        chip.innerHTML = `<span>${icon}</span><span>${card.name}</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;opacity:.55;margin-left:4px;">−${drain}</span>`;
+        chip.innerHTML = `<span>${icon}</span><span>${card.name}</span><span style="font-family:'JetBrains Mono',monospace;font-size:7px;opacity:.55;margin-left:4px;">−${drain || ''}</span>`;
         ef.appendChild(chip);
       });
     }
@@ -255,140 +295,187 @@ function updateBattlePhaseUI(B) {
   if (pm) pm.textContent = n === 0
     ? 'Open your hand to choose cards'
     : n >= MAX_STAGED ? 'Hand full — Resolve!'
-    : `${n} card${n > 1 ? 's' : ''} staged · ↑/↓ sets polarity · Resolve or add more`;
+    : `${n} card${n > 1 ? 's' : ''} staged · ↑/↓ sets polarity`;
   updateAxiumMeter(B.playerPlayed);
 }
 
 // ─────────────────────────────────────────────────────────
-// HAND PICKER  (with polarity toggle)
+// HAND PICKER  —  now uses #screen-hand-picker overlay
 // ─────────────────────────────────────────────────────────
 const _miniAnims = new Map();
+let _pickerFilter = 'All';
 
 function openHandPicker(B) {
+  _pickerFilter = 'All';
+  // Reset tab state
+  document.querySelectorAll('.picker-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.layer === 'All')
+  );
+  _renderPickerGrid(B);
+  _overlayOpen('screen-hand-picker');
+}
+
+function closeHandPicker() {
+  _overlayClose('screen-hand-picker');
+}
+
+function _renderPickerGrid(B) {
   const list = gel('picker-list');
+  if (!list) return;
   list.innerHTML = '';
 
-  B.playerHand.forEach(card => {
-    const existing  = B.playerPlayed.find(c => c.card.id === card.id);
-    const isStaged  = !!existing;
+  const hand = B.playerHand || [];
+  const filtered = _pickerFilter === 'All'
+    ? hand
+    : hand.filter(c => c.layer === _pickerFilter);
+
+  filtered.forEach(card => {
+    const existing   = B.playerPlayed.find(c => (c.card || c).id === card.id);
+    const isStaged   = !!existing;
     const isReversed = existing ? existing.reversed : false;
-    const layerCol  = card.layer === 'Superego' ? '#D4AF37' : card.layer === 'Ego' ? '#7EB8E8' : '#86EFAC';
+    const layerCol   = card.layer === 'Superego' ? '#D4AF37'
+                     : card.layer === 'Ego'      ? '#7EB8E8' : '#86EFAC';
     const normalMech = card.layer === 'Superego'
       ? `Shield +${card.shieldVal || 0}`
       : card.layer === 'Ego'
         ? [(card.chunkFlat ? `+${card.chunkFlat} flat` : ''), (card.chunkPct ? `×${card.chunkPct}` : '')].filter(Boolean).join(' ')
         : `Recharge +${card.rechargeVal || 0}/stack`;
-    const revMech = `Reversed: ${card.reversedDesc || `−${Math.round(Math.abs(card.reversedShift || card.shieldVal * 0.4 || 8))} drain`}`;
+    const revMech = `Reversed: −${Math.round(Math.abs(card.reversedShift || card.shieldVal * 0.4 || 8))}`;
 
-    const row = document.createElement('div');
-    row.className = 'picker-row' + (isStaged ? (isReversed ? ' staged-reversed' : ' staged') : '');
-    row.dataset.id = card.id;
-    const checkClass = isStaged ? (isReversed ? 'on-rev' : 'on') : '';
+    // Use csystem CardRenderer if available, otherwise build a simple row
+    if (typeof CardRenderer !== 'undefined') {
+      const renderer = new CardRenderer(card, {
+        size: 'md', showTooltip: true, staged: isStaged,
+      });
+      renderer.el.style.cursor = 'pointer';
+      renderer.el.style.position = 'relative';
 
-    row.innerHTML = `
-      <div class="picker-check ${checkClass}" id="chk-${card.id}">
-        <svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </div>
-      <canvas class="picker-mini-cvs" width="40" height="40"></canvas>
-      <div class="picker-info">
-        <div class="picker-name" style="color:${card.color}">${card.name}</div>
-        <div class="picker-layer-lbl" style="color:${layerCol}">${cardLabel(card)}</div>
-        <div class="picker-mechanic" id="mech-${card.id}">${isReversed ? revMech : normalMech}</div>
-        ${isReversed ? `<div class="picker-reversed-hint">${revMech}</div>` : ''}
-      </div>
-      <button class="picker-polarity-btn ${isStaged ? (isReversed ? 'reversed' : 'normal') : 'normal'}" id="pol-${card.id}" title="Toggle polarity">
-        ${isReversed ? '↓ REV' : '↑ NRM'}
-      </button>
-      <div class="picker-axium-lbl" style="color:${card.color}">⬡${card.axiumScore || '?'}</div>
-    `;
+      // Staged highlight
+      if (isStaged) {
+        if (isReversed) {
+          renderer.el.style.borderColor = 'rgba(224,85,85,.7)';
+          renderer.el.style.boxShadow   = '0 0 0 1px rgba(224,85,85,.4),0 0 18px rgba(224,85,85,.3)';
+        } else {
+          renderer.el.style.borderColor = '#D4AF37';
+          renderer.el.style.boxShadow   = '0 0 0 1px rgba(212,175,55,.45),0 0 18px rgba(212,175,55,.3)';
+        }
+        // Polarity pill
+        _attachPickerPill(renderer.el, card, existing, B);
+      }
 
-    // Click row = toggle staged
-    row.addEventListener('click', e => {
-      if (e.target.closest('.picker-polarity-btn')) return;
-      _toggleStageCard(card, row, B);
-    });
+      // Tap to toggle stage
+      let _pd = { x: 0, y: 0 };
+      renderer.el.addEventListener('pointerdown', e => { _pd = { x: e.clientX, y: e.clientY }; }, { passive: true });
+      renderer.el.addEventListener('pointerup', e => {
+        if (e.target.closest('.picker-pol-pill')) return;
+        if (Math.abs(e.clientX - _pd.x) < 10 && Math.abs(e.clientY - _pd.y) < 10) {
+          _pickerToggle(card, B);
+        }
+      });
+      list.appendChild(renderer.el);
 
-    // Polarity toggle
-    row.querySelector(`#pol-${card.id}`)?.addEventListener('click', e => {
-      e.stopPropagation();
-      _togglePolarity(card.id, B, row);
-    });
-
-    list.appendChild(row);
-
-    setTimeout(() => {
-      const cvs = row.querySelector('.picker-mini-cvs');
-      if (cvs) animatePickerMini(cvs, card);
-    }, 30);
+    } else {
+      // Fallback: simple list row (original ui.js style)
+      const row = document.createElement('div');
+      row.className = 'picker-row' + (isStaged ? (isReversed ? ' staged-reversed' : ' staged') : '');
+      row.dataset.id = card.id;
+      row.innerHTML = `
+        <div class="picker-check ${isStaged ? (isReversed ? 'on-rev' : 'on') : ''}" id="chk-${card.id}">
+          <svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <canvas class="picker-mini-cvs" width="40" height="40"></canvas>
+        <div class="picker-info">
+          <div class="picker-name" style="color:${card.color}">${card.name}</div>
+          <div class="picker-layer-lbl" style="color:${layerCol}">${cardLabel(card)}</div>
+          <div class="picker-mechanic">${isReversed ? revMech : normalMech}</div>
+        </div>
+        <button class="picker-polarity-btn ${isStaged ? (isReversed ? 'reversed' : 'normal') : 'normal'}">
+          ${isReversed ? '↓ REV' : '↑ NRM'}
+        </button>
+        <div class="picker-axium-lbl" style="color:${card.color}">⬡${card.axiumScore || '?'}</div>
+      `;
+      row.addEventListener('click', e => {
+        if (e.target.closest('.picker-polarity-btn')) return;
+        _pickerToggle(card, B);
+      });
+      const polBtn = row.querySelector('.picker-polarity-btn');
+      if (polBtn) polBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const entry = B.playerPlayed.find(c => (c.card || c).id === card.id);
+        if (!entry) return;
+        entry.reversed = !entry.reversed;
+        _renderPickerGrid(B);
+      });
+      setTimeout(() => {
+        const cvs = row.querySelector('.picker-mini-cvs');
+        if (cvs) animatePickerMini(cvs, card);
+      }, 30);
+      list.appendChild(row);
+    }
   });
 
-  gel('picker-count-lbl').textContent = `${B.playerPlayed.length}/10`;
-  gel('hand-picker').classList.add('show');
+  _updatePickerFooter(B);
 }
 
-function closeHandPicker() {
-  gel('hand-picker').classList.remove('show');
-}
-
-function _togglePolarity(cardId, B, rowEl) {
-  const entry = B.playerPlayed.find(c => c.card.id === cardId);
-  if (!entry) return;
-  entry.reversed = !entry.reversed;
+function _attachPickerPill(cardEl, card, entry, B) {
+  const old = cardEl.querySelector('.picker-pol-pill');
+  if (old) old.remove();
+  const pill = document.createElement('div');
+  pill.className = 'picker-pol-pill';
   const isRev = entry.reversed;
-  const card  = entry.card;
-
-  rowEl.classList.toggle('staged-reversed', isRev);
-  rowEl.classList.toggle('staged', !isRev);
-
-  const chk = gel('chk-' + cardId);
-  if (chk) { chk.classList.remove('on', 'on-rev'); chk.classList.add(isRev ? 'on-rev' : 'on'); }
-
-  const polBtn = gel('pol-' + cardId);
-  if (polBtn) { polBtn.className = 'picker-polarity-btn ' + (isRev ? 'reversed' : 'normal'); polBtn.textContent = isRev ? '↓ REV' : '↑ NRM'; }
-
-  const normalMech = card.layer === 'Superego'
-    ? `Shield +${card.shieldVal || 0}`
-    : card.layer === 'Ego'
-      ? [(card.chunkFlat ? `+${card.chunkFlat} flat` : ''), (card.chunkPct ? `×${card.chunkPct}` : '')].filter(Boolean).join(' ')
-      : `Recharge +${card.rechargeVal || 0}/stack`;
-  const revMech = `Reversed: ${card.reversedDesc || `−${Math.round(Math.abs(card.reversedShift || card.shieldVal * 0.4 || 8))} drain`}`;
-  const mechEl = gel('mech-' + cardId);
-  if (mechEl) mechEl.textContent = isRev ? revMech : normalMech;
+  pill.style.cssText = `
+    position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+    font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.08em;
+    text-transform:uppercase;padding:3px 9px;border-radius:10px;border:1px solid;
+    cursor:pointer;z-index:20;white-space:nowrap;user-select:none;
+    touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    ${isRev
+      ? 'color:rgba(224,85,85,.9);border-color:rgba(224,85,85,.5);background:rgba(224,85,85,.13);'
+      : 'color:rgba(212,175,55,.9);border-color:rgba(212,175,55,.45);background:rgba(212,175,55,.12);'}
+  `;
+  pill.textContent = isRev ? '↓ REV' : '↑ NRM';
+  pill.addEventListener('click', e => {
+    e.stopPropagation();
+    entry.reversed = !entry.reversed;
+    _renderPickerGrid(B);
+    // Also update field chips if visible
+    if (typeof renderBattleField === 'function') renderBattleField(B, i => {
+      B.playerPlayed.splice(i, 1);
+      _renderPickerGrid(B);
+      updateBattlePhaseUI(B);
+    });
+    updateBattlePhaseUI(B);
+  });
+  cardEl.appendChild(pill);
 }
 
-function _toggleStageCard(card, rowEl, B) {
-  const already = B.playerPlayed.findIndex(c => c.card.id === card.id);
-  if (already >= 0) {
-    B.playerPlayed.splice(already, 1);
-    rowEl.classList.remove('staged', 'staged-reversed');
-    const chk = rowEl.querySelector('.picker-check');
-    if (chk) chk.classList.remove('on', 'on-rev');
-    const pol = rowEl.querySelector('.picker-polarity-btn');
-    if (pol) { pol.className = 'picker-polarity-btn normal'; pol.textContent = '↑ NRM'; }
+function _pickerToggle(card, B) {
+  const idx = B.playerPlayed.findIndex(e => (e.card || e).id === card.id);
+  if (idx >= 0) {
+    B.playerPlayed.splice(idx, 1);
   } else {
     if (B.playerPlayed.length >= MAX_STAGED) { toast('Limit', 'Max 10 cards'); return; }
     B.playerPlayed.push({ card, reversed: false });
-    rowEl.classList.add('staged');
-    const chk = rowEl.querySelector('.picker-check');
-    if (chk) chk.classList.add('on');
   }
-  gel('picker-count-lbl').textContent = `${B.playerPlayed.length}/10`;
+  _renderPickerGrid(B);
   updateBattlePhaseUI(B);
-  renderBattleField(B, i => {
-    B.playerPlayed.splice(i, 1);
-    const r = gel('hand-picker')?.querySelector(`[data-id="${B.playerPlayed[i]?.card?.id}"]`);
-    if (r) { r.classList.remove('staged', 'staged-reversed'); }
-    gel('picker-count-lbl').textContent = `${B.playerPlayed.length}/10`;
-    renderBattleField(B, arguments.callee);
-    updateBattlePhaseUI(B);
-  });
+}
+
+function _updatePickerFooter(B) {
+  const n = (B?.playerPlayed || []).length;
+  const countEl  = gel('picker-count-lbl');
+  const statusEl = gel('picker-status-msg');
+  const resolveEl= gel('picker-confirm');
+  if (countEl)   countEl.textContent   = `${n}/10`;
+  if (statusEl)  statusEl.textContent  = n === 0 ? 'Select cards to stage'
+                                       : n >= 10  ? 'Hand full — ready to Resolve!'
+                                       : `${n} staged · tap card to toggle`;
+  if (resolveEl) resolveEl.classList.toggle('ready', n > 0);
 }
 
 // ─────────────────────────────────────────────────────────
 // CARD CANVAS ANIMATIONS
 // ─────────────────────────────────────────────────────────
-
-/** Full card canvas animation (used in shop) */
 function animateCardCanvas(canvas, card) {
   if (!canvas) return;
   const W = canvas.offsetWidth || 120, H = canvas.offsetHeight || 80;
@@ -418,7 +505,6 @@ function animateCardCanvas(canvas, card) {
   frame();
 }
 
-/** Tiny picker mini canvas */
 function animatePickerMini(canvas, card) {
   if (!canvas) return;
   const W = 40, H = 40; canvas.width = W; canvas.height = H;
@@ -445,7 +531,6 @@ function animatePickerMini(canvas, card) {
   frame();
 }
 
-/** Shared constellation builder */
 function _buildConstellation(pts, W, H, pad) {
   let mnX = 1e9, mnY = 1e9, mxX = -1e9, mxY = -1e9;
   pts.forEach(([x, y]) => { mnX = Math.min(mnX, x); mnY = Math.min(mnY, y); mxX = Math.max(mxX, x); mxY = Math.max(mxY, y); });
@@ -466,7 +551,7 @@ function _buildConstellation(pts, W, H, pad) {
 }
 
 // ─────────────────────────────────────────────────────────
-// PURGE SAVE DATA (shared utility)
+// PURGE SAVE DATA
 // ─────────────────────────────────────────────────────────
 function purgeSaveData() {
   if (confirm('This will permanently dissolve your current constellation and progress. Proceed?')) {
