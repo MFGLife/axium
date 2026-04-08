@@ -1,21 +1,4 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AXIUM — CARD SYSTEM v1.0
- * Full card rendering engine: portraits, particles, hand picker,
- * detail modal (flip), field zones. Drop-in replacement for all
- * card rendering in game.html.
- *
- * REQUIRES: cards.js loaded first (PLAYER_CARDS, EGO_CARDS,
- *   ID_CARDS, ATTN_STATES, SYNERGIES, getAttnState, shuffle)
- *
- * EXPORTS (window globals):
- *   CardRenderer      — builds a living card DOM element
- *   HandPickerModal   — full-screen card fan picker
- *   CardDetailModal   — flip-to-back detail view
- *   FieldZone         — renders mini cards in field areas
- *   CardParticles     — standalone particle emitter per card
- * ═══════════════════════════════════════════════════════════════
- */
+
 
 ;(function(global) {
 'use strict';
@@ -428,6 +411,11 @@ class CardParticles {
 /* Hover lift */
 .axc-card:hover   { transform: translateY(-6px) scale(1.03); }
 .axc-card.axc-sm:hover { transform: translateY(-3px) scale(1.04); }
+
+/* Reversed polarity — 180° rotation, hover composes correctly */
+.axc-card.axc-reversed { transform: rotate(180deg); }
+.axc-card.axc-reversed:hover { transform: rotate(180deg) translateY(-6px) scale(1.03); }
+.axc-card.axc-sm.axc-reversed:hover { transform: rotate(180deg) translateY(-3px) scale(1.04); }
 
 /* Staged (selected) ring */
 .axc-card.axc-staged {
@@ -1131,7 +1119,10 @@ class HandPickerModal {
       // playerPlayed holds {card, reversed} entries
       const entry    = this.playerPlayed.find(e => (e.card || e).id === card.id);
       const isStaged = !!entry;
-      const isRev    = entry ? entry.reversed : false;
+      // Read persistent reversed state from AxiumPolarity (not from entry)
+      const isRev    = typeof AxiumPolarity !== 'undefined'
+        ? AxiumPolarity.isReversed(card.id)
+        : (entry ? entry.reversed : false);
 
       const renderer = new CardRenderer(card, {
         size:        'md',
@@ -1141,12 +1132,13 @@ class HandPickerModal {
       });
       renderer.el.style.cursor = 'pointer';
 
-      // Apply reversed tint if staged-reversed
-      if (isStaged && isRev) this._applyReversedStyle(renderer.el, card);
+      // Apply 180° rotation if persistently reversed
+      if (isRev) {
+        renderer.el.classList.add('axc-reversed');
+      }
 
-      // Tap = toggle staged (but NOT if tapping the polarity pill)
+      // Tap = toggle staged
       renderer.el.addEventListener('click', e => {
-        if (e.target.closest('.axc-pol-pill')) return;
         this._toggleCard(card, renderer);
       });
       renderer.el.addEventListener('contextmenu', e => {
@@ -1156,16 +1148,10 @@ class HandPickerModal {
 
       let pressTimer;
       renderer.el.addEventListener('pointerdown', e => {
-        if (e.target.closest('.axc-pol-pill')) return;
         pressTimer = setTimeout(() => this._openDetail(card), 600);
       });
       renderer.el.addEventListener('pointerup',   () => clearTimeout(pressTimer));
       renderer.el.addEventListener('pointermove', () => clearTimeout(pressTimer));
-
-      // Polarity pill — only visible when staged
-      if (isStaged) {
-        this._addPolarityPill(renderer.el, card, entry);
-      }
 
       grid.appendChild(renderer.el);
       this._renderers.set(card.id, renderer);
@@ -1174,32 +1160,7 @@ class HandPickerModal {
     this._updateCount();
   }
 
-  // Adds the ↑ NRM / ↓ REV pill onto a card element
-  _addPolarityPill(cardEl, card, entry) {
-    const pill = document.createElement('div');
-    pill.className = 'axc-pol-pill ' + (entry.reversed ? 'reversed' : 'normal');
-    pill.textContent = entry.reversed ? '↓ REV' : '↑ NRM';
-    pill.title = entry.reversed ? 'Reversed — tap to set Normal' : 'Normal — tap to set Reversed';
-    pill.addEventListener('click', e => {
-      e.stopPropagation();
-      entry.reversed = !entry.reversed;
-      // Update pill appearance
-      pill.className  = 'axc-pol-pill ' + (entry.reversed ? 'reversed' : 'normal');
-      pill.textContent = entry.reversed ? '↓ REV' : '↑ NRM';
-      pill.title = entry.reversed ? 'Reversed — tap to set Normal' : 'Normal — tap to set Reversed';
-      // Update card border/shadow tint
-      if (entry.reversed) {
-        this._applyReversedStyle(cardEl, card);
-      } else {
-        cardEl.style.borderColor = '#D4AF37';
-        cardEl.style.boxShadow   = '0 0 0 1px rgba(212,175,55,.45), 0 0 28px rgba(212,175,55,.4)';
-      }
-      this.opts.onStagedChange?.([...this.playerPlayed]);
-    });
-    cardEl.appendChild(pill);
-  }
-
-  // Red tint for reversed-staged cards
+  // Red tint for reversed-staged cards (kept for potential future use)
   _applyReversedStyle(cardEl, card) {
     cardEl.style.borderColor = 'rgba(224,85,85,.7)';
     cardEl.style.boxShadow   = '0 0 0 1px rgba(224,85,85,.4), 0 0 22px rgba(224,85,85,.35)';
@@ -1211,12 +1172,9 @@ class HandPickerModal {
       // Unstage
       this.playerPlayed.splice(idx, 1);
       renderer.setStaged(false);
-      // Reset any reversed styling
       const [r,g,b] = hexRGB(card.color || '#ffffff');
       renderer.el.style.borderColor = `rgba(${r},${g},${b},.25)`;
       renderer.el.style.boxShadow   = `0 0 18px rgba(${r},${g},${b},.1)`;
-      // Remove polarity pill
-      renderer.el.querySelector('.axc-pol-pill')?.remove();
     } else {
       if (this.playerPlayed.length >= this.opts.maxStaged) {
         renderer.el.style.animation = 'none';
@@ -1224,11 +1182,11 @@ class HandPickerModal {
         setTimeout(() => { renderer.el.style.transform = ''; renderer.el.style.animation = ''; }, 120);
         return;
       }
-      // Stage as {card, reversed:false}
-      const entry = { card, reversed: false };
+      // Stage — reversed flag comes from persistent AxiumPolarity state
+      const isRev = typeof AxiumPolarity !== 'undefined' ? AxiumPolarity.isReversed(card.id) : false;
+      const entry = { card, reversed: isRev };
       this.playerPlayed.push(entry);
       renderer.setStaged(true);
-      this._addPolarityPill(renderer.el, card, entry);
     }
     this._updateCount();
     this.opts.onStagedChange?.([...this.playerPlayed]);
@@ -1236,8 +1194,7 @@ class HandPickerModal {
 
   _updateCount() {
     const n   = this.playerPlayed.length;
-    const max = this.opts.maxStaged;
-    const countEl   = this.el.querySelector('#axcp-count');
+    const max = this.opts.maxStaged;    const countEl   = this.el.querySelector('#axcp-count');
     const msgEl     = this.el.querySelector('#axcp-msg');
     const resolveEl = this.el.querySelector('#axcp-resolve');
     if (countEl) countEl.textContent = `${n}/${max}`;

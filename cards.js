@@ -324,7 +324,8 @@ const PLAYER_CARDS = [
     keywords:'solitude · lantern · inner light',
     type:'decompression', axiumScore:7, tier:1, chapter:1,
     shieldVal:13,
-    shieldDesc:"The answer lives at your own corridor's end. +13 attention. Skip trauma's first card this battle.",
+    shieldDesc:"The answer lives at your own corridor's end. Only fires when attention is below 50% — the lantern is for darkness. +13 attention. Skip trauma's first card this battle.",
+    fireCondition:{ maxPct: 0.50 },
     shieldEffect:{ attnBoost:13, skipFirstTrauma:true },
     capacityVal:5, capacityDesc:'+5 max pool — solitude deepens the well.',
     rechargeVal:2, rechargeDesc:'+2 passive — the lantern burns quietly.',
@@ -396,7 +397,8 @@ const PLAYER_CARDS = [
     keywords:'transformation · ending · crossing',
     type:'both', axiumScore:9, tier:1, chapter:2,
     shieldVal:20,
-    shieldDesc:'Nothing meant to continue ends here. +20 attention. Remove all drain stacks permanently this battle.',
+    fireCondition:{ minPct: 0.70 },
+    shieldDesc:'Nothing meant to continue ends here. Only transforms when you are strong enough to hold it (attn ≥ 70%). +20 attention. Remove all drain stacks permanently this battle.',
     shieldEffect:{ attnBoost:20, clearAllDrain:true },
     capacityVal:12, capacityDesc:'+12 max pool — old form dissolves, vessel grows.',
     rechargeVal:5, rechargeDesc:'+5 passive — transformation releases stored energy.',
@@ -540,7 +542,8 @@ const PLAYER_CARDS = [
     keywords:'completion · wholeness · arrival',
     type:'decompression', axiumScore:10, tier:1, chapter:3,
     shieldVal:35,
-    shieldDesc:'The journey arrives where it began. +35 attention. Win triggered if player attn >= 90.',
+    fireCondition:{ minPct: 0.60 },
+    shieldDesc:'The journey arrives where it began. Only completes when you are present (attn ≥ 60%). +35 attention. Win triggered if player attn >= 90.',
     shieldEffect:{ attnBoost:35, winCheck:true, winThreshold:90 },
     capacityVal:20, capacityDesc:'+20 max pool — the largest vessel in the deck.',
     rechargeVal:7, rechargeDesc:'+7 passive — wholeness is generative, not static.',
@@ -866,7 +869,8 @@ const ID_CARDS = [
 
   { id:'nine_cups', name:'Nine of Cups', suit:'cups', layer:'ID',
     keywords:'wish · satisfaction · pleasure', axiumScore:6, tier:1,
-    rechargeVal:5, rechargeDesc:'+5 passive. On play: all recharge stacks fire simultaneously.',
+    rechargeVal:5, rechargeDesc:'+5 passive. Decays 8% per fire (satisfaction plateaus). On play: all recharge stacks fire simultaneously.',
+    decayRate:0.08,
     rechargeEffect:{ passive:5, burstAllStacks:true },
     drainVal:3, drainDesc:'-3 drain (reversed). Trauma heals 15. Attn reads +10 above actual.',
     traumaHealing:15, color:'#7090C8',
@@ -875,7 +879,8 @@ const ID_CARDS = [
 
   { id:'ten_cups', name:'Ten of Cups', suit:'cups', layer:'ID',
     keywords:'bliss · family · home', axiumScore:7, tier:1,
-    rechargeVal:6, rechargeDesc:'+6 passive (peak cups). On play: all recharge cards in hand gain +2.',
+    rechargeVal:6, rechargeDesc:'+6 passive (peak cups). Decays 6% per fire (bliss is not a steady state). On play: all recharge cards in hand gain +2.',
+    decayRate:0.06,
     rechargeEffect:{ passive:6, boostAllRecharge:2 },
     drainVal:4, drainDesc:'-4 drain (reversed). Trauma heals 18. Synergies blocked.',
     traumaHealing:18, color:'#8090C8',
@@ -912,7 +917,8 @@ const ID_CARDS = [
 
   { id:'four_swords', name:'Four of Swords', suit:'swords', layer:'ID',
     keywords:'rest · recovery · recuperation', axiumScore:5, tier:1,
-    rechargeVal:5, rechargeDesc:"+5 passive (peak swords). On play: skip trauma's next turn.",
+    rechargeVal:5, rechargeDesc:"+5 passive (peak swords). Only fires when your attention is between 25% and 75% — rest requires a window. On play: skip trauma's next turn.",
+    fireCondition:{ minPct: 0.25, maxPct: 0.75 },
     rechargeEffect:{ passive:5, skipTraumaTurn:true },
     drainVal:3, drainDesc:'-3 drain (reversed). Trauma heals 14. Locks player pass next turn.',
     traumaHealing:14, color:'#708090',
@@ -957,7 +963,8 @@ const ID_CARDS = [
 
   { id:'nine_swords', name:'Nine of Swords', suit:'swords', layer:'ID',
     keywords:'anxiety · nightmare · dread', axiumScore:3, tier:1,
-    rechargeVal:1, rechargeDesc:'+1 passive (lowest). On play: negate next trauma card entirely.',
+    rechargeVal:1, rechargeDesc:'+1 passive (lowest). Only fires when your attention is below 55%. On play: negate next trauma card entirely.',
+    fireCondition:{ maxPct: 0.55 },
     rechargeEffect:{ passive:1, negateNextTrauma:true },
     drainVal:9, drainDesc:'-9 drain (reversed). Next decompression pre-negated.',
     traumaHealing:0, color:'#404090',
@@ -1057,7 +1064,7 @@ const ID_CARDS = [
 
   { id:'ten_wands', name:'Ten of Wands', suit:'wands', layer:'ID',
     keywords:'burden · overload · responsibility', axiumScore:4, tier:1,
-    rechargeVal:2, rechargeDesc:'+2 passive. On play: remove 2 corruption cards from deck.',
+    rechargeVal:2, decayRate:0.07, rechargeDesc:'+2 passive (fatigues 7% per fire — the burden weighs). On play: remove 2 corruption cards from deck.',
     rechargeEffect:{ passive:2, removeCorruption:2 },
     drainVal:8, drainDesc:'-8 drain (reversed). Hand limit 2, all costs +3 for 2 turns.',
     traumaHealing:0, color:'#600808',
@@ -1148,7 +1155,7 @@ const ID_CARDS = [
 
   { id:'ten_pents', name:'Ten of Pentacles', suit:'pentacles', layer:'ID',
     keywords:'legacy · wealth · rootedness', axiumScore:7, tier:1,
-    rechargeVal:6, rechargeDesc:'+6 passive (peak pentacles). On play: all held cards gain +1 recharge permanently.',
+    rechargeVal:6, decayRate:0.05, rechargeDesc:'+6 passive (fatigues 5% per fire — legacy is generative but not infinite). On play: all held cards gain +1 recharge permanently.',
     rechargeEffect:{ passive:6, permanentRecharge:1 },
     drainVal:5, drainDesc:'-5 drain (reversed). Trauma heals 15. Adds 1 corruption to deck.',
     traumaHealing:15, color:'#006000',
@@ -1420,6 +1427,73 @@ const ALL_CARDS = [
 const CAP_TICK_RATE = 0.08;
 
 /**
+ * ─────────────────────────────────────────────────────────────────
+ * NEW MECHANIC CONSTANTS  (v4.1 — Six Emergent Systems)
+ * ─────────────────────────────────────────────────────────────────
+ *
+ * 1. RESONANCE DECAY
+ *    Upright ID cards lose a fraction of their effective rechargeVal
+ *    each time they fire, representing attention fatigue.
+ *    Each card can define  decayRate: 0–1  (default 0 = no decay).
+ *    Applied multiplicatively per fire count on that card.
+ *    Effective recharge = rechargeVal × (1 - decayRate)^fireCount
+ *    High-node cards reach their ceiling faster, forcing polarity
+ *    decisions mid-battle.
+ *
+ * 2. THRESHOLD LOCKS
+ *    A card may define  fireCondition: { minPct?, maxPct? }
+ *    where pct is current playerAttn / playerMaxAttn (0–1).
+ *    If the condition fails the card's timer still runs but the
+ *    fire is skipped (no delta, no label) — it waits for the
+ *    right window.  Enemy threshold cards check enemyAttn/eMax.
+ *
+ * 3. POLARITY MOMENTUM
+ *    Tracked entirely in preSimulateBattle():
+ *      reversalStack — incremented each time a reversed player ID
+ *        card fires. Decays by REVERSAL_DECAY per non-reversed fire.
+ *      Drain output multiplied by (1 + reversalStack × REVERSAL_MULT).
+ *      Once reversalStack ≥ REVERSAL_FRAG_THRESHOLD a fragmentation
+ *      debuff is applied: pMult is reduced by REVERSAL_FRAG_PENALTY
+ *      for the rest of the battle.
+ *
+ * 4. CONSTELLATION INTERFERENCE
+ *    Cards of the same suit staged together in playerPlayed suppress
+ *    each other. For each additional same-suit card beyond the first,
+ *    effective rechargeVal is multiplied by SUIT_SUPPRESS_MULT.
+ *    Computed in computeCardFire via the suitSuppressCount parameter.
+ *
+ * 5. SURGE FRAGMENTATION
+ *    On the first fire cycle after surge begins (t > 45 000ms),
+ *    reversed player ID cards backfire: drain is split 50/50 between
+ *    enemy and player. Tracked via the surgeSplitActive flag in the
+ *    pre-sim loop; resets after the first full fire cycle.
+ *
+ * 6. CAPACITY BLEED
+ *    Upright Superego cards accumulate a bleed counter each subsequent
+ *    fire. Effective capacityDelta is reduced by
+ *      bleedFactor × fireCount (clamped to 0).
+ *    CAP_BLEED_RATE controls how fast the shield erodes.
+ *    Enemy reversed Superego cards apply double bleed to the target's
+ *    effective capacityVal.
+ * ─────────────────────────────────────────────────────────────────
+ */
+
+/** Resonance Decay: default fractional decay per fire for ID upright cards. */
+const DECAY_DEFAULT      = 0;     // base; per-card decayRate overrides
+/** Polarity Momentum: drain multiplier per reversal stack level. */
+const REVERSAL_MULT      = 0.12;
+/** Polarity Momentum: how much the stack decays per non-reversed fire. */
+const REVERSAL_DECAY     = 0.5;
+/** Polarity Momentum: stack level that triggers the fragmentation debuff. */
+const REVERSAL_FRAG_THRESHOLD = 4;
+/** Polarity Momentum: pMult penalty applied when fragmented. */
+const REVERSAL_FRAG_PENALTY   = 0.25;
+/** Constellation Interference: rechargeVal multiplier per extra same-suit card. */
+const SUIT_SUPPRESS_MULT = 0.82;
+/** Capacity Bleed: capacityDelta reduction per subsequent Superego fire. */
+const CAP_BLEED_RATE     = 0.06;
+
+/**
  * nodeFireInterval(card, surge)
  * The time in ms between fires for this card.
  * Derived entirely from tier base interval and node count.
@@ -1466,50 +1540,101 @@ function getSynergyBonuses(playerPlayedEntries) {
 }
 
 /**
- * computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat)
+ * computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat, simCtx)
  * Pure function — given a card entry and current global modifiers,
  * returns what this card does when it fires.
  *
- * c = { card, reversed, side, firstFired }
- * Returns { delta, capacityDelta, label, color, targetSide, egoEffect }
- *   delta         — attn change on the target side
- *   capacityDelta — pMax/eMax change (0 if none)
- *   label         — display string
- *   color         — display color
- *   targetSide    — 'player' | 'enemy'
- *   egoEffect     — null | { pMult, pFlat } | { eDivisor, eDmgFlat }
- *                   only set on first Ego fire
+ * c = { card, reversed, side, firstFired, fireCount, bleedCount }
+ *   fireCount  — how many times this card has fired (for Resonance Decay)
+ *   bleedCount — how many subsequent Superego fires (for Capacity Bleed)
+ *
+ * simCtx = {
+ *   pAttn, pMax,          — for Threshold Locks (player side)
+ *   eAttn, eMax,          — for Threshold Locks (enemy side)
+ *   suitSuppressCount,    — same-suit card count beyond 1 (Constellation Interference)
+ *   surgeSplitActive,     — bool: first fire-cycle after surge (Surge Fragmentation)
+ *   reversalMult,         — current drain multiplier from Polarity Momentum
+ * }
+ *
+ * Returns { delta, capacityDelta, label, color, targetSide, egoEffect,
+ *           splitDelta }
+ *   splitDelta — extra delta applied to the SAME side as the firing card
+ *                (Surge Fragmentation backfire: positive value = player takes damage)
  */
-function computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat) {
+function computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat, simCtx) {
   const { card, reversed, side, firstFired } = c;
+  const fireCount  = c.fireCount  || 0;
+  const bleedCount = c.bleedCount || 0;
   const layer = card.layer;
+  const ctx   = simCtx || {};
 
   let delta         = 0;
   let capacityDelta = 0;
+  let splitDelta    = 0;   // Surge Fragmentation backfire
   let label         = '';
   let color         = '#D4AF37';
   let targetSide    = 'player';
   let egoEffect     = null;
 
+  // ── THRESHOLD LOCK CHECK ─────────────────────────────────────
+  // If the card has a fireCondition and it isn't met, skip the fire.
+  if (card.fireCondition) {
+    const fc    = card.fireCondition;
+    const pPct  = ctx.pMax  ? (ctx.pAttn  / ctx.pMax)  : 0.5;
+    const ePct  = ctx.eMax  ? (ctx.eAttn  / ctx.eMax)  : 0.5;
+    const chkPct = (side === 'enemy') ? ePct : pPct;
+    const minOk  = fc.minPct === undefined || chkPct >= fc.minPct;
+    const maxOk  = fc.maxPct === undefined || chkPct <= fc.maxPct;
+    if (!minOk || !maxOk) {
+      // Condition not met — fire is skipped. Return zero delta with a dim label.
+      return { delta: 0, capacityDelta: 0, splitDelta: 0,
+               label: '', color, targetSide, egoEffect: null, skipped: true };
+    }
+  }
+
   // ── ID ───────────────────────────────────────────────────────
   if (layer === 'ID') {
     if (side === 'player' && !reversed) {
       // Upright player: amplified recharge
-      const raw = (card.rechargeVal || 0);
-      delta      = Math.round(raw * pMult + pFlat);
-      label      = `+${delta} Recharge`;
+      // Mechanic 1: Resonance Decay — effective recharge shrinks each fire.
+      const decayRate  = card.decayRate || DECAY_DEFAULT;
+      const decayedRaw = (card.rechargeVal || 0) * Math.pow(1 - decayRate, fireCount);
+
+      // Mechanic 4: Constellation Interference — same-suit suppression.
+      const suppressed = decayedRaw * Math.pow(SUIT_SUPPRESS_MULT, ctx.suitSuppressCount || 0);
+
+      delta      = Math.round(suppressed * pMult + pFlat);
+      if (delta < 0) delta = 0; // decay can't flip to drain
+      label      = `+${delta} Recharge` + (decayRate > 0 && fireCount > 0 ? ' ↓' : '');
       color      = '#86EFAC';
       targetSide = 'player';
+
     } else if (side === 'player' && reversed) {
-      // Reversed player: raw drain on enemy, no pMult
-      delta      = -(card.drainVal || 0);
-      label      = `${delta} Drain`;
-      color      = '#e05555';
+      // Reversed player: raw drain on enemy, scaled by Polarity Momentum.
+      const momentum  = 1 + ((ctx.reversalMult || 0) * REVERSAL_MULT);
+      const rawDrain  = Math.round((card.drainVal || 0) * momentum);
+
+      // Mechanic 5: Surge Fragmentation — on first surge fire cycle,
+      // 50% of drain bounces back to the player.
+      if (ctx.surgeSplitActive) {
+        delta      = -Math.round(rawDrain * 0.5);
+        splitDelta = -Math.round(rawDrain * 0.5);  // also hits player
+        label      = `${delta} Drain ⚡split`;
+        color      = '#e05555';
+      } else {
+        delta  = -rawDrain;
+        label  = `${delta} Drain` + (momentum > 1.05 ? ' ⚑' : '');
+        color  = '#e05555';
+      }
       targetSide = 'enemy';
+
     } else {
-      // Enemy (always reversed): raw drain on player, reduced by eDivisor/eDmgFlat
-      const raw  = Math.max(0, (card.drainVal || 0) - eDmgFlat);
-      delta      = -Math.round(raw / eDivisor);
+      // Enemy (always reversed): raw drain on player.
+      // NOTE: eDivisor/eDmgFlat are player-side Ego modifiers that divide
+      // player's OWN gains — they do NOT soften raw enemy pressure.
+      // enemyDrainMult scales ID drain pressure per chapter difficulty.
+      const drainMult = ctx.enemyDrainMult || 1.0;
+      delta      = -Math.round((card.drainVal || 0) * drainMult);
       label      = `${delta} Pressure`;
       color      = '#e05555';
       targetSide = 'player';
@@ -1527,14 +1652,16 @@ function computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat) {
         targetSide = 'player';
       } else {
         // Subsequent fires: capacity growth on pMax
+        // Mechanic 6: Capacity Bleed — capacityDelta shrinks each subsequent fire.
         const cv = card.capacityVal || 0;
         if (cv > 0) {
-          capacityDelta = cv * CAP_TICK_RATE;
-          label         = `Max ↑`;
+          const bleedReduction = bleedCount * CAP_BLEED_RATE;
+          const effectiveCv    = Math.max(0, cv * (1 - bleedReduction));
+          capacityDelta = effectiveCv * CAP_TICK_RATE;
+          label         = capacityDelta > 0.01 ? `Max ↑` : `Max ~`;
           color         = '#D4AF37';
           targetSide    = 'player';
         }
-        // No attn delta on subsequent upright fires
         delta = 0;
       }
     } else if (side === 'player' && reversed) {
@@ -1546,9 +1673,12 @@ function computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat) {
         targetSide = 'enemy';
       } else {
         // Subsequent fires: if capacityVal > 0, erode enemy max
+        // Capacity Bleed also applies here (enemy erodes faster under pressure)
         const cv = card.capacityVal || 0;
         if (cv > 0) {
-          capacityDelta = -(cv * CAP_TICK_RATE);
+          const bleedReduction = bleedCount * CAP_BLEED_RATE;
+          const effectiveCv    = Math.max(0, cv * (1 - bleedReduction));
+          capacityDelta = -(effectiveCv * CAP_TICK_RATE);
           label         = `Enemy Max ↓`;
           color         = '#e05555';
           targetSide    = 'enemy';
@@ -1558,20 +1688,24 @@ function computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat) {
     } else {
       // Enemy Superego reversed — targets player
       if (!firstFired) {
-        // Burst damage on player (60% of shield, reduced by defenses)
-        const raw  = Math.max(0, Math.round((card.shieldVal || 0) * 0.6) - eDmgFlat);
-        delta      = -Math.round(raw / eDivisor);
+        // Burst damage on player — raw 60% of shieldVal, not softened by player's Ego modifiers.
+        // eDivisor/eDmgFlat represent player's reversed Ego attacking enemy gains,
+        // not a shield against enemy Superego bursts.
+        delta      = -Math.round((card.shieldVal || 0) * 0.6);
         label      = `${delta} Pressure`;
         color      = '#e05555';
         targetSide = 'player';
       } else {
         // Subsequent fires: erode player max
+        // Enemy reversed Superego applies double bleed rate.
         const cv = card.capacityVal || 0;
         if (cv > 0) {
-          capacityDelta = -(cv * CAP_TICK_RATE);
+          const bleedReduction = bleedCount * CAP_BLEED_RATE * 2; // double for enemy
+          const effectiveCv    = Math.max(0, cv * (1 - bleedReduction));
+          capacityDelta = -(effectiveCv * CAP_TICK_RATE);
           label         = `Your Max ↓`;
           color         = '#e05555';
-          targetSide    = 'player'; // pMax target signalled by targetSide='player' + negative capacityDelta
+          targetSide    = 'player';
         }
         delta = 0;
       }
@@ -1610,7 +1744,24 @@ function computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat) {
     // After firstFired, Ego does nothing — fall through with delta=0
   }
 
-  return { delta, capacityDelta, label, color, targetSide, egoEffect };
+  return { delta, capacityDelta, splitDelta, label, color, targetSide, egoEffect };
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SUIT SUPPRESS HELPER
+// Returns how many additional same-suit cards share the field with
+// the given card in playerPlayed (0 = no suppression, 1 = one extra, etc.)
+// Called from preSimulateBattle() when building each card's simCtx.
+// ─────────────────────────────────────────────────────────────────
+function getSuitSuppressCount(card, playerPlayedEntries) {
+  if (!card.suit) return 0; // Superego / suitless cards are never suppressed
+  const suit = card.suit;
+  let count = 0;
+  for (const e of playerPlayedEntries) {
+    const c = e.card || e;
+    if (c.id !== card.id && c.suit === suit && !e.reversed) count++;
+  }
+  return count;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1837,11 +1988,15 @@ function clampAttn(val, min = 0, max = 100) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     ATTN_STATES, CARD_GLOSSARY, CAP_TICK_RATE,
+    // New mechanic constants
+    DECAY_DEFAULT, REVERSAL_MULT, REVERSAL_DECAY,
+    REVERSAL_FRAG_THRESHOLD, REVERSAL_FRAG_PENALTY,
+    SUIT_SUPPRESS_MULT, CAP_BLEED_RATE,
     PLAYER_CARDS, EGO_CARDS, ID_CARDS,
     TRAUMA_DECKS, SHOP_OFFERINGS, SHOP_NPCS, CHAPTERS,
     SYNERGIES, STAGE_ENEMY_DECKS, ALL_CARDS,
     // Core engine
-    nodeFireInterval, getSynergyBonuses, computeCardFire,
+    nodeFireInterval, getSynergyBonuses, computeCardFire, getSuitSuppressCount,
     // Helpers
     getCard, getTraumaDeck, getShopOffers, getShopNPC,
     getChapter, getSynergies, getAttnState, getStageEnemyDeck,

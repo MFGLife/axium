@@ -1,23 +1,18 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AXIUM — UI.js  v2.0  (Overlay Navigation Architecture)
- * Depends on: cards.js (ATTN_STATES, getAttnState, getSynergies)
- * Must load BEFORE shop.js and battle.js
- *
- * KEY CHANGE v2.0:
- *   goTo() no longer toggles .active on .screen elements.
- *   Instead it toggles .axm-active on .axm-overlay elements.
- *   #screen-battle is permanently visible as the base layer.
- *   All other screens are position:fixed overlays.
- * ═══════════════════════════════════════════════════════════════
- */
+
 
 'use strict';
 
 // ─────────────────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────────────────
-const MAX_STAGED = 10;
+// Reads from CHAPTER_CONFIG.handSize if defined (set per chapter), else falls back to 10.
+// Must be a getter so it reflects CHAPTER_CONFIG at call time, not at parse time.
+function getMaxStaged() {
+  return (typeof CHAPTER_CONFIG !== 'undefined' && CHAPTER_CONFIG.handSize) ? CHAPTER_CONFIG.handSize : 10;
+}
+// Keep a const alias for legacy code that references MAX_STAGED directly.
+// Use getMaxStaged() wherever the limit must be enforced.
+const MAX_STAGED = 10; // legacy reference only — do not use for enforcement
 const MIN_ATTN   = 5;
 
 // ─────────────────────────────────────────────────────────
@@ -286,7 +281,8 @@ function renderBattleField(B, onUnstage) {
 // BATTLE PHASE UI
 // ─────────────────────────────────────────────────────────
 function updateBattlePhaseUI(B) {
-  const n  = B.playerPlayed.length;
+  const n   = B.playerPlayed.length;
+  const max = getMaxStaged();
   const rb = gel('resolve-btn');
   if (rb) rb.classList.toggle('show', n > 0 && B.phase === 'build');
   const pb = gel('pass-btn');
@@ -294,7 +290,7 @@ function updateBattlePhaseUI(B) {
   const pm = gel('b-phase-msg');
   if (pm) pm.textContent = n === 0
     ? 'Open your hand to choose cards'
-    : n >= MAX_STAGED ? 'Hand full — Resolve!'
+    : n >= max ? 'Hand full — Resolve!'
     : `${n} card${n > 1 ? 's' : ''} staged · ↑/↓ sets polarity`;
   updateAxiumMeter(B.playerPlayed);
 }
@@ -454,7 +450,8 @@ function _pickerToggle(card, B) {
   if (idx >= 0) {
     B.playerPlayed.splice(idx, 1);
   } else {
-    if (B.playerPlayed.length >= MAX_STAGED) { toast('Limit', 'Max 10 cards'); return; }
+    const maxStaged = getMaxStaged();
+    if (B.playerPlayed.length >= maxStaged) { toast('Limit', `Max ${maxStaged} cards`); return; }
     B.playerPlayed.push({ card, reversed: false });
   }
   _renderPickerGrid(B);
@@ -463,12 +460,13 @@ function _pickerToggle(card, B) {
 
 function _updatePickerFooter(B) {
   const n = (B?.playerPlayed || []).length;
+  const max = getMaxStaged();
   const countEl  = gel('picker-count-lbl');
   const statusEl = gel('picker-status-msg');
   const resolveEl= gel('picker-confirm');
-  if (countEl)   countEl.textContent   = `${n}/10`;
+  if (countEl)   countEl.textContent   = `${n}/${max}`;
   if (statusEl)  statusEl.textContent  = n === 0 ? 'Select cards to stage'
-                                       : n >= 10  ? 'Hand full — ready to Resolve!'
+                                       : n >= max  ? 'Hand full — ready to Resolve!'
                                        : `${n} staged · tap card to toggle`;
   if (resolveEl) resolveEl.classList.toggle('ready', n > 0);
 }

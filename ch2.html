@@ -259,22 +259,25 @@
 // CHAPTER 2 CONFIG
 // ════════════════════════════════════════════════════════════
 const CHAPTER_CONFIG = {
-  playerStart:   55,
-  enemyStart:    120,
+  playerStart:   65,    // slightly higher start — ch2 pressure comes from sustained drain, not opening burst
+  enemyStart:    280,   // 70% of enemyMax — enemy starts strong
   enemyMax:      400,
   baseMaxAttn:   200,
   handSize:      8,
-  loseAttn:      10,
+  loseAttn:      25,    // tighter than ch1's 10 — less buffer for the player
   winPctMargin:  0.20,
   enemyHandSize: 8,
+  enemyDrainMult: 1.6,  // ID drain hits 1.6× harder in ch2
   enemyDeck: [
-    'hanged_man',
-    'death',
-    'devil',
-    'tower',
-    'moon',
-    'nine_swords',
-  ],
+  'wheel_of_fortune', // 17n — fast sustained cap erosion, moderate burst (shieldVal 16 → -10)
+  'star',           // 18n — fast erosion, burst -12
+  'moon',           // 13n — sustained erosion, burst -10
+  'devil',          // 16n — strong cap erosion, burst -15
+  'king_swords',    // 15n T2 — ×1.6 eDivisor — divides player gains
+  'queen_cups',     // 13n T2 — chunkFlat 6 — further divides
+  'ten_cups',       // 14n ID — drainVal 4 × 1.6 = 6.4/fire, high node count
+  'nine_wands',     // 15n ID — drainVal 5 × 1.6 = 8/fire
+],
 };
 
 // ════════════════════════════════════════════════════════════

@@ -1,15 +1,4 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AXIUM ENGINE v1.0
- * Persistent save system, seed generation, deck management,
- * chapter progression, and persona shop system.
- *
- * ARCHITECTURE:
- *   engine.js  ← this file (load in every chapter)
- *   cards.js   ← card data + battle math
- *   chapter1.html / chapter2.html / etc ← game screens
- * ═══════════════════════════════════════════════════════════════
- */
+
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -167,6 +156,7 @@ function createFreshSave() {
     currentChapter: 1,
     chaptersWon:    [],
     deck:           [...STARTING_DECK_IDS],
+    reversedCards:  [],  // card IDs permanently reversed via expand modal
     shopHistory:    [],  // [{chapter, persona, cardId, timestamp}]
     battleHistory:  [],  // [{chapter, won, playerDelta, turns, timestamp}]
     stats: {
@@ -245,6 +235,49 @@ const AxiumSave = {
 };
 
 // ─────────────────────────────────────────────────────────────
+// POLARITY SYSTEM
+// Persistent per-card reversed state. Cards stay reversed across
+// battles and sessions. Controlled exclusively via the expand modal.
+// ─────────────────────────────────────────────────────────────
+const AxiumPolarity = {
+  /** Return true if the given card ID is persistently reversed */
+  isReversed(cardId) {
+    const save = AxiumSave.getOrCreate();
+    return (save.reversedCards || []).includes(cardId);
+  },
+
+  /** Toggle the reversed state for a card and persist it */
+  toggle(cardId) {
+    const save = AxiumSave.getOrCreate();
+    if (!save.reversedCards) save.reversedCards = [];
+    const idx = save.reversedCards.indexOf(cardId);
+    if (idx >= 0) {
+      save.reversedCards.splice(idx, 1);
+    } else {
+      save.reversedCards.push(cardId);
+    }
+    AxiumSave.set(save);
+    return save.reversedCards.includes(cardId); // return new state
+  },
+
+  /** Set polarity explicitly */
+  set(cardId, reversed) {
+    const save = AxiumSave.getOrCreate();
+    if (!save.reversedCards) save.reversedCards = [];
+    const idx = save.reversedCards.indexOf(cardId);
+    if (reversed && idx < 0)  save.reversedCards.push(cardId);
+    if (!reversed && idx >= 0) save.reversedCards.splice(idx, 1);
+    AxiumSave.set(save);
+  },
+
+  /** Get the full reversed set */
+  getAll() {
+    const save = AxiumSave.getOrCreate();
+    return new Set(save.reversedCards || []);
+  },
+};
+
+// ─────────────────────────────────────────────────────────────
 // SEED SYSTEM
 // Seeds encode the full save state as a compact base64 string.
 // Format: AXIUM-{version}-{base64(compressed JSON)}
@@ -257,6 +290,7 @@ const AxiumSeed = {
       ch: saveData.currentChapter,
       cw: saveData.chaptersWon,
       dk: saveData.deck,
+      rv: saveData.reversedCards || [],
       sh: saveData.shopHistory.map(h => [h.chapter, h.persona, h.cardId]),
       bh: saveData.battleHistory.map(b => [b.chapter, b.won ? 1 : 0, Math.round(b.playerAttn)]),
       st: [
@@ -289,6 +323,7 @@ const AxiumSeed = {
         currentChapter: payload.ch || 1,
         chaptersWon:    payload.cw || [],
         deck:           payload.dk || [...STARTING_DECK_IDS],
+        reversedCards:  payload.rv || [],
         shopHistory:    (payload.sh || []).map(h => ({ chapter: h[0], persona: h[1], cardId: h[2] })),
         battleHistory:  (payload.bh || []).map(b => ({ chapter: b[0], won: b[1] === 1, playerAttn: b[2] })),
         stats: {

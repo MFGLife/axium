@@ -222,10 +222,24 @@ function preSimulateBattle() {
   let eAttn    = B.enemyAttn;
   let pMax     = B.playerMaxAttn;
   let eMax     = B.enemyMaxAttn;
-  let pMult    = 1.0;   // Ego upright multiplies all player gains
-  let pFlat    = 0;     // Ego upright flat bonus on every player gain
-  let eDivisor = 1.0;   // Ego reversed divides all player gains (when enemy Ego fires)
-  let eDmgFlat = 0;     // Ego reversed flat damage reduction on enemy hits
+  let pMult    = 1.0;
+  let pFlat    = 0;
+  let eDivisor = 1.0;
+  let eDmgFlat = 0;
+
+  // ── Mechanic 3: Polarity Momentum ──────────────────────
+  // reversalStack increments each time a reversed player ID fires,
+  // decays by REVERSAL_DECAY on every non-reversed player ID fire.
+  // Once stack ≥ threshold, a fragmentation debuff halves pMult.
+  let reversalStack    = 0;
+  let fragmented       = false;  // debuff applied once per battle
+
+  // ── Mechanic 5: Surge Fragmentation ────────────────────
+  // On the first fire cycle after surge, reversed player ID cards
+  // split their drain 50/50 between enemy and player.
+  // surgeSplitActive is true only for the first STEP after surge.
+  let surgeSplitActive = false;
+  let surgeFirstCycle  = true;   // flag: have we run the first surge STEP?
 
   // ── Build card entries ─────────────────────────────────
   const cards = [
@@ -238,9 +252,11 @@ function preSimulateBattle() {
         side:       'player',
         tier:       e.card.tier || 1,
         interval,
-        nextFire:   interval,   // first fire at t = interval
+        nextFire:   interval,
         progress:   0,
         firstFired: false,
+        fireCount:  0,   // Mechanic 1: Resonance Decay
+        bleedCount: 0,   // Mechanic 6: Capacity Bleed
         isEgo:      e.card.layer === 'Ego',
       };
     }),
@@ -256,6 +272,8 @@ function preSimulateBattle() {
         nextFire:   interval,
         progress:   0,
         firstFired: false,
+        fireCount:  0,
+        bleedCount: 0,
         isEgo:      e.card.layer === 'Ego',
       };
     }),
@@ -266,7 +284,7 @@ function preSimulateBattle() {
   pAttn  = clamp(pAttn + attnBoost, 0, pMax);
   pMult *= pMultBonus;
 
-  // Instant win synergy (The Axium: sun+judgement+world)
+  // Instant win synergy (The Axium)
   if (activeSynergies.some(s => s.effect?.instantWin)) {
     events.push({ t: 0, type: 'battle_end', winner: 'player', reason: 'instant_win' });
     return { events, synergies: activeSynergies };
@@ -291,15 +309,22 @@ function preSimulateBattle() {
     // Surge transition — recalibrate intervals and nextFire
     if (t === NORMAL_END + STEP) {
       events.push({ t, type: 'surge_start' });
+      surgeSplitActive = true;   // Mechanic 5: first surge cycle
+      surgeFirstCycle  = true;
       cards.forEach(c => {
         const oldInterval = nodeFireInterval(c.card, false);
         const newInterval = nodeFireInterval(c.card, true);
         c.interval = newInterval;
-        // Preserve proportional progress through current cycle
-        const elapsed  = oldInterval - (c.nextFire - t + STEP);
-        const pct      = clamp(elapsed / oldInterval, 0, 1);
-        c.nextFire     = t + Math.round(newInterval * (1 - pct));
+        const elapsed = oldInterval - (c.nextFire - t + STEP);
+        const pct     = clamp(elapsed / oldInterval, 0, 1);
+        c.nextFire    = t + Math.round(newInterval * (1 - pct));
       });
+    }
+
+    // Mechanic 5: clear surgeSplitActive after one full STEP
+    if (surge && surgeFirstCycle && t > NORMAL_END + STEP) {
+      surgeSplitActive = false;
+      surgeFirstCycle  = false;
     }
 
     // Charge progress events for visual layer
@@ -320,17 +345,46 @@ function preSimulateBattle() {
       if (battleEnded) break;
       if (t < c.nextFire) continue;
 
-      // Ego fires once — skip if already fired
+      // Ego fires once — park after first fire
       if (c.isEgo && c.firstFired) {
-        c.nextFire = Infinity; // park it — Ego is done
+        c.nextFire = Infinity;
         continue;
       }
 
-      // Compute what this card does
-      const result = computeCardFire(c, pMult, pFlat, eDivisor, eDmgFlat);
-      const { delta, capacityDelta, label, color, targetSide, egoEffect } = result;
+      // ── Build simCtx for the six mechanics ─────────────
+      // Mechanic 4: Constellation Interference — same-suit suppression
+      const suitSuppressCount = (c.side === 'player' && !c.reversed)
+        ? getSuitSuppressCount(c.card, B.playerPlayed)
+        : 0;
 
-      // Apply Ego modifier first if this is an Ego first-fire
+      const simCtx = {
+        pAttn,
+        pMax,
+        eAttn,
+        eMax,
+        suitSuppressCount,                       // Mechanic 4
+        surgeSplitActive: surge && surgeSplitActive && c.side === 'player' && c.reversed
+                          && c.card.layer === 'ID', // Mechanic 5
+        reversalMult: reversalStack,              // Mechanic 3
+        enemyDrainMult: (typeof CHAPTER_CONFIG !== 'undefined' && CHAPTER_CONFIG.enemyDrainMult) || 1.0,
+      };
+
+      // Pass per-card fire/bleed counts for Mechanics 1 & 6
+      const cWithCounts = Object.assign({}, c, {
+        fireCount:  c.fireCount,
+        bleedCount: c.bleedCount,
+      });
+
+      const result = computeCardFire(cWithCounts, pMult, pFlat, eDivisor, eDmgFlat, simCtx);
+      const { delta, capacityDelta, splitDelta, label, color, targetSide, egoEffect, skipped } = result;
+
+      // Threshold lock — card condition not met, advance timer and continue
+      if (skipped) {
+        c.nextFire = t + nodeFireInterval(c.card, surge);
+        continue;
+      }
+
+      // ── Apply Ego modifier ──────────────────────────────
       if (egoEffect) {
         if (egoEffect.type === 'boost') {
           pMult = egoEffect.pMult;
@@ -340,9 +394,11 @@ function preSimulateBattle() {
           eDmgFlat = egoEffect.eDmgFlat;
         }
         c.firstFired = true;
-        c.nextFire   = Infinity; // Ego done after one fire
+        c.fireCount++;
+        c.nextFire   = Infinity;
+
       } else {
-        // Apply attn delta
+        // ── Apply attn delta ────────────────────────────
         if (delta !== 0) {
           if (targetSide === 'player') {
             pAttn = clamp(pAttn + delta, 0, pMax);
@@ -351,38 +407,73 @@ function preSimulateBattle() {
           }
         }
 
-        // Apply capacity delta (sustained Superego growth/erosion)
+        // ── Mechanic 5: Surge Fragmentation backfire ────
+        // splitDelta is the portion of drain that bounces to the
+        // firing side's own attn (always negative = player takes damage).
+        if (splitDelta && splitDelta !== 0) {
+          pAttn = clamp(pAttn + splitDelta, 0, pMax);
+        }
+
+        // ── Apply capacity delta ─────────────────────────
         if (capacityDelta !== 0) {
           if (targetSide === 'player' && capacityDelta > 0) {
-            // Upright Superego: grow pMax
             pMax = clamp(pMax + capacityDelta, 10, 400);
           } else if (targetSide === 'player' && capacityDelta < 0) {
-            // Enemy Superego reversed: erode pMax
             pMax  = clamp(pMax + capacityDelta, 10, 400);
-            pAttn = clamp(pAttn, 0, pMax); // cap attn to new max
+            pAttn = clamp(pAttn, 0, pMax);
           } else if (targetSide === 'enemy' && capacityDelta < 0) {
-            // Player Superego reversed: erode eMax
             eMax  = clamp(eMax + capacityDelta, 10, 400);
             eAttn = clamp(eAttn, 0, eMax);
+          }
+          // Mechanic 6: increment bleedCount on every Superego subsequent fire
+          if (c.card.layer === 'Superego' && c.firstFired) c.bleedCount++;
+        }
+
+        // ── Mechanic 3: Polarity Momentum update ─────────
+        if (c.side === 'player' && c.card.layer === 'ID') {
+          if (c.reversed) {
+            // Reversed player ID — increment reversal stack
+            reversalStack = Math.min(reversalStack + 1, 10);
+          } else {
+            // Upright player ID — decay stack
+            reversalStack = Math.max(0, reversalStack - REVERSAL_DECAY);
+          }
+
+          // Apply fragmentation debuff once when threshold crossed
+          if (!fragmented && reversalStack >= REVERSAL_FRAG_THRESHOLD) {
+            fragmented = true;
+            pMult      = Math.max(0.1, pMult - REVERSAL_FRAG_PENALTY);
+            events.push({
+              t,
+              type:   'card_trigger', side: 'player', cardId: c.id,
+              delta:  0, label: '⚑ Fragmented', color: '#9333EA',
+              targetSide: 'player',
+              newPlayerAttn: pAttn, newEnemyAttn: eAttn,
+              newPlayerMax:  pMax,  newEnemyMax:  eMax,
+            });
           }
         }
 
         c.firstFired = true;
+        c.fireCount++;
 
-        // Reset timer for next fire (Ego stays parked at Infinity)
+        // Reset timer
         c.nextFire = t + nodeFireInterval(c.card, surge);
         c.progress = 0;
       }
 
-      // Record event (skip if nothing visible happened)
-      if (delta !== 0 || capacityDelta !== 0 || egoEffect) {
+      // Record event
+      const effectiveDelta = (splitDelta && splitDelta !== 0)
+        ? delta + splitDelta  // show combined for label purposes
+        : delta;
+      if (effectiveDelta !== 0 || capacityDelta !== 0 || egoEffect) {
         events.push({
           t,
           type:          'card_trigger',
           side:          c.side,
           cardId:        c.id,
           reversed:      c.reversed,
-          delta,
+          delta:         effectiveDelta,
           capacityDelta,
           label,
           color,

@@ -1,13 +1,4 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AXIUM — CARD SYSTEM INTEGRATION  v2.0
- * Load order: cards → engine → ui → shop → csystem → cintegration → battle
- *
- * Wires csystem.js (CardRenderer, HandPickerModal, FieldZone) into
- * the battle screen. Patches renderBattleField, openHandPickerBattle,
- * closeHandPickerBattle, buildDeckReview, and animateShopCardCanvas.
- * ═══════════════════════════════════════════════════════════════
- */
+
 
 'use strict';
 
@@ -41,12 +32,16 @@ function axcInit() {
   const battleWrap = document.getElementById('battle-wrap');
   if (battleWrap) {
     _axcPicker = new HandPickerModal(battleWrap, B.playerHand, B.playerPlayed, {
-      maxStaged:      10,
+      maxStaged:      (typeof CHAPTER_CONFIG !== 'undefined' && CHAPTER_CONFIG.handSize) ? CHAPTER_CONFIG.handSize : 10,
       getSynergies:   (ids) => typeof getSynergies === 'function' ? getSynergies(ids) : [],
 
-      // onStagedChange receives the live playerPlayed array (already {card,reversed} entries).
-      // Assign it directly to B.playerPlayed — the reversed flags are set by the polarity pills.
+      // onStagedChange — sync persistent reversed state from AxiumPolarity into each entry
       onStagedChange: (played) => {
+        const reversedSet = typeof AxiumPolarity !== 'undefined' ? AxiumPolarity.getAll() : new Set();
+        played.forEach(entry => {
+          const cardId = (entry.card || entry).id;
+          entry.reversed = reversedSet.has(cardId);
+        });
         B.playerPlayed = played;
         axcRenderField();
         updateBattlePhaseUI(B);
@@ -85,48 +80,35 @@ function axcCloseHandPicker() {
 
 // ─────────────────────────────────────────────────────────────
 // RENDER FIELD
-// Draws real cards via FieldZone + injects polarity badges.
+// Draws real cards via FieldZone. Persistent reversal state comes
+// from AxiumPolarity — no polarity pills, no inline toggles.
 // ─────────────────────────────────────────────────────────────
 function axcRenderField() {
   if (_axcFieldP) {
     const cards = B.playerPlayed.map(e => e.card || e);
     _axcFieldP.render(cards, (idx, card) => axcUnstageCard(idx, card));
-    // After FieldZone builds DOM, overlay polarity toggle badges
-    _injectPolarityBadges();
+    // Apply persistent 180° rotation to reversed cards on the field
+    _applyFieldRotations();
   }
   if (_axcFieldE) {
     _axcFieldE.render((B.enemyHand || []).map(e => e.card || e));
   }
 }
 
-// Polarity badges on field cards — injected after FieldZone renders
-// since FieldZone doesn't have access to B.playerPlayed entries.
-function _injectPolarityBadges() {
+// Rotate field card elements 180° when their card is persistently reversed.
+function _applyFieldRotations() {
   const pf = document.getElementById('field-player');
   if (!pf) return;
+  const reversedSet = typeof AxiumPolarity !== 'undefined' ? AxiumPolarity.getAll() : new Set();
 
   const cardEls = pf.querySelectorAll('.axc-card');
-  cardEls.forEach((cardEl, i) => {
-    const entry = B.playerPlayed[i];
-    if (!entry) return;
-
-    // Always rebuild so label reflects current state
-    cardEl.querySelector('.axc-pol-pill')?.remove();
-
-    const pill = document.createElement('div');
-    const isRev = entry.reversed;
-    pill.className = 'axc-pol-pill ' + (isRev ? 'reversed' : 'normal');
-    pill.textContent = isRev ? '↓ REV' : '↑ NRM';
-    pill.title = isRev ? 'Reversed — tap to set Normal' : 'Normal — tap to set Reversed';
-    pill.addEventListener('pointerdown', e => { e.stopPropagation(); }, { passive: true });
-    pill.addEventListener('click', e => {
-      e.stopPropagation();
-      e.preventDefault();
-      entry.reversed = !entry.reversed;
-      axcRenderField();
-      updateBattlePhaseUI(B);
-    });
-    cardEl.appendChild(pill);
+  cardEls.forEach((cardEl) => {
+    const cardId = cardEl.dataset.cardId;
+    const isRev  = reversedSet.has(cardId);
+    cardEl.classList.toggle('axc-reversed', isRev);
+    // Keep the entry's reversed flag in sync so battle.js sees it correctly
+    const entry = B.playerPlayed.find(e => (e.card || e).id === cardId);
+    if (entry) entry.reversed = isRev;
   });
 }
 

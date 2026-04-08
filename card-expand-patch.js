@@ -1,10 +1,4 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * AXIUM — Card Expand Patch  (inject after csystem.js)
- * Adds a ⊞ expand button to every .axc-card element and
- * replaces the detail modal with a rich full-screen overlay.
- * ═══════════════════════════════════════════════════════════════
- */
+
 ;(function(global) {
 'use strict';
 
@@ -680,7 +674,10 @@ function openExpandModal(card, context) {
   // refreshes whenever the header pill is toggled ──
   const _effectContainer = document.createElement('div');
   _effectContainer.id = 'axce-effect-block';
-  const _initReversed = context?.entry ? context.entry.reversed : false;
+  // Read persistent reversed state for the initial effect display
+  const _initReversed = typeof AxiumPolarity !== 'undefined'
+    ? AxiumPolarity.isReversed(card.id)
+    : (context?.entry ? context.entry.reversed : false);
   _renderEffectBlock(_effectContainer, card, _initReversed, r, g, b);
   body.appendChild(_effectContainer);
 
@@ -875,11 +872,9 @@ function _renderEffectBlock(container, card, isReversed, r, g, b) {
 
 // ─────────────────────────────────────────────────────────────
 // HEADER POLARITY TOGGLE
-// Renders the ↑ NRM / ↓ REV pill next to the close button.
-// Always interactive — clicking switches polarity and updates
-// the body effect block. If the card is staged the live entry
-// is mutated; if not, a transient state object tracks the choice
-// so the effect block still shows the correct text.
+// Reads from / writes to AxiumPolarity (persistent save).
+// Toggling here rotates field cards, picker cards, and deck review
+// cards — and updates the body effect text — all without any pills.
 // ─────────────────────────────────────────────────────────────
 function _updateHdrPolarity(modalEl, card, context) {
   const container = modalEl.querySelector('#axce-hdr-polarity');
@@ -887,40 +882,74 @@ function _updateHdrPolarity(modalEl, card, context) {
   container.innerHTML = '';
   container.style.display = 'flex';
 
-  // Use a shared mutable state so we can track polarity even for unstaged cards.
-  // If the card is staged, this points directly at the live entry.
-  const state = context?.entry ?? { reversed: false };
-
   function _renderPill() {
-    const rev = state.reversed;
+    const isRev = typeof AxiumPolarity !== 'undefined'
+      ? AxiumPolarity.isReversed(card.id)
+      : (context?.entry?.reversed ?? false);
+
     container.innerHTML = '';
     ['normal', 'reversed'].forEach(pol => {
-      const isActive = (pol === 'normal' && !rev) || (pol === 'reversed' && rev);
+      const active = (pol === 'normal' && !isRev) || (pol === 'reversed' && isRev);
       const btn = document.createElement('button');
       btn.className = [
         'axc-exp-hdr-pol-btn',
         pol,
-        isActive ? ('active ' + (pol === 'normal' ? 'upright' : 'reversed')) : '',
+        active ? ('active ' + (pol === 'normal' ? 'upright' : 'reversed')) : '',
       ].join(' ').trim();
       btn.textContent = pol === 'normal' ? '↑ NRM' : '↓ REV';
-      btn.title = pol === 'normal' ? 'Normal — ' + _uprightLabel(card) : 'Reversed — attacks enemy';
+      btn.title = pol === 'normal'
+        ? 'Normal — ' + _uprightLabel(card)
+        : 'Reversed — attacks enemy · card rotates 180°';
+
       btn.addEventListener('click', e => {
         e.stopPropagation();
+        const currentlyRev = typeof AxiumPolarity !== 'undefined'
+          ? AxiumPolarity.isReversed(card.id)
+          : (context?.entry?.reversed ?? false);
         const wantRev = pol === 'reversed';
-        if (state.reversed === wantRev) return;
-        state.reversed = wantRev;
+        if (currentlyRev === wantRev) return;
+
+        // Persist to save
+        if (typeof AxiumPolarity !== 'undefined') AxiumPolarity.set(card.id, wantRev);
+
+        // Keep legacy entry in sync if card is currently staged
+        if (context?.entry) context.entry.reversed = wantRev;
+
+        // Re-render pill to reflect new state
         _renderPill();
-        // Refresh body effect text to match new polarity
+
+        // Refresh body effect text
         const eb = document.getElementById('axce-effect-block');
-        const [r2,g2,b2] = _hexRGB(card.color || '#ffffff');
+        const [r2, g2, b2] = _hexRGB(card.color || '#ffffff');
         if (eb) _renderEffectBlock(eb, card, wantRev, r2, g2, b2);
-        // Propagate to field/picker if card is staged
+
+        // Drive all live card rotations across the UI
+        _applyGlobalCardRotations(card.id, wantRev);
+
+        // Notify field/picker
         context?.onChange?.();
       });
       container.appendChild(btn);
     });
   }
   _renderPill();
+}
+
+// ─────────────────────────────────────────────────────────────
+// GLOBAL CARD ROTATION
+// Rotates every rendered .axc-card element for a given cardId.
+// Called whenever polarity changes so field, picker, and deck
+// review cards all flip immediately without a full re-render.
+// ─────────────────────────────────────────────────────────────
+function _applyGlobalCardRotations(changedCardId, isReversed) {
+  document.querySelectorAll('.axc-card').forEach(el => {
+    if (el.dataset.cardId === changedCardId) {
+      el.classList.toggle('axc-reversed', isReversed);
+    }
+  });
+
+  // Also trigger cintegration field re-render to sync B.playerPlayed entries
+  if (typeof updateBattlePhaseUI === 'function' && typeof B !== 'undefined') updateBattlePhaseUI(B);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1038,7 +1067,13 @@ function _getStagedContext(cardId) {
 }
 
 function _scanAndAddBtns() {
-  document.querySelectorAll('.axc-card').forEach(_addExpandBtn);
+  document.querySelectorAll('.axc-card').forEach(el => {
+    _addExpandBtn(el);
+    // Apply persistent rotation on initial render
+    if (typeof AxiumPolarity !== 'undefined') {
+      el.classList.toggle('axc-reversed', AxiumPolarity.isReversed(el.dataset.cardId));
+    }
+  });
 }
 
 // Scan on load
@@ -1054,10 +1089,16 @@ if (typeof MutationObserver !== 'undefined') {
     mutations.forEach(m => {
       m.addedNodes.forEach(node => {
         if (!(node instanceof Element)) return;
+        const process = (el) => {
+          _addExpandBtn(el);
+          if (typeof AxiumPolarity !== 'undefined') {
+            el.classList.toggle('axc-reversed', AxiumPolarity.isReversed(el.dataset.cardId));
+          }
+        };
         if (node.classList.contains('axc-card')) {
-          _addExpandBtn(node);
+          process(node);
         } else {
-          node.querySelectorAll?.('.axc-card').forEach(_addExpandBtn);
+          node.querySelectorAll?.('.axc-card').forEach(process);
         }
       });
     });

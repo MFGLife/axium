@@ -268,31 +268,28 @@
 // Win condition: 25% margin — the recursive witness demands certainty.
 // ════════════════════════════════════════════════════════════
 const CHAPTER_CONFIG = {
-  playerStart:   50,
-  enemyStart:    150,
+  playerStart:   60,    // starts lower than ch2 — the descent
+  enemyStart:    375,   // 75% of enemyMax — formidable opening position
   enemyMax:      500,
   baseMaxAttn:   250,
   handSize:      10,
-  loseAttn:      10,
+  loseAttn:      35,    // very tight — the shadow doesn't give you room
   winPctMargin:  0.25,
-  enemyHandSize: 11,
+  enemyHandSize: 10,
+  enemyDrainMult: 2.0,  // ID drain hits 2× harder in ch3
   enemyDeck: [
-  'death',
-  'devil',
-  'high_priestess',
-    // Layer I: the prepared confession — fast ID drain
-    'nine_swords',    // 10n T1 — anxiety, dread — highest drain ID
-    'ten_swords',     // 13n T1 — collapse — fires only when enemy weakened
-    // Layer II: the actual confession — Superego burst + cap erosion
-    'devil',          // 16n T1 — shadow, bondage — fastest Superego, cap −0.88/fire
-    'moon',           // 13n T1 — illusion — destabilises attention reads
-    'tower',          // 11n T1 — collapse — burst −17, then slow erosion
-    // Layer III: what you didn't know you were carrying — Ego division
-    'king_swords',    // 15n T2 — ×1.6 eDivisor — crushes player gains hardest
-    'queen_swords',   // 13n T2 — ×1.4 eDivisor — stacks with King
-    // The recursive witness — highest-node card in the game
-    'world',          // 21n T1 — fastest T1 card, burst −21, then −1.6 pMax/fire
-  ],
+  'world',          // 21n — fastest, burst -21
+  'sun',            // 20n — burst -18, cap -1.2/fire
+  'devil',          // 16n — burst -15 + fast cap erosion
+  'king_swords',    // 15n T2 — ×1.6 eDivisor
+  'king_cups',      // 15n T2 — ×1.5 eDivisor (stacks → player gains ÷2.4 total)
+  'queen_swords',   // 13n T2 — ×1.4 eDivisor (stacks further)
+  'ten_pents',      // 17n ID — drainVal 5 × 2.0 = 10/fire, fast node count
+  'nine_cups',      // 13n ID — drainVal 3 × 2.0 = 6/fire
+  'ten_wands',      // 14n ID — drainVal 8 × 2.0 = 16/fire (highest drain ID)
+  'nine_wands',     // 15n ID — drainVal 5 × 2.0 = 10/fire
+  'eight_wands',    // 12n ID — drainVal 5 × 2.0 = 10/fire
+],
 };
 
 // ════════════════════════════════════════════════════════════
