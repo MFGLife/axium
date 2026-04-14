@@ -459,16 +459,77 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 #discord-link{display:flex;align-items:center;gap:14px;padding:16px 36px;background:linear-gradient(135deg,#AA8C2C,#D4AF37,#AA8C2C);border-radius:3px;text-decoration:none;color:#04040c;font-family:'Cinzel',serif;font-weight:800;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;box-shadow:0 0 50px rgba(212,175,55,.45);transition:box-shadow .3s,transform .3s;}
 #discord-link:hover{box-shadow:0 0 80px rgba(212,175,55,.75);transform:scale(1.05);}
 #discord-icon{font-size:1.3rem;}
-/* ── TICKER BAR ── */
-#ticker-bar{position:fixed;bottom:0;left:0;right:0;z-index:28;height:26px;background:rgba(4,4,10,.96);border-top:1px solid rgba(212,175,55,.12);display:flex;align-items:center;overflow:hidden;pointer-events:none;}
-#ticker-track{display:flex;align-items:center;gap:0;white-space:nowrap;animation:tickerScroll 32s linear infinite;}
-@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.tick-item{display:inline-flex;align-items:center;gap:5px;padding:0 18px;border-right:1px solid rgba(255,255,255,.06);}
-.tick-sym{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.14em;color:rgba(255,255,255,.38);text-transform:uppercase;}
-.tick-price{font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,.65);}
-.tick-chg{font-family:'JetBrains Mono',monospace;font-size:7px;padding:1px 4px;border-radius:1px;}
-.tick-chg.up{color:#4ade80;background:rgba(74,222,128,.1);}
-.tick-chg.dn{color:#f87171;background:rgba(248,113,113,.1);}
+/* ── VIX TICKER BAR ── */
+#ticker-bar{position:fixed;bottom:0;left:0;right:0;z-index:28;height:32px;background:rgba(4,4,10,.97);border-top:1px solid rgba(212,175,55,.14);display:flex;align-items:center;gap:0;overflow:hidden;pointer-events:auto;cursor:pointer;}
+#ticker-bar:hover{background:rgba(4,4,10,1);}
+#vix-main{display:flex;align-items:center;gap:10px;padding:0 18px;border-right:1px solid rgba(212,175,55,.1);flex-shrink:0;}
+#vix-label{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.22em;color:rgba(212,175,55,.55);text-transform:uppercase;}
+#vix-price{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#fff;letter-spacing:.04em;}
+#vix-chg{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 5px;border-radius:2px;letter-spacing:.04em;}
+#vix-chg.up{color:#4ade80;background:rgba(74,222,128,.1);}
+#vix-chg.dn{color:#f87171;background:rgba(248,113,113,.1);}
+#vvix-block{display:flex;align-items:center;gap:7px;padding:0 16px;border-right:1px solid rgba(255,255,255,.05);flex-shrink:0;}
+#vvix-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.18em;color:rgba(255,255,255,.25);text-transform:uppercase;}
+#vvix-val{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.55);}
+#vvix-chg{font-family:'JetBrains Mono',monospace;font-size:7px;padding:1px 4px;border-radius:1px;}
+#vvix-chg.up{color:#4ade80;background:rgba(74,222,128,.08);}
+#vvix-chg.dn{color:#f87171;background:rgba(248,113,113,.08);}
+#divergence-badge{display:flex;align-items:center;gap:6px;padding:0 14px;margin-left:2px;}
+#div-badge-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.2);}
+#div-badge-status{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.14em;padding:2px 7px;border-radius:2px;transition:all .4s;}
+#div-badge-status.clear{color:rgba(255,255,255,.28);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);}
+#div-badge-status.watch{color:#facc15;background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.25);animation:watchPulse 2s ease-in-out infinite;}
+#div-badge-status.alert{color:#f87171;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.4);animation:alertFlash 1s ease-in-out infinite;}
+@keyframes watchPulse{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes alertFlash{0%,100%{opacity:1;box-shadow:0 0 8px rgba(248,113,113,.4)}50%{opacity:.7;box-shadow:none}}
+#ticker-open-scanner{display:flex;align-items:center;gap:5px;margin-left:auto;padding:0 14px;font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.2em;color:rgba(212,175,55,.4);text-transform:uppercase;transition:color .2s;flex-shrink:0;}
+#ticker-bar:hover #ticker-open-scanner{color:rgba(212,175,55,.75);}
+#contango-bar{display:flex;align-items:center;gap:6px;padding:0 14px;border-left:1px solid rgba(255,255,255,.05);flex-shrink:0;}
+#contango-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.2);}
+#contango-val{font-family:'JetBrains Mono',monospace;font-size:8px;}
+#contango-val.cg{color:rgba(248,113,113,.65);}
+#contango-val.bk{color:rgba(74,222,128,.75);}
+
+/* ── DIVERGENCE SCANNER PANEL ── */
+#scanner-panel{position:fixed;bottom:32px;left:0;right:0;z-index:27;background:rgba(4,4,12,.97);border-top:1px solid rgba(212,175,55,.18);transform:translateY(100%);transition:transform .38s cubic-bezier(.22,1,.36,1);backdrop-filter:blur(18px);max-height:420px;overflow-y:auto;pointer-events:none;}
+#scanner-panel.open{transform:translateY(0);pointer-events:auto;}
+#scanner-inner{padding:16px 18px 20px;}
+#scanner-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+#scanner-title{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+#scanner-close{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.2em;color:rgba(255,255,255,.25);background:none;border:1px solid rgba(255,255,255,.1);padding:3px 8px;cursor:pointer;transition:all .2s;border-radius:2px;}
+#scanner-close:hover{color:var(--gold);border-color:var(--gold-dim);}
+.scanner-section{margin-bottom:16px;}
+.scanner-section-title{font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(212,175,55,.45);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.05);}
+.scanner-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.scanner-card{padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:3px;transition:border-color .3s;}
+.scanner-card.active-signal{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.04);}
+.scanner-card.watch-signal{border-color:rgba(250,204,21,.25);background:rgba(250,204,21,.03);}
+.sc-name{font-family:'Space Mono',monospace;font-size:.4rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:4px;}
+.sc-value{font-family:'JetBrains Mono',monospace;font-size:1.05rem;color:#fff;line-height:1;margin-bottom:3px;}
+.sc-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.72rem;color:rgba(255,255,255,.38);line-height:1.3;}
+.sc-badge{display:inline-block;margin-top:5px;font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.12em;padding:2px 5px;border-radius:2px;}
+.sc-badge.ok{color:rgba(74,222,128,.75);background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.15);}
+.sc-badge.warn{color:#facc15;background:rgba(250,204,21,.08);border:1px solid rgba(250,204,21,.2);}
+.sc-badge.hot{color:#f87171;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);}
+.scanner-logic-box{padding:12px 14px;background:rgba(212,175,55,.04);border-left:2px solid rgba(212,175,55,.25);border-radius:0 3px 3px 0;margin-bottom:12px;}
+.slb-label{font-family:'Space Mono',monospace;font-size:.4rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(212,175,55,.4);margin-bottom:5px;}
+.slb-rule{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:rgba(255,255,255,.6);line-height:1.7;}
+.slb-rule span.op{color:#7dd3fc;}
+.slb-rule span.val{color:#fde68a;}
+.slb-rule span.sig{color:#f87171;}
+#scanner-log{margin-top:4px;}
+.log-entry{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.log-entry:last-child{border-bottom:none;}
+.log-time{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.1em;color:rgba(255,255,255,.22);flex-shrink:0;padding-top:1px;}
+.log-msg{font-family:'Cormorant Garamond',serif;font-size:.8rem;color:rgba(255,255,255,.52);line-height:1.45;}
+.log-msg.alert-msg{color:rgba(248,113,113,.75);}
+.log-msg.watch-msg{color:rgba(250,204,21,.7);}
+.scanner-thresholds{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0 4px;}
+.thresh-item{display:flex;align-items:center;gap:6px;}
+.thresh-label{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.25);}
+.thresh-input{font-family:'JetBrains Mono',monospace;font-size:.65rem;width:52px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#fff;padding:3px 6px;border-radius:2px;text-align:center;}
+.thresh-input:focus{outline:none;border-color:rgba(212,175,55,.4);}
+.thresh-sep{font-family:'Space Mono',monospace;font-size:.38rem;color:rgba(255,255,255,.2);}
 /* ── CTHULHU GAME HUD ── */
 #cthulhu-hud{position:fixed;top:62px;left:14px;z-index:22;pointer-events:none;opacity:0;transition:opacity .8s ease;}
 #cthulhu-hud.visible{opacity:1;pointer-events:auto;}
@@ -483,7 +544,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .cth-toast-title{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.22em;color:rgba(139,0,255,.9);text-transform:uppercase;margin-bottom:6px;}
 .cth-toast-body{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.88rem;color:rgba(255,255,255,.6);line-height:1.65;}
 .cth-toast-warn{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.18em;color:rgba(139,0,255,.5);text-transform:uppercase;margin-top:10px;}
-#cthulhu-btn{position:fixed;bottom:40px;right:14px;z-index:26;background:rgba(4,4,12,.92);border:1px solid rgba(139,0,255,.3);border-radius:3px;color:rgba(139,0,255,.7);font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.18em;padding:6px 10px;cursor:pointer;transition:all .22s;display:none;}
+#cthulhu-btn{position:fixed;bottom:46px;right:14px;z-index:26;background:rgba(4,4,12,.92);border:1px solid rgba(139,0,255,.3);border-radius:3px;color:rgba(139,0,255,.7);font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.18em;padding:6px 10px;cursor:pointer;transition:all .22s;display:none;}
 #cthulhu-btn:hover{border-color:rgba(139,0,255,.7);color:#b060ff;box-shadow:0 0 14px rgba(139,0,255,.25);}
 
 /* ── CHAPTER NAVIGATION ── */
@@ -513,9 +574,115 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 <body>
 
 
-<!-- ── TICKER BAR ── -->
-<div id="ticker-bar">
-    <div id="ticker-track"></div>
+<!-- ── VIX TICKER BAR ── -->
+<div id="ticker-bar" onclick="toggleScanner()">
+    <div id="vix-main">
+        <span id="vix-label">VIX</span>
+        <span id="vix-price">—</span>
+        <span id="vix-chg" class="dn">—</span>
+    </div>
+    <div id="vvix-block">
+        <span id="vvix-label">VVIX</span>
+        <span id="vvix-val">—</span>
+        <span id="vvix-chg" class="up">—</span>
+    </div>
+    <div id="divergence-badge">
+        <span id="div-badge-label">Divergence</span>
+        <span id="div-badge-status" class="clear">SCANNING</span>
+    </div>
+    <div id="contango-bar">
+        <span id="contango-label">Term Structure</span>
+        <span id="contango-val" class="cg">—</span>
+    </div>
+    <span id="ticker-open-scanner">▲ Scanner</span>
+</div>
+
+<!-- ── DIVERGENCE SCANNER PANEL ── -->
+<div id="scanner-panel">
+    <div id="scanner-inner">
+        <div id="scanner-header">
+            <span id="scanner-title">⊕ VIX Divergence Scanner</span>
+            <button id="scanner-close" onclick="toggleScanner(event)">✕ CLOSE</button>
+        </div>
+
+        <div class="scanner-section">
+            <div class="scanner-section-title">Live Indicators</div>
+            <div class="scanner-grid">
+                <div class="scanner-card" id="sc-vix">
+                    <div class="sc-name">VIX · Fear Index</div>
+                    <div class="sc-value" id="sc-vix-val">—</div>
+                    <div class="sc-sub" id="sc-vix-sub">Implied volatility of S&P 500</div>
+                    <span class="sc-badge ok" id="sc-vix-badge">LOADING</span>
+                </div>
+                <div class="scanner-card" id="sc-vvix">
+                    <div class="sc-name">VVIX · Fear of Fear</div>
+                    <div class="sc-value" id="sc-vvix-val">—</div>
+                    <div class="sc-sub" id="sc-vvix-sub">Volatility of VIX options</div>
+                    <span class="sc-badge ok" id="sc-vvix-badge">LOADING</span>
+                </div>
+                <div class="scanner-card" id="sc-ratio">
+                    <div class="sc-name">VIX/VVIX Ratio</div>
+                    <div class="sc-value" id="sc-ratio-val">—</div>
+                    <div class="sc-sub">Low = hidden fear building. High = VIX expensive vs options demand.</div>
+                    <span class="sc-badge ok" id="sc-ratio-badge">—</span>
+                </div>
+            </div>
+            <div class="scanner-grid">
+                <div class="scanner-card" id="sc-term">
+                    <div class="sc-name">Term Structure</div>
+                    <div class="sc-value" id="sc-term-val">—</div>
+                    <div class="sc-sub" id="sc-term-sub">M1 vs M2 futures relationship</div>
+                    <span class="sc-badge ok" id="sc-term-badge">LOADING</span>
+                </div>
+                <div class="scanner-card" id="sc-vrp">
+                    <div class="sc-name">VRP Proxy</div>
+                    <div class="sc-value" id="sc-vrp-val">—</div>
+                    <div class="sc-sub">VIX − Realized Vol (5d). Positive = IV expensive. Negative = stretched rubber band.</div>
+                    <span class="sc-badge ok" id="sc-vrp-badge">—</span>
+                </div>
+                <div class="scanner-card" id="sc-div">
+                    <div class="sc-name">Divergence Signal</div>
+                    <div class="sc-value" id="sc-div-val">NONE</div>
+                    <div class="sc-sub" id="sc-div-sub">Logic gate status</div>
+                    <span class="sc-badge ok" id="sc-div-badge">DORMANT</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="scanner-section">
+            <div class="scanner-section-title">Logic Gate — Alert Thresholds</div>
+            <div class="scanner-logic-box">
+                <div class="slb-label">Active Rule</div>
+                <div class="slb-rule">
+                    <span class="op">IF</span> VVIX_change <span class="op">&gt;</span> <span class="val" id="rule-vvix-thresh">+2.0</span>%
+                    <span class="op"> AND </span> VIX_change <span class="op">&lt;</span> <span class="val" id="rule-vix-thresh">+0.5</span>%
+                    <span class="op"> → </span> <span class="sig">DIVERGENCE ALERT</span>
+                </div>
+            </div>
+            <div class="scanner-thresholds">
+                <div class="thresh-item">
+                    <span class="thresh-label">VVIX rise &gt;</span>
+                    <input class="thresh-input" id="thresh-vvix" type="number" step="0.5" value="2.0" onchange="updateThresholds()">
+                    <span class="thresh-sep">%</span>
+                </div>
+                <div class="thresh-item">
+                    <span class="thresh-sep" style="color:rgba(212,175,55,.3)">AND</span>
+                </div>
+                <div class="thresh-item">
+                    <span class="thresh-label">VIX rise &lt;</span>
+                    <input class="thresh-input" id="thresh-vix" type="number" step="0.5" value="0.5" onchange="updateThresholds()">
+                    <span class="thresh-sep">%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="scanner-section">
+            <div class="scanner-section-title">Signal Log</div>
+            <div id="scanner-log">
+                <div class="log-entry"><span class="log-time">—</span><span class="log-msg">Scanner initialized. Awaiting data fetch...</span></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- ── CTHULHU HUD ── -->
@@ -1642,73 +1809,291 @@ setSoul('micheal');
 
 
 // ══════════════════════════════════════════════
-// TICKER SYSTEM — Finnhub live quotes (all real)
+// VIX DIVERGENCE SCANNER — Finnhub live data
 // ══════════════════════════════════════════════
 
 const FINNHUB_KEY = 'd52iom1r01qqu01vabfgd52iom1r01qqu01vabg0';
 
-// Symbol map: display name → Finnhub symbol
-const TICKER_SYMBOLS = {
-    SPY:  { finnhub: 'SPY',     label: 'S&P 500 ETF',  isCrypto: false },
-    BTC:  { finnhub: 'BINANCE:BTCUSDT', label: 'Bitcoin', isCrypto: false },
-    QQQ:  { finnhub: 'QQQ',     label: 'NASDAQ ETF',   isCrypto: false },
-    VIX:  { finnhub: 'VIX',     label: 'Fear Index',   isCrypto: false },
-    GLD:  { finnhub: 'GLD',     label: 'Gold ETF',     isCrypto: false },
-    AAPL: { finnhub: 'AAPL',    label: 'Apple',        isCrypto: false },
+const scannerState = {
+    vix:  { price: 0, changePct: 0, prevClose: 0 },
+    vvix: { price: 0, changePct: 0, prevClose: 0 },
+    spy:  { price: 0, prevClose: 0, realized5d: 0, dailyReturns: [] },
+    threshVVIX: 2.0,   // VVIX must rise MORE than this %
+    threshVIX:  0.5,   // VIX must rise LESS than this %
+    scannerOpen: false,
+    signalLog: [],
+    lastSignalState: 'clear'  // 'clear' | 'watch' | 'alert'
 };
 
-// Seed with reasonable fallbacks — overwritten immediately on first fetch
-const tickerState = {
-    SPY:  { price: 548.72,  prevClose: 548.72,  changePct: 0, label: 'S&P 500 ETF' },
-    BTC:  { price: 68420,   prevClose: 68420,   changePct: 0, label: 'Bitcoin'      },
-    QQQ:  { price: 447.31,  prevClose: 447.31,  changePct: 0, label: 'NASDAQ ETF'  },
-    VIX:  { price: 14.88,   prevClose: 14.88,   changePct: 0, label: 'Fear Index'  },
-    GLD:  { price: 231.45,  prevClose: 231.45,  changePct: 0, label: 'Gold ETF'    },
-    AAPL: { price: 189.30,  prevClose: 189.30,  changePct: 0, label: 'Apple'       },
-};
-
-async function fetchQuote(displaySym) {
-    const cfg = TICKER_SYMBOLS[displaySym];
+async function fetchFinnhubQuote(symbol) {
     try {
-        // Finnhub /quote works for both equities and crypto (BINANCE:BTCUSDT)
-        // Returns: c=current, pc=prev close, dp=day change % — all real-time
         const res = await fetch(
-            `https://finnhub.io/api/v1/quote?symbol=${cfg.finnhub}&token=${FINNHUB_KEY}`,
+            `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_KEY}`,
+            { cache: 'no-store' }
+        );
+        if (!res.ok) return null;
+        const d = await res.json();
+        return (d && d.c > 0) ? d : null;
+    } catch(e) { return null; }
+}
+
+// Rough realized vol proxy: use SPY candle data
+async function fetchSPYCandles() {
+    try {
+        const to = Math.floor(Date.now() / 1000);
+        const from = to - 7 * 24 * 3600;
+        const res = await fetch(
+            `https://finnhub.io/api/v1/stock/candle?symbol=SPY&resolution=D&from=${from}&to=${to}&token=${FINNHUB_KEY}`,
             { cache: 'no-store' }
         );
         if (!res.ok) return;
-        const data = await res.json();
-        if (data.c && data.c > 0) {
-            tickerState[displaySym].price = data.c;
-            tickerState[displaySym].prevClose = data.pc || data.c;
-            tickerState[displaySym].changePct = data.dp || 0;
+        const d = await res.json();
+        if (!d.c || d.c.length < 2) return;
+        // Daily log returns
+        const returns = [];
+        for (let i = 1; i < d.c.length; i++) {
+            returns.push(Math.log(d.c[i] / d.c[i-1]));
         }
-    } catch(e) { /* keep last known value */ }
+        // Annualized vol from last 5 days
+        const slice = returns.slice(-5);
+        const mean = slice.reduce((a,b) => a+b, 0) / slice.length;
+        const variance = slice.reduce((a,b) => a + (b-mean)**2, 0) / slice.length;
+        scannerState.spy.realized5d = Math.sqrt(variance * 252) * 100; // annualized %
+    } catch(e) {}
 }
 
-async function fetchAllQuotes() {
-    await Promise.all(Object.keys(TICKER_SYMBOLS).map(fetchQuote));
-    renderTicker();
+// VIX term structure: compare VIX (spot) to a proxy using VIX3M
+// We use VIX vs SPY options as a rough proxy since VVIX and VIX are available
+function computeTermStructureProxy() {
+    const vix = scannerState.vix.price;
+    const vvix = scannerState.vvix.price;
+    if (!vix || !vvix) return { label: '—', mode: 'cg', desc: 'Awaiting data' };
+    // VVIX/VIX ratio: higher = more demand for vol-of-vol = contango stress rising
+    const ratio = vvix / vix;
+    if (ratio > 5.5) {
+        return { label: 'BACKWARDATION signal', mode: 'bk', desc: 'VVIX/VIX elevated — panic demand building' };
+    } else if (ratio > 4.5) {
+        return { label: 'CONTANGO (stressed)', mode: 'cg', desc: 'Contango but VVIX diverging' };
+    } else {
+        return { label: 'CONTANGO (stable)', mode: 'cg', desc: 'Normal carry — long VIX bleeds' };
+    }
 }
 
-function renderTicker() {
-    const track = document.getElementById('ticker-track');
-    if (!track) return;
-    const items = Object.entries(tickerState).map(([sym, d]) => {
-        const up = d.changePct >= 0;
-        const arrow = up ? '▲' : '▼';
-        const pctStr = (up ? '+' : '') + d.changePct.toFixed(2) + '%';
-        const priceStr = sym === 'BTC'
-            ? '$' + d.price.toLocaleString('en-US', { maximumFractionDigits: 0 })
-            : '$' + d.price.toFixed(2);
-        return `<div class="tick-item">
-            <span class="tick-sym">${sym}</span>
-            <span class="tick-price">${priceStr}</span>
-            <span class="tick-chg ${up ? 'up' : 'dn'}">${arrow} ${pctStr}</span>
-        </div>`;
-    }).join('');
-    track.innerHTML = items + items;
+function computeVRP() {
+    const vix = scannerState.vix.price;
+    const rv = scannerState.spy.realized5d;
+    if (!vix || !rv) return null;
+    return vix - rv; // Positive = IV expensive vs actual moves
 }
+
+function addLogEntry(msg, type = 'normal') {
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    scannerState.signalLog.unshift({ time, msg, type });
+    if (scannerState.signalLog.length > 12) scannerState.signalLog.pop();
+    renderScannerLog();
+}
+
+function renderScannerLog() {
+    const el = document.getElementById('scanner-log');
+    if (!el) return;
+    el.innerHTML = scannerState.signalLog.map(e =>
+        `<div class="log-entry">
+            <span class="log-time">${e.time}</span>
+            <span class="log-msg ${e.type === 'alert' ? 'alert-msg' : e.type === 'watch' ? 'watch-msg' : ''}">${e.msg}</span>
+        </div>`
+    ).join('') || '<div class="log-entry"><span class="log-time">—</span><span class="log-msg">No signals yet.</span></div>';
+}
+
+function runDivergenceLogic() {
+    const vvixChg = scannerState.vvix.changePct;
+    const vixChg  = scannerState.vix.changePct;
+    const tVVIX   = scannerState.threshVVIX;
+    const tVIX    = scannerState.threshVIX;
+
+    // PRIMARY SIGNAL: VVIX rising fast while VIX stays flat/drops
+    const primaryAlert = (vvixChg > tVVIX) && (vixChg < tVIX);
+    // WATCH: VVIX moving up meaningfully while VIX lags
+    const watchSignal  = (vvixChg > tVVIX * 0.5) && (vixChg < tVIX * 1.5) && !primaryAlert;
+
+    const badge = document.getElementById('div-badge-status');
+    const scCard = document.getElementById('sc-div');
+    const scVal  = document.getElementById('sc-div-val');
+    const scSub  = document.getElementById('sc-div-sub');
+    const scBadge = document.getElementById('sc-div-badge');
+
+    let newState;
+    if (primaryAlert) {
+        newState = 'alert';
+        if (scCard) scCard.classList.add('active-signal'), scCard.classList.remove('watch-signal');
+        if (scVal) scVal.textContent = 'DIVERGE';
+        if (scVal) scVal.style.color = '#f87171';
+        if (scSub) scSub.textContent = `VVIX +${vvixChg.toFixed(2)}% while VIX only +${vixChg.toFixed(2)}%`;
+        if (scBadge) { scBadge.className = 'sc-badge hot'; scBadge.textContent = 'ALERT FIRING'; }
+        if (badge) { badge.className = 'div-badge-status alert'; badge.textContent = '⚡ DIVERGENCE'; }
+        if (scannerState.lastSignalState !== 'alert') {
+            addLogEntry(`⚡ DIVERGENCE ALERT — VVIX +${vvixChg.toFixed(2)}% / VIX +${vixChg.toFixed(2)}%. Big money buying VIX calls quietly.`, 'alert');
+        }
+    } else if (watchSignal) {
+        newState = 'watch';
+        if (scCard) scCard.classList.add('watch-signal'), scCard.classList.remove('active-signal');
+        if (scVal) scVal.textContent = 'WATCH';
+        if (scVal) scVal.style.color = '#facc15';
+        if (scSub) scSub.textContent = `VVIX rising +${vvixChg.toFixed(2)}% — monitoring VIX lag`;
+        if (scBadge) { scBadge.className = 'sc-badge warn'; scBadge.textContent = 'WATCHING'; }
+        if (badge) { badge.className = 'div-badge-status watch'; badge.textContent = '◎ WATCH'; }
+        if (scannerState.lastSignalState !== 'watch') {
+            addLogEntry(`◎ Watch — VVIX stirring (+${vvixChg.toFixed(2)}%) while VIX lag persists.`, 'watch');
+        }
+    } else {
+        newState = 'clear';
+        if (scCard) scCard.classList.remove('active-signal', 'watch-signal');
+        if (scVal) scVal.textContent = 'CLEAR';
+        if (scVal) scVal.style.color = 'rgba(255,255,255,0.4)';
+        if (scSub) scSub.textContent = 'No divergence detected';
+        if (scBadge) { scBadge.className = 'sc-badge ok'; scBadge.textContent = 'DORMANT'; }
+        if (badge) { badge.className = 'div-badge-status clear'; badge.textContent = 'CLEAR'; }
+        if (scannerState.lastSignalState !== 'clear') {
+            addLogEntry('Signal cleared — VIX and VVIX moving in alignment.');
+        }
+    }
+    scannerState.lastSignalState = newState;
+}
+
+function renderVIXBar() {
+    const vix  = scannerState.vix;
+    const vvix = scannerState.vvix;
+    if (!vix.price) return;
+
+    // VIX main
+    const vixUp = vix.changePct >= 0;
+    document.getElementById('vix-price').textContent = vix.price.toFixed(2);
+    const vixChgEl = document.getElementById('vix-chg');
+    vixChgEl.textContent = (vixUp ? '▲ +' : '▼ ') + vix.changePct.toFixed(2) + '%';
+    vixChgEl.className = 'up_dn ' + (vixUp ? 'up' : 'dn');
+    vixChgEl.id = 'vix-chg'; // keep id
+
+    // VVIX block
+    if (vvix.price) {
+        const vvixUp = vvix.changePct >= 0;
+        document.getElementById('vvix-val').textContent = vvix.price.toFixed(2);
+        const vvixChgEl = document.getElementById('vvix-chg');
+        vvixChgEl.textContent = (vvixUp ? '+' : '') + vvix.changePct.toFixed(2) + '%';
+        vvixChgEl.className = vvixUp ? 'up' : 'dn';
+        vvixChgEl.id = 'vvix-chg';
+    }
+
+    // Term structure
+    const term = computeTermStructureProxy();
+    const termEl = document.getElementById('contango-val');
+    if (termEl) { termEl.textContent = term.mode === 'bk' ? 'BACKWARDATION' : 'CONTANGO'; termEl.className = term.mode; termEl.id = 'contango-val'; }
+
+    // Scanner cards
+    const scVixVal = document.getElementById('sc-vix-val');
+    const scVixBadge = document.getElementById('sc-vix-badge');
+    if (scVixVal) scVixVal.textContent = vix.price.toFixed(2);
+    if (scVixBadge) {
+        const lvl = vix.price > 30 ? 'hot' : vix.price > 20 ? 'warn' : 'ok';
+        const lbl = vix.price > 30 ? 'HIGH FEAR' : vix.price > 20 ? 'ELEVATED' : 'LOW VOL';
+        scVixBadge.className = `sc-badge ${lvl}`; scVixBadge.textContent = lbl;
+        document.getElementById('sc-vix').className = `scanner-card ${lvl === 'hot' ? 'active-signal' : lvl === 'warn' ? 'watch-signal' : ''}`;
+    }
+
+    if (vvix.price) {
+        const scVvixVal = document.getElementById('sc-vvix-val');
+        const scVvixBadge = document.getElementById('sc-vvix-badge');
+        if (scVvixVal) scVvixVal.textContent = vvix.price.toFixed(2);
+        if (scVvixBadge) {
+            const lvl = vvix.price > 120 ? 'hot' : vvix.price > 100 ? 'warn' : 'ok';
+            const lbl = vvix.price > 120 ? 'VOL SPIKE' : vvix.price > 100 ? 'ELEVATED' : 'NORMAL';
+            scVvixBadge.className = `sc-badge ${lvl}`; scVvixBadge.textContent = lbl;
+        }
+    }
+
+    // Ratio
+    const ratio = (vix.price && vvix.price) ? (vvix.price / vix.price) : 0;
+    const scRatioVal = document.getElementById('sc-ratio-val');
+    const scRatioBadge = document.getElementById('sc-ratio-badge');
+    if (scRatioVal && ratio) scRatioVal.textContent = ratio.toFixed(2);
+    if (scRatioBadge && ratio) {
+        const lvl = ratio > 5.5 ? 'hot' : ratio > 4.5 ? 'warn' : 'ok';
+        scRatioBadge.className = `sc-badge ${lvl}`; scRatioBadge.textContent = `VVIX/VIX: ${ratio.toFixed(2)}`;
+    }
+
+    // Term structure in scanner
+    const scTermVal = document.getElementById('sc-term-val');
+    const scTermSub = document.getElementById('sc-term-sub');
+    const scTermBadge = document.getElementById('sc-term-badge');
+    if (scTermVal) scTermVal.textContent = term.mode === 'bk' ? 'BACKW.' : 'CONTANGO';
+    if (scTermVal) scTermVal.style.color = term.mode === 'bk' ? '#4ade80' : '#f87171';
+    if (scTermSub) scTermSub.textContent = term.desc;
+    if (scTermBadge) { scTermBadge.className = `sc-badge ${term.mode === 'bk' ? 'hot' : 'ok'}`; scTermBadge.textContent = term.mode.toUpperCase(); }
+
+    // VRP
+    const vrp = computeVRP();
+    const scVrpVal = document.getElementById('sc-vrp-val');
+    const scVrpBadge = document.getElementById('sc-vrp-badge');
+    if (scVrpVal && vrp !== null) {
+        scVrpVal.textContent = (vrp > 0 ? '+' : '') + vrp.toFixed(1);
+        scVrpVal.style.color = vrp < -5 ? '#f87171' : vrp > 5 ? '#4ade80' : '#fff';
+    }
+    if (scVrpBadge && vrp !== null) {
+        const lvl = vrp < -5 ? 'hot' : vrp < 0 ? 'warn' : 'ok';
+        const lbl = vrp < -5 ? 'VIX UNDERPRICED' : vrp < 0 ? 'IV LAGGING RV' : 'IV PREMIUM';
+        scVrpBadge.className = `sc-badge ${lvl}`; scVrpBadge.textContent = lbl;
+        if (lvl === 'hot') document.getElementById('sc-vrp').classList.add('active-signal');
+        else document.getElementById('sc-vrp').classList.remove('active-signal', 'watch-signal');
+    }
+
+    runDivergenceLogic();
+}
+
+async function fetchVIXData() {
+    const [vixData, vvixData] = await Promise.all([
+        fetchFinnhubQuote('VIX'),
+        fetchFinnhubQuote('VVIX')
+    ]);
+    if (vixData) {
+        scannerState.vix.price     = vixData.c;
+        scannerState.vix.prevClose = vixData.pc || vixData.c;
+        scannerState.vix.changePct = vixData.dp || 0;
+    }
+    if (vvixData) {
+        scannerState.vvix.price     = vvixData.c;
+        scannerState.vvix.prevClose = vvixData.pc || vvixData.c;
+        scannerState.vvix.changePct = vvixData.dp || 0;
+    }
+    // Fetch SPY candles for realized vol (once per session is enough)
+    if (!scannerState.spy.realized5d) await fetchSPYCandles();
+    renderVIXBar();
+    addLogEntry(`Data refreshed — VIX ${scannerState.vix.price.toFixed(2)} / VVIX ${scannerState.vvix.price ? scannerState.vvix.price.toFixed(2) : '—'}`);
+}
+
+window.updateThresholds = function() {
+    const v = parseFloat(document.getElementById('thresh-vvix')?.value) || 2.0;
+    const x = parseFloat(document.getElementById('thresh-vix')?.value) || 0.5;
+    scannerState.threshVVIX = v;
+    scannerState.threshVIX  = x;
+    document.getElementById('rule-vvix-thresh').textContent = '+' + v.toFixed(1);
+    document.getElementById('rule-vix-thresh').textContent  = '+' + x.toFixed(1);
+    runDivergenceLogic();
+    addLogEntry(`Thresholds updated: VVIX>${v}% AND VIX<${x}%`);
+};
+
+window.toggleScanner = function(e) {
+    if (e) e.stopPropagation();
+    const panel = document.getElementById('scanner-panel');
+    const label = document.getElementById('ticker-open-scanner');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen) {
+        panel.classList.remove('open');
+        if (label) label.textContent = '▲ Scanner';
+    } else {
+        panel.classList.add('open');
+        if (label) label.textContent = '▼ Scanner';
+        renderScannerLog();
+    }
+};
 
 /**
  * Injects Cards from cards.js into the Planet Panel
@@ -1746,10 +2131,9 @@ function getCardsForPlanet(planetName, soulKey) {
     `;
 }
 
-renderTicker();
-fetchAllQuotes();
-// Finnhub free tier: 60 calls/min — 6 symbols every 60s is well within limit
-setInterval(fetchAllQuotes, 60000);
+fetchVIXData();
+// Finnhub free tier: 60 calls/min — 2 symbols every 60s is well within limit
+setInterval(fetchVIXData, 60000);
 
 // ══════════════════════════════════════════════
 // CTHULHU SYSTEM — Gabriel's 3D horror + lore game
