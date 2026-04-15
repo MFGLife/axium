@@ -1161,6 +1161,7 @@ window.openInfoPanel=function(startTab){
         <div class="info-tabs">${tabs.map((n,i)=>`<button class="info-tab${i===activeTab?' on':''}" onclick="itab(${i},this)">${n}</button>`).join('')}</div>
         <div class="info-tc${activeTab===0?' on':''}" id="it0">
             <div class="stat-row">
+            <a href="vix.apk" download="vix.apk" class="nav-btn"><span class="nav-btn-title">VIX Android App</span><span class="nav-btn-sub">Download for Android</span></a>
                 <a href="growth.html" class="nav-btn"><span class="nav-btn-title">Daily Drift Audit</span><span class="nav-btn-sub">Keep Moving Forward</span></a>
                 <a href="constellation.html" class="nav-btn"><span class="nav-btn-title">Tarot Reading</span><span class="nav-btn-sub">Universal Reminders</span></a>
             </div>
@@ -1837,29 +1838,35 @@ async function fetchFinnhubQuote(symbol) {
     } catch(e) { return null; }
 }
 
-// Rough realized vol proxy: use SPY candle data
-async function fetchSPYCandles() {
-    try {
-        const to = Math.floor(Date.now() / 1000);
-        const from = to - 7 * 24 * 3600;
-        const res = await fetch(
-            `https://finnhub.io/api/v1/stock/candle?symbol=SPY&resolution=D&from=${from}&to=${to}&token=${FINNHUB_KEY}`,
-            { cache: 'no-store' }
-        );
-        if (!res.ok) return;
-        const d = await res.json();
-        if (!d.c || d.c.length < 2) return;
-        // Daily log returns
-        const returns = [];
-        for (let i = 1; i < d.c.length; i++) {
-            returns.push(Math.log(d.c[i] / d.c[i-1]));
-        }
-        // Annualized vol from last 5 days
-        const slice = returns.slice(-5);
-        const mean = slice.reduce((a,b) => a+b, 0) / slice.length;
-        const variance = slice.reduce((a,b) => a + (b-mean)**2, 0) / slice.length;
-        scannerState.spy.realized5d = Math.sqrt(variance * 252) * 100; // annualized %
-    } catch(e) {}
+// Realized vol proxy: accumulate intraday log-returns from successive /quote polls.
+// The Finnhub free tier does not permit /stock/candle (403), so we track price
+// changes across poll cycles in memory and annualize the running sample.
+// With ~60-second polls this builds a meaningful sample within a session and
+// seeds from prevClose on first tick so VRP is non-null almost immediately.
+function updateSPYRealizedVol(currentPrice) {
+    if (!currentPrice || currentPrice <= 0) return;
+    const spy = scannerState.spy;
+    // Bootstrap: push the prevClose→current return on first call
+    if (spy._lastTrackedPrice == null) {
+        spy._lastTrackedPrice = spy.prevClose > 0 ? spy.prevClose : currentPrice;
+    }
+    const prev = spy._lastTrackedPrice;
+    if (prev > 0 && currentPrice !== prev) {
+        const logRet = Math.log(currentPrice / prev);
+        spy.dailyReturns.push(logRet);
+        if (spy.dailyReturns.length > 30) spy.dailyReturns.shift(); // keep rolling window
+    }
+    spy._lastTrackedPrice = currentPrice;
+    // Need at least 2 samples; annualize assuming ~252 trading days × 390 min/day
+    // At 60-sec polls: 1 minute intervals → scale = 252 * 390 * 60 / pollInterval(s)
+    // We use a conservative 252*390 intraday-bars-per-year factor for 1-min intervals
+    if (spy.dailyReturns.length >= 2) {
+        const r = spy.dailyReturns;
+        const mean = r.reduce((a, b) => a + b, 0) / r.length;
+        const variance = r.reduce((a, b) => a + (b - mean) ** 2, 0) / r.length;
+        // Annualize: ~98280 one-minute bars per trading year (252 × 390)
+        spy.realized5d = Math.sqrt(variance * 98280) * 100;
+    }
 }
 
 // VIX term structure: compare VIX (spot) to a proxy using VIX3M
@@ -2049,9 +2056,10 @@ function renderVIXBar() {
 }
 
 async function fetchVIXData() {
-    const [vixData, vvixData] = await Promise.all([
+    const [vixData, vvixData, spyData] = await Promise.all([
         fetchFinnhubQuote('VIX'),
-        fetchFinnhubQuote('VVIX')
+        fetchFinnhubQuote('VVIX'),
+        fetchFinnhubQuote('SPY')
     ]);
     if (vixData) {
         scannerState.vix.price     = vixData.c;
@@ -2063,8 +2071,11 @@ async function fetchVIXData() {
         scannerState.vvix.prevClose = vvixData.pc || vvixData.c;
         scannerState.vvix.changePct = vvixData.dp || 0;
     }
-    // Fetch SPY candles for realized vol (once per session is enough)
-    if (!scannerState.spy.realized5d) await fetchSPYCandles();
+    if (spyData) {
+        scannerState.spy.price     = spyData.c;
+        scannerState.spy.prevClose = spyData.pc || spyData.c;
+        updateSPYRealizedVol(spyData.c);
+    }
     renderVIXBar();
     addLogEntry(`Data refreshed — VIX ${scannerState.vix.price.toFixed(2)} / VVIX ${scannerState.vvix.price ? scannerState.vvix.price.toFixed(2) : '—'}`);
 }
