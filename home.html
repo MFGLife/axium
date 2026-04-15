@@ -580,6 +580,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
         <span id="vix-label">VIX</span>
         <span id="vix-price">—</span>
         <span id="vix-chg" class="dn">—</span>
+        <span id="vix-afterhours-badge" style="display:none;font-family:'Space Mono',monospace;font-size:7px;color:#D4AF37;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);border-radius:2px;padding:1px 5px;letter-spacing:.06em;margin-left:4px;">PREV CLOSE</span>
     </div>
     <div id="vvix-block">
         <span id="vvix-label">VVIX</span>
@@ -1161,9 +1162,9 @@ window.openInfoPanel=function(startTab){
         <div class="info-tabs">${tabs.map((n,i)=>`<button class="info-tab${i===activeTab?' on':''}" onclick="itab(${i},this)">${n}</button>`).join('')}</div>
         <div class="info-tc${activeTab===0?' on':''}" id="it0">
             <div class="stat-row">
-            <a href="vix.apk" download="vix.apk" class="nav-btn"><span class="nav-btn-title">VIX Android App</span><span class="nav-btn-sub">Download for Android</span></a>
                 <a href="growth.html" class="nav-btn"><span class="nav-btn-title">Daily Drift Audit</span><span class="nav-btn-sub">Keep Moving Forward</span></a>
                 <a href="constellation.html" class="nav-btn"><span class="nav-btn-title">Tarot Reading</span><span class="nav-btn-sub">Universal Reminders</span></a>
+                <a href="vix.apk" download="vix.apk" class="nav-btn"><span class="nav-btn-title">VIX Android App</span><span class="nav-btn-sub">Download for Android</span></a>
             </div>
             <div style="margin-bottom:16px;"><div class="blk-label">The Cathedral</div>
             <p class="info-body">Axium.church is not an app. It is a book being written in public \u2014 one chapter at a time, shaped by the people who pass through it. The premise is simple: <em style="color:rgba(212,175,55,0.7)">AI does not fail because it is malicious. It fails because it is agreeable.</em> Every tool here addresses that failure through character \u2014 not protocol, not guardrails, not restriction. Character.</p>
@@ -1834,7 +1835,7 @@ async function fetchFinnhubQuote(symbol) {
         );
         if (!res.ok) return null;
         const d = await res.json();
-        return (d && d.c > 0) ? d : null;
+        return (d && d.c !== undefined) ? d : null;
     } catch(e) { return null; }
 }
 
@@ -1970,20 +1971,29 @@ function runDivergenceLogic() {
 function renderVIXBar() {
     const vix  = scannerState.vix;
     const vvix = scannerState.vvix;
-    if (!vix.price) return;
 
-    // VIX main
+    // Fall back to prevClose when live price is zero (after hours / free tier)
+    const vixDisplay  = vix.price  || vix.prevClose;
+    const vvixDisplay = vvix.price || vvix.prevClose;
+    if (!vixDisplay) return;
+
+    // After-hours indicator
+    const isAfterHours = !vix.price && vix.prevClose;
+    const ahEl = document.getElementById('vix-afterhours-badge');
+    if (ahEl) ahEl.style.display = isAfterHours ? 'inline' : 'none';
+
+    // VIX main — use live price or fall back to prev close
     const vixUp = vix.changePct >= 0;
-    document.getElementById('vix-price').textContent = vix.price.toFixed(2);
+    document.getElementById('vix-price').textContent = vixDisplay.toFixed(2);
     const vixChgEl = document.getElementById('vix-chg');
     vixChgEl.textContent = (vixUp ? '▲ +' : '▼ ') + vix.changePct.toFixed(2) + '%';
     vixChgEl.className = 'up_dn ' + (vixUp ? 'up' : 'dn');
     vixChgEl.id = 'vix-chg'; // keep id
 
     // VVIX block
-    if (vvix.price) {
+    if (vvixDisplay) {
         const vvixUp = vvix.changePct >= 0;
-        document.getElementById('vvix-val').textContent = vvix.price.toFixed(2);
+        document.getElementById('vvix-val').textContent = vvixDisplay.toFixed(2);
         const vvixChgEl = document.getElementById('vvix-chg');
         vvixChgEl.textContent = (vvixUp ? '+' : '') + vvix.changePct.toFixed(2) + '%';
         vvixChgEl.className = vvixUp ? 'up' : 'dn';
@@ -2057,8 +2067,8 @@ function renderVIXBar() {
 
 async function fetchVIXData() {
     const [vixData, vvixData, spyData] = await Promise.all([
-        fetchFinnhubQuote('VIX'),
-        fetchFinnhubQuote('VVIX'),
+        fetchFinnhubQuote('VXX'),      // VIX proxy ETF — free tier compatible
+        fetchFinnhubQuote('UVXY'),    // VVIX/vol proxy ETF — free tier compatible
         fetchFinnhubQuote('SPY')
     ]);
     if (vixData) {
@@ -2077,7 +2087,9 @@ async function fetchVIXData() {
         updateSPYRealizedVol(spyData.c);
     }
     renderVIXBar();
-    addLogEntry(`Data refreshed — VIX ${scannerState.vix.price.toFixed(2)} / VVIX ${scannerState.vvix.price ? scannerState.vvix.price.toFixed(2) : '—'}`);
+    const _vixDisp = scannerState.vix.price || scannerState.vix.prevClose;
+    const _vvixDisp = scannerState.vvix.price || scannerState.vvix.prevClose;
+    addLogEntry(`Data refreshed — VXX ${_vixDisp ? _vixDisp.toFixed(2) : '—'} / UVXY ${_vvixDisp ? _vvixDisp.toFixed(2) : '—'}`);
 }
 
 window.updateThresholds = function() {
