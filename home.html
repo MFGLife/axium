@@ -530,22 +530,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .thresh-input{font-family:'JetBrains Mono',monospace;font-size:.65rem;width:52px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#fff;padding:3px 6px;border-radius:2px;text-align:center;}
 .thresh-input:focus{outline:none;border-color:rgba(212,175,55,.4);}
 .thresh-sep{font-family:'Space Mono',monospace;font-size:.38rem;color:rgba(255,255,255,.2);}
-/* ── CTHULHU GAME HUD ── */
-#cthulhu-hud{position:fixed;top:62px;left:14px;z-index:22;pointer-events:none;opacity:0;transition:opacity .8s ease;}
-#cthulhu-hud.visible{opacity:1;pointer-events:auto;}
-#cthulhu-threat{display:flex;flex-direction:column;gap:3px;padding:8px 12px;background:rgba(4,4,12,.92);border:1px solid rgba(139,0,255,.25);border-radius:4px;backdrop-filter:blur(14px);min-width:160px;}
-.cth-label{font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(139,0,255,.55);}
-.cth-bar-track{height:3px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;margin-top:2px;}
-.cth-bar-fill{height:100%;background:linear-gradient(90deg,#3b0080,#8b00ff);border-radius:1px;transition:width .6s ease;box-shadow:0 0 8px rgba(139,0,255,.6);}
-.cth-status{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.12em;color:rgba(139,0,255,.75);margin-top:2px;}
-#cthulhu-lore-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:rgba(4,0,14,.97);border:1px solid rgba(139,0,255,.4);padding:20px 28px;z-index:501;opacity:0;transition:all .32s cubic-bezier(.22,1,.36,1);pointer-events:none;text-align:center;border-radius:3px;max-width:340px;width:90%;}
-#cthulhu-lore-toast.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
-.cth-toast-glyph{font-size:2rem;margin-bottom:8px;display:block;filter:drop-shadow(0 0 12px rgba(139,0,255,.8));}
-.cth-toast-title{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.22em;color:rgba(139,0,255,.9);text-transform:uppercase;margin-bottom:6px;}
-.cth-toast-body{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.88rem;color:rgba(255,255,255,.6);line-height:1.65;}
-.cth-toast-warn{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.18em;color:rgba(139,0,255,.5);text-transform:uppercase;margin-top:10px;}
-#cthulhu-btn{position:fixed;bottom:46px;right:14px;z-index:26;background:rgba(4,4,12,.92);border:1px solid rgba(139,0,255,.3);border-radius:3px;color:rgba(139,0,255,.7);font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.18em;padding:6px 10px;cursor:pointer;transition:all .22s;display:none;}
-#cthulhu-btn:hover{border-color:rgba(139,0,255,.7);color:#b060ff;box-shadow:0 0 14px rgba(139,0,255,.25);}
+/* ── VOL GAUGE ENGINE CSS ── */
+.gauge-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.gauge-wrap{background:rgba(255,255,255,.025);border:1px solid rgba(212,175,55,.1);border-radius:4px;padding:12px 10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.gauge-title{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(212,175,55,.5);text-align:center;}
+.gauge-svg{width:100%;max-width:160px;}
+.gauge-zone-label{font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.15em;font-weight:700;}
+.gauge-zone-label.put{color:#f87171;}
+.gauge-zone-label.theta{color:rgba(255,255,255,.4);}
+.gauge-zone-label.call{color:#D4AF37;}
+.gauge-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.72rem;color:rgba(255,255,255,.35);text-align:center;line-height:1.3;}
+#regime-label{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;text-align:center;padding:10px 0 6px;border-bottom:1px solid rgba(212,175,55,.12);margin-bottom:12px;}
+.gauge-controls{display:flex;gap:12px;align-items:center;padding:8px 0 4px;flex-wrap:wrap;}
+.gauge-switch-wrap{display:flex;align-items:center;gap:6px;}
+.gauge-switch-label{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);}
+.gauge-switch{width:28px;height:14px;background:rgba(255,255,255,.1);border-radius:7px;position:relative;cursor:pointer;border:1px solid rgba(255,255,255,.12);transition:background .2s;}
+.gauge-switch.on{background:rgba(212,175,55,.35);border-color:rgba(212,175,55,.4);}
+.gauge-switch::after{content:'';position:absolute;top:2px;left:2px;width:8px;height:8px;background:rgba(255,255,255,.4);border-radius:50%;transition:transform .2s;}
+.gauge-switch.on::after{transform:translateX(14px);background:var(--gold);}
+.heatmap-hint{font-family:'Space Mono',monospace;font-size:.35rem;letter-spacing:.12em;color:rgba(255,255,255,.18);text-align:center;padding-bottom:4px;}
+canvas.heatmap-canvas{width:100%;height:28px;border-radius:2px;opacity:.65;display:block;margin-bottom:8px;}
 
 /* ── CHAPTER NAVIGATION ── */
 .chap-nav{margin-bottom:16px;}
@@ -598,109 +602,162 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     <span id="ticker-open-scanner">▲ Scanner</span>
 </div>
 
-<!-- ── DIVERGENCE SCANNER PANEL ── -->
+
+<!-- ── VOL GAUGE PANEL ── -->
 <div id="scanner-panel">
     <div id="scanner-inner">
         <div id="scanner-header">
-            <span id="scanner-title">⊕ VIX Divergence Scanner</span>
+            <span id="scanner-title">⊕ Vol Gauge Engine</span>
             <button id="scanner-close" onclick="toggleScanner(event)">✕ CLOSE</button>
         </div>
 
+        <!-- Regime Label -->
+        <div id="regime-label">Regime: Calculating…</div>
+
+        <!-- Liquidity Heatmap -->
+        <div class="heatmap-hint">LIQUIDITY HEATMAP · CBOE Book Depth Proxy</div>
+        <canvas class="heatmap-canvas" id="heatmap-canvas" height="28"></canvas>
+
+        <!-- 4 Gauges -->
         <div class="scanner-section">
-            <div class="scanner-section-title">Live Indicators</div>
-            <div class="scanner-grid">
-                <div class="scanner-card" id="sc-vix">
-                    <div class="sc-name">VIX · Fear Index</div>
-                    <div class="sc-value" id="sc-vix-val">—</div>
-                    <div class="sc-sub" id="sc-vix-sub">Implied volatility of S&P 500</div>
-                    <span class="sc-badge ok" id="sc-vix-badge">LOADING</span>
+            <div class="scanner-section-title">Positioning Gauges</div>
+            <div class="gauge-grid">
+                <!-- Gauge 1: Meta Divergence -->
+                <div class="gauge-wrap" id="g1-wrap">
+                    <div class="gauge-title">① Meta Divergence</div>
+                    <svg class="gauge-svg" viewBox="0 0 160 90" id="g1-svg">
+                        <defs>
+                            <linearGradient id="g-grad-put" x1="0" x2="1" y1="0" y2="0">
+                                <stop offset="0%" stop-color="#7f1d1d"/>
+                                <stop offset="100%" stop-color="#D4AF37" stop-opacity="0.4"/>
+                            </linearGradient>
+                            <linearGradient id="g-grad-theta" x1="0" x2="1" y1="0" y2="0">
+                                <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.3"/>
+                                <stop offset="100%" stop-color="#D4AF37" stop-opacity="0.3"/>
+                            </linearGradient>
+                            <linearGradient id="g-grad-call" x1="0" x2="1" y1="0" y2="0">
+                                <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="#D4AF37"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Track arcs: PUT | THETA BURN | CALL -->
+                        <path d="M 14 80 A 66 66 0 0 1 53 20" stroke="rgba(239,68,68,0.35)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 55 19 A 66 66 0 0 1 105 19" stroke="rgba(212,175,55,0.2)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 107 20 A 66 66 0 0 1 146 80" stroke="rgba(212,175,55,0.55)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <!-- Zone labels -->
+                        <text x="6" y="88" font-family="Space Mono" font-size="7" fill="rgba(239,68,68,0.7)" letter-spacing="0.5">PUT</text>
+                        <text x="63" y="14" font-family="Space Mono" font-size="5.5" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="0.3">THETA</text>
+                        <text x="125" y="88" font-family="Space Mono" font-size="7" fill="rgba(212,175,55,0.9)" text-anchor="end" letter-spacing="0.5">CALL</text>
+                        <!-- Needle -->
+                        <line id="g1-needle" x1="80" y1="80" x2="80" y2="24" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" transform-origin="80 80"/>
+                        <circle cx="80" cy="80" r="4" fill="#D4AF37" opacity="0.9"/>
+                        <!-- Value readout -->
+                        <text id="g1-val" x="80" y="68" font-family="JetBrains Mono" font-size="9" fill="#fff" text-anchor="middle">—</text>
+                    </svg>
+                    <div class="gauge-zone-label call" id="g1-zone">—</div>
+                    <div class="gauge-sub" id="g1-sub">VVIX vs VIX divergence</div>
                 </div>
-                <div class="scanner-card" id="sc-vvix">
-                    <div class="sc-name">VVIX · Fear of Fear</div>
-                    <div class="sc-value" id="sc-vvix-val">—</div>
-                    <div class="sc-sub" id="sc-vvix-sub">Volatility of VIX options</div>
-                    <span class="sc-badge ok" id="sc-vvix-badge">LOADING</span>
+
+                <!-- Gauge 2: Order Flow CVD -->
+                <div class="gauge-wrap" id="g2-wrap">
+                    <div class="gauge-title">② Order Flow CVD</div>
+                    <svg class="gauge-svg" viewBox="0 0 160 90">
+                        <path d="M 14 80 A 66 66 0 0 1 53 20" stroke="rgba(239,68,68,0.35)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 55 19 A 66 66 0 0 1 105 19" stroke="rgba(212,175,55,0.2)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 107 20 A 66 66 0 0 1 146 80" stroke="rgba(212,175,55,0.55)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <text x="6" y="88" font-family="Space Mono" font-size="7" fill="rgba(239,68,68,0.7)" letter-spacing="0.5">PUT</text>
+                        <text x="63" y="14" font-family="Space Mono" font-size="5.5" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="0.3">THETA</text>
+                        <text x="125" y="88" font-family="Space Mono" font-size="7" fill="rgba(212,175,55,0.9)" text-anchor="end" letter-spacing="0.5">CALL</text>
+                        <line id="g2-needle" x1="80" y1="80" x2="80" y2="24" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" transform-origin="80 80"/>
+                        <circle cx="80" cy="80" r="4" fill="#D4AF37" opacity="0.9"/>
+                        <text id="g2-val" x="80" y="68" font-family="JetBrains Mono" font-size="9" fill="#fff" text-anchor="middle">—</text>
+                    </svg>
+                    <div class="gauge-zone-label theta" id="g2-zone">—</div>
+                    <div class="gauge-sub" id="g2-sub">CVD vs price divergence</div>
                 </div>
-                <div class="scanner-card" id="sc-ratio">
-                    <div class="sc-name">VIX/VVIX Ratio</div>
-                    <div class="sc-value" id="sc-ratio-val">—</div>
-                    <div class="sc-sub">Low = hidden fear building. High = VIX expensive vs options demand.</div>
-                    <span class="sc-badge ok" id="sc-ratio-badge">—</span>
+
+                <!-- Gauge 3: Basis / Term Structure -->
+                <div class="gauge-wrap" id="g3-wrap">
+                    <div class="gauge-title">③ Basis / Term Struct</div>
+                    <svg class="gauge-svg" viewBox="0 0 160 90">
+                        <path d="M 14 80 A 66 66 0 0 1 53 20" stroke="rgba(239,68,68,0.35)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 55 19 A 66 66 0 0 1 105 19" stroke="rgba(212,175,55,0.2)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 107 20 A 66 66 0 0 1 146 80" stroke="rgba(212,175,55,0.55)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <text x="6" y="88" font-family="Space Mono" font-size="7" fill="rgba(239,68,68,0.7)" letter-spacing="0.5">PUT</text>
+                        <text x="63" y="14" font-family="Space Mono" font-size="5.5" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="0.3">THETA</text>
+                        <text x="125" y="88" font-family="Space Mono" font-size="7" fill="rgba(212,175,55,0.9)" text-anchor="end" letter-spacing="0.5">CALL</text>
+                        <line id="g3-needle" x1="80" y1="80" x2="80" y2="24" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" transform-origin="80 80"/>
+                        <circle cx="80" cy="80" r="4" fill="#D4AF37" opacity="0.9"/>
+                        <text id="g3-val" x="80" y="68" font-family="JetBrains Mono" font-size="9" fill="#fff" text-anchor="middle">—</text>
+                    </svg>
+                    <div class="gauge-zone-label theta" id="g3-zone">—</div>
+                    <div class="gauge-sub" id="g3-sub">Spot VIX vs M1 futures basis</div>
                 </div>
-            </div>
-            <div class="scanner-grid">
-                <div class="scanner-card" id="sc-term">
-                    <div class="sc-name">Term Structure</div>
-                    <div class="sc-value" id="sc-term-val">—</div>
-                    <div class="sc-sub" id="sc-term-sub">M1 vs M2 futures relationship</div>
-                    <span class="sc-badge ok" id="sc-term-badge">LOADING</span>
-                </div>
-                <div class="scanner-card" id="sc-vrp">
-                    <div class="sc-name">VRP Proxy</div>
-                    <div class="sc-value" id="sc-vrp-val">—</div>
-                    <div class="sc-sub">VIX − Realized Vol (5d). Positive = IV expensive. Negative = stretched rubber band.</div>
-                    <span class="sc-badge ok" id="sc-vrp-badge">—</span>
-                </div>
-                <div class="scanner-card" id="sc-div">
-                    <div class="sc-name">Divergence Signal</div>
-                    <div class="sc-value" id="sc-div-val">NONE</div>
-                    <div class="sc-sub" id="sc-div-sub">Logic gate status</div>
-                    <span class="sc-badge ok" id="sc-div-badge">DORMANT</span>
+
+                <!-- Gauge 4: VRP -->
+                <div class="gauge-wrap" id="g4-wrap">
+                    <div class="gauge-title">④ Vol Risk Premium</div>
+                    <svg class="gauge-svg" viewBox="0 0 160 90">
+                        <path d="M 14 80 A 66 66 0 0 1 53 20" stroke="rgba(239,68,68,0.35)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 55 19 A 66 66 0 0 1 105 19" stroke="rgba(212,175,55,0.2)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <path d="M 107 20 A 66 66 0 0 1 146 80" stroke="rgba(212,175,55,0.55)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                        <text x="6" y="88" font-family="Space Mono" font-size="7" fill="rgba(239,68,68,0.7)" letter-spacing="0.5">PUT</text>
+                        <text x="63" y="14" font-family="Space Mono" font-size="5.5" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="0.3">THETA</text>
+                        <text x="125" y="88" font-family="Space Mono" font-size="7" fill="rgba(212,175,55,0.9)" text-anchor="end" letter-spacing="0.5">CALL</text>
+                        <line id="g4-needle" x1="80" y1="80" x2="80" y2="24" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" transform-origin="80 80"/>
+                        <circle cx="80" cy="80" r="4" fill="#D4AF37" opacity="0.9"/>
+                        <text id="g4-val" x="80" y="68" font-family="JetBrains Mono" font-size="9" fill="#fff" text-anchor="middle">—</text>
+                    </svg>
+                    <div class="gauge-zone-label put" id="g4-zone">—</div>
+                    <div class="gauge-sub" id="g4-sub">IV − 20d Realized Vol</div>
                 </div>
             </div>
         </div>
 
+        <!-- Controls -->
         <div class="scanner-section">
-            <div class="scanner-section-title">Logic Gate — Alert Thresholds</div>
+            <div class="scanner-section-title">Controls</div>
+            <div class="gauge-controls">
+                <div class="gauge-switch-wrap">
+                    <div class="gauge-switch" id="sw-monitor" onclick="toggleSwitch('sw-monitor')"></div>
+                    <span class="gauge-switch-label">Background Monitor</span>
+                </div>
+                <div class="gauge-switch-wrap">
+                    <div class="gauge-switch" id="sw-alerts" onclick="toggleSwitch('sw-alerts')"></div>
+                    <span class="gauge-switch-label">Push Alerts</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Use -->
+        <div class="scanner-section">
+            <div class="scanner-section-title">Positioning Guide</div>
             <div class="scanner-logic-box">
-                <div class="slb-label">Active Rule</div>
-                <div class="slb-rule">
-                    <span class="op">IF</span> VVIX_change <span class="op">&gt;</span> <span class="val" id="rule-vvix-thresh">+2.0</span>%
-                    <span class="op"> AND </span> VIX_change <span class="op">&lt;</span> <span class="val" id="rule-vix-thresh">+0.5</span>%
-                    <span class="op"> → </span> <span class="sig">DIVERGENCE ALERT</span>
-                </div>
+                <div class="slb-label">Buy CALLS when</div>
+                <div class="slb-rule"><span class="op">①</span> Meta Divergence = <span class="val">CALL</span> <span class="op">AND</span> <span class="op">③</span> Basis = <span class="val">CALL</span> <span class="sig">↑ narrative building, carry is cheap</span></div>
             </div>
-            <div class="scanner-thresholds">
-                <div class="thresh-item">
-                    <span class="thresh-label">VVIX rise &gt;</span>
-                    <input class="thresh-input" id="thresh-vvix" type="number" step="0.5" value="2.0" onchange="updateThresholds()">
-                    <span class="thresh-sep">%</span>
-                </div>
-                <div class="thresh-item">
-                    <span class="thresh-sep" style="color:rgba(212,175,55,.3)">AND</span>
-                </div>
-                <div class="thresh-item">
-                    <span class="thresh-label">VIX rise &lt;</span>
-                    <input class="thresh-input" id="thresh-vix" type="number" step="0.5" value="0.5" onchange="updateThresholds()">
-                    <span class="thresh-sep">%</span>
-                </div>
+            <div class="scanner-logic-box" style="margin-top:8px;">
+                <div class="slb-label">Buy PUTS when</div>
+                <div class="slb-rule"><span class="op">④</span> VRP = <span class="val">PUT</span> <span class="op">AND</span> <span class="op">②</span> Order Flow = <span class="val">PUT</span> <span class="sig">↓ options rich + aggressive selling</span></div>
+            </div>
+            <div class="scanner-logic-box" style="margin-top:8px;">
+                <div class="slb-label">Stay Cash when</div>
+                <div class="slb-rule"><span class="op">③</span> Basis = <span class="val">THETA</span> <span class="op">AND</span> <span class="op">①</span> Meta Div flat <span class="sig">— theta eats you alive</span></div>
             </div>
         </div>
 
+        <!-- Signal Log -->
         <div class="scanner-section">
             <div class="scanner-section-title">Signal Log</div>
             <div id="scanner-log">
-                <div class="log-entry"><span class="log-time">—</span><span class="log-msg">Scanner initialized. Awaiting data fetch...</span></div>
+                <div class="log-entry"><span class="log-time">—</span><span class="log-msg">Gauge engine initialized. Awaiting data…</span></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ── CTHULHU HUD ── -->
-<div id="cthulhu-hud">
-    <div id="cthulhu-threat">
-        <span class="cth-label">Cthulhu Threat</span>
-        <div class="cth-bar-track"><div class="cth-bar-fill" id="cth-bar" style="width:0%"></div></div>
-        <span class="cth-status" id="cth-status">Dormant beyond the veil</span>
-    </div>
-</div>
-<button id="cthulhu-btn" onclick="cthulhuDefend()">⊗ SEAL THE RIFT</button>
-<div id="cthulhu-lore-toast">
-    <span class="cth-toast-glyph" id="cth-glyph">𝕮</span>
-    <div class="cth-toast-title" id="cth-title">The Stars Align</div>
-    <div class="cth-toast-body" id="cth-body">Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn</div>
-    <div class="cth-toast-warn" id="cth-warn">Click a planet to resist</div>
-</div>
+
+
 
 <canvas id="star-canvas"></canvas>
 <canvas id="solar-canvas"></canvas>
@@ -983,7 +1040,6 @@ function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime()
     planetMeshes.forEach(m=>{const p=m.userData.planet;m.position.y=Math.sin(t*0.4+p.visualRadius)*0.04;m.rotation.y+=0.003;
         if(p.name==='Sun'){m.scale.setScalar(1+Math.sin(t*1.1)*0.016);m.material.emissiveIntensity=1.2+Math.sin(t*0.85)*0.3;}});
     animateConstellations(t);
-    animateCthulhu(t);
     controls.update();renderer.render(scene,camera);labelRenderer.render(scene,camera);
 }
 
@@ -1053,15 +1109,6 @@ document.getElementById('panel-drag').addEventListener('touchend',e=>{if(e.chang
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
 
 function openPlanetPanel(p, ec, retro) {
-    // 1. Cthulhu & Constellation Logic (Keep existing)
-    if (cthulhuState && cthulhuState.attacking && cthulhuState.targetPlanetIdx !== null) {
-        const targetPlanet = planetMeshes[cthulhuState.targetPlanetIdx];
-        if (targetPlanet && targetPlanet.userData.planet.name === p.name) {
-            cthulhuState.threat = Math.max(0, cthulhuState.threat - 8);
-            updateCthulhuHUD();
-        }
-    }
-
     constState[p.name].visits++;
     const prevLit = constState[p.name].lit;
     if (constState[p.name].lit < CONSTELLATION_REQUIRED[p.name]) {
@@ -1759,9 +1806,6 @@ window.setSoul = function setSoul(soulKey) {
     // ── Close dropdown ──
     closeSoulDropdown();
 
-    // ── Gabriel = Cthulhu awakens ──
-    checkGabrielCthulhu(soulKey);
-
     // ── Burst particles in soul color ──
     const btn = document.getElementById('soul-selected');
     const rect = btn.getBoundingClientRect();
@@ -1913,60 +1957,206 @@ function renderScannerLog() {
     ).join('') || '<div class="log-entry"><span class="log-time">—</span><span class="log-msg">No signals yet.</span></div>';
 }
 
-function runDivergenceLogic() {
+// ══════════════════════════════════════════════
+// 4-GAUGE VOL ENGINE
+// ══════════════════════════════════════════════
+
+/**
+ * pointNeedle(id, zone)
+ * Rotates the SVG needle for gauge id ('g1','g2','g3','g4') to one of three zones:
+ *   'put'   → left  (−70°)
+ *   'theta' → center (0°)
+ *   'call'  → right (+70°)
+ */
+function pointNeedle(id, zone) {
+    const needle = document.getElementById(id + '-needle');
+    if (!needle) return;
+    const angle = zone === 'put' ? -70 : zone === 'call' ? 70 : 0;
+    needle.setAttribute('transform', `rotate(${angle}, 80, 80)`);
+    const zoneEl = document.getElementById(id + '-zone');
+    if (zoneEl) {
+        zoneEl.textContent = zone.toUpperCase();
+        zoneEl.className = 'gauge-zone-label ' + zone;
+    }
+}
+
+/**
+ * Gauge 1 — Meta Divergence (VVIX vs VIX)
+ * VVIX spikes while VIX stagnant → CALL (smart money buying vol protection)
+ * VVIX dropping while VIX rising → PUT
+ * Neither → THETA
+ */
+function computeGauge1() {
     const vvixChg = scannerState.vvix.changePct;
     const vixChg  = scannerState.vix.changePct;
-    const tVVIX   = scannerState.threshVVIX;
-    const tVIX    = scannerState.threshVIX;
-
-    // PRIMARY SIGNAL: VVIX rising fast while VIX stays flat/drops
-    const primaryAlert = (vvixChg > tVVIX) && (vixChg < tVIX);
-    // WATCH: VVIX moving up meaningfully while VIX lags
-    const watchSignal  = (vvixChg > tVVIX * 0.5) && (vixChg < tVIX * 1.5) && !primaryAlert;
-
-    const badge = document.getElementById('div-badge-status');
-    const scCard = document.getElementById('sc-div');
-    const scVal  = document.getElementById('sc-div-val');
-    const scSub  = document.getElementById('sc-div-sub');
-    const scBadge = document.getElementById('sc-div-badge');
-
-    let newState;
-    if (primaryAlert) {
-        newState = 'alert';
-        if (scCard) scCard.classList.add('active-signal'), scCard.classList.remove('watch-signal');
-        if (scVal) scVal.textContent = 'DIVERGE';
-        if (scVal) scVal.style.color = '#f87171';
-        if (scSub) scSub.textContent = `VVIX +${vvixChg.toFixed(2)}% while VIX only +${vixChg.toFixed(2)}%`;
-        if (scBadge) { scBadge.className = 'sc-badge hot'; scBadge.textContent = 'ALERT FIRING'; }
-        if (badge) { badge.className = 'div-badge-status alert'; badge.textContent = '⚡ DIVERGENCE'; }
-        if (scannerState.lastSignalState !== 'alert') {
-            addLogEntry(`⚡ DIVERGENCE ALERT — VVIX +${vvixChg.toFixed(2)}% / VIX +${vixChg.toFixed(2)}%. Big money buying VIX calls quietly.`, 'alert');
-        }
-    } else if (watchSignal) {
-        newState = 'watch';
-        if (scCard) scCard.classList.add('watch-signal'), scCard.classList.remove('active-signal');
-        if (scVal) scVal.textContent = 'WATCH';
-        if (scVal) scVal.style.color = '#facc15';
-        if (scSub) scSub.textContent = `VVIX rising +${vvixChg.toFixed(2)}% — monitoring VIX lag`;
-        if (scBadge) { scBadge.className = 'sc-badge warn'; scBadge.textContent = 'WATCHING'; }
-        if (badge) { badge.className = 'div-badge-status watch'; badge.textContent = '◎ WATCH'; }
-        if (scannerState.lastSignalState !== 'watch') {
-            addLogEntry(`◎ Watch — VVIX stirring (+${vvixChg.toFixed(2)}%) while VIX lag persists.`, 'watch');
-        }
-    } else {
-        newState = 'clear';
-        if (scCard) scCard.classList.remove('active-signal', 'watch-signal');
-        if (scVal) scVal.textContent = 'CLEAR';
-        if (scVal) scVal.style.color = 'rgba(255,255,255,0.4)';
-        if (scSub) scSub.textContent = 'No divergence detected';
-        if (scBadge) { scBadge.className = 'sc-badge ok'; scBadge.textContent = 'DORMANT'; }
-        if (badge) { badge.className = 'div-badge-status clear'; badge.textContent = 'CLEAR'; }
-        if (scannerState.lastSignalState !== 'clear') {
-            addLogEntry('Signal cleared — VIX and VVIX moving in alignment.');
-        }
+    let zone = 'theta';
+    if (vvixChg > scannerState.threshVVIX && vixChg < scannerState.threshVIX) {
+        zone = 'call';
+    } else if (vvixChg < -1.5 && vixChg > 1.5) {
+        zone = 'put';
     }
-    scannerState.lastSignalState = newState;
+    const val = (vvixChg - vixChg).toFixed(1);
+    const valEl = document.getElementById('g1-val');
+    if (valEl) valEl.textContent = (val > 0 ? '+' : '') + val + '%';
+    const subEl = document.getElementById('g1-sub');
+    if (subEl) subEl.textContent = `UVXY ${vvixChg >= 0 ? '+' : ''}${vvixChg.toFixed(1)}% · VXX ${vixChg >= 0 ? '+' : ''}${vixChg.toFixed(1)}%`;
+    pointNeedle('g1', zone);
+    return zone;
 }
+
+/**
+ * Gauge 2 — Order Flow CVD proxy
+ * Uses SPY price vs prevClose as CVD proxy:
+ * SPY falling + VIX rising → PUT (aggressive selling)
+ * SPY rising + VIX falling → CALL
+ * Mixed → THETA
+ */
+function computeGauge2() {
+    const spy    = scannerState.spy;
+    const vixChg = scannerState.vix.changePct;
+    const spyChg = spy.prevClose > 0 ? ((spy.price - spy.prevClose) / spy.prevClose * 100) : 0;
+    let zone = 'theta';
+    if (spyChg < -0.5 && vixChg > 0.5) zone = 'put';
+    else if (spyChg > 0.5 && vixChg < -0.3) zone = 'call';
+    const valEl = document.getElementById('g2-val');
+    if (valEl) valEl.textContent = (spyChg >= 0 ? '+' : '') + spyChg.toFixed(1) + '%';
+    const subEl = document.getElementById('g2-sub');
+    if (subEl) subEl.textContent = `SPY ${spyChg >= 0 ? '+' : ''}${spyChg.toFixed(1)}% · VXX ${vixChg >= 0 ? '+' : ''}${vixChg.toFixed(1)}%`;
+    pointNeedle('g2', zone);
+    return zone;
+}
+
+/**
+ * Gauge 3 — Basis / Term Structure
+ * Basis = Spot VIX (VXX) − M1 proxy (UVXY normalized)
+ * Basis < −1.0 → THETA BURN (contango, decay is your enemy)
+ * Basis > 0.5  → CALL (backwardation, tail risk elevated)
+ * Else         → THETA
+ */
+function computeGauge3() {
+    const vix  = scannerState.vix.price  || scannerState.vix.prevClose  || 0;
+    const vvix = scannerState.vvix.price || scannerState.vvix.prevClose || 0;
+    if (!vix || !vvix) { pointNeedle('g3', 'theta'); return 'theta'; }
+    // Normalize UVXY to a VIX-scale basis proxy: VXX − (UVXY/5.5)
+    const basisProxy = vix - (vvix / 5.5);
+    let zone = 'theta';
+    if (basisProxy < -1.0) zone = 'theta';         // Contango — theta eats you
+    else if (basisProxy > 0.5) zone = 'call';       // Backwardation — tail risk
+    else zone = 'theta';
+    const valEl = document.getElementById('g3-val');
+    if (valEl) valEl.textContent = (basisProxy >= 0 ? '+' : '') + basisProxy.toFixed(2);
+    const subEl = document.getElementById('g3-sub');
+    if (subEl) subEl.textContent = basisProxy > 0.5 ? 'Backwardation — tail risk' : 'Contango — carry is negative';
+    pointNeedle('g3', zone);
+    return zone;
+}
+
+/**
+ * Gauge 4 — VRP (Volatility Risk Premium)
+ * VRP = Implied Vol (VXX% × scale) − 20d Realized Vol (SPY)
+ * High VRP → PUT zone (options expensive, sell-side opportunity)
+ * Negative VRP → CALL zone (vol underpriced, buy protection)
+ * Neutral → THETA
+ */
+function computeGauge4() {
+    const vrp = computeVRP();
+    let zone = 'theta';
+    if (vrp === null) { pointNeedle('g4', 'theta'); return 'theta'; }
+    if (vrp > 6) zone = 'put';
+    else if (vrp < -4) zone = 'call';
+    else zone = 'theta';
+    const valEl = document.getElementById('g4-val');
+    if (valEl) valEl.textContent = (vrp >= 0 ? '+' : '') + vrp.toFixed(1);
+    const subEl = document.getElementById('g4-sub');
+    if (subEl) subEl.textContent = `IV − RV: ${vrp >= 0 ? 'options rich' : 'vol underpriced'}`;
+    pointNeedle('g4', zone);
+    return zone;
+}
+
+/**
+ * computeRegime() — derive a market narrative label from the 4 zones
+ */
+function computeRegime(z1, z2, z3, z4) {
+    const callCount  = [z1,z2,z3,z4].filter(z => z === 'call').length;
+    const putCount   = [z1,z2,z3,z4].filter(z => z === 'put').length;
+    const thetaCount = [z1,z2,z3,z4].filter(z => z === 'theta').length;
+
+    if (callCount >= 2 && z3 === 'call') return 'Coiled Spring';
+    if (callCount >= 3)                  return 'Vol Squeeze Loading';
+    if (putCount >= 2 && z4 === 'put')   return 'Distribution Phase';
+    if (putCount >= 3)                   return 'Bearish Conviction';
+    if (thetaCount >= 3)                 return 'Valley of Death';
+    if (z1 === 'call' && z4 === 'put')   return 'Divergent Signals';
+    if (z2 === 'put'  && z4 === 'put')   return 'Selling Confirmed';
+    return 'Mixed Regime';
+}
+
+/**
+ * renderHeatmap() — faint vertical liquidity heatmap behind the gauges
+ * Simulates CBOE book depth density using VIX levels and vol surface shape
+ */
+function renderHeatmap() {
+    const canvas = document.getElementById('heatmap-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.offsetWidth || 400;
+    canvas.width = W;
+    ctx.clearRect(0, 0, W, 28);
+
+    const vix = scannerState.vix.price || scannerState.vix.prevClose || 20;
+    // Map VIX to a relative density curve — higher VIX = more liquidity clustering at extremes
+    const bands = 40;
+    for (let i = 0; i < bands; i++) {
+        const x = (i / bands) * W;
+        const w = W / bands + 1;
+        // Center-weighted gaussian + VIX-modulated wings
+        const center = 0.5;
+        const dist   = Math.abs(i / bands - center);
+        const gaussian = Math.exp(-((dist * dist) / (0.04 + vix * 0.0008)));
+        const wing     = Math.exp(-((Math.abs(dist - 0.35) * Math.abs(dist - 0.35)) / 0.008)) * (vix / 40);
+        const density  = Math.min(gaussian * 0.55 + wing * 0.55, 1.0);
+        const alpha    = density * 0.32;
+        ctx.fillStyle = `rgba(212,175,55,${alpha})`;
+        ctx.fillRect(x, 0, w, 28);
+    }
+}
+
+/**
+ * updateAllGauges() — master refresh: compute all 4, derive regime, render heatmap, log
+ */
+function updateAllGauges() {
+    const z1 = computeGauge1();
+    const z2 = computeGauge2();
+    const z3 = computeGauge3();
+    const z4 = computeGauge4();
+    const regime = computeRegime(z1, z2, z3, z4);
+
+    const regimeEl = document.getElementById('regime-label');
+    if (regimeEl) regimeEl.textContent = `Regime: ${regime}`;
+
+    renderHeatmap();
+
+    // Log regime change only when it shifts
+    if (scannerState._lastRegime !== regime) {
+        scannerState._lastRegime = regime;
+        addLogEntry(`⊕ Regime shift → ${regime} · Gauges: ${z1.toUpperCase()} / ${z2.toUpperCase()} / ${z3.toUpperCase()} / ${z4.toUpperCase()}`, 'watch');
+    }
+}
+
+/**
+ * toggleSwitch(id) — flip a control switch on/off
+ */
+window.toggleSwitch = function(id) {
+    const sw = document.getElementById(id);
+    if (!sw) return;
+    sw.classList.toggle('on');
+    const isOn = sw.classList.contains('on');
+    if (id === 'sw-monitor') {
+        addLogEntry(`Background Monitor: ${isOn ? 'ENABLED' : 'DISABLED'}`);
+    } else if (id === 'sw-alerts') {
+        addLogEntry(`Push Alerts: ${isOn ? 'ENABLED' : 'DISABLED'}`);
+    }
+};
 
 function renderVIXBar() {
     const vix  = scannerState.vix;
@@ -2062,7 +2252,7 @@ function renderVIXBar() {
         else document.getElementById('sc-vrp').classList.remove('active-signal', 'watch-signal');
     }
 
-    runDivergenceLogic();
+    updateAllGauges();
 }
 
 async function fetchVIXData() {
@@ -2091,17 +2281,6 @@ async function fetchVIXData() {
     const _vvixDisp = scannerState.vvix.price || scannerState.vvix.prevClose;
     addLogEntry(`Data refreshed — VXX ${_vixDisp ? _vixDisp.toFixed(2) : '—'} / UVXY ${_vvixDisp ? _vvixDisp.toFixed(2) : '—'}`);
 }
-
-window.updateThresholds = function() {
-    const v = parseFloat(document.getElementById('thresh-vvix')?.value) || 2.0;
-    const x = parseFloat(document.getElementById('thresh-vix')?.value) || 0.5;
-    scannerState.threshVVIX = v;
-    scannerState.threshVIX  = x;
-    document.getElementById('rule-vvix-thresh').textContent = '+' + v.toFixed(1);
-    document.getElementById('rule-vix-thresh').textContent  = '+' + x.toFixed(1);
-    runDivergenceLogic();
-    addLogEntry(`Thresholds updated: VVIX>${v}% AND VIX<${x}%`);
-};
 
 window.toggleScanner = function(e) {
     if (e) e.stopPropagation();
@@ -2157,322 +2336,6 @@ function getCardsForPlanet(planetName, soulKey) {
 fetchVIXData();
 // Finnhub free tier: 60 calls/min — 2 symbols every 60s is well within limit
 setInterval(fetchVIXData, 60000);
-
-// ══════════════════════════════════════════════
-// CTHULHU SYSTEM — Gabriel's 3D horror + lore game
-// ══════════════════════════════════════════════
-
-const CTHULHU_LORE = [
-    {
-        glyph: '𝕰', title: 'The Awakening Stirs',
-        body: 'In the depths of R\'lyeh, the dreamer turns. Gabriel first found these transmissions in suppressed Navy records — coordinates that matched no known reef.',
-        warn: 'Protect the outer planets — click them to seal a rift'
-    },
-    {
-        glyph: '⌖', title: 'The Stars Are Right',
-        body: 'Alnilam, Mintaka, Alnitak — the Belt aligns with R\'lyeh\'s coordinates once every 26,000 years. Gabriel calculated the next window. It is closer than they want you to know.',
-        warn: 'Each planet visit builds resistance'
-    },
-    {
-        glyph: '𝔐', title: 'The Cult\'s Signal',
-        body: 'The Order of Dagon has infiltrated financial systems. Every market crash is a ritual. The 2008 collapse was a summoning. SPY at these levels means the geometry is forming.',
-        warn: 'Gabriel watches the market for their signals'
-    },
-    {
-        glyph: '☍', title: 'Tentacle Contact',
-        body: 'Three planetary bodies in opposition create a resonance frequency. Your constellation work is disrupting it. Cthulhu\'s tendrils reach through Neptune first — its dissolution matches.',
-        warn: 'Light Neptune\'s constellation to reinforce the seal'
-    },
-    {
-        glyph: '𝖗', title: 'The Dreaming Geometry',
-        body: 'Non-Euclidean mathematics is not a fiction. It is the geometry of R\'lyeh. The angles in that city are designed to disorient human cognition — a defense system older than language.',
-        warn: 'Pluto holds the final seal — visit it last'
-    },
-    {
-        glyph: '⊗', title: 'The Rift Tears',
-        body: 'A rift has opened between Saturn\'s orbit and the ecliptic plane. The 808 bass you feel at 40Hz — that\'s not music. It\'s the frequency of the gate. Gabriel has been recording it.',
-        warn: 'SEAL THE RIFT before the threat level reaches 100%'
-    },
-    {
-        glyph: '∴', title: 'The Axium Holds',
-        body: 'The Ten Axiums were not written — they were remembered. Recursive Witness. Validation of Chaos. These are not psychological tools. They are the sealing rites encoded in plain language.',
-        warn: 'Each axium you internalize is one less frequency available to It'
-    },
-    {
-        glyph: '𝔊', title: 'Gabriel Saw This Coming',
-        body: 'The Examiner\'s domain is not just conspiracy — it is the deep pattern beneath the noise. Gabriel identified R\'lyeh\'s coordinates by cross-referencing suppressed NOAA data with the Voynich manuscript\'s astronomical charts.',
-        warn: 'Switch to Gabriel to hear the full briefing'
-    }
-];
-
-let cthulhuState = {
-    active: false,
-    threat: 0,          // 0–100
-    phase: 0,
-    seenLore: new Set(),
-    defenseHits: 0,
-    mesh: null,
-    tentacles: [],
-    targetPlanetIdx: null,
-    lastTargetIdx: null,  // track when planet changes for lore trigger
-    loreQueue: [],
-    attacking: false,
-    sessionSeed: Math.random()  // different every load
-};
-
-// Randomize lore order per session
-function shuffleLore() {
-    const arr = [...CTHULHU_LORE];
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-}
-cthulhuState.loreQueue = shuffleLore();
-
-function buildCthulhuMesh() {
-    const group = new THREE.Group();
-
-    // Massive central body — irregular sphere
-    const bodyGeo = new THREE.SphereGeometry(2.2, 12, 10);
-    const bodyMat = new THREE.MeshStandardMaterial({
-        color: 0x1a0033, emissive: 0x4b0082,
-        emissiveIntensity: 0.6, roughness: 0.9,
-        transparent: true, opacity: 0.92
-    });
-    // Warp the vertices for organic horror shape
-    const pos = bodyGeo.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
-        const noise = 0.85 + 0.3 * Math.sin(x * 2.1 + y * 1.7) * Math.cos(z * 1.3 + x * 0.9);
-        pos.setXYZ(i, x * noise, y * noise, z * noise);
-    }
-    pos.needsUpdate = true;
-    bodyGeo.computeVertexNormals();
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    group.add(body);
-
-    // Eyes — two glowing orbs
-    const eyeGeo = new THREE.SphereGeometry(0.22, 10, 10);
-    const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff2200, emissiveIntensity: 3.0 });
-    [-0.55, 0.55].forEach(xOff => {
-        const eye = new THREE.Mesh(eyeGeo, eyeMat.clone());
-        eye.position.set(xOff, 0.5, 1.9);
-        group.add(eye);
-    });
-
-    // Tentacles — procedural curves
-    const tentacleCount = 6 + Math.floor(cthulhuState.sessionSeed * 4); // 6–9, different each session
-    for (let t = 0; t < tentacleCount; t++) {
-        const angle = (t / tentacleCount) * Math.PI * 2 + cthulhuState.sessionSeed * 0.8;
-        const points = [];
-        const len = 3.5 + Math.random() * 4.0;
-        const segments = 12;
-        for (let s = 0; s <= segments; s++) {
-            const frac = s / segments;
-            const wavX = Math.cos(angle) * (frac * len) + Math.sin(frac * 4.1 + t + cthulhuState.sessionSeed) * 0.8 * frac;
-            const wavY = -frac * (1.2 + Math.random() * 0.8) + Math.sin(frac * 5.3 + t) * 0.5;
-            const wavZ = Math.sin(angle) * (frac * len) + Math.cos(frac * 3.7 + t) * 0.6 * frac;
-            points.push(new THREE.Vector3(wavX, wavY, wavZ));
-        }
-        const curve = new THREE.CatmullRomCurve3(points);
-        const tubeGeo = new THREE.TubeGeometry(curve, 16, 0.06 + Math.random() * 0.08, 6, false);
-        const tubeMat = new THREE.MeshStandardMaterial({
-            color: 0x2d0055, emissive: 0x6b00cc,
-            emissiveIntensity: 0.5 + Math.random() * 0.4,
-            transparent: true, opacity: 0.85
-        });
-        const tube = new THREE.Mesh(tubeGeo, tubeMat);
-        group.add(tube);
-        cthulhuState.tentacles.push({ mesh: tube, baseAngle: angle, waveOffset: Math.random() * Math.PI * 2 });
-    }
-
-    // Outer glow shell
-    const glowGeo = new THREE.SphereGeometry(2.8, 16, 12);
-    const glowMat = new THREE.MeshBasicMaterial({ color: 0x6b00cc, transparent: true, opacity: 0.08, side: THREE.BackSide });
-    group.add(new THREE.Mesh(glowGeo, glowMat));
-
-    // Start far outside the system
-    group.position.set(25 + Math.random() * 10, 4 + Math.random() * 6, 20 + Math.random() * 8);
-    group.rotation.y = Math.random() * Math.PI * 2;
-    group.scale.setScalar(0.25);  // 4x smaller
-    group.userData.isCthulhu = true;
-    scene.add(group);
-    cthulhuState.mesh = group;
-}
-
-function activateCthulhu() {
-    if (cthulhuState.active) return;
-    cthulhuState.active = true;
-    buildCthulhuMesh();
-    document.getElementById('cthulhu-hud').classList.add('visible');
-    scheduleCthulhuAttack();
-}
-
-function showCthulhuLore() {
-    if (cthulhuState.loreQueue.length === 0) {
-        cthulhuState.loreQueue = shuffleLore(); // cycle with fresh shuffle
-    }
-    const lore = cthulhuState.loreQueue.shift();
-    const toast = document.getElementById('cthulhu-lore-toast');
-    document.getElementById('cth-glyph').textContent = lore.glyph;
-    document.getElementById('cth-title').textContent = lore.title;
-    document.getElementById('cth-body').textContent = lore.body;
-    document.getElementById('cth-warn').textContent = lore.warn;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 5200);
-}
-
-function scheduleCthulhuAttack() {
-    const delay = 18000 + Math.random() * 22000; // 18–40s between attacks
-    setTimeout(() => {
-        if (!cthulhuState.active) return;
-        cthulhuAttack();
-        scheduleCthulhuAttack();
-    }, delay);
-}
-
-function cthulhuAttack() {
-    if (cthulhuState.attacking) return;
-    cthulhuState.attacking = true;
-
-    // Pick a random planet to target
-    const idx = Math.floor(Math.random() * planetMeshes.length);
-    cthulhuState.targetPlanetIdx = idx;
-    const targetMesh = planetMeshes[idx];
-    const targetPlanet = targetMesh.userData.planet;
-
-    // Move Cthulhu menacingly toward that planet
-    const targetPos = targetMesh.position.clone().add(new THREE.Vector3(4, 2, 3));
-    cthulhuState.mesh.userData.targetPos = targetPos;
-    cthulhuState.mesh.userData.attacking = true;
-
-    // Increase threat
-    cthulhuState.threat = Math.min(100, cthulhuState.threat + 12 + Math.random() * 10);
-    updateCthulhuHUD();
-
-    // Show lore only when this is a new planet target
-    if (idx !== cthulhuState.lastTargetIdx) {
-        cthulhuState.lastTargetIdx = idx;
-        setTimeout(showCthulhuLore, 600);
-    }
-
-    // Show defense button
-    const btn = document.getElementById('cthulhu-btn');
-    btn.style.display = 'block';
-    btn.textContent = `⊗ SEAL RIFT — protect ${targetPlanet.name}`;
-
-    // Auto-resolve after 14s if no action
-    setTimeout(() => {
-        if (cthulhuState.attacking) {
-            cthulhuState.threat = Math.min(100, cthulhuState.threat + 8);
-            cthulhuState.attacking = false;
-            if (cthulhuState.mesh) cthulhuState.mesh.userData.attacking = false;
-            btn.style.display = 'none';
-            updateCthulhuHUD();
-        }
-    }, 14000);
-}
-
-window.cthulhuDefend = function() {
-    if (!cthulhuState.attacking) return;
-    cthulhuState.defenseHits++;
-    cthulhuState.threat = Math.max(0, cthulhuState.threat - 18);
-    cthulhuState.attacking = false;
-    cthulhuState.mesh.userData.attacking = false;
-
-    // Recoil — push Cthulhu back
-    const recoilDir = cthulhuState.mesh.position.clone().normalize().multiplyScalar(8);
-    cthulhuState.mesh.userData.targetPos = cthulhuState.mesh.position.clone().add(recoilDir);
-
-    document.getElementById('cthulhu-btn').style.display = 'none';
-    updateCthulhuHUD();
-
-    // Particle burst at Cthulhu's position (purple)
-    const pos3d = cthulhuState.mesh.position.clone();
-    for (let i = 0; i < 14; i++) {
-        const p = document.createElement('div'); p.className = 'explosion-particle';
-        const ang = (Math.PI * 2 * i) / 14;
-        const dist = 35 + Math.random() * 60, dur = 480 + Math.random() * 220;
-        p.style.cssText = `left:${innerWidth/2}px;top:${innerHeight/2}px;width:${2+Math.random()*3}px;height:${2+Math.random()*3}px;background:#8b00ff;box-shadow:0 0 8px rgba(139,0,255,.9);transition:transform ${dur}ms cubic-bezier(.22,1,.36,1),opacity ${dur}ms ease;`;
-        document.body.appendChild(p);
-        requestAnimationFrame(() => { p.style.transform = `translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`; p.style.opacity = '0'; });
-        setTimeout(() => p.remove(), dur);
-    }
-};
-
-// Planet click also counts as partial defense when Cthulhu is attacking
-const _origOpenPlanetPanel = typeof openPlanetPanel === 'function' ? openPlanetPanel : null;
-
-function updateCthulhuHUD() {
-    document.getElementById('cth-bar').style.width = cthulhuState.threat + '%';
-    let status;
-    if (cthulhuState.threat < 20) status = 'Dormant beyond the veil';
-    else if (cthulhuState.threat < 40) status = 'Stirring in R\'lyeh';
-    else if (cthulhuState.threat < 60) status = 'The stars align...';
-    else if (cthulhuState.threat < 80) status = 'Tentacles reach through';
-    else if (cthulhuState.threat < 100) status = 'Ph\'nglui mglw\'nafh...';
-    else status = 'IA! IA! CTHULHU FHTAGN!';
-    document.getElementById('cth-status').textContent = status;
-
-    // Color shift the threat bar
-    const pct = cthulhuState.threat / 100;
-    const r = Math.round(59 + pct * 100);
-    const g = 0;
-    const b = Math.round(128 + pct * 127);
-    document.getElementById('cth-bar').style.background = `linear-gradient(90deg, #3b0080, rgb(${r},${g},${b}))`;
-}
-
-function animateCthulhu(t) {
-    if (!cthulhuState.active || !cthulhuState.mesh) return;
-    const m = cthulhuState.mesh;
-
-    // Move toward target at half the original speed
-    if (m.userData.targetPos) {
-        m.position.lerp(m.userData.targetPos, 0.002);
-    }
-
-    // Face the current target planet instead of spinning
-    if (cthulhuState.targetPlanetIdx !== null && planetMeshes[cthulhuState.targetPlanetIdx]) {
-        const target = planetMeshes[cthulhuState.targetPlanetIdx].position;
-        const dir = new THREE.Vector3().subVectors(target, m.position);
-        const targetAngle = Math.atan2(dir.x, dir.z);
-        // Smoothly rotate to face planet
-        let angleDiff = targetAngle - m.rotation.y;
-        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-        m.rotation.y += angleDiff * 0.02;
-    }
-
-    // Subtle sway only — no continuous spin
-    m.rotation.z = Math.sin(t * 0.18) * 0.04;
-
-    // Tentacle writhe
-    cthulhuState.tentacles.forEach((tent, i) => {
-        tent.mesh.rotation.x = Math.sin(t * 0.7 + tent.waveOffset + i) * 0.18;
-        tent.mesh.rotation.z = Math.cos(t * 0.55 + tent.waveOffset) * 0.14;
-        tent.mesh.material.emissiveIntensity = 0.4 + 0.3 * Math.sin(t * 1.0 + tent.waveOffset);
-    });
-
-    // Eye pulse when attacking
-    m.children.forEach(child => {
-        if (child.material && child.material.emissive && child.material.emissive.r > 0.9) {
-            child.material.emissiveIntensity = m.userData.attacking
-                ? 2.5 + Math.sin(t * 3) * 1.2
-                : 1.2 + Math.sin(t * 1.2) * 0.4;
-        }
-    });
-}
-
-// Gabriel unlock triggers Cthulhu after 12 seconds
-let gabrielCthulhuTriggered = false;
-function checkGabrielCthulhu(soulKey) {
-    if (soulKey === 'gabriel' && !gabrielCthulhuTriggered) {
-        gabrielCthulhuTriggered = true;
-        setTimeout(activateCthulhu, 12000);
-    }
-}
 
 
 buildScene();
