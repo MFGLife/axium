@@ -322,6 +322,70 @@ window.closeHandPickerBattle = function() {
   if (typeof axcRenderField === 'function') axcRenderField();
   if (typeof updateBattlePhaseUI === 'function') updateBattlePhaseUI(B);
 };
+
+// ════════════════════════════════════════════════════════════
+// WIN OUTCOME PATCH — swap primary button to "Save & Continue"
+// when the player wins (attn >= winAttn)
+// ════════════════════════════════════════════════════════════
+(function patchOutcomeScreen() {
+  // Wait for all external scripts to finish loading
+  window.addEventListener('load', function () {
+    // Observe the outcome screen becoming active (goTo toggles .axm-active)
+    const outcomeEl = document.getElementById('screen-outcome');
+    if (!outcomeEl) return;
+
+    const observer = new MutationObserver(function () {
+      if (!outcomeEl.classList.contains('axm-active')) return;
+
+      // Determine win: check battle state B if available, else fallback to attn label
+      let isWin = false;
+      if (typeof B !== 'undefined' && B) {
+        const attn = B.playerAttn ?? B.attn ?? B.attention ?? null;
+        const threshold = (CHAPTER_CONFIG && CHAPTER_CONFIG.winAttn) || 90;
+        if (attn !== null) {
+          isWin = attn >= threshold;
+        }
+      }
+      // Fallback: read the rendered stat text
+      if (!isWin) {
+        const statEl = document.getElementById('oc-stat-attn');
+        if (statEl) {
+          const val = parseInt(statEl.textContent, 10);
+          const threshold = (CHAPTER_CONFIG && CHAPTER_CONFIG.winAttn) || 90;
+          if (!isNaN(val)) isWin = val >= threshold;
+        }
+      }
+      // Also check the state label text for "victory" / "complete" / "win"
+      if (!isWin) {
+        const lbl = document.getElementById('oc-state-lbl');
+        if (lbl) {
+          const txt = lbl.textContent.toLowerCase();
+          isWin = txt.includes('victory') || txt.includes('complete') || txt.includes('win');
+        }
+      }
+
+      const btn = document.getElementById('oc-primary-btn');
+      if (!btn) return;
+
+      if (isWin) {
+        btn.textContent = 'Save & Continue';
+        btn.onclick = function () {
+          // Persist any save state the engine uses, then navigate
+          if (typeof saveGame === 'function') saveGame();
+          if (APP && APP.save) {
+            try { localStorage.setItem('axium_ch1_save', JSON.stringify(APP.save)); } catch(e) {}
+          }
+          window.location.href = 'chapter2.html';
+        };
+      } else {
+        btn.textContent = 'Try Again';
+        btn.onclick = function () { if (typeof enterBattle === 'function') enterBattle(); };
+      }
+    });
+
+    observer.observe(outcomeEl, { attributes: true, attributeFilter: ['class'] });
+  });
+})();
 </script>
 
 </body>
