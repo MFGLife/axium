@@ -262,7 +262,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 #hud-toggle-notif{position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold-glow);display:none;}
 #hud-toggle-notif.show{display:block;}
 /* ── HUD MODAL ── */
-#hud-modal{position:fixed;bottom:198px;left:14px;z-index:24;width:260px;background:rgba(4,4,12,.96);border:1px solid rgba(212,175,55,.22);border-radius:8px;backdrop-filter:blur(22px);box-shadow:0 8px 48px rgba(0,0,0,.7),inset 0 1px 0 rgba(212,175,55,.1);opacity:0;pointer-events:none;transform:translateY(10px) scale(0.97);transform-origin:bottom left;transition:opacity .22s ease,transform .22s cubic-bezier(.22,1,.36,1);}
+#hud-modal{position:fixed;bottom:198px;left:14px;z-index:24;width:300px;background:rgba(4,4,12,.96);border:1px solid rgba(212,175,55,.22);border-radius:8px;backdrop-filter:blur(22px);box-shadow:0 8px 48px rgba(0,0,0,.7),inset 0 1px 0 rgba(212,175,55,.1);opacity:0;pointer-events:none;transform:translateY(10px) scale(0.97);transform-origin:bottom left;transition:opacity .22s ease,transform .22s cubic-bezier(.22,1,.36,1);}
 #hud-modal.open{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}
 #hud-modal-inner{overflow:hidden;border-radius:8px;}
 #hud-modal-tabs{display:flex;border-bottom:1px solid rgba(212,175,55,.12);}
@@ -546,6 +546,49 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .chap-drawer-btn:hover{box-shadow:0 4px 14px rgba(212,175,55,.4);}
 .chap-drawer-btn.soon{background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.18);color:rgba(212,175,55,.35);pointer-events:none;box-shadow:none;}
 
+
+/* ── ORACLE HUD TAB (tab 4) ── */
+#hm-pane-4{display:none;flex-direction:column;gap:0;max-height:320px;}
+#hm-pane-4.on{display:flex;}
+/* Sort row — exact same pattern as #hud-modal-tabs / .hm-tab */
+.ohud-sort-row{display:flex;border-bottom:1px solid rgba(212,175,55,.12);margin:0 -16px;padding:0 16px;}
+.ohud-sort-btn{flex:1;padding:7px 2px;background:transparent;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;
+    font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(212,175,55,.32);cursor:pointer;transition:all .18s;}
+.ohud-sort-btn:hover{color:rgba(212,175,55,.65);}
+.ohud-sort-btn.on{color:var(--gold);border-bottom-color:var(--gold);background:rgba(212,175,55,.04);}
+/* Filter chips — exact same pattern as .hdr-btn */
+.ohud-filter-row{display:flex;gap:5px;flex-wrap:wrap;padding:10px 0 9px;border-bottom:1px solid rgba(212,175,55,.08);}
+.ohud-chip{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.15em;text-transform:uppercase;
+    padding:5px 9px;border-radius:3px;cursor:pointer;transition:all .22s;
+    border:1px solid var(--gold-dim);background:rgba(212,175,55,.06);
+    color:rgba(212,175,55,.42);text-shadow:0 0 8px rgba(212,175,55,.2);}
+.ohud-chip:hover{background:rgba(212,175,55,.14);color:var(--gold);border-color:var(--gold);}
+.ohud-chip.on{background:rgba(212,175,55,.10);color:var(--gold);border-color:var(--gold);text-shadow:0 0 10px rgba(212,175,55,.35);}
+/* Feed list */
+.oracle-hud-feed{overflow-y:auto;flex:1;margin:0 -16px;padding:4px 16px 0;
+    scrollbar-width:thin;scrollbar-color:rgba(212,175,55,.2) transparent;}
+.oracle-hud-feed::-webkit-scrollbar{width:2px;}
+.oracle-hud-feed::-webkit-scrollbar-thumb{background:rgba(212,175,55,.2);border-radius:1px;}
+.ohud-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;}
+.ohud-item:hover{background:rgba(255,255,255,.025);padding-left:3px;padding-right:3px;margin:0 -3px;border-radius:2px;}
+.ohud-item:last-child{border-bottom:none;}
+.ohud-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.ohud-body{flex:1;min-width:0;}
+.ohud-title{font-family:'Cormorant Garamond',serif;font-size:.82rem;color:rgba(255,255,255,.72);
+    line-height:1.4;margin-bottom:3px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ohud-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.ohud-source{font-family:'Space Mono',monospace;font-size:.3rem;letter-spacing:.08em;color:rgba(255,255,255,.2);text-transform:uppercase;}
+.ohud-sent{font-family:'Space Mono',monospace;font-size:.3rem;letter-spacing:.08em;padding:1px 5px;border-radius:2px;}
+.ohud-sent.pos{color:#4ade80;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);}
+.ohud-sent.neg{color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);}
+.ohud-sent.neu{color:rgba(255,255,255,.28);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
+.ohud-sector-tag{font-family:'Space Mono',monospace;font-size:.28rem;letter-spacing:.08em;padding:1px 4px;border-radius:2px;border:1px solid;}
+.ohud-sector-hdr{font-family:'Space Mono',monospace;font-size:.32rem;letter-spacing:.22em;text-transform:uppercase;
+    opacity:.5;padding:8px 0 4px;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:2px;}
+.ohud-empty{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.82rem;
+    color:rgba(255,255,255,.25);text-align:center;padding:24px 0;}
     </style>
 </head>
 <body>
@@ -618,10 +661,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
             <span id="hud-soul-label">Micheal's Observatory</span>
         </div>
         <div id="hud-modal-tabs">
-            <button class="hm-tab on" onclick="switchHudTab(0,this)" data-tab="0">Constellation</button>
-            <button class="hm-tab" onclick="switchHudTab(1,this)" data-tab="1">Live Positions</button>
-            <button class="hm-tab" onclick="switchHudTab(2,this)" data-tab="2">Present Moment</button>
+            <button class="hm-tab on" onclick="switchHudTab(0,this)" data-tab="0">Const</button>
+            <button class="hm-tab" onclick="switchHudTab(1,this)" data-tab="1">Astro</button>
+            <button class="hm-tab" onclick="switchHudTab(2,this)" data-tab="2">Time</button>
             <button class="hm-tab" onclick="switchHudTab(3,this)" data-tab="3">Music</button>
+            <button class="hm-tab" onclick="switchHudTab(4,this)" data-tab="4" id="oracle-hud-tab">Oracle</button>
         </div>
         <div id="hud-modal-body">
             <!-- Tab 0: Constellation -->
@@ -652,6 +696,24 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     <div id="sc-target">
         </div>
 </div>
+            <!-- Tab 4: Oracle Signal Feed -->
+            <div class="hm-pane" id="hm-pane-4">
+                <div class="ohud-sort-row">
+                    <button class="ohud-sort-btn on" onclick="oracleHudSort('impact',this)">Impact</button>
+                    <button class="ohud-sort-btn" onclick="oracleHudSort('sector',this)">Sector</button>
+                    <button class="ohud-sort-btn" onclick="oracleHudSort('sentiment',this)">Mood</button>
+                    <button class="ohud-sort-btn" onclick="oracleHudSort('time',this)">Recent</button>
+                </div>
+                <div class="ohud-filter-row">
+                    <span class="ohud-chip on" data-sector="ALL"         onclick="oracleHudFilter('ALL',this)">ALL</span>
+                    <span class="ohud-chip on" data-sector="GEOPOLITICS" onclick="oracleHudFilter('GEOPOLITICS',this)">GEO</span>
+                    <span class="ohud-chip on" data-sector="ECONOMY"     onclick="oracleHudFilter('ECONOMY',this)">ECON</span>
+                    <span class="ohud-chip on" data-sector="FINANCE"     onclick="oracleHudFilter('FINANCE',this)">FIN</span>
+                    <span class="ohud-chip on" data-sector="TECHNOLOGY"  onclick="oracleHudFilter('TECHNOLOGY',this)">TECH</span>
+                    <span class="ohud-chip on" data-sector="GENERAL"     onclick="oracleHudFilter('GENERAL',this)">GEN</span>
+                </div>
+                <div class="oracle-hud-feed" id="oracle-hud-feed"></div>
+            </div>
 
 
         </div>
@@ -907,145 +969,96 @@ function updateHUD(date){
 }
 
 const ray=new THREE.Raycaster();const mouse=new THREE.Vector2();
-ray.params.Line = { threshold: 0.1 };
 
-// ── Node tooltip card (DOM overlay) ──────────────────────────────────
-let _activeNodeTooltip = null;
-function showNodeTooltip(article, screenX, screenY, col, rgb) {
-    closeNodeTooltip();
-    const sentClass = article.sentiment > 0.1 ? 'pos' : article.sentiment < -0.1 ? 'neg' : 'neu';
-    const sentLabel = article.sentiment > 0.1 ? 'POSITIVE' : article.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
-    const sentColor = article.sentiment > 0.1 ? '#4ade80' : article.sentiment < -0.1 ? '#f87171' : '#D4AF37';
-    const ago = formatAgo(article.fetchedAt);
-    const div = document.createElement('div');
-    div.id = 'oracle-node-tooltip';
-    div.style.cssText = `
-        position:fixed;z-index:60;
-        max-width:280px;min-width:200px;
-        background:rgba(4,4,14,0.97);
-        border:1px solid ${col};
-        border-radius:6px;
-        padding:13px 15px 11px;
-        box-shadow:0 8px 40px rgba(0,0,0,0.8),0 0 22px rgba(${rgb},0.2);
-        backdrop-filter:blur(18px);
-        pointer-events:auto;
-        opacity:0;
-        transform:translateY(8px) scale(0.96);
-        transition:opacity .18s ease,transform .18s cubic-bezier(.22,1,.36,1);
-    `;
-    div.innerHTML = `
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;">
-            <span style="width:7px;height:7px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col};flex-shrink:0;display:inline-block;"></span>
-            <span style="font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(${rgb},0.75);">${article.sector}</span>
+// ── Node article tooltip ──
+let _ntt=null;
+function showNodeTooltip(article,sx,sy,col,rgb){
+    if(_ntt){_ntt.remove();_ntt=null;}
+    const sentColor=article.sentiment>0.1?'#4ade80':article.sentiment<-0.1?'#f87171':'#D4AF37';
+    const sentLabel=article.sentiment>0.1?'POSITIVE':article.sentiment<-0.1?'NEGATIVE':'NEUTRAL';
+    const d=document.createElement('div');
+    d.style.cssText=`position:fixed;z-index:60;max-width:280px;min-width:190px;
+        background:rgba(4,4,14,.97);border:1px solid ${col};border-radius:6px;
+        padding:13px 15px 11px;box-shadow:0 8px 40px rgba(0,0,0,.8),0 0 20px rgba(${rgb},.18);
+        backdrop-filter:blur(18px);pointer-events:auto;opacity:0;
+        transform:translateY(8px) scale(.97);transition:opacity .18s,transform .18s cubic-bezier(.22,1,.36,1);`;
+    d.innerHTML=
+        `<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:${col};box-shadow:0 0 7px ${col};flex-shrink:0;display:inline-block;"></span>
+            <span style="font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(${rgb},.75);">${article.sector}</span>
             <span style="flex:1"></span>
-            <span style="font-family:'Space Mono',monospace;font-size:.34rem;color:rgba(255,255,255,.2);">${ago}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:.32rem;color:rgba(255,255,255,.2);">${formatAgo(article.fetchedAt)}</span>
         </div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:.92rem;color:rgba(255,255,255,.85);line-height:1.5;margin-bottom:10px;">${article.title}</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <span style="font-family:'Space Mono',monospace;font-size:.33rem;letter-spacing:.1em;color:rgba(255,255,255,.22);">${article.source}</span>
-            <span style="font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.1em;padding:2px 7px;border-radius:2px;color:${sentColor};background:${sentColor}18;border:1px solid ${sentColor}44;">${sentLabel}</span>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:rgba(255,255,255,.85);line-height:1.48;margin-bottom:10px;">${article.title}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">
+            <span style="font-family:'Space Mono',monospace;font-size:.32rem;color:rgba(255,255,255,.22);">${article.source}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:.32rem;padding:2px 7px;border-radius:2px;color:${sentColor};background:${sentColor}18;border:1px solid ${sentColor}44;">${sentLabel}</span>
         </div>
-        ${article.url ? `<a href="${article.url}" target="_blank" rel="noopener"
-            style="display:block;margin-top:10px;padding:7px 12px;background:rgba(${rgb},0.1);border:1px solid rgba(${rgb},0.3);border-radius:3px;
-                   font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.12em;text-transform:uppercase;
-                   color:${col};text-decoration:none;text-align:center;transition:background .18s;"
-            onmouseover="this.style.background='rgba(${rgb},0.22)'" onmouseout="this.style.background='rgba(${rgb},0.1)'">
-            READ SIGNAL ↗
-        </a>` : ''}
-        <button onclick="closeNodeTooltip()" style="position:absolute;top:8px;right:9px;background:none;border:none;color:rgba(255,255,255,.3);font-size:.8rem;cursor:pointer;padding:2px 5px;line-height:1;">✕</button>
-    `;
-    div.style.position = 'fixed';
-    // Position: prefer left of click, keep on screen
-    const W = innerWidth, H = innerHeight;
-    let left = screenX + 14, top = screenY - 20;
-    document.body.appendChild(div);
-    const rect = div.getBoundingClientRect();
-    if (left + 290 > W) left = screenX - 290;
-    if (top + 200 > H) top = screenY - 180;
-    div.style.left = Math.max(8, left) + 'px';
-    div.style.top  = Math.max(8, top)  + 'px';
-    requestAnimationFrame(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0) scale(1)'; });
-    _activeNodeTooltip = div;
+        ${article.url?`<a href="${article.url}" target="_blank" rel="noopener"
+            style="display:block;padding:7px 12px;background:rgba(${rgb},.08);border:1px solid rgba(${rgb},.28);border-radius:3px;
+            font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.1em;text-transform:uppercase;
+            color:${col};text-decoration:none;text-align:center;"
+            onmouseover="this.style.background='rgba(${rgb},.2)'" onmouseout="this.style.background='rgba(${rgb},.08)'">READ SIGNAL ↗</a>`:''}
+        <button onclick="window._closeNtt&&window._closeNtt()" style="position:absolute;top:8px;right:9px;background:none;border:none;color:rgba(255,255,255,.28);font-size:.8rem;cursor:pointer;padding:2px 5px;">✕</button>`;
+    const W=innerWidth,H=innerHeight;
+    let left=sx+14,top=sy-20;
+    document.body.appendChild(d);
+    if(left+290>W)left=sx-290;if(top+230>H)top=sy-200;
+    d.style.left=Math.max(8,left)+'px';d.style.top=Math.max(8,top)+'px';
+    requestAnimationFrame(()=>{d.style.opacity='1';d.style.transform='translateY(0) scale(1)';});
+    _ntt=d;
 }
-window.closeNodeTooltip = function() {
-    if (_activeNodeTooltip) { _activeNodeTooltip.remove(); _activeNodeTooltip = null; }
-};
+window._closeNtt=function(){if(_ntt){_ntt.remove();_ntt=null;}};
 
-// ── Hover preview (title only) ─────────────────────────────────────
-let _hoverPreview = null;
-function showHoverPreview(title, screenX, screenY, col) {
-    removeHoverPreview();
-    const div = document.createElement('div');
-    div.id = 'oracle-hover-preview';
-    div.style.cssText = `position:fixed;z-index:55;pointer-events:none;padding:5px 10px;
-        background:rgba(4,4,14,0.92);border:1px solid ${col};border-radius:3px;
+// ── Hover preview ──
+let _nhp=null;
+function showNodeHover(title,sx,sy,col){
+    if(_nhp)_nhp.remove();
+    const d=document.createElement('div');
+    d.style.cssText=`position:fixed;z-index:55;pointer-events:none;padding:5px 10px;
+        background:rgba(4,4,14,.92);border:1px solid ${col};border-radius:3px;
         font-family:'Cormorant Garamond',serif;font-size:.8rem;color:rgba(255,255,255,.8);
-        max-width:220px;line-height:1.35;
-        box-shadow:0 4px 18px rgba(0,0,0,.6);backdrop-filter:blur(12px);
-        left:${Math.min(screenX+12, innerWidth-230)}px;top:${screenY-10}px;
-        opacity:0;transition:opacity .12s ease;`;
-    div.textContent = title;
-    document.body.appendChild(div);
-    requestAnimationFrame(() => div.style.opacity = '1');
-    _hoverPreview = div;
+        max-width:220px;line-height:1.35;box-shadow:0 4px 16px rgba(0,0,0,.6);backdrop-filter:blur(12px);
+        left:${Math.min(sx+12,innerWidth-230)}px;top:${sy-10}px;opacity:0;transition:opacity .1s;`;
+    d.textContent=title;document.body.appendChild(d);
+    requestAnimationFrame(()=>d.style.opacity='1');_nhp=d;
 }
-function removeHoverPreview() {
-    if (_hoverPreview) { _hoverPreview.remove(); _hoverPreview = null; }
-}
+function clearNodeHover(){if(_nhp){_nhp.remove();_nhp=null;}}
 
-// ── Combined click: planets first, then oracle nodes ─────────────
+// ── Combined click: planets → oracle nodes → close ──
 canvas.addEventListener('click',e=>{
     mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;
     ray.setFromCamera(mouse,camera);
-
-    // 1. Check planets
     const planetHits=ray.intersectObjects(planetMeshes);
     if(planetHits.length){
-        closeNodeTooltip();
+        window._closeNtt&&window._closeNtt();
         const{planet,ecliptic}=planetHits[0].object.userData;
         if(planet.name==='Earth'){openEarthPanel(planet,ecliptic);}
         else{const retro=engine.isRetrograde(planet.name,new Date(currentDate.getTime()+timeOffset*86400000));openPlanetPanel(planet,ecliptic,retro);}
         return;
     }
-
-    // 2. Check oracle nodes
-    if(oracleConstObj && oracleConstObj.nodes.length) {
-        const oracleMeshes = oracleConstObj.nodes.map(n => n.mesh);
-        ray.params.Points = { threshold: 0.3 };
-        const nodeHits = ray.intersectObjects(oracleMeshes);
-        if(nodeHits.length) {
-            const hitMesh = nodeHits[0].object;
-            const article = hitMesh.userData.article;
-            if(article) {
-                // Flash the node
-                hitMesh.userData.glowTimer = 1.0;
-                showNodeTooltip(article, e.clientX, e.clientY, hitMesh.userData.col, hitMesh.userData.rgb);
-            }
+    if(oracleConstObj?.nodes.length){
+        const hits=ray.intersectObjects(oracleConstObj.nodes.map(n=>n.mesh));
+        if(hits.length){
+            const m=hits[0].object;
+            if(m.userData.article){m.userData.glowTimer=1.0;showNodeTooltip(m.userData.article,e.clientX,e.clientY,m.userData.col,m.userData.rgb);}
             return;
         }
     }
-
-    // 3. Click elsewhere = close tooltip
-    closeNodeTooltip();
+    window._closeNtt&&window._closeNtt();
 });
 
-// ── Hover: show title preview on mouseover oracle nodes ───────────
-canvas.addEventListener('mousemove', e => {
+// ── Hover ──
+canvas.addEventListener('mousemove',e=>{
     mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;
     ray.setFromCamera(mouse,camera);
-    if(oracleConstObj && oracleConstObj.nodes.length) {
-        const oracleMeshes = oracleConstObj.nodes.map(n => n.mesh);
-        const hits = ray.intersectObjects(oracleMeshes);
-        if(hits.length && hits[0].object.userData.article) {
-            const article = hits[0].object.userData.article;
-            if(!_hoverPreview || _hoverPreview.textContent !== article.title) {
-                showHoverPreview(article.title, e.clientX, e.clientY, hits[0].object.userData.col);
-            }
-            canvas.style.cursor = 'pointer';
-        } else {
-            removeHoverPreview();
-            canvas.style.cursor = '';
-        }
+    if(oracleConstObj?.nodes.length){
+        const hits=ray.intersectObjects(oracleConstObj.nodes.map(n=>n.mesh));
+        if(hits.length&&hits[0].object.userData.article){
+            const a=hits[0].object.userData.article;
+            if(!_nhp||_nhp.textContent!==a.title)showNodeHover(a.title,e.clientX,e.clientY,hits[0].object.userData.col);
+            canvas.style.cursor='pointer';
+        } else {clearNodeHover();canvas.style.cursor='';}
     }
 });
 
@@ -1736,15 +1749,121 @@ window.switchHudTab = function(idx, btn) {
     document.querySelectorAll('.hm-pane').forEach(p => p.classList.remove('on'));
     btn.classList.add('on');
     const targetPane = document.getElementById('hm-pane-' + idx);
-    targetPane.classList.add('on');
-
-    // Fix for SoundCloud: Only load iframe when tab is active
-    if(idx === 3) {
+    if (targetPane) targetPane.classList.add('on');
+    if (idx === 3) {
         document.getElementById('sc-target').innerHTML = `
             <iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay"
             src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/2184015935&color=%23D4AF37&auto_play=false&visual=true">
             </iframe>`;
     }
+    if (idx === 4) renderOracleHudFeed();
+};
+
+// ── Oracle HUD state & helpers ────────────────────────────────────────
+const _ohudState = {
+    sort: 'impact',
+    filters: new Set(['ALL','GEOPOLITICS','ECONOMY','FINANCE','TECHNOLOGY','GENERAL'])
+};
+const _OHUD_COL = {
+    GEOPOLITICS:'#f87171', ECONOMY:'#D4AF37',
+    FINANCE:'#4ade80',     TECHNOLOGY:'#7EB8E8', GENERAL:'#C8C8D4'
+};
+const _OHUD_RGB = {
+    GEOPOLITICS:'248,113,113', ECONOMY:'212,175,55',
+    FINANCE:'74,222,128',      TECHNOLOGY:'126,184,232', GENERAL:'200,200,212'
+};
+
+window.oracleHudSort = function(key, btn) {
+    _ohudState.sort = key;
+    document.querySelectorAll('.ohud-sort-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    renderOracleHudFeed();
+};
+
+window.oracleHudFilter = function(sector, chip) {
+    const f = _ohudState.filters;
+    if (sector === 'ALL') {
+        const wasOn = f.has('ALL');
+        f.clear();
+        document.querySelectorAll('.ohud-chip').forEach(c => c.classList.remove('on'));
+        if (!wasOn) {
+            ['ALL','GEOPOLITICS','ECONOMY','FINANCE','TECHNOLOGY','GENERAL'].forEach(s => f.add(s));
+            document.querySelectorAll('.ohud-chip').forEach(c => c.classList.add('on'));
+        }
+    } else {
+        if (f.has(sector)) {
+            f.delete(sector); f.delete('ALL');
+            chip.classList.remove('on');
+            document.querySelector('.ohud-chip[data-sector="ALL"]')?.classList.remove('on');
+        } else {
+            f.add(sector); chip.classList.add('on');
+            if (['GEOPOLITICS','ECONOMY','FINANCE','TECHNOLOGY','GENERAL'].every(s => f.has(s))) {
+                f.add('ALL');
+                document.querySelector('.ohud-chip[data-sector="ALL"]')?.classList.add('on');
+            }
+        }
+    }
+    renderOracleHudFeed();
+};
+
+function _ohudItem(a) {
+    const col = _OHUD_COL[a.sector] || '#C8C8D4';
+    const rgb = _OHUD_RGB[a.sector] || '200,200,212';
+    const sc  = a.sentiment < -0.15 ? 'neg' : a.sentiment > 0.15 ? 'pos' : 'neu';
+    const sl  = a.sentiment < -0.15 ? 'NEG' : a.sentiment > 0.15 ? 'POS' : 'NEU';
+    const dc  = a.sentiment < -0.15 ? '#f87171' : a.sentiment > 0.15 ? '#4ade80' : col;
+    const url = (a.url || '').replace(/'/g, "\'");
+    return `<div class="ohud-item" onclick="window.open('${url}','_blank')">` +
+        `<div class="ohud-dot" style="background:${dc};box-shadow:0 0 5px ${dc};"></div>` +
+        `<div class="ohud-body">` +
+        `<div class="ohud-title">${a.title || ''}</div>` +
+        `<div class="ohud-meta">` +
+        `<span class="ohud-source">${a.source || ''}</span>` +
+        `<span class="ohud-sector-tag" style="color:${col};border-color:rgba(${rgb},.3);background:rgba(${rgb},.06);">${(a.sector||'').slice(0,4)}</span>` +
+        `<span class="ohud-sent ${sc}">${sl}</span>` +
+        `</div></div></div>`;
+}
+
+function renderOracleHudFeed() {
+    const el = document.getElementById('oracle-hud-feed');
+    if (!el) return;
+    const articles = (typeof oracleState !== 'undefined' ? oracleState.articles : null) || [];
+    if (!articles.length) { el.innerHTML = '<div class="ohud-empty">Scanning feeds…</div>'; return; }
+
+    const f = _ohudState.filters;
+    let list = f.has('ALL') ? [...articles] : articles.filter(a => f.has(a.sector));
+
+    if      (_ohudState.sort === 'impact')    list.sort((a,b) => b.impact - a.impact);
+    else if (_ohudState.sort === 'sector')    list.sort((a,b) => a.sector.localeCompare(b.sector) || b.impact - a.impact);
+    else if (_ohudState.sort === 'sentiment') list.sort((a,b) => a.sentiment - b.sentiment);
+    else if (_ohudState.sort === 'time')      list.sort((a,b) => (b.fetchedAt||0) - (a.fetchedAt||0));
+
+    if (!list.length) { el.innerHTML = '<div class="ohud-empty">No signals match filters.</div>'; return; }
+
+    let html = '';
+    if (_ohudState.sort === 'sector') {
+        let last = null;
+        list.forEach(a => {
+            if (a.sector !== last) {
+                last = a.sector;
+                const col = _OHUD_COL[a.sector] || '#fff';
+                html += `<div class="ohud-sector-hdr" style="color:${col}">${a.sector}</div>`;
+            }
+            html += _ohudItem(a);
+        });
+    } else {
+        list.slice(0,40).forEach(a => { html += _ohudItem(a); });
+    }
+    el.innerHTML = html;
+}
+
+// Auto-refresh Oracle HUD when new data arrives
+window._onOracleDataReady = function() {
+    const pane = document.getElementById('hm-pane-4');
+    if (pane && pane.classList.contains('on')) renderOracleHudFeed();
+    // Flash Oracle tab label gold briefly
+    const tab = document.getElementById('oracle-hud-tab');
+    if (tab) { tab.style.color = 'var(--gold)'; setTimeout(() => { tab.style.color = ''; }, 2000); }
 };
 // Close modal on outside click
 document.addEventListener('click', function(e) {
@@ -1936,28 +2055,20 @@ setSoul('micheal');
 // ORACLE RSS ENGINE — Global Sentiment Constellation
 // ══════════════════════════════════════════════
 
-// Feed roster — chosen for rss2json.com compatibility (no auth, public, RSS 2.0/Atom)
-// rss2json.com is the primary path: free tier, CORS-enabled, caches 10min
+// rss2json.com primary — feeds chosen for CORS compatibility
 const RSS_FEEDS = [
-    // GEOPOLITICS
-    { name: 'Guardian World',   url: 'https://www.theguardian.com/world/rss',                               sector: 'GEOPOLITICS' },
-    { name: 'NPR World',        url: 'https://feeds.npr.org/1004/rss.xml',                                  sector: 'GEOPOLITICS' },
-    { name: 'DW World',         url: 'https://rss.dw.com/rdf/rss-en-world',                                 sector: 'GEOPOLITICS' },
-    // ECONOMY
-    { name: 'Guardian Business',url: 'https://www.theguardian.com/business/rss',                            sector: 'ECONOMY'     },
-    { name: 'NPR Economy',      url: 'https://feeds.npr.org/1017/rss.xml',                                  sector: 'ECONOMY'     },
-    { name: 'Marketplace',      url: 'https://www.marketplace.org/feed/podcast/marketplace/',               sector: 'ECONOMY'     },
-    // FINANCE
-    { name: 'Seeking Alpha',    url: 'https://seekingalpha.com/market_currents.xml',                        sector: 'FINANCE'     },
-    { name: 'Motley Fool',      url: 'https://www.fool.com/feeds/index.aspx',                               sector: 'FINANCE'     },
+    { name: 'Guardian World',   url: 'https://www.theguardian.com/world/rss',                    sector: 'GEOPOLITICS' },
+    { name: 'NPR World',        url: 'https://feeds.npr.org/1004/rss.xml',                       sector: 'GEOPOLITICS' },
+    { name: 'DW World',         url: 'https://rss.dw.com/rdf/rss-en-world',                      sector: 'GEOPOLITICS' },
+    { name: 'Guardian Business',url: 'https://www.theguardian.com/business/rss',                 sector: 'ECONOMY'     },
+    { name: 'NPR Economy',      url: 'https://feeds.npr.org/1017/rss.xml',                       sector: 'ECONOMY'     },
+    { name: 'Marketplace',      url: 'https://www.marketplace.org/feed/podcast/marketplace/',    sector: 'ECONOMY'     },
     { name: 'Investopedia',     url: 'https://www.investopedia.com/feedbuilder/feed/getfeed/?feedName=rss_headline', sector: 'FINANCE' },
-    // TECHNOLOGY
-    { name: 'Hacker News',      url: 'https://hnrss.org/frontpage',                                         sector: 'TECHNOLOGY'  },
-    { name: 'Ars Technica',     url: 'https://feeds.arstechnica.com/arstechnica/index',                     sector: 'TECHNOLOGY'  },
-    { name: 'MIT Tech Review',  url: 'https://www.technologyreview.com/feed/',                              sector: 'TECHNOLOGY'  },
-    // GENERAL
-    { name: 'NPR Top Stories',  url: 'https://feeds.npr.org/1002/rss.xml',                                  sector: 'GENERAL'     },
-    { name: 'PBS NewsHour',     url: 'https://www.pbs.org/newshour/feeds/rss/headlines',                    sector: 'GENERAL'     },
+    { name: 'Hacker News',      url: 'https://hnrss.org/frontpage',                              sector: 'TECHNOLOGY'  },
+    { name: 'Ars Technica',     url: 'https://feeds.arstechnica.com/arstechnica/index',          sector: 'TECHNOLOGY'  },
+    { name: 'MIT Tech Review',  url: 'https://www.technologyreview.com/feed/',                   sector: 'TECHNOLOGY'  },
+    { name: 'NPR Top Stories',  url: 'https://feeds.npr.org/1002/rss.xml',                       sector: 'GENERAL'     },
+    { name: 'PBS NewsHour',     url: 'https://www.pbs.org/newshour/feeds/rss/headlines',         sector: 'GENERAL'     },
 ];
 
 const SECTOR_COLORS = {
@@ -2001,88 +2112,45 @@ function scoreArticle(title, desc) {
     return { sentiment, volatility, urgency, impact };
 }
 
-// ── RSS fetch — rss2json.com primary, XML-proxy fallback ──
-//
-// Strategy:
-//   1. rss2json.com  — purpose-built RSS→JSON API, free tier, proper CORS headers,
-//                      caches upstream feeds for 10min so hammering is safe.
-//   2. feed2json.org — another dedicated RSS→JSON bridge, good CORS support.
-//   3. fetchrss.app  — lightweight RSS→JSON, permissive CORS.
-//   4. codetabs proxy — generic CORS proxy returning raw XML, parsed locally.
-//
-// BBC / Al Jazeera / Wired / FT block generic proxies → replaced in RSS_FEEDS above
-// with NPR, Guardian, DW, Ars, MIT TR which are all proxy-friendly.
-//
+// ── RSS fetch — rss2json.com primary, fallbacks ──
 async function fetchFeed(feed) {
-    // ── Path 1: rss2json.com JSON API ──────────────────────────────────────
+    // Path 1: rss2json.com — dedicated RSS→JSON, CORS-enabled, 10min cache
     try {
-        const r2jUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=&count=10`;
-        const res = await fetch(r2jUrl, { cache: 'no-store' });
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=10`, { cache: 'no-store' });
         if (res.ok) {
             const json = await res.json();
-            if (json.status === 'ok' && Array.isArray(json.items) && json.items.length > 0) {
-                return json.items.slice(0, 8).map(item => {
-                    const title  = (item.title  || '').replace(/<[^>]+>/g,'').trim().slice(0,120);
-                    const rawDesc= (item.description || item.content || '').replace(/<[^>]+>/g,'').trim().slice(0,200);
-                    const scores = scoreArticle(title, rawDesc);
-                    return { title, desc: rawDesc, url: item.link || '', source: feed.name,
-                             sector: feed.sector, pubDate: item.pubDate || '', ...scores, fetchedAt: Date.now() };
+            if (json.status === 'ok' && json.items?.length) {
+                return json.items.slice(0,8).map(item => {
+                    const title   = (item.title||'').replace(/<[^>]+>/g,'').trim().slice(0,120);
+                    const rawDesc = (item.description||item.content||'').replace(/<[^>]+>/g,'').trim().slice(0,200);
+                    return { title, desc:rawDesc, url:item.link||'', source:feed.name, sector:feed.sector,
+                             pubDate:item.pubDate||'', ...scoreArticle(title,rawDesc), fetchedAt:Date.now() };
                 }).filter(a => a.title.length > 5);
             }
         }
-    } catch(e) { /* fall through */ }
-
-    // ── Path 2: feed2json.org ───────────────────────────────────────────────
+    } catch(e) {}
+    // Path 2: feed2json.org
     try {
-        const f2jUrl = `https://feed2json.org/convert?url=${encodeURIComponent(feed.url)}`;
-        const res = await fetch(f2jUrl, { cache: 'no-store' });
+        const res = await fetch(`https://feed2json.org/convert?url=${encodeURIComponent(feed.url)}`, { cache: 'no-store' });
         if (res.ok) {
             const json = await res.json();
             const items = json.items || json.entries || [];
-            if (items.length > 0) {
-                return items.slice(0, 8).map(item => {
-                    const title   = (item.title?.value || item.title || '').replace(/<[^>]+>/g,'').trim().slice(0,120);
-                    const rawDesc = (item.summary?.value || item.content?.value || item.description || '').replace(/<[^>]+>/g,'').trim().slice(0,200);
-                    const scores  = scoreArticle(title, rawDesc);
-                    return { title, desc: rawDesc, url: item.url || item.link || '', source: feed.name,
-                             sector: feed.sector, pubDate: item.date_published || '', ...scores, fetchedAt: Date.now() };
-                }).filter(a => a.title.length > 5);
-            }
+            if (items.length) return items.slice(0,8).map(item => {
+                const title   = (item.title?.value||item.title||'').replace(/<[^>]+>/g,'').trim().slice(0,120);
+                const rawDesc = (item.summary?.value||item.content?.value||item.description||'').replace(/<[^>]+>/g,'').trim().slice(0,200);
+                return { title, desc:rawDesc, url:item.url||item.link||'', source:feed.name, sector:feed.sector,
+                         pubDate:item.date_published||'', ...scoreArticle(title,rawDesc), fetchedAt:Date.now() };
+            }).filter(a => a.title.length > 5);
         }
-    } catch(e) { /* fall through */ }
-
-    // ── Path 3: fetchrss.app JSON bridge ────────────────────────────────────
+    } catch(e) {}
+    // Path 3: codetabs CORS proxy → local XML parse
     try {
-        const frUrl = `https://fetchrss.com/api/v1/feed/json?url=${encodeURIComponent(feed.url)}&count=8`;
-        const res = await fetch(frUrl, { cache: 'no-store' });
-        if (res.ok) {
-            const json = await res.json();
-            const items = json.items || json.articles || [];
-            if (items.length > 0) {
-                return items.slice(0, 8).map(item => {
-                    const title   = (item.title || '').replace(/<[^>]+>/g,'').trim().slice(0,120);
-                    const rawDesc = (item.description || item.summary || '').replace(/<[^>]+>/g,'').trim().slice(0,200);
-                    const scores  = scoreArticle(title, rawDesc);
-                    return { title, desc: rawDesc, url: item.url || item.link || '', source: feed.name,
-                             sector: feed.sector, pubDate: item.publishedAt || '', ...scores, fetchedAt: Date.now() };
-                }).filter(a => a.title.length > 5);
-            }
-        }
-    } catch(e) { /* fall through */ }
-
-    // ── Path 4: codetabs generic CORS proxy → parse XML locally ─────────────
-    try {
-        const ctUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feed.url)}`;
-        const res = await fetch(ctUrl, { cache: 'no-store' });
+        const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feed.url)}`, { cache: 'no-store' });
         if (res.ok) {
             const xmlText = await res.text();
-            if (xmlText && xmlText.length > 200) {
-                const items = parseRSSXML(xmlText, feed);
-                if (items.length > 0) return items;
-            }
+            if (xmlText?.length > 200) { const items = parseRSSXML(xmlText, feed); if (items.length) return items; }
         }
-    } catch(e) { /* fall through */ }
-
+    } catch(e) {}
     console.warn(`[ORACLE] All paths failed for: ${feed.name}`);
     return [];
 }
@@ -2222,12 +2290,12 @@ async function fetchOracleData() {
     addOracleLog('\u2726 ' + unique.length + ' signals processed across ' + Object.keys(SECTOR_COLORS).length + ' sectors.');
     // Update 3D oracle constellation
     if (window._updateOracleConstellation) window._updateOracleConstellation(oracleState.sectorData);
-    // Bind real articles to 3D nodes
     assignArticlesToNodes();
     // Re-render panel if open
     const panel = document.getElementById('celpro-panel');
     if (panel && panel.classList.contains('open')) renderOraclePanel();
     pulseHudNotif();
+    if (window._onOracleDataReady) window._onOracleDataReady();
     // News burst — fire a wave of pulses from the dominant sector
     _triggerNewsBurst(oracleState.sectorData);
 }
@@ -2300,49 +2368,31 @@ function getCardsForPlanet(planetName, soulKey) {
         }).join('') + '</div>';
 }
 
-// ── Assign real articles to oracle nodes after fetch ──────────────────
+// ── Assign articles to 3D oracle nodes ──────────────────────────────
 function assignArticlesToNodes() {
     if (!oracleConstObj) return;
-    const { nodes } = oracleConstObj;
-
-    // Bucket articles by sector, sorted by impact desc
     const bySection = {};
     Object.keys(SECTOR_COLORS).forEach(s => bySection[s] = []);
     oracleState.articles.forEach(a => { if(bySection[a.sector]) bySection[a.sector].push(a); });
     Object.values(bySection).forEach(arr => arr.sort((a,b) => b.impact - a.impact));
-
-    // Track article usage index per sector (cycle through so each node gets a unique story)
-    const sectorIdx = {};
-    Object.keys(SECTOR_COLORS).forEach(s => sectorIdx[s] = 0);
-
-    nodes.forEach(n => {
-        const sector = n.sector;
-        const pool = bySection[sector] || [];
-        if (pool.length === 0) return;
-        const article = pool[sectorIdx[sector] % pool.length];
-        sectorIdx[sector]++;
-
-        // Store article on mesh userData for raycaster
+    const idx = {};
+    Object.keys(SECTOR_COLORS).forEach(s => idx[s] = 0);
+    oracleConstObj.nodes.forEach(n => {
+        const pool = bySection[n.sector] || [];
+        if (!pool.length) return;
+        const article = pool[idx[n.sector] % pool.length];
+        idx[n.sector]++;
         n.mesh.userData.article = article;
-
-        // Resize node by impact score: 0.10 (low) → 0.30 (high)
-        const impactScale = 0.10 + article.impact * 0.22;
+        const scale = 0.10 + article.impact * 0.22;
         n.mesh.geometry.dispose();
-        n.mesh.geometry = new THREE.SphereGeometry(impactScale, 12, 12);
-
-        // Recolor by sentiment: negative=red, positive=green, neutral=sector color
-        let hexColor = n.mesh.userData.col;
-        if (article.sentiment < -0.15)     hexColor = '#f87171'; // negative → red
-        else if (article.sentiment > 0.15) hexColor = '#4ade80'; // positive → green
-        const threeCol = new THREE.Color(hexColor);
-        n.mesh.material.color.set(threeCol);
-        n.mesh.material.emissive.set(threeCol);
-
-        // Higher impact = more visible
+        n.mesh.geometry = new THREE.SphereGeometry(scale, 12, 12);
+        let hex = n.mesh.userData.col;
+        if (article.sentiment < -0.15)     hex = '#f87171';
+        else if (article.sentiment > 0.15) hex = '#4ade80';
+        const c = new THREE.Color(hex);
+        n.mesh.material.color.set(c); n.mesh.material.emissive.set(c);
         n.mesh.userData.baseOpacity = 0.45 + article.impact * 0.45;
         n.mesh.material.opacity = n.mesh.userData.baseOpacity;
-
-        // Volatile articles get a startup glow burst
         if (article.volatility > 0.5) n.mesh.userData.glowTimer = 0.5;
     });
 }
@@ -2695,7 +2745,7 @@ window.toggleCelPro = function() {
 
 buildScene();
 buildOracleConstellation();
-assignArticlesToNodes(); // in case oracle data already loaded
+assignArticlesToNodes();
 buildConstHUD();
 startOraclePulseEngine();
 animate();
