@@ -907,13 +907,145 @@ function updateHUD(date){
 }
 
 const ray=new THREE.Raycaster();const mouse=new THREE.Vector2();
+ray.params.Line = { threshold: 0.1 };
+
+// ── Node tooltip card (DOM overlay) ──────────────────────────────────
+let _activeNodeTooltip = null;
+function showNodeTooltip(article, screenX, screenY, col, rgb) {
+    closeNodeTooltip();
+    const sentClass = article.sentiment > 0.1 ? 'pos' : article.sentiment < -0.1 ? 'neg' : 'neu';
+    const sentLabel = article.sentiment > 0.1 ? 'POSITIVE' : article.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
+    const sentColor = article.sentiment > 0.1 ? '#4ade80' : article.sentiment < -0.1 ? '#f87171' : '#D4AF37';
+    const ago = formatAgo(article.fetchedAt);
+    const div = document.createElement('div');
+    div.id = 'oracle-node-tooltip';
+    div.style.cssText = `
+        position:fixed;z-index:60;
+        max-width:280px;min-width:200px;
+        background:rgba(4,4,14,0.97);
+        border:1px solid ${col};
+        border-radius:6px;
+        padding:13px 15px 11px;
+        box-shadow:0 8px 40px rgba(0,0,0,0.8),0 0 22px rgba(${rgb},0.2);
+        backdrop-filter:blur(18px);
+        pointer-events:auto;
+        opacity:0;
+        transform:translateY(8px) scale(0.96);
+        transition:opacity .18s ease,transform .18s cubic-bezier(.22,1,.36,1);
+    `;
+    div.innerHTML = `
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col};flex-shrink:0;display:inline-block;"></span>
+            <span style="font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(${rgb},0.75);">${article.sector}</span>
+            <span style="flex:1"></span>
+            <span style="font-family:'Space Mono',monospace;font-size:.34rem;color:rgba(255,255,255,.2);">${ago}</span>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.92rem;color:rgba(255,255,255,.85);line-height:1.5;margin-bottom:10px;">${article.title}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span style="font-family:'Space Mono',monospace;font-size:.33rem;letter-spacing:.1em;color:rgba(255,255,255,.22);">${article.source}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.1em;padding:2px 7px;border-radius:2px;color:${sentColor};background:${sentColor}18;border:1px solid ${sentColor}44;">${sentLabel}</span>
+        </div>
+        ${article.url ? `<a href="${article.url}" target="_blank" rel="noopener"
+            style="display:block;margin-top:10px;padding:7px 12px;background:rgba(${rgb},0.1);border:1px solid rgba(${rgb},0.3);border-radius:3px;
+                   font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.12em;text-transform:uppercase;
+                   color:${col};text-decoration:none;text-align:center;transition:background .18s;"
+            onmouseover="this.style.background='rgba(${rgb},0.22)'" onmouseout="this.style.background='rgba(${rgb},0.1)'">
+            READ SIGNAL ↗
+        </a>` : ''}
+        <button onclick="closeNodeTooltip()" style="position:absolute;top:8px;right:9px;background:none;border:none;color:rgba(255,255,255,.3);font-size:.8rem;cursor:pointer;padding:2px 5px;line-height:1;">✕</button>
+    `;
+    div.style.position = 'fixed';
+    // Position: prefer left of click, keep on screen
+    const W = innerWidth, H = innerHeight;
+    let left = screenX + 14, top = screenY - 20;
+    document.body.appendChild(div);
+    const rect = div.getBoundingClientRect();
+    if (left + 290 > W) left = screenX - 290;
+    if (top + 200 > H) top = screenY - 180;
+    div.style.left = Math.max(8, left) + 'px';
+    div.style.top  = Math.max(8, top)  + 'px';
+    requestAnimationFrame(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0) scale(1)'; });
+    _activeNodeTooltip = div;
+}
+window.closeNodeTooltip = function() {
+    if (_activeNodeTooltip) { _activeNodeTooltip.remove(); _activeNodeTooltip = null; }
+};
+
+// ── Hover preview (title only) ─────────────────────────────────────
+let _hoverPreview = null;
+function showHoverPreview(title, screenX, screenY, col) {
+    removeHoverPreview();
+    const div = document.createElement('div');
+    div.id = 'oracle-hover-preview';
+    div.style.cssText = `position:fixed;z-index:55;pointer-events:none;padding:5px 10px;
+        background:rgba(4,4,14,0.92);border:1px solid ${col};border-radius:3px;
+        font-family:'Cormorant Garamond',serif;font-size:.8rem;color:rgba(255,255,255,.8);
+        max-width:220px;line-height:1.35;
+        box-shadow:0 4px 18px rgba(0,0,0,.6);backdrop-filter:blur(12px);
+        left:${Math.min(screenX+12, innerWidth-230)}px;top:${screenY-10}px;
+        opacity:0;transition:opacity .12s ease;`;
+    div.textContent = title;
+    document.body.appendChild(div);
+    requestAnimationFrame(() => div.style.opacity = '1');
+    _hoverPreview = div;
+}
+function removeHoverPreview() {
+    if (_hoverPreview) { _hoverPreview.remove(); _hoverPreview = null; }
+}
+
+// ── Combined click: planets first, then oracle nodes ─────────────
 canvas.addEventListener('click',e=>{
     mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;
-    ray.setFromCamera(mouse,camera);const hits=ray.intersectObjects(planetMeshes);
-    if(hits.length){
-        const{planet,ecliptic}=hits[0].object.userData;
+    ray.setFromCamera(mouse,camera);
+
+    // 1. Check planets
+    const planetHits=ray.intersectObjects(planetMeshes);
+    if(planetHits.length){
+        closeNodeTooltip();
+        const{planet,ecliptic}=planetHits[0].object.userData;
         if(planet.name==='Earth'){openEarthPanel(planet,ecliptic);}
         else{const retro=engine.isRetrograde(planet.name,new Date(currentDate.getTime()+timeOffset*86400000));openPlanetPanel(planet,ecliptic,retro);}
+        return;
+    }
+
+    // 2. Check oracle nodes
+    if(oracleConstObj && oracleConstObj.nodes.length) {
+        const oracleMeshes = oracleConstObj.nodes.map(n => n.mesh);
+        ray.params.Points = { threshold: 0.3 };
+        const nodeHits = ray.intersectObjects(oracleMeshes);
+        if(nodeHits.length) {
+            const hitMesh = nodeHits[0].object;
+            const article = hitMesh.userData.article;
+            if(article) {
+                // Flash the node
+                hitMesh.userData.glowTimer = 1.0;
+                showNodeTooltip(article, e.clientX, e.clientY, hitMesh.userData.col, hitMesh.userData.rgb);
+            }
+            return;
+        }
+    }
+
+    // 3. Click elsewhere = close tooltip
+    closeNodeTooltip();
+});
+
+// ── Hover: show title preview on mouseover oracle nodes ───────────
+canvas.addEventListener('mousemove', e => {
+    mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;
+    ray.setFromCamera(mouse,camera);
+    if(oracleConstObj && oracleConstObj.nodes.length) {
+        const oracleMeshes = oracleConstObj.nodes.map(n => n.mesh);
+        const hits = ray.intersectObjects(oracleMeshes);
+        if(hits.length && hits[0].object.userData.article) {
+            const article = hits[0].object.userData.article;
+            if(!_hoverPreview || _hoverPreview.textContent !== article.title) {
+                showHoverPreview(article.title, e.clientX, e.clientY, hits[0].object.userData.col);
+            }
+            canvas.style.cursor = 'pointer';
+        } else {
+            removeHoverPreview();
+            canvas.style.cursor = '';
+        }
     }
 });
 
@@ -2090,6 +2222,8 @@ async function fetchOracleData() {
     addOracleLog('\u2726 ' + unique.length + ' signals processed across ' + Object.keys(SECTOR_COLORS).length + ' sectors.');
     // Update 3D oracle constellation
     if (window._updateOracleConstellation) window._updateOracleConstellation(oracleState.sectorData);
+    // Bind real articles to 3D nodes
+    assignArticlesToNodes();
     // Re-render panel if open
     const panel = document.getElementById('celpro-panel');
     if (panel && panel.classList.contains('open')) renderOraclePanel();
@@ -2164,6 +2298,53 @@ function getCardsForPlanet(planetName, soulKey) {
                 '<span class="oi-sentiment ' + sentClass + '">' + sentLabel + '</span>' +
                 '</div></div>';
         }).join('') + '</div>';
+}
+
+// ── Assign real articles to oracle nodes after fetch ──────────────────
+function assignArticlesToNodes() {
+    if (!oracleConstObj) return;
+    const { nodes } = oracleConstObj;
+
+    // Bucket articles by sector, sorted by impact desc
+    const bySection = {};
+    Object.keys(SECTOR_COLORS).forEach(s => bySection[s] = []);
+    oracleState.articles.forEach(a => { if(bySection[a.sector]) bySection[a.sector].push(a); });
+    Object.values(bySection).forEach(arr => arr.sort((a,b) => b.impact - a.impact));
+
+    // Track article usage index per sector (cycle through so each node gets a unique story)
+    const sectorIdx = {};
+    Object.keys(SECTOR_COLORS).forEach(s => sectorIdx[s] = 0);
+
+    nodes.forEach(n => {
+        const sector = n.sector;
+        const pool = bySection[sector] || [];
+        if (pool.length === 0) return;
+        const article = pool[sectorIdx[sector] % pool.length];
+        sectorIdx[sector]++;
+
+        // Store article on mesh userData for raycaster
+        n.mesh.userData.article = article;
+
+        // Resize node by impact score: 0.10 (low) → 0.30 (high)
+        const impactScale = 0.10 + article.impact * 0.22;
+        n.mesh.geometry.dispose();
+        n.mesh.geometry = new THREE.SphereGeometry(impactScale, 12, 12);
+
+        // Recolor by sentiment: negative=red, positive=green, neutral=sector color
+        let hexColor = n.mesh.userData.col;
+        if (article.sentiment < -0.15)     hexColor = '#f87171'; // negative → red
+        else if (article.sentiment > 0.15) hexColor = '#4ade80'; // positive → green
+        const threeCol = new THREE.Color(hexColor);
+        n.mesh.material.color.set(threeCol);
+        n.mesh.material.emissive.set(threeCol);
+
+        // Higher impact = more visible
+        n.mesh.userData.baseOpacity = 0.45 + article.impact * 0.45;
+        n.mesh.material.opacity = n.mesh.userData.baseOpacity;
+
+        // Volatile articles get a startup glow burst
+        if (article.volatility > 0.5) n.mesh.userData.glowTimer = 0.5;
+    });
 }
 
 // Kick off Oracle on load, refresh every 10 minutes
@@ -2514,6 +2695,7 @@ window.toggleCelPro = function() {
 
 buildScene();
 buildOracleConstellation();
+assignArticlesToNodes(); // in case oracle data already loaded
 buildConstHUD();
 startOraclePulseEngine();
 animate();
