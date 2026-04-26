@@ -459,26 +459,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 #discord-link{display:flex;align-items:center;gap:14px;padding:16px 36px;background:linear-gradient(135deg,#AA8C2C,#D4AF37,#AA8C2C);border-radius:3px;text-decoration:none;color:#04040c;font-family:'Cinzel',serif;font-weight:800;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;box-shadow:0 0 50px rgba(212,175,55,.45);transition:box-shadow .3s,transform .3s;}
 #discord-link:hover{box-shadow:0 0 80px rgba(212,175,55,.75);transform:scale(1.05);}
 #discord-icon{font-size:1.3rem;}
-/* ── CELESTIAL PROJECTION — vol star chart ── */
-/* ── VIX CONSTELLATION 3D LABEL (CSS2DObject injected by Three.js) ── */
-.vix-3d-label{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 10px;background:rgba(4,4,10,.82);border:1px solid rgba(212,175,55,.28);border-radius:16px;cursor:pointer;backdrop-filter:blur(12px);transition:border-color .3s,box-shadow .3s;pointer-events:auto;transform:translate(-50%,0);white-space:nowrap;}
-.vix-3d-label:hover{border-color:rgba(212,175,55,.65);box-shadow:0 0 22px rgba(212,175,55,.22);}
-.vix-3d-label.watch{border-color:rgba(250,204,21,.55);box-shadow:0 0 18px rgba(250,204,21,.18);}
-.vix-3d-label.alert{border-color:rgba(248,113,113,.65);box-shadow:0 0 18px rgba(248,113,113,.25);}
-.vlb-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,175,55,.35);flex-shrink:0;transition:background .4s,box-shadow .4s;}
-.vlb-dot.watch{background:#facc15;box-shadow:0 0 7px rgba(250,204,21,.7);animation:vsbPulse 1.8s ease-in-out infinite;}
-.vlb-dot.alert{background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.8);animation:vsbFlash .9s ease-in-out infinite;}
-@keyframes vsbPulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes vsbFlash{0%,100%{opacity:1}50%{opacity:.55}}
-.vlb-glyph{font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold);text-shadow:0 0 12px var(--gold-glow);line-height:1;}
-.vlb-sep{width:1px;height:12px;background:rgba(212,175,55,.18);flex-shrink:0;}
-.vlb-price{font-family:'JetBrains Mono',monospace;font-size:12px;color:#fff;letter-spacing:.04em;}
-.vlb-chg{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 5px;border-radius:3px;}
-.vlb-chg.up{color:#4ade80;background:rgba(74,222,128,.12);}
-.vlb-chg.dn{color:#f87171;background:rgba(248,113,113,.12);}
-.vlb-regime{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,175,55,.5);max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.vlb-open{font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.2em;color:rgba(212,175,55,.32);text-transform:uppercase;}
-/* Celestial Projection panel */
+/* ── ORACLE CONSTELLATION 3D LABEL ── */
+.oracle-3d-label{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 10px;background:rgba(4,4,10,.88);border:1px solid rgba(212,175,55,.25);border-radius:16px;cursor:pointer;backdrop-filter:blur(14px);transition:border-color .3s,box-shadow .3s;pointer-events:auto;transform:translate(-50%,0);white-space:nowrap;}
+.oracle-3d-label:hover{border-color:rgba(212,175,55,.6);box-shadow:0 0 22px rgba(212,175,55,.2);}
+.oracle-3d-label.negative{border-color:rgba(248,113,113,.5);box-shadow:0 0 16px rgba(248,113,113,.18);}
+.oracle-3d-label.volatile{border-color:rgba(250,204,21,.5);box-shadow:0 0 16px rgba(250,204,21,.16);}
+.olb-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,175,55,.6);flex-shrink:0;animation:olbPulse 2.4s ease-in-out infinite;}
+.olb-dot.negative{background:#f87171;animation:olbFlash 1.1s ease-in-out infinite;}
+.olb-dot.volatile{background:#facc15;animation:olbPulse 1.4s ease-in-out infinite;}
+@keyframes olbPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+@keyframes olbFlash{0%,100%{opacity:1}50%{opacity:.3}}
+.olb-glyph{font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold);text-shadow:0 0 12px var(--gold-glow);line-height:1;}
+.olb-sep{width:1px;height:12px;background:rgba(212,175,55,.18);flex-shrink:0;}
+.olb-sector{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,175,55,.7);}
+.olb-count{font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff;}
+.olb-open{font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.2em;color:rgba(212,175,55,.32);text-transform:uppercase;}
+/* Oracle Signal Feed panel */
 #celpro-panel{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(4,4,12,.97);border-top:1px solid rgba(212,175,55,.2);border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .42s cubic-bezier(.22,1,.36,1);max-height:88vh;display:flex;flex-direction:column;backdrop-filter:blur(22px);box-shadow:0 -24px 80px rgba(0,0,0,.85);pointer-events:none;}
 #celpro-panel.open{transform:translateY(0);pointer-events:auto;}
 #celpro-drag{width:38px;height:4px;background:rgba(255,255,255,.13);border-radius:2px;margin:12px auto 0;flex-shrink:0;cursor:grab;}
@@ -492,38 +488,34 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 #celpro-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px 40px;flex:1;}
 #celpro-body::-webkit-scrollbar{width:2px;}
 #celpro-body::-webkit-scrollbar-thumb{background:rgba(212,175,55,.25);border-radius:1px;}
-/* Chart wrap */
-#celpro-chart-wrap{position:relative;width:100%;height:300px;margin-bottom:18px;border:1px solid rgba(212,175,55,.1);border-radius:8px;overflow:hidden;background:radial-gradient(ellipse at 50% 55%,rgba(18,5,40,.9) 0%,rgba(4,4,12,.98) 68%);}
-#celpro-canvas{position:absolute;inset:0;width:100%;height:100%;}
-#celpro-ns-label{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(212,175,55,.4);pointer-events:none;white-space:nowrap;}
-#celpro-ns-val{position:absolute;top:21px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:#D4AF37;text-shadow:0 0 16px rgba(212,175,55,.6);pointer-events:none;}
-#celpro-ah{position:absolute;top:9px;right:11px;font-family:'Space Mono',monospace;font-size:6px;color:#D4AF37;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.28);border-radius:2px;padding:1px 5px;display:none;}
-/* Tooltip */
-#celpro-tt{position:absolute;z-index:10;pointer-events:none;opacity:0;transition:opacity .2s;min-width:155px;max-width:205px;}
-#celpro-tt.show{opacity:1;}
-#celpro-tt-inner{background:rgba(4,4,12,.97);border:1px solid rgba(212,175,55,.42);border-radius:5px;padding:10px 12px;box-shadow:0 0 24px rgba(212,175,55,.16);}
-#celpro-tt-hz{font-family:'Space Mono',monospace;font-size:.4rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:2px;}
-#celpro-tt-tgt{font-family:'JetBrains Mono',monospace;font-size:.88rem;color:#fff;margin-bottom:3px;}
-#celpro-tt-narr{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.5;margin-bottom:5px;}
-.celpro-tt-play{font-family:'Space Mono',monospace;font-size:.4rem;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border-radius:2px;display:inline-block;}
-.celpro-tt-play.theta{color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.12);}
-.celpro-tt-play.call{color:#D4AF37;border:1px solid rgba(212,175,55,.4);background:rgba(212,175,55,.08);}
-.celpro-tt-play.put{color:#f87171;border:1px solid rgba(248,113,113,.38);background:rgba(248,113,113,.07);}
-.celpro-tt-play.exit{color:#60a5fa;border:1px solid rgba(96,165,250,.38);background:rgba(96,165,250,.07);}
-.celpro-tt-play.wait{color:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.08);}
-/* Horizon table */
+/* Oracle sector bars */
+.oracle-sector-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.oracle-sector-card{padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:4px;transition:border-color .3s;}
+.oracle-sector-card.positive{border-color:rgba(126,184,232,.3);}
+.oracle-sector-card.negative{border-color:rgba(248,113,113,.3);}
+.oracle-sector-card.volatile{border-color:rgba(250,204,21,.25);}
+.osc-name{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:5px;}
+.osc-score{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:#fff;margin-bottom:4px;}
+.osc-bar-track{height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;}
+.osc-bar-fill{height:100%;border-radius:1px;transition:width .9s cubic-bezier(.22,1,.36,1);}
+.osc-label{font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.14em;text-transform:uppercase;margin-top:3px;}
+/* Oracle feed items */
 .celpro-sec-lbl{font-family:'Space Mono',monospace;font-size:.4rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(212,175,55,.32);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.05);}
-.celpro-tbl{width:100%;border-collapse:collapse;margin-bottom:18px;}
-.celpro-tbl th{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(212,175,55,.35);padding:4px 7px;border-bottom:1px solid rgba(212,175,55,.08);text-align:left;}
-.celpro-tbl td{font-family:'Cormorant Garamond',serif;font-size:.8rem;color:rgba(255,255,255,.58);padding:7px 7px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top;line-height:1.45;}
-.celpro-tbl tr:last-child td{border-bottom:none;}
-.celpro-tbl td:first-child{font-family:'Space Mono',monospace;font-size:.44rem;color:var(--gold);letter-spacing:.1em;white-space:nowrap;}
-.cpbadge{font-family:'Space Mono',monospace;font-size:.37rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;display:inline-block;white-space:nowrap;}
-.cpbadge.theta{color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.1);}
-.cpbadge.call{color:#D4AF37;border:1px solid rgba(212,175,55,.32);background:rgba(212,175,55,.06);}
-.cpbadge.put{color:#f87171;border:1px solid rgba(248,113,113,.28);background:rgba(248,113,113,.05);}
-.cpbadge.exit{color:#60a5fa;border:1px solid rgba(96,165,250,.32);background:rgba(96,165,250,.05);}
-.cpbadge.wait{color:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.07);}
+#oracle-feed{display:flex;flex-direction:column;gap:0;}
+.oracle-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .18s;}
+.oracle-item:hover{background:rgba(255,255,255,.02);}
+.oracle-item:last-child{border-bottom:none;}
+.oi-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.oi-body{flex:1;min-width:0;}
+.oi-title{font-family:'Cormorant Garamond',serif;font-size:.88rem;color:rgba(255,255,255,.72);line-height:1.45;margin-bottom:3px;}
+.oi-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.oi-source{font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.1em;color:rgba(255,255,255,.2);text-transform:uppercase;}
+.oi-sector{font-family:'Space Mono',monospace;font-size:.34rem;letter-spacing:.1em;text-transform:uppercase;padding:1px 5px;border-radius:2px;border:1px solid;}
+.oi-time{font-family:'JetBrains Mono',monospace;font-size:.38rem;color:rgba(255,255,255,.18);}
+.oi-sentiment{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.1em;text-transform:uppercase;padding:1px 5px;border-radius:2px;}
+.oi-sentiment.pos{color:#4ade80;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);}
+.oi-sentiment.neg{color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);}
+.oi-sentiment.neu{color:rgba(255,255,255,.28);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
 /* Signal log */
 #celpro-log .cle{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);}
 #celpro-log .cle:last-child{border-bottom:none;}
@@ -559,41 +551,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 <body>
 
 
-<!-- VIX constellation label injected by Three.js as CSS2DObject -->
+<!-- Oracle constellation label injected by Three.js as CSS2DObject -->
 
-<!-- ── CELESTIAL PROJECTION PANEL ── -->
+<!-- ── ORACLE SIGNAL FEED PANEL ── -->
 <div id="celpro-panel">
     <div id="celpro-drag"></div>
     <div id="celpro-hdr">
         <div id="celpro-title-grp">
-            <div id="celpro-eyebrow">Volatility Constellation</div>
-            <div id="celpro-title">Axium Celestial Projection</div>
-            <div id="celpro-subtitle">Read the stars. Trade the horizon.</div>
+            <div id="celpro-eyebrow">Global Intelligence · Live RSS</div>
+            <div id="celpro-title">The Oracle Signal Feed</div>
+            <div id="celpro-subtitle">Neuron constellation — world narrative in real time.</div>
         </div>
         <button id="celpro-close" onclick="toggleCelPro()">✕</button>
     </div>
     <div id="celpro-body">
-        <div id="celpro-chart-wrap">
-            <canvas id="celpro-canvas"></canvas>
-            <div id="celpro-ns-label">∴ NORTH STAR · VXX SPOT</div>
-            <div id="celpro-ns-val">—</div>
-            <div id="celpro-ah">PREV CLOSE</div>
-            <div id="celpro-tt">
-                <div id="celpro-tt-inner">
-                    <div id="celpro-tt-hz">—</div>
-                    <div id="celpro-tt-tgt">—</div>
-                    <div id="celpro-tt-narr">—</div>
-                    <span id="celpro-tt-play" class="celpro-tt-play theta">—</span>
-                </div>
-            </div>
-        </div>
-        <div class="celpro-sec-lbl">Horizon Map</div>
-        <table class="celpro-tbl">
-            <thead><tr><th>Horizon</th><th>Target</th><th>Narrative</th><th>Play</th></tr></thead>
-            <tbody id="celpro-tbody"></tbody>
-        </table>
-        <div class="celpro-sec-lbl">Signal Log</div>
-        <div id="celpro-log"><div class="cle"><span class="clt">—</span><span class="clm">Celestial engine initialized. Awaiting data…</span></div></div>
+        <div class="celpro-sec-lbl">Sector Sentiment</div>
+        <div class="oracle-sector-grid" id="oracle-sector-grid"></div>
+        <div class="celpro-sec-lbl">Live Intelligence Feed</div>
+        <div id="oracle-feed"></div>
+        <div class="celpro-sec-lbl" style="margin-top:18px;">Signal Log</div>
+        <div id="celpro-log"><div class="cle"><span class="clt">—</span><span class="clm">Oracle engine initialized. Scanning global feeds…</span></div></div>
     </div>
 </div>
 
@@ -1007,7 +984,7 @@ function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime()
         });
     }
     animateConstellations(t);
-    animateVIXConstellation(t);
+    animateOracleConstellation(t);
     controls.update();renderer.render(scene,camera);labelRenderer.render(scene,camera);
 }
 
@@ -1015,7 +992,7 @@ document.getElementById('time-slider').addEventListener('input',function(){
     timeOffset=parseInt(this.value);const d=new Date(currentDate.getTime()+timeOffset*86400000);
     document.getElementById('tc-date').textContent=timeOffset===0?'Present Moment':(timeOffset>0?'+':'')+timeOffset+' days \u00b7 '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     buildScene();
-    buildVIXConstellation();
+    buildOracleConstellation();
     // Restore lit node visuals after rebuild
     PLANETS.forEach(p => {
         const lit = constState[p.name].lit;
@@ -1038,7 +1015,7 @@ document.getElementById('time-slider').addEventListener('input',function(){
 });
 window.resetTime=function(){timeOffset=0;document.getElementById('time-slider').value=0;document.getElementById('tc-date').textContent='Present Moment';
     buildScene();
-    buildVIXConstellation();
+    buildOracleConstellation();
     PLANETS.forEach(p => {
         const lit = constState[p.name].lit;
         if (lit > 0) {
@@ -1824,1209 +1801,622 @@ setSoul('micheal');
 
 
 // ══════════════════════════════════════════════
-// CELESTIAL PROJECTION ENGINE — Massive.com live data
+// ORACLE RSS ENGINE — Global Sentiment Constellation
 // ══════════════════════════════════════════════
 
+const RSS_FEEDS = [
+    { name: 'BBC World',      url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                                                                      sector: 'GEOPOLITICS' },
+    { name: 'BBC Business',   url: 'https://feeds.bbci.co.uk/news/business/rss.xml',                                                                   sector: 'ECONOMY'     },
+    { name: 'Al Jazeera',     url: 'https://www.aljazeera.com/xml/rss/all.xml',                                                                        sector: 'GEOPOLITICS' },
+    { name: 'Reuters',        url: 'https://feeds.reuters.com/reuters/topNews',                                                                        sector: 'GEOPOLITICS' },
+    { name: 'The Verge',      url: 'https://www.theverge.com/rss/index.xml',                                                                          sector: 'TECHNOLOGY'  },
+    { name: 'NYT Business',   url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',                                                        sector: 'ECONOMY'     },
+    { name: 'CNBC',           url: 'https://search.cnbc.com/rs/search/all/view.rss?partnerId=2000&keywords=markets',                                   sector: 'FINANCE'     },
+    { name: 'AP News',        url: 'https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com/article&hl=en-US&gl=US&ceid=US:en',             sector: 'GENERAL'     },
+];
 
-const scannerState = {
-    vix:  { price: 0, changePct: 0, prevClose: 0 },
-    vvix: { price: 0, changePct: 0, prevClose: 0 },
-    spy:  { price: 0, prevClose: 0, realized5d: 0, dailyReturns: [] },
-    threshVVIX: 2.0,   // VVIX must rise MORE than this %
-    threshVIX:  0.5,   // VIX must rise LESS than this %
-    scannerOpen: false,
-    signalLog: [],
-    lastSignalState: 'clear'  // 'clear' | 'watch' | 'alert'
+const SECTOR_COLORS = {
+    GEOPOLITICS: { hex: '#f87171', rgb: '248,113,113' },
+    ECONOMY:     { hex: '#D4AF37', rgb: '212,175,55'  },
+    FINANCE:     { hex: '#4ade80', rgb: '74,222,128'  },
+    TECHNOLOGY:  { hex: '#7EB8E8', rgb: '126,184,232' },
+    GENERAL:     { hex: '#C8C8D4', rgb: '200,200,212' },
 };
 
-const MASSIVE_KEY = 'f5310iuPjNKMLV2YMHPo1eNX8hPTJkd5';
-const MASSIVE_HEADERS = { 'Authorization': `Bearer ${MASSIVE_KEY}` };
+// Sentiment anchor keywords — mirrors the Axium app's semantic anchors
+const POSITIVE_WORDS = ['growth','peace','recovery','cooperation','agreement','rise','gain','strong','breakthrough','approved','victory','record','expand','invest','alliance','stability','reform','progress','open','launch','success','profit','rally','surge','boost'];
+const NEGATIVE_WORDS = ['war','conflict','crisis','collapse','attack','bomb','kill','death','crash','deficit','sanction','threat','fail','loss','decline','protest','strike','cut','ban','terror','disease','flood','fire','drought','recession','inflation','violation'];
+const VOLATILITY_WORDS = ['breaking','urgent','sudden','shock','unprecedented','disruption','emergency','alert','surprise','unexpected','rapid','surge','spike','plunge','explosive','dramatic','critical','historic'];
+const URGENCY_WORDS = ['now','today','hours','minutes','immediately','latest','just','breaking','this morning','this evening','live'];
 
-async function fetchMassiveQuote(symbol) {
+const oracleState = {
+    articles: [],       // all fetched articles
+    sectorData: {},     // { SECTOR: { sentiment: float, count: int, volatility: float } }
+    signalLog: [],
+    lastFetch: 0,
+    neuronPulses: [],   // active pulses traveling the constellation lines
+};
+
+// ── Sentiment scoring — cosine-inspired keyword distance ──
+function scoreArticle(title, desc) {
+    const text = (title + ' ' + desc).toLowerCase();
+    const words = text.split(/\W+/);
+    let pos = 0, neg = 0, vol = 0, urg = 0;
+    words.forEach(w => {
+        if (POSITIVE_WORDS.includes(w))  pos++;
+        if (NEGATIVE_WORDS.includes(w))  neg++;
+        if (VOLATILITY_WORDS.includes(w)) vol++;
+        if (URGENCY_WORDS.includes(w))   urg++;
+    });
+    const total = pos + neg + 1;
+    const sentiment = (pos - neg) / total; // −1..+1
+    const volatility = Math.min(vol / 3, 1);
+    const urgency    = Math.min(urg / 2, 1);
+    const impact     = 0.6 * Math.min((vol + urg) / 5, 1) + 0.4 * Math.abs(sentiment);
+    return { sentiment, volatility, urgency, impact };
+}
+
+// ── RSS fetch via rss2json proxy ──
+async function fetchFeed(feed) {
     try {
-        const res = await fetch(
-            `https://api.massive.com/v2/aggs/ticker/${encodeURIComponent(symbol)}/prev?adjusted=true`,
-            { headers: MASSIVE_HEADERS, cache: 'no-store' }
-        );
-        if (!res.ok) { console.warn(`[AXIUM] ${symbol} /prev => ${res.status}`); return null; }
+        const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=6`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) return [];
         const data = await res.json();
-        const c = data?.results?.[0]?.c || 0;
-        if (!c) return null;
-        return { c, pc: c, dp: 0 };
-    } catch(e) { console.warn('[AXIUM] fetchMassiveQuote error:', e); return null; }
-}
-
-// Realized vol proxy: accumulate log-returns from successive /prev polls.
-function updateSPYRealizedVol(currentPrice) {
-    if (!currentPrice || currentPrice <= 0) return;
-    const spy = scannerState.spy;
-    // Bootstrap: push the prevClose→current return on first call
-    if (spy._lastTrackedPrice == null) {
-        spy._lastTrackedPrice = spy.prevClose > 0 ? spy.prevClose : currentPrice;
-    }
-    const prev = spy._lastTrackedPrice;
-    if (prev > 0 && currentPrice !== prev) {
-        const logRet = Math.log(currentPrice / prev);
-        spy.dailyReturns.push(logRet);
-        if (spy.dailyReturns.length > 30) spy.dailyReturns.shift(); // keep rolling window
-    }
-    spy._lastTrackedPrice = currentPrice;
-    // Need at least 2 samples; annualize assuming ~252 trading days × 390 min/day
-    // At 60-sec polls: 1 minute intervals → scale = 252 * 390 * 60 / pollInterval(s)
-    // We use a conservative 252*390 intraday-bars-per-year factor for 1-min intervals
-    if (spy.dailyReturns.length >= 2) {
-        const r = spy.dailyReturns;
-        const mean = r.reduce((a, b) => a + b, 0) / r.length;
-        const variance = r.reduce((a, b) => a + (b - mean) ** 2, 0) / r.length;
-        // Annualize: ~98280 one-minute bars per trading year (252 × 390)
-        spy.realized5d = Math.sqrt(variance * 98280) * 100;
+        if (data.status !== 'ok' || !data.items) return [];
+        return data.items.map(item => {
+            const desc = (item.description || '').replace(/<[^>]+>/g, '').trim().slice(0, 200);
+            const scores = scoreArticle(item.title || '', desc);
+            return {
+                title: (item.title || '').trim().slice(0, 120),
+                desc,
+                url: item.link || '',
+                source: feed.name,
+                sector: feed.sector,
+                pubDate: item.pubDate || '',
+                ...scores,
+                fetchedAt: Date.now(),
+            };
+        });
+    } catch(e) {
+        console.warn(`[ORACLE] Feed failed: ${feed.name}`, e.message);
+        return [];
     }
 }
 
-// VIX term structure: compare VIX (spot) to a proxy using VIX3M
-// We use VIX vs SPY options as a rough proxy since VVIX and VIX are available
-function computeTermStructureProxy() {
-    const vix = scannerState.vix.price;
-    const vvix = scannerState.vvix.price;
-    if (!vix || !vvix) return { label: '—', mode: 'cg', desc: 'Awaiting data' };
-    // VVIX/VIX ratio: higher = more demand for vol-of-vol = contango stress rising
-    const ratio = vvix / vix;
-    if (ratio > 5.5) {
-        return { label: 'BACKWARDATION signal', mode: 'bk', desc: 'VVIX/VIX elevated — panic demand building' };
-    } else if (ratio > 4.5) {
-        return { label: 'CONTANGO (stressed)', mode: 'cg', desc: 'Contango but VVIX diverging' };
-    } else {
-        return { label: 'CONTANGO (stable)', mode: 'cg', desc: 'Normal carry — long VIX bleeds' };
-    }
+function computeSectorData(articles) {
+    const data = {};
+    Object.keys(SECTOR_COLORS).forEach(s => { data[s] = { sentiment: 0, count: 0, volatility: 0, articles: [] }; });
+    articles.forEach(a => {
+        const s = a.sector;
+        if (!data[s]) return;
+        data[s].count++;
+        data[s].sentiment += a.sentiment;
+        data[s].volatility += a.volatility;
+        data[s].articles.push(a);
+    });
+    Object.keys(data).forEach(s => {
+        if (data[s].count > 0) {
+            data[s].sentiment /= data[s].count;
+            data[s].volatility /= data[s].count;
+        }
+    });
+    return data;
 }
 
-function computeVRP() {
-    const vix = scannerState.vix.price;
-    const rv = scannerState.spy.realized5d;
-    if (!vix || !rv) return null;
-    return vix - rv; // Positive = IV expensive vs actual moves
-}
-
-function addLogEntry(msg, type = 'normal') {
+function addOracleLog(msg, type = 'normal') {
     const now = new Date();
     const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    scannerState.signalLog.unshift({ time, msg, type });
-    if (scannerState.signalLog.length > 12) scannerState.signalLog.pop();
-    renderScannerLog();
+    oracleState.signalLog.unshift({ time, msg, type });
+    if (oracleState.signalLog.length > 20) oracleState.signalLog.pop();
+    renderOracleLog();
 }
 
-function renderScannerLog() {
-    const el = document.getElementById('scanner-log');
+function renderOracleLog() {
+    const el = document.getElementById('celpro-log');
     if (!el) return;
-    el.innerHTML = scannerState.signalLog.map(e =>
-        `<div class="log-entry">
-            <span class="log-time">${e.time}</span>
-            <span class="log-msg ${e.type === 'alert' ? 'alert-msg' : e.type === 'watch' ? 'watch-msg' : ''}">${e.msg}</span>
-        </div>`
-    ).join('') || '<div class="log-entry"><span class="log-time">—</span><span class="log-msg">No signals yet.</span></div>';
+    el.innerHTML = oracleState.signalLog.map(e =>
+        `<div class="cle"><span class="clt">${e.time}</span><span class="clm ${e.type === 'alert' ? 'am' : e.type === 'watch' ? 'wm' : ''}">${e.msg}</span></div>`
+    ).join('') || '<div class="cle"><span class="clt">—</span><span class="clm">Scanning…</span></div>';
 }
 
-// ══════════════════════════════════════════════
-// 4-GAUGE VOL ENGINE
-// ══════════════════════════════════════════════
-
-/**
- * pointNeedle(id, zone)
- * Rotates the SVG needle for gauge id ('g1','g2','g3','g4') to one of three zones:
- *   'put'   → left  (−70°)
- *   'theta' → center (0°)
- *   'call'  → right (+70°)
- */
-function pointNeedle(id, zone) {
-    const needle = document.getElementById(id + '-needle');
-    if (!needle) return;
-    const angle = zone === 'put' ? -70 : zone === 'call' ? 70 : 0;
-    needle.setAttribute('transform', `rotate(${angle}, 80, 80)`);
-    const zoneEl = document.getElementById(id + '-zone');
-    if (zoneEl) {
-        zoneEl.textContent = zone.toUpperCase();
-        zoneEl.className = 'gauge-zone-label ' + zone;
+function renderOraclePanel() {
+    // Sector bars
+    const grid = document.getElementById('oracle-sector-grid');
+    if (grid) {
+        grid.innerHTML = Object.entries(oracleState.sectorData).map(([sector, d]) => {
+            const col = SECTOR_COLORS[sector];
+            const pct = Math.round(Math.abs(d.sentiment) * 100);
+            const mood = d.sentiment > 0.1 ? 'positive' : d.sentiment < -0.1 ? 'negative' : 'volatile';
+            const moodLabel = d.sentiment > 0.1 ? 'POSITIVE' : d.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
+            const fillColor = d.sentiment > 0.1 ? '#4ade80' : d.sentiment < -0.1 ? '#f87171' : '#D4AF37';
+            return `<div class="oracle-sector-card ${mood}">
+                <div class="osc-name">${sector}</div>
+                <div class="osc-score" style="color:${col.hex}">${d.count} signals</div>
+                <div class="osc-bar-track"><div class="osc-bar-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+                <div class="osc-label" style="color:${fillColor}">${moodLabel}</div>
+            </div>`;
+        }).join('');
     }
-}
-
-/**
- * Gauge 1 — Meta Divergence (VVIX vs VIX)
- * VVIX spikes while VIX stagnant → CALL (smart money buying vol protection)
- * VVIX dropping while VIX rising → PUT
- * Neither → THETA
- */
-function computeGauge1() {
-    const vvixChg = scannerState.vvix.changePct;
-    const vixChg  = scannerState.vix.changePct;
-    let zone = 'theta';
-    if (vvixChg > scannerState.threshVVIX && vixChg < scannerState.threshVIX) {
-        zone = 'call';
-    } else if (vvixChg < -1.5 && vixChg > 1.5) {
-        zone = 'put';
+    // Feed items
+    const feed = document.getElementById('oracle-feed');
+    if (feed) {
+        const sorted = [...oracleState.articles].sort((a, b) => b.impact - a.impact).slice(0, 24);
+        feed.innerHTML = sorted.map(a => {
+            const col = SECTOR_COLORS[a.sector] || SECTOR_COLORS.GENERAL;
+            const sentClass = a.sentiment > 0.1 ? 'pos' : a.sentiment < -0.1 ? 'neg' : 'neu';
+            const sentLabel = a.sentiment > 0.1 ? 'POSITIVE' : a.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
+            const ago = formatAgo(a.fetchedAt);
+            return `<div class="oracle-item" onclick="window.open('${a.url}','_blank')">
+                <div class="oi-dot" style="background:${col.hex};box-shadow:0 0 6px ${col.hex};"></div>
+                <div class="oi-body">
+                    <div class="oi-title">${a.title}</div>
+                    <div class="oi-meta">
+                        <span class="oi-source">${a.source}</span>
+                        <span class="oi-sector" style="color:${col.hex};border-color:rgba(${col.rgb},0.3);background:rgba(${col.rgb},0.06);">${a.sector}</span>
+                        <span class="oi-sentiment ${sentClass}">${sentLabel}</span>
+                        <span class="oi-time">${ago}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
     }
-    const val = (vvixChg - vixChg).toFixed(1);
-    const valEl = document.getElementById('g1-val');
-    if (valEl) valEl.textContent = (val > 0 ? '+' : '') + val + '%';
-    const subEl = document.getElementById('g1-sub');
-    if (subEl) subEl.textContent = `UVXY ${vvixChg >= 0 ? '+' : ''}${vvixChg.toFixed(1)}% · VXX ${vixChg >= 0 ? '+' : ''}${vixChg.toFixed(1)}%`;
-    pointNeedle('g1', zone);
-    return zone;
+    renderOracleLog();
 }
 
-/**
- * Gauge 2 — Order Flow CVD proxy
- * Uses SPY price vs prevClose as CVD proxy:
- * SPY falling + VIX rising → PUT (aggressive selling)
- * SPY rising + VIX falling → CALL
- * Mixed → THETA
- */
-function computeGauge2() {
-    const spy    = scannerState.spy;
-    const vixChg = scannerState.vix.changePct;
-    const spyChg = spy.prevClose > 0 ? ((spy.price - spy.prevClose) / spy.prevClose * 100) : 0;
-    let zone = 'theta';
-    if (spyChg < -0.5 && vixChg > 0.5) zone = 'put';
-    else if (spyChg > 0.5 && vixChg < -0.3) zone = 'call';
-    const valEl = document.getElementById('g2-val');
-    if (valEl) valEl.textContent = (spyChg >= 0 ? '+' : '') + spyChg.toFixed(1) + '%';
-    const subEl = document.getElementById('g2-sub');
-    if (subEl) subEl.textContent = `SPY ${spyChg >= 0 ? '+' : ''}${spyChg.toFixed(1)}% · VXX ${vixChg >= 0 ? '+' : ''}${vixChg.toFixed(1)}%`;
-    pointNeedle('g2', zone);
-    return zone;
+function formatAgo(ts) {
+    const d = Date.now() - ts;
+    if (d < 60000) return 'just now';
+    if (d < 3600000) return Math.floor(d/60000) + 'm ago';
+    return Math.floor(d/3600000) + 'h ago';
 }
 
-/**
- * Gauge 3 — Basis / Term Structure
- * Basis = Spot VIX (VXX) − M1 proxy (UVXY normalized)
- * Basis < −1.0 → THETA BURN (contango, decay is your enemy)
- * Basis > 0.5  → CALL (backwardation, tail risk elevated)
- * Else         → THETA
- */
-function computeGauge3() {
-    const vix  = scannerState.vix.price  || scannerState.vix.prevClose  || 0;
-    const vvix = scannerState.vvix.price || scannerState.vvix.prevClose || 0;
-    if (!vix || !vvix) { pointNeedle('g3', 'theta'); return 'theta'; }
-    // Normalize UVXY to a VIX-scale basis proxy: VXX − (UVXY/5.5)
-    const basisProxy = vix - (vvix / 5.5);
-    let zone = 'theta';
-    if (basisProxy < -1.0) zone = 'theta';         // Contango — theta eats you
-    else if (basisProxy > 0.5) zone = 'call';       // Backwardation — tail risk
-    else zone = 'theta';
-    const valEl = document.getElementById('g3-val');
-    if (valEl) valEl.textContent = (basisProxy >= 0 ? '+' : '') + basisProxy.toFixed(2);
-    const subEl = document.getElementById('g3-sub');
-    if (subEl) subEl.textContent = basisProxy > 0.5 ? 'Backwardation — tail risk' : 'Contango — carry is negative';
-    pointNeedle('g3', zone);
-    return zone;
+async function fetchOracleData() {
+    addOracleLog('⊕ Scanning global intelligence feeds…', 'watch');
+    const results = await Promise.allSettled(RSS_FEEDS.map(f => fetchFeed(f)));
+    const allArticles = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    // Deduplicate by title prefix
+    const seen = new Set();
+    const unique = allArticles.filter(a => {
+        const key = a.title.slice(0, 40).toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+    });
+    oracleState.articles = unique;
+    oracleState.sectorData = computeSectorData(unique);
+    oracleState.lastFetch = Date.now();
+    // Log top signal
+    const top = unique.sort((a, b) => b.impact - a.impact)[0];
+    if (top) addOracleLog('\u2234 Top signal: [' + top.sector + '] ' + top.title.slice(0,60) + '\u2026', top.sentiment < -0.1 ? 'alert' : 'watch');
+    addOracleLog('\u2726 ' + unique.length + ' signals processed across ' + Object.keys(SECTOR_COLORS).length + ' sectors.');
+    // Update 3D oracle constellation
+    if (window._updateOracleConstellation) window._updateOracleConstellation(oracleState.sectorData);
+    // Re-render panel if open
+    const panel = document.getElementById('celpro-panel');
+    if (panel && panel.classList.contains('open')) renderOraclePanel();
+    pulseHudNotif();
+    // News burst — fire a wave of pulses from the dominant sector
+    _triggerNewsBurst(oracleState.sectorData);
 }
 
-/**
- * Gauge 4 — VRP (Volatility Risk Premium)
- * VRP = Implied Vol (VXX% × scale) − 20d Realized Vol (SPY)
- * High VRP → PUT zone (options expensive, sell-side opportunity)
- * Negative VRP → CALL zone (vol underpriced, buy protection)
- * Neutral → THETA
- */
-function computeGauge4() {
-    const vrp = computeVRP();
-    let zone = 'theta';
-    if (vrp === null) { pointNeedle('g4', 'theta'); return 'theta'; }
-    if (vrp > 6) zone = 'put';
-    else if (vrp < -4) zone = 'call';
-    else zone = 'theta';
-    const valEl = document.getElementById('g4-val');
-    if (valEl) valEl.textContent = (vrp >= 0 ? '+' : '') + vrp.toFixed(1);
-    const subEl = document.getElementById('g4-sub');
-    if (subEl) subEl.textContent = `IV − RV: ${vrp >= 0 ? 'options rich' : 'vol underpriced'}`;
-    pointNeedle('g4', zone);
-    return zone;
-}
-
-/**
- * computeRegime() — derive a market narrative label from the 4 zones
- */
-function computeRegime(z1, z2, z3, z4) {
-    const callCount  = [z1,z2,z3,z4].filter(z => z === 'call').length;
-    const putCount   = [z1,z2,z3,z4].filter(z => z === 'put').length;
-    const thetaCount = [z1,z2,z3,z4].filter(z => z === 'theta').length;
-
-    if (callCount >= 2 && z3 === 'call') return 'Coiled Spring';
-    if (callCount >= 3)                  return 'Vol Squeeze Loading';
-    if (putCount >= 2 && z4 === 'put')   return 'Distribution Phase';
-    if (putCount >= 3)                   return 'Bearish Conviction';
-    if (thetaCount >= 3)                 return 'Valley of Death';
-    if (z1 === 'call' && z4 === 'put')   return 'Divergent Signals';
-    if (z2 === 'put'  && z4 === 'put')   return 'Selling Confirmed';
-    return 'Mixed Regime';
-}
-
-/**
- * renderHeatmap() — faint vertical liquidity heatmap behind the gauges
- * Simulates CBOE book depth density using VIX levels and vol surface shape
- */
-function renderHeatmap() {
-    const canvas = document.getElementById('heatmap-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const W = canvas.offsetWidth || 400;
-    canvas.width = W;
-    ctx.clearRect(0, 0, W, 28);
-
-    const vix = scannerState.vix.price || scannerState.vix.prevClose || 20;
-    // Map VIX to a relative density curve — higher VIX = more liquidity clustering at extremes
-    const bands = 40;
-    for (let i = 0; i < bands; i++) {
-        const x = (i / bands) * W;
-        const w = W / bands + 1;
-        // Center-weighted gaussian + VIX-modulated wings
-        const center = 0.5;
-        const dist   = Math.abs(i / bands - center);
-        const gaussian = Math.exp(-((dist * dist) / (0.04 + vix * 0.0008)));
-        const wing     = Math.exp(-((Math.abs(dist - 0.35) * Math.abs(dist - 0.35)) / 0.008)) * (vix / 40);
-        const density  = Math.min(gaussian * 0.55 + wing * 0.55, 1.0);
-        const alpha    = density * 0.32;
-        ctx.fillStyle = `rgba(212,175,55,${alpha})`;
-        ctx.fillRect(x, 0, w, 28);
-    }
-}
-
-/**
- * updateAllGauges() — master refresh: compute all 4, derive regime, render heatmap, log
- */
-function updateAllGauges() {
-    const z1 = computeGauge1();
-    const z2 = computeGauge2();
-    const z3 = computeGauge3();
-    const z4 = computeGauge4();
-    const regime = computeRegime(z1, z2, z3, z4);
-
-    const regimeEl = document.getElementById('regime-label');
-    if (regimeEl) regimeEl.textContent = `Regime: ${regime}`;
-
-    renderHeatmap();
-
-    // Log regime change only when it shifts
-    if (scannerState._lastRegime !== regime) {
-        scannerState._lastRegime = regime;
-        addLogEntry(`⊕ Regime shift → ${regime} · Gauges: ${z1.toUpperCase()} / ${z2.toUpperCase()} / ${z3.toUpperCase()} / ${z4.toUpperCase()}`, 'watch');
-    }
-}
-
-/**
- * toggleSwitch(id) — flip a control switch on/off
- */
-window.toggleSwitch = function(id) {
-    const sw = document.getElementById(id);
-    if (!sw) return;
-    sw.classList.toggle('on');
-    const isOn = sw.classList.contains('on');
-    if (id === 'sw-monitor') {
-        addLogEntry(`Background Monitor: ${isOn ? 'ENABLED' : 'DISABLED'}`);
-    } else if (id === 'sw-alerts') {
-        addLogEntry(`Push Alerts: ${isOn ? 'ENABLED' : 'DISABLED'}`);
-    }
-};
-
-function renderVIXBar() {
-    const vix  = scannerState.vix;
-    const vvix = scannerState.vvix;
-
-    // Fall back to prevClose when live price is zero (after hours / free tier)
-    const vixDisplay  = vix.price  || vix.prevClose;
-    const vvixDisplay = vvix.price || vvix.prevClose;
-    if (!vixDisplay) return;
-
-    // After-hours indicator
-    const isAfterHours = !vix.price && vix.prevClose;
-    const ahEl = document.getElementById('vix-afterhours-badge');
-    if (ahEl) ahEl.style.display = isAfterHours ? 'inline' : 'none';
-
-    // VIX main — use live price or fall back to prev close
-    const vixUp = vix.changePct >= 0;
-    const vixPriceEl = document.getElementById('vix-price');
-    if (vixPriceEl) vixPriceEl.textContent = vixDisplay.toFixed(2);
-    const vixChgEl = document.getElementById('vix-chg');
-    if (vixChgEl) { vixChgEl.textContent = (vixUp ? '▲ +' : '▼ ') + vix.changePct.toFixed(2) + '%'; vixChgEl.className = 'up_dn ' + (vixUp ? 'up' : 'dn'); }
-
-    // VVIX block
-    if (vvixDisplay) {
-        const vvixUp = vvix.changePct >= 0;
-        const vvixValEl = document.getElementById('vvix-val');
-        if (vvixValEl) vvixValEl.textContent = vvixDisplay.toFixed(2);
-        const vvixChgEl = document.getElementById('vvix-chg');
-        if (vvixChgEl) { vvixChgEl.textContent = (vvixUp ? '+' : '') + vvix.changePct.toFixed(2) + '%'; vvixChgEl.className = vvixUp ? 'up' : 'dn'; }
-    }
-
-    // Term structure
-    const term = computeTermStructureProxy();
-    const termEl = document.getElementById('contango-val');
-    if (termEl) { termEl.textContent = term.mode === 'bk' ? 'BACKWARDATION' : 'CONTANGO'; termEl.className = term.mode; termEl.id = 'contango-val'; }
-
-    // Scanner cards
-    const scVixVal = document.getElementById('sc-vix-val');
-    const scVixBadge = document.getElementById('sc-vix-badge');
-    if (scVixVal) scVixVal.textContent = vixDisplay.toFixed(2);
-    if (scVixBadge) {
-        const lvl = vixDisplay > 30 ? 'hot' : vixDisplay > 20 ? 'warn' : 'ok';
-        const lbl = vixDisplay > 30 ? 'HIGH FEAR' : vixDisplay > 20 ? 'ELEVATED' : 'LOW VOL';
-        scVixBadge.className = `sc-badge ${lvl}`; scVixBadge.textContent = lbl;
-        const scVixCard = document.getElementById('sc-vix');
-        if (scVixCard) scVixCard.className = `scanner-card ${lvl === 'hot' ? 'active-signal' : lvl === 'warn' ? 'watch-signal' : ''}`;
-    }
-
-    if (vvix.price) {
-        const scVvixVal = document.getElementById('sc-vvix-val');
-        const scVvixBadge = document.getElementById('sc-vvix-badge');
-        if (scVvixVal) scVvixVal.textContent = vvix.price.toFixed(2);
-        if (scVvixBadge) {
-            const lvl = vvix.price > 120 ? 'hot' : vvix.price > 100 ? 'warn' : 'ok';
-            const lbl = vvix.price > 120 ? 'VOL SPIKE' : vvix.price > 100 ? 'ELEVATED' : 'NORMAL';
-            scVvixBadge.className = `sc-badge ${lvl}`; scVvixBadge.textContent = lbl;
+function _triggerNewsBurst(sectorData) {
+    // Find top 2 sectors by article count and urgency
+    const ranked = Object.entries(sectorData)
+        .filter(([, d]) => d.count > 0)
+        .sort((a, b) => (b[1].volatility * b[1].count) - (a[1].volatility * a[1].count))
+        .slice(0, 2);
+    ranked.forEach(([sector, d], rankIdx) => {
+        const burstCount = Math.min(8, Math.round(d.count * 0.7) + 2);
+        for (let i = 0; i < burstCount; i++) {
+            setTimeout(() => spawnSynapsePulse(sector), rankIdx * 400 + i * 120 + Math.random() * 80);
         }
-    }
-
-    // Ratio
-    const ratio = (vix.price && vvix.price) ? (vvix.price / vix.price) : 0;
-    const scRatioVal = document.getElementById('sc-ratio-val');
-    const scRatioBadge = document.getElementById('sc-ratio-badge');
-    if (scRatioVal && ratio) scRatioVal.textContent = ratio.toFixed(2);
-    if (scRatioBadge && ratio) {
-        const lvl = ratio > 5.5 ? 'hot' : ratio > 4.5 ? 'warn' : 'ok';
-        scRatioBadge.className = `sc-badge ${lvl}`; scRatioBadge.textContent = `VVIX/VIX: ${ratio.toFixed(2)}`;
-    }
-
-    // Term structure in scanner
-    const scTermVal = document.getElementById('sc-term-val');
-    const scTermSub = document.getElementById('sc-term-sub');
-    const scTermBadge = document.getElementById('sc-term-badge');
-    if (scTermVal) scTermVal.textContent = term.mode === 'bk' ? 'BACKW.' : 'CONTANGO';
-    if (scTermVal) scTermVal.style.color = term.mode === 'bk' ? '#4ade80' : '#f87171';
-    if (scTermSub) scTermSub.textContent = term.desc;
-    if (scTermBadge) { scTermBadge.className = `sc-badge ${term.mode === 'bk' ? 'hot' : 'ok'}`; scTermBadge.textContent = term.mode.toUpperCase(); }
-
-    // VRP
-    const vrp = computeVRP();
-    const scVrpVal = document.getElementById('sc-vrp-val');
-    const scVrpBadge = document.getElementById('sc-vrp-badge');
-    if (scVrpVal && vrp !== null) {
-        scVrpVal.textContent = (vrp > 0 ? '+' : '') + vrp.toFixed(1);
-        scVrpVal.style.color = vrp < -5 ? '#f87171' : vrp > 5 ? '#4ade80' : '#fff';
-    }
-    if (scVrpBadge && vrp !== null) {
-        const lvl = vrp < -5 ? 'hot' : vrp < 0 ? 'warn' : 'ok';
-        const lbl = vrp < -5 ? 'VIX UNDERPRICED' : vrp < 0 ? 'IV LAGGING RV' : 'IV PREMIUM';
-        scVrpBadge.className = `sc-badge ${lvl}`; scVrpBadge.textContent = lbl;
-        if (lvl === 'hot') document.getElementById('sc-vrp').classList.add('active-signal');
-        else document.getElementById('sc-vrp').classList.remove('active-signal', 'watch-signal');
-    }
-
-    updateAllGauges();
-
-    // Push live data into the 3D VIX constellation label (reads cached regime from updateAllGauges)
-    if (window._updateVIXLabel) {
-        window._updateVIXLabel(vixDisplay, vix.changePct, scannerState._lastRegime || '—');
-    }
+    });
 }
-
-async function fetchVIXData() {
-    const [vixData, vvixData, spyData] = await Promise.all([
-        fetchMassiveQuote('VXX'),
-        fetchMassiveQuote('UVXY'),
-        fetchMassiveQuote('SPY')
-    ]);
-    if (!fetchVIXData._logged) {
-        fetchVIXData._logged = true;
-        console.log('[AXIUM] Massive VXX:', vixData, 'UVXY:', vvixData, 'SPY:', spyData);
-    }
-    if (vixData) {
-        scannerState.vix.price     = vixData.c;
-        scannerState.vix.prevClose = vixData.pc || vixData.c;
-        scannerState.vix.changePct = vixData.dp || 0;
-    }
-    if (vvixData) {
-        scannerState.vvix.price     = vvixData.c;
-        scannerState.vvix.prevClose = vvixData.pc || vvixData.c;
-        scannerState.vvix.changePct = vvixData.dp || 0;
-    }
-    if (spyData) {
-        scannerState.spy.price     = spyData.c;
-        scannerState.spy.prevClose = spyData.pc || spyData.c;
-        updateSPYRealizedVol(spyData.c);
-    }
-    renderVIXBar();
-    const _vixDisp = scannerState.vix.price || scannerState.vix.prevClose;
-    const _vvixDisp = scannerState.vvix.price || scannerState.vvix.prevClose;
-    addLogEntry(`Data refreshed — VXX ${_vixDisp ? _vixDisp.toFixed(2) : '—'} / UVXY ${_vvixDisp ? _vvixDisp.toFixed(2) : '—'}`);
-    _celProPushHistory();
-    _celProAutoRefresh();
-}
-
-window.toggleScanner = function(e) {
-    if (e) e.stopPropagation();
-    const panel = document.getElementById('scanner-panel');
-    const label = document.getElementById('ticker-open-scanner');
-    const isOpen = panel.classList.contains('open');
-    if (isOpen) {
-        panel.classList.remove('open');
-        if (label) label.textContent = '▲ Scanner';
-    } else {
-        panel.classList.add('open');
-        if (label) label.textContent = '▼ Scanner';
-        renderScannerLog();
-    }
-};
 
 /**
  * Injects Cards from cards.js into the Planet Panel
  * Based on current activeSoul and the Planet's Axium
  */
 function getCardsForPlanet(planetName, soulKey) {
-    // 1. Filter cards by suit or layer based on the planet's theme
-    let relatedCards = [];
-
-    if (planetName === 'Sun' || planetName === 'Pluto') {
-        // High Axium / Major Arcana
-        relatedCards = PLAYER_CARDS.filter(c => c.axiumScore >= 9);
-    } else if (planetName === 'Mercury' || planetName === 'Saturn') {
-        // Logic & Structure (Swords/Pentacles)
-        relatedCards = EGO_CARDS.filter(c => c.suit === 'swords' || c.suit === 'pentacles');
-    } else {
-        // Emotion & Drive (Cups/Wands)
-        relatedCards = ID_CARDS.filter(c => c.suit === 'cups' || c.suit === 'wands').slice(0, 5);
-    }
-
-    // 2. Format the HTML for the card display
-    return `
-        <div class="blk-label">Axium Card Matrix</div>
-        <div class="card-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-            ${relatedCards.map(card => `
-                <div class="axium-card-ui" style="border:1px solid ${card.color || 'var(--gold)'}; padding:8px; background:rgba(0,0,0,0.4); border-radius:4px;">
-                    <div style="font-family:'Space Mono'; font-size:9px; color:${card.color}; opacity:0.8;">${card.layer.toUpperCase()}</div>
-                    <div style="font-family:'Cinzel'; font-size:11px; color:#fff;">${card.name}</div>
-                    <div style="font-family:'Cormorant Garamond'; font-size:10px; color:rgba(255,255,255,0.6); font-style:italic;">
-                        ${card.keywords || card.shieldDesc || card.rechargeDesc}
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
-
-fetchVIXData();
-// 3 symbols x 1 req each = 3 req/min — well within free-tier limits
-setInterval(fetchVIXData, 60000);
-
-
-// ══════════════════════════════════════════════
-// VIX CONSTELLATION — live data → Three.js scene
-// ══════════════════════════════════════════════
-
-// ── CELESTIAL PROJECTION PANEL RENDERER ──
-// Populates ns-val, tbody (horizon map), log, and canvas chart from live scannerState.
-
-function renderCelPro() {
-    const vix     = scannerState.vix;
-    const vvix    = scannerState.vvix;
-    const spy     = scannerState.spy;
-    const vixDisp = vix.price || vix.prevClose || 0;
-    const vvixDisp = vvix.price || vvix.prevClose || 0;
-    const vrp     = computeVRP();
-    const term    = computeTermStructureProxy();
-
-    // ── North Star value ──
-    const nsVal = document.getElementById('celpro-ns-val');
-    if (nsVal) nsVal.textContent = vixDisp ? vixDisp.toFixed(2) : '—';
-
-    // After-hours badge
-    const ahEl = document.getElementById('celpro-ah');
-    if (ahEl) ahEl.style.display = (!vix.price && vix.prevClose) ? 'block' : 'none';
-
-    // ── Horizon Map (tbody) ──
-    const tbody = document.getElementById('celpro-tbody');
-    if (tbody) {
-        const ratio = (vixDisp && vvixDisp) ? (vvixDisp / vixDisp) : 0;
-
-        // Derive signals from current gauge state
-        const z1 = (function() {
-            const vvixChg = vvix.changePct, vixChg = vix.changePct;
-            if (vvixChg > scannerState.threshVVIX && vixChg < scannerState.threshVIX) return 'call';
-            if (vvixChg < -1.5 && vixChg > 1.5) return 'put';
-            return 'theta';
-        })();
-        const spyChg = spy.prevClose > 0 ? ((spy.price - spy.prevClose) / spy.prevClose * 100) : 0;
-        const z2 = spyChg < -0.5 && vix.changePct > 0.5 ? 'put' : spyChg > 0.5 && vix.changePct < -0.3 ? 'call' : 'theta';
-        const z3 = term.mode === 'bk' ? 'call' : 'theta';
-        const z4 = vrp !== null ? (vrp > 6 ? 'put' : vrp < -4 ? 'call' : 'theta') : 'theta';
-        const regime = computeRegime(z1, z2, z3, z4);
-
-        const BADGE = { call: 'call', put: 'put', theta: 'theta', exit: 'exit', wait: 'wait' };
-        const playLabel = { call: 'CALL / LONG VOL', put: 'PUT / SHORT VOL', theta: 'THETA / WAIT', exit: 'EXIT', wait: 'WAIT' };
-
-        const horizons = [
-            {
-                hz: 'NOW',
-                tgt: `VXX ${vixDisp ? vixDisp.toFixed(2) : '—'}`,
-                narr: `Volatility at ${vixDisp > 30 ? 'elevated fear' : vixDisp > 20 ? 'elevated caution' : 'low / normal'} levels. Regime: ${regime}.`,
-                play: z1
-            },
-            {
-                hz: 'INTRADAY',
-                tgt: `UVXY/VXX ${ratio ? ratio.toFixed(2) : '—'}`,
-                narr: term.desc + (z2 !== 'theta' ? ` SPY ${spyChg >= 0 ? '+' : ''}${spyChg.toFixed(1)}% ${z2 === 'put' ? 'confirming selling.' : 'showing strength.'}` : ''),
-                play: z2
-            },
-            {
-                hz: 'TERM',
-                tgt: term.mode === 'bk' ? 'BACKWARDATION' : 'CONTANGO',
-                narr: `Curve ${term.mode === 'bk' ? 'inverted — tail risk elevated. Consider long vol.' : 'normal — carry negative for long vol. Theta bleeds.'}`,
-                play: z3
-            },
-            {
-                hz: 'VRP',
-                tgt: vrp !== null ? (vrp >= 0 ? '+' : '') + vrp.toFixed(1) : '—',
-                narr: vrp === null ? 'Awaiting realized vol sample.' : vrp > 6 ? 'Options richly priced vs realized. Selling edge exists.' : vrp < -4 ? 'Vol underpriced — protection cheap.' : 'VRP neutral.',
-                play: z4
-            }
-        ];
-
-        tbody.innerHTML = horizons.map(h => `
-            <tr>
-                <td>${h.hz}</td>
-                <td>${h.tgt}</td>
-                <td>${h.narr}</td>
-                <td><span class="cpbadge ${BADGE[h.play]}">${playLabel[h.play]}</span></td>
-            </tr>`).join('');
-    }
-
-    // ── Signal Log ──
-    const logEl = document.getElementById('celpro-log');
-    if (logEl) {
-        if (scannerState.signalLog.length > 0) {
-            logEl.innerHTML = scannerState.signalLog.map(e =>
-                `<div class="cle"><span class="clt">${e.time}</span><span class="clm ${e.type === 'alert' ? 'am' : e.type === 'watch' ? 'wm' : ''}">${e.msg}</span></div>`
-            ).join('');
+    // Try cards.js arrays if loaded — fail gracefully when absent
+    try {
+        const pc = (typeof PLAYER_CARDS !== 'undefined') ? PLAYER_CARDS : [];
+        const ec = (typeof EGO_CARDS   !== 'undefined') ? EGO_CARDS   : [];
+        const ic = (typeof ID_CARDS    !== 'undefined') ? ID_CARDS    : [];
+        let relatedCards = [];
+        if (planetName === 'Sun' || planetName === 'Pluto') {
+            relatedCards = pc.filter(c => c.axiumScore >= 9);
+        } else if (planetName === 'Mercury' || planetName === 'Saturn') {
+            relatedCards = ec.filter(c => c.suit === 'swords' || c.suit === 'pentacles');
         } else {
-            logEl.innerHTML = '<div class="cle"><span class="clt">—</span><span class="clm">Celestial engine initialized. Awaiting data…</span></div>';
+            relatedCards = ic.filter(c => c.suit === 'cups' || c.suit === 'wands').slice(0, 5);
         }
-    }
+        if (relatedCards.length > 0) {
+            return '<div class="blk-label">Axium Card Matrix</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">' +
+                relatedCards.map(card =>
+                    '<div style="border:1px solid '+(card.color||'var(--gold)')+';padding:8px;background:rgba(0,0,0,0.4);border-radius:4px;">' +
+                    '<div style="font-family:Space Mono;font-size:9px;color:'+card.color+';opacity:0.8;">'+(card.layer||'').toUpperCase()+'</div>' +
+                    '<div style="font-family:Cinzel;font-size:11px;color:#fff;">'+(card.name||'')+'</div>' +
+                    '<div style="font-family:Cormorant Garamond;font-size:10px;color:rgba(255,255,255,0.6);font-style:italic;">'+(card.keywords||card.shieldDesc||card.rechargeDesc||'')+'</div>' +
+                    '</div>').join('') + '</div>';
+        }
+    } catch(e) { /* cards.js not loaded */ }
 
-    // ── Kick off / refresh the live animated chart ──
-    _startCelProChart();
+    // Fallback: show live Oracle signal data for this planet's sector affinity
+    const PLANET_SECTOR = {
+        Sun:'GEOPOLITICS', Mercury:'TECHNOLOGY', Venus:'ECONOMY', Earth:'GENERAL',
+        Moon:'GENERAL', Mars:'GEOPOLITICS', Jupiter:'ECONOMY', Saturn:'FINANCE',
+        Uranus:'TECHNOLOGY', Neptune:'GENERAL', Pluto:'FINANCE'
+    };
+    const sector = PLANET_SECTOR[planetName] || 'GENERAL';
+    const sd = oracleState.sectorData[sector];
+    const col = SECTOR_COLORS[sector];
+    if (!sd || sd.count === 0) return '';
+    const topArticles = (sd.articles||[]).sort((a,b)=>b.impact-a.impact).slice(0,3);
+    if (topArticles.length === 0) return '';
+    return '<div class="blk-label">Live \u00b7 ' + sector + ' Signals</div><div style="display:flex;flex-direction:column;gap:7px;margin-top:8px;">' +
+        topArticles.map(a => {
+            const sentClass = a.sentiment > 0.1 ? 'pos' : a.sentiment < -0.1 ? 'neg' : 'neu';
+            const sentLabel = a.sentiment > 0.1 ? 'POSITIVE' : a.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
+            return '<div onclick="window.open(\'' + a.url + '\',\'_blank\')" style="padding:8px 10px;background:rgba('+col.rgb+',0.05);border:1px solid rgba('+col.rgb+',0.18);border-radius:3px;cursor:pointer;">' +
+                '<div style="font-family:Cormorant Garamond;font-size:.82rem;color:rgba(255,255,255,.72);line-height:1.4;margin-bottom:3px;">' + a.title + '</div>' +
+                '<div style="display:flex;gap:8px;align-items:center;">' +
+                '<span style="font-family:Space Mono;font-size:.32rem;letter-spacing:.1em;color:rgba(255,255,255,.22);">' + a.source + '</span>' +
+                '<span class="oi-sentiment ' + sentClass + '">' + sentLabel + '</span>' +
+                '</div></div>';
+        }).join('') + '</div>';
 }
 
-// ─────────────────────────────────────────────────────────────
-// CELESTIAL PROJECTION — Live Animated Chart Engine
-// Runs its own RAF loop while the panel is open.
-// ─────────────────────────────────────────────────────────────
-let _celProChartRAF = null;
-let _celProChartStart = null;
+// Kick off Oracle on load, refresh every 10 minutes
+fetchOracleData();
+setInterval(fetchOracleData, 10 * 60 * 1000);
 
-// Background star field — generated once
-const _celProStars = Array.from({ length: 80 }, () => ({
-    x: Math.random(), y: Math.random(),
-    r: 0.3 + Math.random() * 1.0,
-    a: 0.06 + Math.random() * 0.28,
-    sp: 0.0003 + Math.random() * 0.0007,
-    ph: Math.random() * Math.PI * 2,
-}));
+// ══════════════════════════════════════════════
+// ORACLE NEURON CONSTELLATION — Full Three.js scene
+// Sector nodes scattered across entire space.
+// Animated synapse pulses travel between nodes,
+// hit them and cause a glow burst.
+// ══════════════════════════════════════════════
 
-// History ring — stores last 30 signal snapshots for trail
-const _celProHistory = [];
-const _CELH_MAX = 30;
-
-function _celProPushHistory() {
-    const v = scannerState.vix;
-    const vv = scannerState.vvix;
-    const vixDisp = v.price || v.prevClose || 0;
-    const vvixDisp = vv.price || vv.prevClose || 0;
-    const vrp = computeVRP();
-    const term = computeTermStructureProxy();
-    const spyChg = scannerState.spy.prevClose > 0 ? ((scannerState.spy.price - scannerState.spy.prevClose) / scannerState.spy.prevClose * 100) : 0;
-    const z1 = (vv.changePct > scannerState.threshVVIX && v.changePct < scannerState.threshVIX) ? 'call'
-             : (vv.changePct < -1.5 && v.changePct > 1.5) ? 'put' : 'theta';
-    const z2 = spyChg < -0.5 && v.changePct > 0.5 ? 'put' : spyChg > 0.5 && v.changePct < -0.3 ? 'call' : 'theta';
-    const z3 = term.mode === 'bk' ? 'call' : 'theta';
-    const z4 = vrp !== null ? (vrp > 6 ? 'put' : vrp < -4 ? 'call' : 'theta') : 'theta';
-    _celProHistory.unshift({ z1, z2, z3, z4, vixDisp, time: Date.now() });
-    if (_celProHistory.length > _CELH_MAX) _celProHistory.pop();
-}
-
-// Axis definitions — 8 directions for richer constellation shape
-const _CEL_AXES = [
-    { key: 'z1', label: 'META\nDIV',    labelShort: 'META',    angle: -Math.PI / 2,      narr: () => { const chg = scannerState.vvix.changePct - scannerState.vix.changePct; return `UVXY/VXX divergence: ${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%`; } },
-    { key: 'z2', label: 'ORDER\nFLOW',  labelShort: 'FLOW',    angle: -Math.PI / 4,      narr: () => { const sp = scannerState.spy.prevClose > 0 ? ((scannerState.spy.price - scannerState.spy.prevClose) / scannerState.spy.prevClose * 100) : 0; return `SPY ${sp >= 0 ? '+' : ''}${sp.toFixed(2)}%`; } },
-    { key: 'z3', label: 'TERM\nSTRUCT', labelShort: 'TERM',    angle: 0,                 narr: () => computeTermStructureProxy().desc },
-    { key: 'z4', label: 'VRP',          labelShort: 'VRP',     angle: Math.PI / 4,       narr: () => { const v = computeVRP(); return v !== null ? `IV − RV: ${v >= 0 ? '+' : ''}${v.toFixed(1)}` : 'Awaiting data'; } },
-    { key: 'z1', label: 'META\nECHO',   labelShort: 'ECHO',    angle: Math.PI / 2,       narr: () => 'Meta divergence mirror axis' },
-    { key: 'z2', label: 'FLOW\nECHO',   labelShort: 'FLOW·',   angle: 3 * Math.PI / 4,   narr: () => 'Order flow confirmation axis' },
-    { key: 'z3', label: 'CURVE',        labelShort: 'CURVE',   angle: Math.PI,           narr: () => `Term: ${computeTermStructureProxy().label}` },
-    { key: 'z4', label: 'PREMIUM',      labelShort: 'PREM',    angle: -3 * Math.PI / 4,  narr: () => { const v = computeVRP(); return v !== null ? (v > 0 ? 'Options rich vs realized' : 'Vol underpriced') : '—'; } },
-];
-
-const _ZONE_COLOR = {
-    call:  { fill: '#D4AF37', r: 212, g: 175, b: 55  },
-    put:   { fill: '#f87171', r: 248, g: 113, b: 113 },
-    theta: { fill: '#aaaacc', r: 170, g: 170, b: 200 },
+// Per-sector node positions — scattered through full Three.js solar system volume.
+// Positions span the ecliptic plane (x/z ≈ -16..16) and vertical (y: -4..14)
+// so they weave between and beyond the planet orbits (Mercury r=2.8 to Pluto r=14.8).
+const ORACLE_NODE_POSITIONS = {
+    // GEOPOLITICS: red — clustered near inner orbits and high y (war room feeling)
+    GEOPOLITICS: [
+        [  3.2,  6.5,  1.8], [ -4.0,  8.2, -3.5], [  9.0,  4.2,  6.0],
+        [-11.5,  5.8, -7.0], [  6.5, 10.5, -9.5], [-13.2,  2.5,  4.5],
+        [  1.5, 12.0, 11.0], [ -8.5,  1.2, -13.0], [ 14.5,  7.5, -2.5],
+        [ -2.5,  3.5, -16.0],[ 10.5, 13.0,  8.5],  [-6.0, -2.0,  5.5],
+    ],
+    // ECONOMY: gold — spread across the mid-belt (Jupiter/Saturn zone)
+    ECONOMY: [
+        [ -7.5,  5.0, -2.0], [  5.0,  2.8,  8.5], [-12.0,  9.0,  5.5],
+        [  8.5, -1.5, -11.5],[ -3.0,  7.5, -14.5],[  15.0,  4.0,  5.0],
+        [  2.0, 11.5, -5.0], [-14.5,  1.0, -3.5], [  7.0,  8.0, 13.0],
+        [ -9.0, -3.0,  10.0],[  4.5, 14.0,  1.5],  [-1.5,  6.5, -8.0],
+    ],
+    // FINANCE: green — outer belt (Uranus/Neptune distance), some deep y negative
+    FINANCE: [
+        [ 13.0, -2.0,  7.5], [ -5.5,  4.5, -12.5],[  2.5,  9.5,  15.5],
+        [-16.0,  6.0,  2.0], [  9.5, -3.5, -4.0], [ -7.0, 11.0,  9.5],
+        [  5.5,  1.5, -16.5],[-11.0, -1.5,  6.5], [ 14.0,  8.5, -10.0],
+        [ -4.0,  5.5,  3.5], [  6.0, 13.5, -14.0],[ -9.5, -4.0, -5.5],
+    ],
+    // TECHNOLOGY: azure — diagonal band through full volume
+    TECHNOLOGY: [
+        [  4.5,  7.0, -7.5], [-10.5,  3.0,  11.5],[  7.5, -2.5,  -2.0],
+        [ -2.0, 10.5, -10.5],[  12.5,  5.5,  14.0],[ -8.0, -3.5,  -8.5],
+        [  1.5, 12.5,  6.0], [-15.5,  7.5, -5.5], [  9.0,  0.5,  -15.0],
+        [ -6.5,  2.0,  2.5], [ 11.0, 14.5,  -3.5], [ -3.5, -2.5,  14.5],
+    ],
+    // GENERAL: white/grey — fills the gaps, bridge nodes
+    GENERAL: [
+        [  6.0,  4.0,  4.5], [-12.5,  8.5, -1.5], [  3.0, -1.0, -11.0],
+        [ -5.0,  6.0,  16.0],[  14.0,  3.0, -8.5], [ -1.0, 11.0,  -3.5],
+        [  8.0, -4.0,  9.0], [-10.0,  0.5, -6.5], [  2.0, 14.0, -16.5],
+        [-13.5,  5.0,  8.0], [  5.5,  9.0,  0.5],  [ -7.5, -2.0,  -1.5],
+    ],
 };
 
-// Tooltip state
-let _celProHover = { axisIdx: -1, x: 0, y: 0 };
+let oracleConstObj = null; // { nodes: [{mesh,sector,idx}], synapses: [{line,nodeA,nodeB,pulse}] }
 
-function _getZones() {
-    const v = scannerState.vix, vv = scannerState.vvix, spy = scannerState.spy;
-    const spyChg = spy.prevClose > 0 ? ((spy.price - spy.prevClose) / spy.prevClose * 100) : 0;
-    const vrp = computeVRP();
-    const term = computeTermStructureProxy();
-    const z1 = (vv.changePct > scannerState.threshVVIX && v.changePct < scannerState.threshVIX) ? 'call'
-             : (vv.changePct < -1.5 && v.changePct > 1.5) ? 'put' : 'theta';
-    const z2 = spyChg < -0.5 && v.changePct > 0.5 ? 'put' : spyChg > 0.5 && v.changePct < -0.3 ? 'call' : 'theta';
-    const z3 = term.mode === 'bk' ? 'call' : 'theta';
-    const z4 = vrp !== null ? (vrp > 6 ? 'put' : vrp < -4 ? 'call' : 'theta') : 'theta';
-    return { z1, z2, z3, z4 };
-}
-
-function _startCelProChart() {
-    const canvas = document.getElementById('celpro-canvas');
-    if (!canvas) return;
-
-    // Stop any existing loop
-    if (_celProChartRAF) { cancelAnimationFrame(_celProChartRAF); _celProChartRAF = null; }
-
-    // Seed history
-    _celProPushHistory();
-
-    // Tooltip interaction
-    canvas.onmousemove = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        _celProHover.x = (e.clientX - rect.left) * (canvas.width / rect.width);
-        _celProHover.y = (e.clientY - rect.top)  * (canvas.height / rect.height);
-        _celProHover.moved = true;
-    };
-    canvas.onmouseleave = () => { _celProHover.axisIdx = -1; };
-    canvas.ontouchmove = (e) => {
-        e.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const t = e.touches[0];
-        _celProHover.x = (t.clientX - rect.left) * (canvas.width / rect.width);
-        _celProHover.y = (t.clientY - rect.top)  * (canvas.height / rect.height);
-        _celProHover.moved = true;
-    };
-
-    function loop(ts) {
-        if (!_celProChartStart) _celProChartStart = ts;
-        const t = (ts - _celProChartStart) * 0.001;
-
-        const panel = document.getElementById('celpro-panel');
-        if (!panel || !panel.classList.contains('open')) {
-            _celProChartRAF = null;
-            return; // stop when closed
-        }
-
-        const dpr = window.devicePixelRatio || 1;
-        const W = canvas.offsetWidth;
-        const H = canvas.offsetHeight;
-        if (W === 0) { _celProChartRAF = requestAnimationFrame(loop); return; }
-        if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
-            canvas.width = Math.round(W * dpr);
-            canvas.height = Math.round(H * dpr);
-        }
-        const ctx = canvas.getContext('2d');
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        const cx = W / 2, cy = H / 2 + 10;
-        const maxR = Math.min(W * 0.42, H * 0.40);
-
-        ctx.clearRect(0, 0, W, H);
-
-        const zones = _getZones();
-        const vixDisp = scannerState.vix.price || scannerState.vix.prevClose || 0;
-        const vvixDisp = scannerState.vvix.price || scannerState.vvix.prevClose || 0;
-        const regime = computeRegime(zones.z1, zones.z2, zones.z3, zones.z4);
-        const regimeColor = (zones.z1 === 'put' || zones.z2 === 'put') ? '#f87171'
-                          : (zones.z1 === 'call' || zones.z3 === 'call') ? '#D4AF37' : '#aaaacc';
-
-        // ── 1. Deep space background ──
-        const bgGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 1.6);
-        bgGrd.addColorStop(0, 'rgba(22,5,45,0.7)');
-        bgGrd.addColorStop(0.5, 'rgba(8,4,20,0.5)');
-        bgGrd.addColorStop(1, 'rgba(4,4,12,0)');
-        ctx.fillStyle = bgGrd; ctx.fillRect(0, 0, W, H);
-
-        // Regime nebula — colored haze matching current signal
-        const [nr, ng, nb] = regimeColor === '#f87171' ? [248,113,113] : regimeColor === '#D4AF37' ? [212,175,55] : [120,120,180];
-        const nebulaGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 1.2);
-        nebulaGrd.addColorStop(0, `rgba(${nr},${ng},${nb},${0.04 + 0.02 * Math.sin(t * 0.7)})`);
-        nebulaGrd.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = nebulaGrd; ctx.fillRect(0, 0, W, H);
-
-        // ── 2. Background star field ──
-        _celProStars.forEach(s => {
-            const alpha = s.a * (0.5 + 0.5 * Math.sin(t * s.sp * 1000 + s.ph));
-            ctx.beginPath();
-            ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-            ctx.fill();
-        });
-
-        // ── 3. Concentric reference rings ──
-        [0.30, 0.60, 1.0].forEach((frac, i) => {
-            const ringA = 0.05 + i * 0.04 + 0.02 * Math.sin(t * 0.4 + i);
-            ctx.beginPath();
-            ctx.arc(cx, cy, maxR * frac, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(212,175,55,${ringA})`;
-            ctx.lineWidth = 0.7;
-            ctx.setLineDash([3, 8]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        });
-
-        // Zone radius mapping — theta slightly varied for visual interest
-        const zR = { call: maxR * 0.88, put: maxR * 0.88, theta: maxR * 0.45 + maxR * 0.1 * Math.sin(t * 0.5) };
-
-        // ── 4. History trail — ghosted past snapshots ──
-        for (let h = _celProHistory.length - 1; h >= 1; h--) {
-            const snap = _celProHistory[h];
-            const age = h / _CELH_MAX;
-            const alpha = (1 - age) * 0.15;
-            if (alpha < 0.01) continue;
-            ctx.beginPath();
-            _CEL_AXES.forEach((ax, i) => {
-                const z = snap[ax.key];
-                const r = zR[z] || zR.theta;
-                const px = cx + Math.cos(ax.angle) * r;
-                const py = cy + Math.sin(ax.angle) * r;
-                i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-            });
-            ctx.closePath();
-            ctx.strokeStyle = `rgba(212,175,55,${alpha})`;
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
-        }
-
-        // ── 5. Axis spokes ──
-        _CEL_AXES.forEach((ax, i) => {
-            const z = zones[ax.key];
-            const col = _ZONE_COLOR[z] || _ZONE_COLOR.theta;
-            const r = zR[z] || zR.theta;
-            const isHovered = _celProHover.axisIdx === i;
-            const pulse = 0.5 + 0.5 * Math.sin(t * 1.4 + i * 0.8);
-            const alpha = (z !== 'theta' ? 0.35 : 0.15) + (isHovered ? 0.3 : 0) + pulse * 0.12;
-
-            // Spoke line from center to node
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + Math.cos(ax.angle) * r, cy + Math.sin(ax.angle) * r);
-            ctx.strokeStyle = `rgba(${col.r},${col.g},${col.b},${alpha * 0.55})`;
-            ctx.lineWidth = isHovered ? 1.2 : 0.7;
-            ctx.stroke();
-
-            // Extended ghost spoke to edge label
-            const edgeR = maxR * 1.08;
-            ctx.beginPath();
-            ctx.moveTo(cx + Math.cos(ax.angle) * r, cy + Math.sin(ax.angle) * r);
-            ctx.lineTo(cx + Math.cos(ax.angle) * edgeR, cy + Math.sin(ax.angle) * edgeR);
-            ctx.strokeStyle = `rgba(${col.r},${col.g},${col.b},0.07)`;
-            ctx.lineWidth = 0.5;
-            ctx.setLineDash([2, 5]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        });
-
-        // ── 6. Live polygon fill ──
-        const polyPoints = _CEL_AXES.map(ax => {
-            const z = zones[ax.key];
-            const r = zR[z] || zR.theta;
-            return { x: cx + Math.cos(ax.angle) * r, y: cy + Math.sin(ax.angle) * r };
-        });
-
-        ctx.beginPath();
-        polyPoints.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-        ctx.closePath();
-        const polyFillA = 0.06 + 0.03 * Math.sin(t * 0.9);
-        ctx.fillStyle = `rgba(${nr},${ng},${nb},${polyFillA})`;
-        ctx.fill();
-
-        // Polygon stroke — animated dash offset
-        ctx.strokeStyle = `rgba(${nr},${ng},${nb},0.5)`;
-        ctx.lineWidth = 1.4;
-        ctx.setLineDash([4, 5]);
-        ctx.lineDashOffset = -t * 8;
-        ctx.beginPath();
-        polyPoints.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-        ctx.closePath();
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.lineDashOffset = 0;
-
-        // ── 7. Axis node dots ──
-        _CEL_AXES.forEach((ax, i) => {
-            const z = zones[ax.key];
-            const col = _ZONE_COLOR[z] || _ZONE_COLOR.theta;
-            const r = zR[z] || zR.theta;
-            const px = cx + Math.cos(ax.angle) * r;
-            const py = cy + Math.sin(ax.angle) * r;
-            const pulse = 0.65 + 0.35 * Math.sin(t * 1.8 + i * 0.9);
-            const dotR = z !== 'theta' ? 5.5 : 3.5;
-            const isHovered = _celProHover.axisIdx === i;
-
-            // Glow halo
-            if (z !== 'theta' || isHovered) {
-                const grd = ctx.createRadialGradient(px, py, 0, px, py, dotR * 3.5);
-                grd.addColorStop(0, `rgba(${col.r},${col.g},${col.b},${0.4 * pulse})`);
-                grd.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = grd;
-                ctx.beginPath();
-                ctx.arc(px, py, dotR * 3.5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Core dot
-            ctx.beginPath();
-            ctx.arc(px, py, isHovered ? dotR * 1.4 : dotR, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${col.r},${col.g},${col.b},${pulse * 0.9})`;
-            ctx.shadowColor = `rgba(${col.r},${col.g},${col.b},0.8)`;
-            ctx.shadowBlur = z !== 'theta' ? 8 : 3;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // Cross flare on active signals
-            if (z !== 'theta') {
-                const fl = dotR * 2.5 * pulse;
-                ctx.strokeStyle = `rgba(${col.r},${col.g},${col.b},0.35)`;
-                ctx.lineWidth = 0.7;
-                ctx.beginPath(); ctx.moveTo(px - fl, py); ctx.lineTo(px + fl, py); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(px, py - fl); ctx.lineTo(px, py + fl); ctx.stroke();
-            }
-
-            // Zone badge
-            const lx = cx + Math.cos(ax.angle) * (maxR * 1.22);
-            const ly = cy + Math.sin(ax.angle) * (maxR * 1.22);
-            ctx.fillStyle = `rgba(${col.r},${col.g},${col.b},${z !== 'theta' ? 0.85 : 0.35})`;
-            ctx.font = `${z !== 'theta' ? 'bold ' : ''}7.5px "Space Mono", monospace`;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(ax.labelShort, lx, ly - 6);
-            ctx.fillStyle = `rgba(${col.r},${col.g},${col.b},${z !== 'theta' ? 0.65 : 0.22})`;
-            ctx.font = '6.5px "Space Mono", monospace';
-            ctx.fillText(z.toUpperCase(), lx, ly + 5);
-
-            // Hit test for hover
-            if (_celProHover.moved) {
-                const dx = _celProHover.x / dpr - px, dy = _celProHover.y / dpr - py;
-                if (Math.sqrt(dx*dx + dy*dy) < 22) _celProHover.axisIdx = i;
-            }
-        });
-        if (_celProHover.moved) _celProHover.moved = false;
-
-        // ── 8. North Star — VXX center anchor ──
-        const vixNorm = Math.min(vixDisp / 45, 1.0);
-        const nsR = 4 + vixNorm * 7;
-        const nsPulse = 0.7 + 0.3 * Math.sin(t * 2.2);
-
-        // Multi-ring corona scaled to VIX level
-        for (let ring = 3; ring >= 1; ring--) {
-            const ringScale = ring * 2.8 * (0.8 + vixNorm * 0.6);
-            const ringA = (0.04 + vixNorm * 0.06) / ring * nsPulse;
-            ctx.beginPath();
-            ctx.arc(cx, cy, nsR * ringScale, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(${nr},${ng},${nb},${ringA})`;
-            ctx.lineWidth = ring === 1 ? 1.0 : 0.5;
-            ctx.stroke();
-        }
-
-        // Core glow
-        const nsGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, nsR * 4);
-        nsGrd.addColorStop(0, `rgba(255,255,240,${0.9 * nsPulse})`);
-        nsGrd.addColorStop(0.3, `rgba(${nr},${ng},${nb},${0.55 * nsPulse})`);
-        nsGrd.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = nsGrd;
-        ctx.beginPath(); ctx.arc(cx, cy, nsR * 4, 0, Math.PI * 2); ctx.fill();
-
-        // Bright center dot
-        ctx.shadowColor = `rgba(255,255,220,0.9)`;
-        ctx.shadowBlur = 14;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(cx, cy, nsR * 0.65, 0, Math.PI * 2); ctx.fill();
-        ctx.shadowBlur = 0;
-
-        // Cross flare on North Star
-        const nsFl = nsR * 3.5 * nsPulse;
-        ctx.strokeStyle = `rgba(255,255,220,0.3)`;
-        ctx.lineWidth = 0.8;
-        ctx.beginPath(); ctx.moveTo(cx - nsFl, cy); ctx.lineTo(cx + nsFl, cy); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx, cy - nsFl); ctx.lineTo(cx, cy + nsFl); ctx.stroke();
-
-        // ── 9. VXX price label at center ──
-        ctx.fillStyle = 'rgba(255,255,220,0.9)';
-        ctx.font = 'bold 13px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.shadowColor = `rgba(${nr},${ng},${nb},0.6)`;
-        ctx.shadowBlur = 8;
-        ctx.fillText(vixDisp ? vixDisp.toFixed(2) : '—', cx, cy - nsR * 6);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = `rgba(${nr},${ng},${nb},0.6)`;
-        ctx.font = '6px "Space Mono", monospace';
-        ctx.fillText('∴ VXX SPOT', cx, cy - nsR * 6 - 11);
-
-        // UVXY sub-label
-        ctx.fillStyle = 'rgba(255,255,255,0.35)';
-        ctx.font = '7px "JetBrains Mono", monospace';
-        ctx.fillText(`UVXY  ${vvixDisp ? vvixDisp.toFixed(2) : '—'}`, cx, cy + nsR * 6.5);
-
-        // ── 10. Regime label ──
-        ctx.fillStyle = `rgba(${nr},${ng},${nb},${0.75 + 0.2 * Math.sin(t * 1.1)})`;
-        ctx.font = 'bold 9px "Cinzel", serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.shadowColor = `rgba(${nr},${ng},${nb},0.5)`;
-        ctx.shadowBlur = 6;
-        ctx.fillText(regime, cx, H - 14);
-        ctx.shadowBlur = 0;
-
-        // ── 11. Tooltip ──
-        if (_celProHover.axisIdx >= 0) {
-            const ax = _CEL_AXES[_celProHover.axisIdx];
-            const z = zones[ax.key];
-            const col = _ZONE_COLOR[z];
-            const narr = ax.narr();
-            const ttW = 160, ttH = 40, pad = 8;
-            let ttx = _celProHover.x / dpr - ttW / 2;
-            let tty = _celProHover.y / dpr - ttH - 12;
-            ttx = Math.max(4, Math.min(ttx, W - ttW - 4));
-            tty = Math.max(4, tty);
-            ctx.fillStyle = 'rgba(4,4,12,0.95)';
-            ctx.strokeStyle = `rgba(${col.r},${col.g},${col.b},0.5)`;
-            ctx.lineWidth = 0.8;
-            ctx.beginPath(); ctx.roundRect(ttx, tty, ttW, ttH, 4); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = col.fill;
-            ctx.font = 'bold 7px "Space Mono", monospace';
-            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-            ctx.fillText(`${ax.label.replace('\n',' ')} · ${z.toUpperCase()}`, ttx + pad, tty + 7);
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.font = '6.5px "Cormorant Garamond", serif';
-            ctx.fillText(narr.slice(0, 36), ttx + pad, tty + 22);
-        }
-
-        _celProChartRAF = requestAnimationFrame(loop);
+function buildOracleConstellation() {
+    // Clean up old
+    if (oracleConstObj) {
+        oracleConstObj.nodes.forEach(n => { scene.remove(n.mesh); if(n.labelObj) scene.remove(n.labelObj); });
+        oracleConstObj.synapses.forEach(s => scene.remove(s.line));
+        oracleConstObj.pulseTrails.forEach(p => scene.remove(p.mesh));
     }
 
-    _celProChartRAF = requestAnimationFrame(loop);
+    const nodes = [];
+    const synapses = [];
+    const pulseTrails = [];
+
+    // Build nodes
+    Object.entries(ORACLE_NODE_POSITIONS).forEach(([sector, positions]) => {
+        const col = SECTOR_COLORS[sector];
+        const threeCol = new THREE.Color(col.hex);
+        positions.forEach((pos, i) => {
+            const geo = new THREE.SphereGeometry(0.11 + Math.random()*0.04, 10, 10);
+            const mat = new THREE.MeshStandardMaterial({
+                color: threeCol, emissive: threeCol, emissiveIntensity: 0.4,
+                transparent: true, opacity: 0.55
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(pos[0], pos[1], pos[2]);
+            mesh.userData = { sector, col: col.hex, rgb: col.rgb, litPhase: Math.random()*Math.PI*2, glowTimer: 0, baseOpacity: 0.55 };
+            scene.add(mesh);
+            nodes.push({ mesh, sector, idx: i });
+        });
+    });
+
+    // Build synapse lines — within sector + cross-sector connections
+    // Within sector: connect sequential pairs
+    let nodesBySector = {};
+    nodes.forEach(n => {
+        if (!nodesBySector[n.sector]) nodesBySector[n.sector] = [];
+        nodesBySector[n.sector].push(n);
+    });
+
+    Object.values(nodesBySector).forEach(sectorNodes => {
+        for (let i = 0; i < sectorNodes.length - 1; i++) {
+            const a = sectorNodes[i], b = sectorNodes[(i+1) % sectorNodes.length];
+            const col = SECTOR_COLORS[a.sector];
+            const points = [a.mesh.position.clone(), b.mesh.position.clone()];
+            const geo = new THREE.BufferGeometry().setFromPoints(points);
+            const mat = new THREE.LineBasicMaterial({ color: new THREE.Color(col.hex), transparent: true, opacity: 0.07 });
+            const line = new THREE.Line(geo, mat);
+            line.userData = { nodeA: a, nodeB: b, col: col.hex, rgb: col.rgb, targetOpacity: 0.04, pulsePhase: Math.random()*Math.PI*2 };
+            scene.add(line);
+            synapses.push({ line, nodeA: a, nodeB: b, col: col.hex, rgb: col.rgb });
+        }
+    });
+
+    // Cross-sector connections — one per sector pair for a web feel
+    const sectorKeys = Object.keys(nodesBySector);
+    for (let i = 0; i < sectorKeys.length; i++) {
+        for (let j = i+1; j < sectorKeys.length; j++) {
+            const nodesA = nodesBySector[sectorKeys[i]];
+            const nodesB = nodesBySector[sectorKeys[j]];
+            // Pick 2 random cross-connections per pair
+            for (let k = 0; k < 3; k++) {
+                const a = nodesA[Math.floor(Math.random()*nodesA.length)];
+                const b = nodesB[Math.floor(Math.random()*nodesB.length)];
+                const points = [a.mesh.position.clone(), b.mesh.position.clone()];
+                const geo = new THREE.BufferGeometry().setFromPoints(points);
+                // Cross links are very faint gold
+                const mat = new THREE.LineBasicMaterial({ color: 0xD4AF37, transparent: true, opacity: 0.04 });
+                const line = new THREE.Line(geo, mat);
+                line.userData = { nodeA: a, nodeB: b, col: '#D4AF37', rgb: '212,175,55', targetOpacity: 0.02, pulsePhase: Math.random()*Math.PI*2, crossSector: true };
+                scene.add(line);
+                synapses.push({ line, nodeA: a, nodeB: b, col: '#D4AF37', rgb: '212,175,55' });
+            }
+        }
+    }
+
+    // Build CSS2D label anchored to the cluster centroid
+    const allNodePositions = nodes.map(n => n.mesh.position);
+    const centroid = new THREE.Vector3();
+    allNodePositions.forEach(p => centroid.add(p));
+    centroid.divideScalar(nodes.length);
+    centroid.y += 2.5; // float above centroid
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'oracle-3d-label';
+    labelDiv.id = 'oracle-3d-label';
+    labelDiv.innerHTML = `
+        <span class="olb-dot" id="olb-dot"></span>
+        <span class="olb-glyph">∴</span>
+        <span class="olb-sep"></span>
+        <span class="olb-sector" id="olb-sector">ORACLE</span>
+        <span class="olb-sep"></span>
+        <span class="olb-count" id="olb-count">—</span>
+        <span class="olb-sep"></span>
+        <span class="olb-open">SIGNALS ▲</span>
+    `;
+    labelDiv.addEventListener('click', e => { e.stopPropagation(); window.toggleCelPro(); });
+    labelDiv.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); window.toggleCelPro(); }, { passive: false });
+    const labelObj = new CSS2DObject(labelDiv);
+    labelObj.position.copy(centroid);
+    scene.add(labelObj);
+
+    oracleConstObj = { nodes, synapses, pulseTrails, labelObj, activePulses: [] };
 }
 
-// Expose panel toggle globally (used by 3D label click + close button)
+// Spawn a synapse pulse along a random synapse line
+function spawnSynapsePulse(forceSector) {
+    if (!oracleConstObj || oracleConstObj.synapses.length === 0) return;
+    // Optionally bias toward a specific sector for news-driven bursts
+    let pool = oracleConstObj.synapses;
+    if (forceSector) {
+        const biased = pool.filter(s => s.nodeA.sector === forceSector || s.nodeB.sector === forceSector);
+        if (biased.length > 0) pool = biased;
+    }
+    const syn = pool[Math.floor(Math.random() * pool.length)];
+    const TRAIL_LEN = 6;
+    const trailMeshes = [];
+    const threeCol = new THREE.Color(syn.col);
+    for (let i = 0; i < TRAIL_LEN; i++) {
+        const tg = new THREE.SphereGeometry(0.045 - i * 0.005, 7, 7);
+        const tm = new THREE.MeshStandardMaterial({
+            color: threeCol, emissive: threeCol,
+            emissiveIntensity: 3.2 - i * 0.35,
+            transparent: true, opacity: 0.0
+        });
+        const tm_mesh = new THREE.Mesh(tg, tm);
+        scene.add(tm_mesh);
+        trailMeshes.push(tm_mesh);
+    }
+    oracleConstObj.activePulses.push({
+        nodeA: syn.nodeA,
+        nodeB: syn.nodeB,
+        col: syn.col,
+        rgb: syn.rgb,
+        line: syn.line,
+        t: 0,
+        speed: 0.003 + Math.random() * 0.005,
+        trailMeshes,
+        TRAIL_LEN,
+        TRAIL_GAP: 0.055, // fractional gap between trail segments
+    });
+    if (syn.line.userData) syn.line.userData.targetOpacity = syn.line.userData.crossSector ? 0.22 : 0.48;
+}
+
+function animateOracleConstellation(t) {
+    if (!oracleConstObj) return;
+    const { nodes, synapses, activePulses } = oracleConstObj;
+
+    // Node breathe
+    nodes.forEach(n => {
+        const m = n.mesh;
+        const ph = m.userData.litPhase;
+        // Gentle float
+        m.position.y += Math.sin(t * 0.35 + ph) * 0.0005;
+        // Breathe emissive
+        const glow = m.userData.glowTimer;
+        if (glow > 0) {
+            m.userData.glowTimer = Math.max(0, glow - 0.018);
+            m.material.emissiveIntensity = 1.5 + glow * 3.5;
+            m.material.opacity = Math.min(0.95, m.userData.baseOpacity + glow * 0.7);
+            m.scale.setScalar(1 + glow * 2.8);
+        } else {
+            const breath = 0.3 + 0.2 * Math.sin(t * 0.9 + ph);
+            m.material.emissiveIntensity = breath;
+            m.material.opacity = m.userData.baseOpacity * (0.7 + 0.3 * Math.sin(t * 0.6 + ph));
+            m.scale.setScalar(0.92 + 0.12 * Math.sin(t * 1.1 + ph));
+        }
+    });
+
+    // Synapse lines fade
+    synapses.forEach(s => {
+        const ud = s.line.userData;
+        const target = ud.targetOpacity;
+        const cur = s.line.material.opacity;
+        s.line.material.opacity += (target - cur) * 0.05;
+        // Slowly dim back after pulse
+        if (ud.targetOpacity > (ud.crossSector ? 0.02 : 0.04)) {
+            ud._dimTimer = (ud._dimTimer || 0) + 1;
+            if (ud._dimTimer > 80) { ud.targetOpacity = ud.crossSector ? 0.02 : 0.04; ud._dimTimer = 0; }
+        }
+    });
+
+    // Animate active pulses — neuron synapse trail effect
+    for (let i = activePulses.length - 1; i >= 0; i--) {
+        const p = activePulses[i];
+        p.t += p.speed;
+        if (p.t >= 1) {
+            // Arrived — trigger destination glow burst
+            p.nodeB.mesh.userData.glowTimer = 1.0;
+            // Cascade: 40% chance to fire another pulse onward from destination
+            if (Math.random() < 0.40 && oracleConstObj) {
+                const nextSyns = oracleConstObj.synapses.filter(s =>
+                    s.nodeA === p.nodeB || s.nodeB === p.nodeB
+                );
+                if (nextSyns.length > 0) {
+                    const nextSyn = nextSyns[Math.floor(Math.random() * nextSyns.length)];
+                    setTimeout(() => spawnSynapsePulse(nextSyn.nodeA.sector), 80 + Math.random() * 200);
+                }
+            }
+            // Cleanup all trail meshes
+            p.trailMeshes.forEach(tm => { scene.remove(tm); tm.geometry.dispose(); tm.material.dispose(); });
+            activePulses.splice(i, 1);
+            continue;
+        }
+        const posA = p.nodeA.mesh.position;
+        const posB = p.nodeB.mesh.position;
+        // Render head + trailing segments
+        p.trailMeshes.forEach((tm, seg) => {
+            const segT = p.t - seg * p.TRAIL_GAP;
+            if (segT < 0) { tm.material.opacity = 0; return; }
+            const clampT = Math.max(0, Math.min(1, segT));
+            tm.position.lerpVectors(posA, posB, clampT);
+            // Head brightness tapers to tail
+            const isHead = seg === 0;
+            const fadeArrival = p.t > 0.88 ? (1 - p.t) / 0.12 : 1;
+            const tailFade = Math.pow(1 - seg / p.TRAIL_LEN, 1.8);
+            tm.material.opacity = (isHead ? 0.92 : 0.65 * tailFade) * fadeArrival;
+            tm.material.emissiveIntensity = (isHead ? 3.8 : 2.0 * tailFade) * (0.8 + 0.2 * Math.sin(p.t * 18 + seg));
+            // Head pulses in scale
+            const sc = isHead ? (1.0 + 0.45 * Math.sin(p.t * Math.PI)) : (0.7 * tailFade + 0.1);
+            tm.scale.setScalar(Math.max(0.05, sc));
+        });
+    }
+}
+
+// Separate cleanup for pulse meshes (called in animate loop)
+function cleanupOraclePulseMeshes() {
+    if (!oracleConstObj) return;
+    // Remove any _pulseMesh from pulses that are done (not in activePulses)
+    // We handle this by always removing when splicing
+}
+
+// Update oracle constellation colors based on fresh sector data
+window._updateOracleConstellation = function(sectorData) {
+    if (!oracleConstObj) return;
+    const { nodes, synapses } = oracleConstObj;
+
+    // Update node opacity/emissive based on sector sentiment
+    nodes.forEach(n => {
+        const sd = sectorData[n.sector];
+        if (!sd) return;
+        const sentimentMood = sd.sentiment;
+        // Positive → brighter, Negative → more intense red tint via opacity
+        n.mesh.userData.baseOpacity = 0.45 + Math.abs(sentimentMood) * 0.4;
+        // Negative sectors pulse faster
+        if (sentimentMood < -0.15) {
+            n.mesh.userData.litPhase += 0.8; // offset phase for urgency
+        }
+    });
+
+    // Update 3D label
+    const totalArticles = Object.values(sectorData).reduce((s, d) => s + d.count, 0);
+    const dominantSector = Object.entries(sectorData).sort((a, b) => b[1].count - a[1].count)[0];
+    const dominantSentiment = dominantSector ? sectorData[dominantSector[0]].sentiment : 0;
+
+    const dotEl = document.getElementById('olb-dot');
+    const sectorEl = document.getElementById('olb-sector');
+    const countEl = document.getElementById('olb-count');
+    const labelEl = document.getElementById('oracle-3d-label');
+
+    if (sectorEl && dominantSector) sectorEl.textContent = dominantSector[0];
+    if (countEl) countEl.textContent = totalArticles + ' signals';
+    const mood = dominantSentiment < -0.1 ? 'negative' : dominantSentiment > 0.1 ? '' : 'volatile';
+    if (dotEl) dotEl.className = 'olb-dot' + (mood ? ' ' + mood : '');
+    if (labelEl) labelEl.className = 'oracle-3d-label' + (mood ? ' ' + mood : '');
+};
+
+// Spawn pulses at a rate proportional to article volume
+let _oracleSpawnInterval = null;
+function startOraclePulseEngine() {
+    if (_oracleSpawnInterval) clearInterval(_oracleSpawnInterval);
+    _oracleSpawnInterval = setInterval(() => {
+        const articleCount = oracleState.articles.length;
+        // More articles = more pulses, cap at 3 per tick
+        const pulseCount = Math.min(3, Math.floor(articleCount / 12) + 1);
+        for (let i = 0; i < pulseCount; i++) {
+            setTimeout(() => spawnSynapsePulse(), i * 180);
+        }
+    }, 900); // spawn batch every 900ms
+}
+
+// Expose panel toggle globally
 window.toggleCelPro = function() {
     const panel = document.getElementById('celpro-panel');
     if (!panel) return;
     const isOpen = panel.classList.contains('open');
     if (isOpen) {
         panel.classList.remove('open');
-        // Stop chart loop
-        if (_celProChartRAF) { cancelAnimationFrame(_celProChartRAF); _celProChartRAF = null; }
     } else {
         panel.classList.add('open');
-        _celProChartStart = null; // reset timer so animation is fresh
-        renderCelPro(); // populate tables + start chart loop
+        renderOraclePanel();
     }
 };
-
-// Also re-render whenever fresh data arrives while panel is open
-const _origRenderVIXBar = typeof renderVIXBar === 'function' ? renderVIXBar : null;
-function _celProAutoRefresh() {
-    const panel = document.getElementById('celpro-panel');
-    if (panel && panel.classList.contains('open')) renderCelPro();
-}
-
-// VIX constellation node layout — a ring above the solar plane
-const VIX_CONSTELLATION_SHAPE = [
-    // [angleDeg, radius, yHeight]  — arc across the top of scene space
-    [0,   5.8,  8.2],
-    [36,  6.5,  8.8],
-    [72,  5.2,  9.4],
-    [108, 6.8,  8.6],
-    [144, 5.5,  9.0],
-    [180, 6.2,  8.3],
-    [216, 5.9,  9.2],
-    [252, 6.6,  8.7],
-    [288, 5.3,  8.9],
-    [324, 6.0,  8.5],
-    // North Star — the "VXX Spot" center anchor
-    [0,   0,    10.5],  // index 10 = North Star node
-];
-
-// Color palette per regime state
-const VIX_REGIME_COLORS = {
-    clear: { hex: 0xD4AF37, rgb: '212,175,55' },
-    watch: { hex: 0xFACC15, rgb: '250,204,21' },
-    alert: { hex: 0xF87171, rgb: '248,113,113' },
-};
-
-let vixConstObj = null; // { nodes, lines, labelObj, regimeState }
-
-function buildVIXConstellation() {
-    // Tear down previous
-    if (vixConstObj) {
-        vixConstObj.nodes.forEach(n => scene.remove(n));
-        vixConstObj.lines.forEach(l => scene.remove(l));
-        if (vixConstObj.labelObj) scene.remove(vixConstObj.labelObj);
-    }
-
-    const col = new THREE.Color(VIX_REGIME_COLORS.clear.hex);
-    const nodes = [];
-
-    VIX_CONSTELLATION_SHAPE.forEach((def, i) => {
-        const [angleDeg, radius, yHeight] = def;
-        const rad = angleDeg * Math.PI / 180;
-        const x = Math.cos(rad) * radius;
-        const z = Math.sin(rad) * radius;
-        const isNorthStar = (i === 10);
-
-        const size = isNorthStar ? 0.14 : 0.055 + Math.random() * 0.04;
-        const geo = new THREE.SphereGeometry(size, 10, 10);
-        const mat = new THREE.MeshStandardMaterial({
-            color: isNorthStar ? 0xFFFFFF : col,
-            emissive: isNorthStar ? new THREE.Color(0xFFFFDD) : col,
-            emissiveIntensity: isNorthStar ? 2.2 : 0.6,
-            transparent: true,
-            opacity: isNorthStar ? 0.95 : 0.72
-        });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(x, yHeight, z);
-        mesh.userData = {
-            isNorthStar,
-            baseY: yHeight,
-            litPhase: Math.random() * Math.PI * 2,
-            baseEmissive: isNorthStar ? 2.2 : 0.6
-        };
-        scene.add(mesh);
-        nodes.push(mesh);
-    });
-
-    // Lines: ring connections + spokes to North Star
-    const linePairs = [];
-    for (let i = 0; i < 10; i++) {
-        linePairs.push([i, (i + 1) % 10]);           // ring
-        if (i % 3 === 0) linePairs.push([i, 10]);    // spokes to north star
-    }
-
-    const lines = [];
-    linePairs.forEach(([a, b]) => {
-        const points = [nodes[a].position.clone(), nodes[b].position.clone()];
-        const geo = new THREE.BufferGeometry().setFromPoints(points);
-        const mat = new THREE.LineBasicMaterial({
-            color: VIX_REGIME_COLORS.clear.hex,
-            transparent: true,
-            opacity: 0.18
-        });
-        const line = new THREE.Line(geo, mat);
-        line.userData = { pulsePhase: Math.random() * Math.PI * 2, targetOpacity: 0.18 };
-        scene.add(line);
-        lines.push(line);
-    });
-
-    // CSS2D label anchored to North Star position — clickable, opens CelPro panel
-    const northPos = nodes[10].position;
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'vix-3d-label';
-    labelDiv.innerHTML = `
-        <span class="vlb-dot" id="vlb-dot"></span>
-        <span class="vlb-glyph">∴</span>
-        <span class="vlb-sep"></span>
-        <span class="vlb-price" id="vlb-price">—</span>
-        <span class="vlb-chg dn" id="vlb-chg">—</span>
-        <span class="vlb-sep"></span>
-        <span class="vlb-regime" id="vlb-regime">Scanning…</span>
-        <span class="vlb-sep"></span>
-        <span class="vlb-open">VOL STARS ▲</span>
-    `;
-    labelDiv.addEventListener('click', (e) => { e.stopPropagation(); window.toggleCelPro(); });
-    labelDiv.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); window.toggleCelPro(); }, { passive: false });
-
-    const labelObj = new CSS2DObject(labelDiv);
-    labelObj.position.copy(northPos);
-    labelObj.position.y += 0.8; // float label above north star
-    scene.add(labelObj);
-
-    vixConstObj = { nodes, lines, labelObj, regimeState: 'clear' };
-}
-
-function updateVIXConstellationState(regimeState) {
-    if (!vixConstObj) return;
-    vixConstObj.regimeState = regimeState;
-    const palette = VIX_REGIME_COLORS[regimeState] || VIX_REGIME_COLORS.clear;
-    const col = new THREE.Color(palette.hex);
-
-    vixConstObj.nodes.forEach((node, i) => {
-        if (i !== 10) { // not north star
-            node.material.color.set(col);
-            node.material.emissive.set(col);
-        }
-    });
-    vixConstObj.lines.forEach(line => {
-        line.material.color.set(palette.hex);
-        const targetOp = regimeState === 'alert' ? 0.55 : regimeState === 'watch' ? 0.38 : 0.18;
-        line.userData.targetOpacity = targetOp;
-    });
-
-    // Update label dot + label class
-    const dot = document.getElementById('vlb-dot');
-    if (dot) {
-        dot.className = 'vlb-dot' + (regimeState !== 'clear' ? ' ' + regimeState : '');
-    }
-    const labelDiv = vixConstObj.labelObj?.element;
-    if (labelDiv) {
-        labelDiv.className = 'vix-3d-label' + (regimeState !== 'clear' ? ' ' + regimeState : '');
-    }
-}
-
-// Called from renderVIXBar after data arrives
-window._updateVIXLabel = function(vixDisplay, changePct, regime) {
-    const priceEl = document.getElementById('vlb-price');
-    const chgEl = document.getElementById('vlb-chg');
-    const regimeEl = document.getElementById('vlb-regime');
-    if (priceEl) priceEl.textContent = vixDisplay ? vixDisplay.toFixed(2) : '—';
-    if (chgEl) {
-        const up = changePct >= 0;
-        chgEl.textContent = (up ? '▲ +' : '▼ ') + Math.abs(changePct).toFixed(2) + '%';
-        chgEl.className = 'vlb-chg ' + (up ? 'up' : 'dn');
-    }
-    if (regimeEl) regimeEl.textContent = regime || '—';
-
-    // Derive regime state for color
-    const vixVal = vixDisplay || 0;
-    const state = vixVal > 30 ? 'alert' : vixVal > 20 ? 'watch' : 'clear';
-    updateVIXConstellationState(state);
-};
-
-function animateVIXConstellation(t) {
-    if (!vixConstObj) return;
-    const { nodes, lines, regimeState } = vixConstObj;
-    const speedMult = regimeState === 'alert' ? 2.2 : regimeState === 'watch' ? 1.5 : 1.0;
-
-    nodes.forEach((node, i) => {
-        const ph = node.userData.litPhase;
-        const isNS = node.userData.isNorthStar;
-        // Gentle float
-        node.position.y = node.userData.baseY + Math.sin(t * 0.55 * speedMult + ph) * (isNS ? 0.12 : 0.07);
-        // Emissive breathe
-        const base = node.userData.baseEmissive;
-        node.material.emissiveIntensity = base + Math.sin(t * (isNS ? 1.4 : 1.0) * speedMult + ph) * (isNS ? 0.7 : 0.35);
-        // North star rotation
-        if (isNS) node.rotation.y += 0.008;
-    });
-
-    lines.forEach(line => {
-        const target = line.userData.targetOpacity;
-        const cur = line.material.opacity;
-        line.material.opacity += (target - cur) * 0.04;
-        if (line.material.opacity > 0.02) {
-            const pulse = 0.7 + 0.3 * Math.sin(t * 1.2 * speedMult + line.userData.pulsePhase);
-            line.material.opacity = line.material.opacity * 0.9 + target * pulse * 0.1;
-        }
-    });
-}
 
 buildScene();
-buildVIXConstellation();
+buildOracleConstellation();
 buildConstHUD();
+startOraclePulseEngine();
 animate();
 </script>
 
