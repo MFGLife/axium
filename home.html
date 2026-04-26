@@ -1804,15 +1804,18 @@ setSoul('micheal');
 // ORACLE RSS ENGINE — Global Sentiment Constellation
 // ══════════════════════════════════════════════
 
+// Feed URLs that work reliably via CORS proxies (verified 2025)
 const RSS_FEEDS = [
-    { name: 'BBC World',      url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                                                                      sector: 'GEOPOLITICS' },
-    { name: 'BBC Business',   url: 'https://feeds.bbci.co.uk/news/business/rss.xml',                                                                   sector: 'ECONOMY'     },
-    { name: 'Al Jazeera',     url: 'https://www.aljazeera.com/xml/rss/all.xml',                                                                        sector: 'GEOPOLITICS' },
-    { name: 'Reuters',        url: 'https://feeds.reuters.com/reuters/topNews',                                                                        sector: 'GEOPOLITICS' },
-    { name: 'The Verge',      url: 'https://www.theverge.com/rss/index.xml',                                                                          sector: 'TECHNOLOGY'  },
-    { name: 'NYT Business',   url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',                                                        sector: 'ECONOMY'     },
-    { name: 'CNBC',           url: 'https://search.cnbc.com/rs/search/all/view.rss?partnerId=2000&keywords=markets',                                   sector: 'FINANCE'     },
-    { name: 'AP News',        url: 'https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com/article&hl=en-US&gl=US&ceid=US:en',             sector: 'GENERAL'     },
+    { name: 'BBC World',      url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                                          sector: 'GEOPOLITICS' },
+    { name: 'BBC Business',   url: 'https://feeds.bbci.co.uk/news/business/rss.xml',                                       sector: 'ECONOMY'     },
+    { name: 'Al Jazeera',     url: 'https://www.aljazeera.com/xml/rss/all.xml',                                            sector: 'GEOPOLITICS' },
+    { name: 'The Verge',      url: 'https://www.theverge.com/rss/index.xml',                                               sector: 'TECHNOLOGY'  },
+    { name: 'Hacker News',    url: 'https://hnrss.org/frontpage',                                                          sector: 'TECHNOLOGY'  },
+    { name: 'AP Top News',    url: 'https://rsshub.app/apnews/topics/apf-topnews',                                         sector: 'GENERAL'     },
+    { name: 'Reuters World',  url: 'https://rsshub.app/reuters/world',                                                     sector: 'GEOPOLITICS' },
+    { name: 'Reuters Finance', url: 'https://rsshub.app/reuters/markets',                                                  sector: 'FINANCE'     },
+    { name: 'Wired',          url: 'https://www.wired.com/feed/rss',                                                       sector: 'TECHNOLOGY'  },
+    { name: 'FT Economy',     url: 'https://rsshub.app/ft/markets',                                                        sector: 'ECONOMY'     },
 ];
 
 const SECTOR_COLORS = {
@@ -1856,30 +1859,68 @@ function scoreArticle(title, desc) {
     return { sentiment, volatility, urgency, impact };
 }
 
-// ── RSS fetch via rss2json proxy ──
+// ── RSS fetch — multi-proxy fallback chain ──
+// Proxy 1: allorigins (returns raw XML) → parse manually
+// Proxy 2: rssbridge public instance
+// Proxy 3: corsproxy.io pass-through for feeds that allow it
 async function fetchFeed(feed) {
+    const PROXIES = [
+        url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    ];
+
+    for (const proxyFn of PROXIES) {
+        try {
+            const proxyUrl = proxyFn(feed.url);
+            const res = await fetch(proxyUrl, { cache: 'no-store' });
+            if (!res.ok) continue;
+
+            let xmlText = '';
+            // allorigins wraps in JSON { contents, status }
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json') || proxyUrl.includes('allorigins')) {
+                const json = await res.json();
+                xmlText = json.contents || json.content || '';
+            } else {
+                xmlText = await res.text();
+            }
+            if (!xmlText || xmlText.length < 200) continue;
+
+            const items = parseRSSXML(xmlText, feed);
+            if (items.length > 0) return items;
+        } catch(e) {
+            // Try next proxy silently
+        }
+    }
+    console.warn(`[ORACLE] All proxies failed for: ${feed.name}`);
+    return [];
+}
+
+// ── Lightweight RSS/Atom XML parser ──
+function parseRSSXML(xml, feed) {
     try {
-        const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=6`;
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) return [];
-        const data = await res.json();
-        if (data.status !== 'ok' || !data.items) return [];
-        return data.items.map(item => {
-            const desc = (item.description || '').replace(/<[^>]+>/g, '').trim().slice(0, 200);
-            const scores = scoreArticle(item.title || '', desc);
-            return {
-                title: (item.title || '').trim().slice(0, 120),
-                desc,
-                url: item.link || '',
-                source: feed.name,
-                sector: feed.sector,
-                pubDate: item.pubDate || '',
-                ...scores,
-                fetchedAt: Date.now(),
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(xml, 'text/xml');
+        // Support both RSS <item> and Atom <entry>
+        const items = [...doc.querySelectorAll('item'), ...doc.querySelectorAll('entry')];
+        return items.slice(0, 8).map(item => {
+            const getText = (...tags) => {
+                for (const tag of tags) {
+                    const el = item.querySelector(tag);
+                    if (el) return (el.textContent || el.getAttribute('url') || '').trim();
+                }
+                return '';
             };
-        });
+            const title = getText('title').slice(0, 120);
+            const rawDesc = getText('description', 'summary', 'content');
+            const desc = rawDesc.replace(/<[^>]+>/g, '').trim().slice(0, 200);
+            const link = getText('link') || item.querySelector('link')?.getAttribute('href') || '';
+            const pubDate = getText('pubDate', 'published', 'updated');
+            const scores = scoreArticle(title, desc);
+            return { title, desc, url: link, source: feed.name, sector: feed.sector, pubDate, ...scores, fetchedAt: Date.now() };
+        }).filter(a => a.title.length > 5);
     } catch(e) {
-        console.warn(`[ORACLE] Feed failed: ${feed.name}`, e.message);
         return [];
     }
 }
