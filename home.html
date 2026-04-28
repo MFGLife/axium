@@ -608,6 +608,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
         <button id="celpro-close" onclick="toggleCelPro()">✕</button>
     </div>
     <div id="celpro-body">
+        <div class="celpro-sec-lbl">Sort &amp; Filter</div>
+        <!-- Sort row -->
+        <div class="ohud-sort-row" style="margin:0 0 0 0;border-color:rgba(212,175,55,0.12);">
+            <button class="ohud-sort-btn on" id="cpro-sort-impact"    onclick="cproSort('impact',this)">Impact</button>
+            <button class="ohud-sort-btn"    id="cpro-sort-sector"    onclick="cproSort('sector',this)">Sector</button>
+            <button class="ohud-sort-btn"    id="cpro-sort-sentiment" onclick="cproSort('sentiment',this)">Mood</button>
+            <button class="ohud-sort-btn"    id="cpro-sort-time"      onclick="cproSort('time',this)">Recent</button>
+        </div>
+        <!-- Filter chips -->
+        <div class="ohud-filter-row" style="padding:10px 0 9px;border-bottom:1px solid rgba(212,175,55,0.08);margin-bottom:14px;">
+            <span class="ohud-chip on" data-cpro="ALL"         onclick="cproFilter('ALL',this)">ALL</span>
+            <span class="ohud-chip on" data-cpro="GEOPOLITICS" onclick="cproFilter('GEOPOLITICS',this)">GEO</span>
+            <span class="ohud-chip on" data-cpro="ECONOMY"     onclick="cproFilter('ECONOMY',this)">ECON</span>
+            <span class="ohud-chip on" data-cpro="FINANCE"     onclick="cproFilter('FINANCE',this)">FIN</span>
+            <span class="ohud-chip on" data-cpro="TECHNOLOGY"  onclick="cproFilter('TECHNOLOGY',this)">TECH</span>
+            <span class="ohud-chip on" data-cpro="GENERAL"     onclick="cproFilter('GENERAL',this)">GEN</span>
+        </div>
         <div class="celpro-sec-lbl">Sector Sentiment</div>
         <div class="oracle-sector-grid" id="oracle-sector-grid"></div>
         <div class="celpro-sec-lbl">Live Intelligence Feed</div>
@@ -696,23 +713,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     <div id="sc-target">
         </div>
 </div>
-            <!-- Tab 4: Oracle Signal Feed -->
+            <!-- Tab 4: Oracle Signal Feed — compact summary, full UI lives in Signal Feed panel -->
             <div class="hm-pane" id="hm-pane-4">
-                <div class="ohud-sort-row">
-                    <button class="ohud-sort-btn on" onclick="oracleHudSort('impact',this)">Impact</button>
-                    <button class="ohud-sort-btn" onclick="oracleHudSort('sector',this)">Sector</button>
-                    <button class="ohud-sort-btn" onclick="oracleHudSort('sentiment',this)">Mood</button>
-                    <button class="ohud-sort-btn" onclick="oracleHudSort('time',this)">Recent</button>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div id="oracle-hud-summary" style="display:flex;flex-direction:column;gap:5px;"></div>
+                    <button onclick="toggleCelPro();toggleHudModal();" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06));border:1px solid rgba(212,175,55,0.35);border-radius:4px;font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(212,175,55,0.18)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06))'">⊕ Open Signal Feed · Filter &amp; Sort</button>
                 </div>
-                <div class="ohud-filter-row">
-                    <span class="ohud-chip on" data-sector="ALL"         onclick="oracleHudFilter('ALL',this)">ALL</span>
-                    <span class="ohud-chip on" data-sector="GEOPOLITICS" onclick="oracleHudFilter('GEOPOLITICS',this)">GEO</span>
-                    <span class="ohud-chip on" data-sector="ECONOMY"     onclick="oracleHudFilter('ECONOMY',this)">ECON</span>
-                    <span class="ohud-chip on" data-sector="FINANCE"     onclick="oracleHudFilter('FINANCE',this)">FIN</span>
-                    <span class="ohud-chip on" data-sector="TECHNOLOGY"  onclick="oracleHudFilter('TECHNOLOGY',this)">TECH</span>
-                    <span class="ohud-chip on" data-sector="GENERAL"     onclick="oracleHudFilter('GENERAL',this)">GEN</span>
-                </div>
-                <div class="oracle-hud-feed" id="oracle-hud-feed"></div>
             </div>
 
 
@@ -1756,11 +1762,11 @@ window.switchHudTab = function(idx, btn) {
             src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/2184015935&color=%23D4AF37&auto_play=false&visual=true">
             </iframe>`;
     }
-    if (idx === 4) renderOracleHudFeed();
+    if (idx === 4) renderOracleHudSummary();
 };
 
-// ── Oracle HUD state & helpers ────────────────────────────────────────
-const _ohudState = {
+// ── Oracle Signal Feed state (shared between HUD summary and full panel) ──
+const _cpro = {
     sort: 'impact',
     filters: new Set(['ALL','GEOPOLITICS','ECONOMY','FINANCE','TECHNOLOGY','GENERAL'])
 };
@@ -1773,94 +1779,191 @@ const _OHUD_RGB = {
     FINANCE:'74,222,128',      TECHNOLOGY:'126,184,232', GENERAL:'200,200,212'
 };
 
+// Keep legacy aliases so other code still works
+const _ohudState = _cpro;
 window.oracleHudSort = function(key, btn) {
-    _ohudState.sort = key;
+    _cpro.sort = key;
     document.querySelectorAll('.ohud-sort-btn').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    renderOracleHudFeed();
+    if (btn) btn.classList.add('on');
+    renderOraclePanel();
+};
+window.oracleHudFilter = function(sector, chip) { cproFilter(sector, chip); };
+
+// ── New sort/filter handlers (Signal Feed panel) ──
+window.cproSort = function(key, btn) {
+    _cpro.sort = key;
+    document.querySelectorAll('#celpro-panel .ohud-sort-btn').forEach(b => b.classList.remove('on'));
+    if (btn) btn.classList.add('on');
+    renderOraclePanel();
+    syncOracleNodes();
 };
 
-window.oracleHudFilter = function(sector, chip) {
-    const f = _ohudState.filters;
+window.cproFilter = function(sector, chip) {
+    const f = _cpro.filters;
     if (sector === 'ALL') {
         const wasOn = f.has('ALL');
         f.clear();
-        document.querySelectorAll('.ohud-chip').forEach(c => c.classList.remove('on'));
+        document.querySelectorAll('[data-cpro]').forEach(c => c.classList.remove('on'));
         if (!wasOn) {
             ['ALL','GEOPOLITICS','ECONOMY','FINANCE','TECHNOLOGY','GENERAL'].forEach(s => f.add(s));
-            document.querySelectorAll('.ohud-chip').forEach(c => c.classList.add('on'));
+            document.querySelectorAll('[data-cpro]').forEach(c => c.classList.add('on'));
         }
     } else {
         if (f.has(sector)) {
             f.delete(sector); f.delete('ALL');
-            chip.classList.remove('on');
-            document.querySelector('.ohud-chip[data-sector="ALL"]')?.classList.remove('on');
+            document.querySelectorAll(`[data-cpro="${sector}"]`).forEach(c => c.classList.remove('on'));
+            document.querySelectorAll('[data-cpro="ALL"]').forEach(c => c.classList.remove('on'));
         } else {
-            f.add(sector); chip.classList.add('on');
+            f.add(sector);
+            document.querySelectorAll(`[data-cpro="${sector}"]`).forEach(c => c.classList.add('on'));
             if (['GEOPOLITICS','ECONOMY','FINANCE','TECHNOLOGY','GENERAL'].every(s => f.has(s))) {
                 f.add('ALL');
-                document.querySelector('.ohud-chip[data-sector="ALL"]')?.classList.add('on');
+                document.querySelectorAll('[data-cpro="ALL"]').forEach(c => c.classList.add('on'));
             }
         }
     }
-    renderOracleHudFeed();
+    renderOraclePanel();
+    syncOracleNodes();
 };
 
-function _ohudItem(a) {
+// ── Sync 3D nodes/lines visibility to active filter ──
+function syncOracleNodes() {
+    if (!oracleConstObj) return;
+    const f = _cpro.filters;
+    const showAll = f.has('ALL');
+
+    oracleConstObj.nodes.forEach(n => {
+        const visible = showAll || f.has(n.sector);
+        n.mesh.userData.filterHidden = !visible;
+        // Instantly dim hidden nodes; restore base opacity for visible
+        if (!visible) {
+            n.mesh.material.opacity = 0;
+            n.mesh.material.emissiveIntensity = 0;
+            n.mesh.scale.setScalar(0.01);
+        } else {
+            n.mesh.material.opacity = n.mesh.userData.baseOpacity || 0.55;
+        }
+    });
+
+    oracleConstObj.synapses.forEach(s => {
+        const aVis = showAll || f.has(s.nodeA.sector);
+        const bVis = showAll || f.has(s.nodeB.sector);
+        s.line.userData.filterHidden = !(aVis && bVis);
+        if (!(aVis && bVis)) {
+            s.line.userData.targetOpacity = 0;
+            s.line.material.opacity = 0;
+        } else {
+            s.line.userData.targetOpacity = s.line.userData.crossSector ? 0.04 : 0.07;
+        }
+    });
+}
+
+function _cpro_filtered_sorted() {
+    const articles = (typeof oracleState !== 'undefined' ? oracleState.articles : null) || [];
+    const f = _cpro.filters;
+    let list = f.has('ALL') ? [...articles] : articles.filter(a => f.has(a.sector));
+    if      (_cpro.sort === 'impact')    list.sort((a,b) => b.impact - a.impact);
+    else if (_cpro.sort === 'sector')    list.sort((a,b) => a.sector.localeCompare(b.sector) || b.impact - a.impact);
+    else if (_cpro.sort === 'sentiment') list.sort((a,b) => a.sentiment - b.sentiment);
+    else if (_cpro.sort === 'time')      list.sort((a,b) => (b.fetchedAt||0) - (a.fetchedAt||0));
+    return list;
+}
+
+function _cpro_item(a) {
     const col = _OHUD_COL[a.sector] || '#C8C8D4';
     const rgb = _OHUD_RGB[a.sector] || '200,200,212';
     const sc  = a.sentiment < -0.15 ? 'neg' : a.sentiment > 0.15 ? 'pos' : 'neu';
     const sl  = a.sentiment < -0.15 ? 'NEG' : a.sentiment > 0.15 ? 'POS' : 'NEU';
     const dc  = a.sentiment < -0.15 ? '#f87171' : a.sentiment > 0.15 ? '#4ade80' : col;
-    const url = (a.url || '').replace(/'/g, "\'");
-    return `<div class="ohud-item" onclick="window.open('${url}','_blank')">` +
-        `<div class="ohud-dot" style="background:${dc};box-shadow:0 0 5px ${dc};"></div>` +
-        `<div class="ohud-body">` +
-        `<div class="ohud-title">${a.title || ''}</div>` +
-        `<div class="ohud-meta">` +
-        `<span class="ohud-source">${a.source || ''}</span>` +
-        `<span class="ohud-sector-tag" style="color:${col};border-color:rgba(${rgb},.3);background:rgba(${rgb},.06);">${(a.sector||'').slice(0,4)}</span>` +
-        `<span class="ohud-sent ${sc}">${sl}</span>` +
+    const url = (a.url || '').replace(/'/g, "\\'");
+    const ago = formatAgo(a.fetchedAt);
+    const hasNode = !!(a.url); // all articles with URLs get a clickable link badge
+    return `<div class="oracle-item" onclick="window.open('${url}','_blank')">` +
+        `<div class="oi-dot" style="background:${dc};box-shadow:0 0 6px ${dc};"></div>` +
+        `<div class="oi-body">` +
+        `<div class="oi-title">${a.title || ''}</div>` +
+        `<div class="oi-meta">` +
+        `<span class="oi-source">${a.source || ''}</span>` +
+        `<span class="oi-sector" style="color:${col};border-color:rgba(${rgb},0.3);background:rgba(${rgb},0.06);">${a.sector}</span>` +
+        `<span class="oi-sentiment ${sc}">${sl}</span>` +
+        `<span class="oi-time">${ago}</span>` +
+        (url ? `<span style="font-family:'Space Mono',monospace;font-size:.3rem;letter-spacing:.08em;padding:1px 5px;border-radius:2px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);">↗ READ</span>` : '') +
         `</div></div></div>`;
 }
 
-function renderOracleHudFeed() {
-    const el = document.getElementById('oracle-hud-feed');
-    if (!el) return;
-    const articles = (typeof oracleState !== 'undefined' ? oracleState.articles : null) || [];
-    if (!articles.length) { el.innerHTML = '<div class="ohud-empty">Scanning feeds…</div>'; return; }
-
-    const f = _ohudState.filters;
-    let list = f.has('ALL') ? [...articles] : articles.filter(a => f.has(a.sector));
-
-    if      (_ohudState.sort === 'impact')    list.sort((a,b) => b.impact - a.impact);
-    else if (_ohudState.sort === 'sector')    list.sort((a,b) => a.sector.localeCompare(b.sector) || b.impact - a.impact);
-    else if (_ohudState.sort === 'sentiment') list.sort((a,b) => a.sentiment - b.sentiment);
-    else if (_ohudState.sort === 'time')      list.sort((a,b) => (b.fetchedAt||0) - (a.fetchedAt||0));
-
-    if (!list.length) { el.innerHTML = '<div class="ohud-empty">No signals match filters.</div>'; return; }
-
-    let html = '';
-    if (_ohudState.sort === 'sector') {
-        let last = null;
-        list.forEach(a => {
-            if (a.sector !== last) {
-                last = a.sector;
-                const col = _OHUD_COL[a.sector] || '#fff';
-                html += `<div class="ohud-sector-hdr" style="color:${col}">${a.sector}</div>`;
-            }
-            html += _ohudItem(a);
-        });
-    } else {
-        list.slice(0,40).forEach(a => { html += _ohudItem(a); });
+function renderOraclePanel() {
+    // Sector bars
+    const grid = document.getElementById('oracle-sector-grid');
+    if (grid) {
+        grid.innerHTML = Object.entries(oracleState.sectorData).map(([sector, d]) => {
+            const col = SECTOR_COLORS[sector];
+            const pct = Math.round(Math.abs(d.sentiment) * 100);
+            const mood = d.sentiment > 0.1 ? 'positive' : d.sentiment < -0.1 ? 'negative' : 'volatile';
+            const moodLabel = d.sentiment > 0.1 ? 'POSITIVE' : d.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
+            const fillColor = d.sentiment > 0.1 ? '#4ade80' : d.sentiment < -0.1 ? '#f87171' : '#D4AF37';
+            return `<div class="oracle-sector-card ${mood}">
+                <div class="osc-name">${sector}</div>
+                <div class="osc-score" style="color:${col.hex}">${d.count} signals</div>
+                <div class="osc-bar-track"><div class="osc-bar-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+                <div class="osc-label" style="color:${fillColor}">${moodLabel}</div>
+            </div>`;
+        }).join('');
     }
-    el.innerHTML = html;
+    // Feed — ALL articles matching filter, sorted
+    const feed = document.getElementById('oracle-feed');
+    if (feed) {
+        const list = _cpro_filtered_sorted();
+        if (!list.length) {
+            feed.innerHTML = '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:.82rem;color:rgba(255,255,255,.25);text-align:center;padding:24px 0;">No signals match current filters.</div>';
+        } else if (_cpro.sort === 'sector') {
+            let html = '', last = null;
+            list.forEach(a => {
+                if (a.sector !== last) {
+                    last = a.sector;
+                    const c = _OHUD_COL[a.sector] || '#fff';
+                    html += `<div style="font-family:'Space Mono',monospace;font-size:.32rem;letter-spacing:.22em;text-transform:uppercase;opacity:.5;padding:10px 0 4px;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:2px;color:${c}">${a.sector}</div>`;
+                }
+                html += _cpro_item(a);
+            });
+            feed.innerHTML = html;
+        } else {
+            feed.innerHTML = list.map(_cpro_item).join('');
+        }
+    }
+    renderOracleLog();
+    renderOracleHudSummary();
 }
 
-// Auto-refresh Oracle HUD when new data arrives
+// ── HUD tab 4: compact sector summary ──
+function renderOracleHudSummary() {
+    const el = document.getElementById('oracle-hud-summary');
+    if (!el) return;
+    const articles = oracleState.articles || [];
+    if (!articles.length) { el.innerHTML = '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:.82rem;color:rgba(255,255,255,.3);text-align:center;padding:12px 0;">Scanning feeds…</div>'; return; }
+    el.innerHTML = Object.entries(oracleState.sectorData).map(([sector, d]) => {
+        const col = _OHUD_COL[sector] || '#fff';
+        const rgb = _OHUD_RGB[sector] || '200,200,200';
+        const moodLabel = d.sentiment > 0.1 ? 'POS' : d.sentiment < -0.1 ? 'NEG' : 'NEU';
+        const moodCol = d.sentiment > 0.1 ? '#4ade80' : d.sentiment < -0.1 ? '#f87171' : '#D4AF37';
+        const top = (d.articles || []).sort((a,b)=>b.impact-a.impact)[0];
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;" onclick="window.open('${top?.url||''}','_blank')">
+            <div style="width:6px;height:6px;border-radius:50%;background:${col};box-shadow:0 0 5px ${col};flex-shrink:0;margin-top:4px;"></div>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+                    <span style="font-family:'Space Mono',monospace;font-size:.32rem;letter-spacing:.12em;text-transform:uppercase;color:${col};">${sector}</span>
+                    <span style="font-family:'Space Mono',monospace;font-size:.3rem;padding:1px 4px;border-radius:2px;color:${moodCol};background:rgba(${rgb},.08);border:1px solid rgba(${rgb},.2);">${moodLabel}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:.3rem;color:rgba(255,255,255,.2);margin-left:auto;">${d.count} signals</span>
+                </div>
+                ${top?`<div style="font-family:'Cormorant Garamond',serif;font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${top.title.slice(0,70)}…</div>`:''}
+            </div>
+        </div>`;
+    }).join('');
+}
+// Auto-refresh when new data arrives
 window._onOracleDataReady = function() {
-    const pane = document.getElementById('hm-pane-4');
-    if (pane && pane.classList.contains('on')) renderOracleHudFeed();
+    const panel = document.getElementById('celpro-panel');
+    if (panel && panel.classList.contains('open')) renderOraclePanel();
+    renderOracleHudSummary();
     // Flash Oracle tab label gold briefly
     const tab = document.getElementById('oracle-hud-tab');
     if (tab) { tab.style.color = 'var(--gold)'; setTimeout(() => { tab.style.color = ''; }, 2000); }
@@ -2219,50 +2322,6 @@ function renderOracleLog() {
     ).join('') || '<div class="cle"><span class="clt">—</span><span class="clm">Scanning…</span></div>';
 }
 
-function renderOraclePanel() {
-    // Sector bars
-    const grid = document.getElementById('oracle-sector-grid');
-    if (grid) {
-        grid.innerHTML = Object.entries(oracleState.sectorData).map(([sector, d]) => {
-            const col = SECTOR_COLORS[sector];
-            const pct = Math.round(Math.abs(d.sentiment) * 100);
-            const mood = d.sentiment > 0.1 ? 'positive' : d.sentiment < -0.1 ? 'negative' : 'volatile';
-            const moodLabel = d.sentiment > 0.1 ? 'POSITIVE' : d.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
-            const fillColor = d.sentiment > 0.1 ? '#4ade80' : d.sentiment < -0.1 ? '#f87171' : '#D4AF37';
-            return `<div class="oracle-sector-card ${mood}">
-                <div class="osc-name">${sector}</div>
-                <div class="osc-score" style="color:${col.hex}">${d.count} signals</div>
-                <div class="osc-bar-track"><div class="osc-bar-fill" style="width:${pct}%;background:${fillColor};"></div></div>
-                <div class="osc-label" style="color:${fillColor}">${moodLabel}</div>
-            </div>`;
-        }).join('');
-    }
-    // Feed items
-    const feed = document.getElementById('oracle-feed');
-    if (feed) {
-        const sorted = [...oracleState.articles].sort((a, b) => b.impact - a.impact).slice(0, 24);
-        feed.innerHTML = sorted.map(a => {
-            const col = SECTOR_COLORS[a.sector] || SECTOR_COLORS.GENERAL;
-            const sentClass = a.sentiment > 0.1 ? 'pos' : a.sentiment < -0.1 ? 'neg' : 'neu';
-            const sentLabel = a.sentiment > 0.1 ? 'POSITIVE' : a.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
-            const ago = formatAgo(a.fetchedAt);
-            return `<div class="oracle-item" onclick="window.open('${a.url}','_blank')">
-                <div class="oi-dot" style="background:${col.hex};box-shadow:0 0 6px ${col.hex};"></div>
-                <div class="oi-body">
-                    <div class="oi-title">${a.title}</div>
-                    <div class="oi-meta">
-                        <span class="oi-source">${a.source}</span>
-                        <span class="oi-sector" style="color:${col.hex};border-color:rgba(${col.rgb},0.3);background:rgba(${col.rgb},0.06);">${a.sector}</span>
-                        <span class="oi-sentiment ${sentClass}">${sentLabel}</span>
-                        <span class="oi-time">${ago}</span>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-    renderOracleLog();
-}
-
 function formatAgo(ts) {
     const d = Date.now() - ts;
     if (d < 60000) return 'just now';
@@ -2558,9 +2617,10 @@ function buildOracleConstellation() {
 function spawnSynapsePulse(forceSector) {
     if (!oracleConstObj || oracleConstObj.synapses.length === 0) return;
     // Optionally bias toward a specific sector for news-driven bursts
-    let pool = oracleConstObj.synapses;
+    let pool = oracleConstObj.synapses.filter(s => !s.line.userData.filterHidden);
+    if (!pool.length) pool = oracleConstObj.synapses;
     if (forceSector) {
-        const biased = pool.filter(s => s.nodeA.sector === forceSector || s.nodeB.sector === forceSector);
+        const biased = pool.filter(s => (s.nodeA.sector === forceSector || s.nodeB.sector === forceSector) && !s.line.userData.filterHidden);
         if (biased.length > 0) pool = biased;
     }
     const syn = pool[Math.floor(Math.random() * pool.length)];
@@ -2597,9 +2657,10 @@ function animateOracleConstellation(t) {
     if (!oracleConstObj) return;
     const { nodes, synapses, activePulses } = oracleConstObj;
 
-    // Node breathe
+    // Node breathe — skip if filter-hidden
     nodes.forEach(n => {
         const m = n.mesh;
+        if (m.userData.filterHidden) return; // hidden by filter — skip animation
         const ph = m.userData.litPhase;
         // Gentle float
         m.position.y += Math.sin(t * 0.35 + ph) * 0.0005;
@@ -2740,12 +2801,14 @@ window.toggleCelPro = function() {
     } else {
         panel.classList.add('open');
         renderOraclePanel();
+        syncOracleNodes();
     }
 };
 
 buildScene();
 buildOracleConstellation();
 assignArticlesToNodes();
+syncOracleNodes();
 buildConstHUD();
 startOraclePulseEngine();
 animate();
