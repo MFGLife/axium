@@ -683,7 +683,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
             <button class="hm-tab" onclick="switchHudTab(2,this)" data-tab="2">Time</button>
             <button class="hm-tab" onclick="switchHudTab(3,this)" data-tab="3">Music</button>
             <button class="hm-tab" onclick="switchHudTab(4,this)" data-tab="4" id="oracle-hud-tab">Oracle</button>
-            <button class="hm-tab" onclick="switchHudTab(5,this)" data-tab="5" id="prophet-hud-tab">Prophet</button>
         </div>
         <div id="hud-modal-body">
             <!-- Tab 0: Constellation -->
@@ -720,10 +719,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
                     <div id="oracle-hud-summary" style="display:flex;flex-direction:column;gap:5px;"></div>
                     <button onclick="toggleCelPro();toggleHudModal();" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06));border:1px solid rgba(212,175,55,0.35);border-radius:4px;font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(212,175,55,0.18)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06))'">⊕ Open Signal Feed · Filter &amp; Sort</button>
                 </div>
-            </div>
-            <!-- Tab 5: Prophet — Oracle PC server indicators -->
-            <div class="hm-pane" id="hm-pane-5" style="display:none;max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,.2) transparent;">
-                <div id="prophet-body"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.82rem;color:rgba(255,255,255,.25);text-align:center;padding:18px 0;">Connecting to Oracle…</div></div>
             </div>
 
 
@@ -1883,7 +1878,7 @@ function _cpro_item(a) {
     const url = (a.url || '').replace(/'/g, "\\'");
     const ago = formatAgo(a.fetchedAt);
     const hasNode = !!(a.url); // all articles with URLs get a clickable link badge
-    return `<div class="oracle-item"${url ? ` onclick="window.open('${url}','_blank')"` : ''}>` +
+    return `<div class="oracle-item" onclick="window.open('${url}','_blank')">` +
         `<div class="oi-dot" style="background:${dc};box-shadow:0 0 6px ${dc};"></div>` +
         `<div class="oi-body">` +
         `<div class="oi-title">${a.title || ''}</div>` +
@@ -1951,7 +1946,7 @@ function renderOracleHudSummary() {
         const moodLabel = d.sentiment > 0.1 ? 'POS' : d.sentiment < -0.1 ? 'NEG' : 'NEU';
         const moodCol = d.sentiment > 0.1 ? '#4ade80' : d.sentiment < -0.1 ? '#f87171' : '#D4AF37';
         const top = (d.articles || []).sort((a,b)=>b.impact-a.impact)[0];
-        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);${top?.url ? `cursor:pointer;" onclick="window.open('${top.url.replace(/'/g, "\\'")}','_blank')"` : '"'}>
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;" onclick="window.open('${top?.url||''}','_blank')">
             <div style="width:6px;height:6px;border-radius:50%;background:${col};box-shadow:0 0 5px ${col};flex-shrink:0;margin-top:4px;"></div>
             <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
@@ -2165,58 +2160,18 @@ setSoul('micheal');
 
 // rss2json.com primary — feeds chosen for CORS compatibility
 const RSS_FEEDS = [
-    { name: "WSJ Economy", url: "https://news.google.com/rss/search?q=WSJ+Economy&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Bloomberg Markets", url: "https://news.google.com/rss/search?q=Bloomberg+Markets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Reuters Business", url: "https://news.google.com/rss/search?q=Reuters+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "FT Markets", url: "https://news.google.com/rss/search?q=Financial+Times+Markets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "CNBC Business", url: "https://news.google.com/rss/search?q=CNBC+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "MarketWatch", url: "https://news.google.com/rss/search?q=MarketWatch&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Barron's", url: "https://news.google.com/rss/search?q=Barron's&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "The Economist", url: "https://news.google.com/rss/search?q=The+Economist&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Yahoo Finance", url: "https://news.google.com/rss/search?q=Yahoo+Finance&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Forbes Economy", url: "https://news.google.com/rss/search?q=Forbes+Economy&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Fed Press Releases", url: "https://news.google.com/rss/search?q=Federal+Reserve+Press+Releases&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Fed Speeches", url: "https://news.google.com/rss/search?q=Federal+Reserve+Speeches&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "FOMC News", url: "https://news.google.com/rss/search?q=FOMC&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Treasury Dept", url: "https://news.google.com/rss/search?q=US+Treasury+Department&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "SEC News", url: "https://news.google.com/rss/search?q=SEC+News&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Geopolitics News", url: "https://news.google.com/rss/search?q=Geopolitics&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Global Trade", url: "https://news.google.com/rss/search?q=Global+Trade&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Oil & Energy", url: "https://news.google.com/rss/search?q=Oil+Prices+Energy&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "China Economy", url: "https://news.google.com/rss/search?q=China+Economy&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "EU Economy", url: "https://news.google.com/rss/search?q=EU+Economy&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Tech Crunch", url: "https://news.google.com/rss/search?q=TechCrunch&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "AI News", url: "https://news.google.com/rss/search?q=Artificial+Intelligence&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Semiconductors", url: "https://news.google.com/rss/search?q=Semiconductors&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "The Verge", url: "https://news.google.com/rss/search?q=The+Verge&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Wired", url: "https://news.google.com/rss/search?q=Wired&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Fortune", url: "https://news.google.com/rss/search?q=Fortune+Magazine&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Business Insider", url: "https://news.google.com/rss/search?q=Business+Insider&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Quartz", url: "https://news.google.com/rss/search?q=Quartz&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Market Insider", url: "https://news.google.com/rss/search?q=Market+Insider&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "ZeroHedge", url: "https://news.google.com/rss/search?q=ZeroHedge&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Investopedia", url: "https://news.google.com/rss/search?q=Investopedia&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Seeking Alpha", url: "https://news.google.com/rss/search?q=Seeking+Alpha&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Morningstar", url: "https://news.google.com/rss/search?q=Morningstar&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Kiplinger", url: "https://news.google.com/rss/search?q=Kiplinger&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "RealClearMarkets", url: "https://news.google.com/rss/search?q=RealClearMarkets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Economic Times", url: "https://news.google.com/rss/search?q=Economic+Times&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Wall Street Journal", url: "https://news.google.com/rss/search?q=Wall+Street+Journal&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "NYT Business", url: "https://news.google.com/rss/search?q=NYT+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "WaPo Business", url: "https://news.google.com/rss/search?q=Washington+Post+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Guardian Business", url: "https://news.google.com/rss/search?q=Guardian+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "BBC Business", url: "https://news.google.com/rss/search?q=BBC+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Al Jazeera Biz", url: "https://news.google.com/rss/search?q=Al+Jazeera+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Reuters Tech", url: "https://news.google.com/rss/search?q=Reuters+Technology&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Bloomberg Tech", url: "https://news.google.com/rss/search?q=Bloomberg+Technology&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Nikkei Asia", url: "https://news.google.com/rss/search?q=Nikkei+Asia&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "SCMP", url: "https://news.google.com/rss/search?q=SCMP&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Politico", url: "https://news.google.com/rss/search?q=Politico+Economy&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "The Hill Biz", url: "https://news.google.com/rss/search?q=The+Hill+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Axios Markets", url: "https://news.google.com/rss/search?q=Axios+Markets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Goldman Sachs", url: "https://news.google.com/rss/search?q=Goldman+Sachs&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Culture & Trends", url: "https://news.google.com/rss/search?q=Culture+Trends&hl=en-US&gl=US&ceid=US:en", sector: "CULTURE" },
-    { name: "General News", url: "https://news.google.com/rss/search?q=World+News&hl=en-US&gl=US&ceid=US:en", sector: "GENERAL" }
+    { name: 'Guardian World',   url: 'https://www.theguardian.com/world/rss',                    sector: 'GEOPOLITICS' },
+    { name: 'NPR World',        url: 'https://feeds.npr.org/1004/rss.xml',                       sector: 'GEOPOLITICS' },
+    { name: 'DW World',         url: 'https://rss.dw.com/rdf/rss-en-world',                      sector: 'GEOPOLITICS' },
+    { name: 'Guardian Business',url: 'https://www.theguardian.com/business/rss',                 sector: 'ECONOMY'     },
+    { name: 'NPR Economy',      url: 'https://feeds.npr.org/1017/rss.xml',                       sector: 'ECONOMY'     },
+    { name: 'Marketplace',      url: 'https://www.marketplace.org/feed/podcast/marketplace/',    sector: 'ECONOMY'     },
+    { name: 'Investopedia',     url: 'https://www.investopedia.com/feedbuilder/feed/getfeed/?feedName=rss_headline', sector: 'FINANCE' },
+    { name: 'Hacker News',      url: 'https://hnrss.org/frontpage',                              sector: 'TECHNOLOGY'  },
+    { name: 'Ars Technica',     url: 'https://feeds.arstechnica.com/arstechnica/index',          sector: 'TECHNOLOGY'  },
+    { name: 'MIT Tech Review',  url: 'https://www.technologyreview.com/feed/',                   sector: 'TECHNOLOGY'  },
+    { name: 'NPR Top Stories',  url: 'https://feeds.npr.org/1002/rss.xml',                       sector: 'GENERAL'     },
+    { name: 'PBS NewsHour',     url: 'https://www.pbs.org/newshour/feeds/rss/headlines',         sector: 'GENERAL'     },
 ];
 
 const SECTOR_COLORS = {
@@ -2375,52 +2330,16 @@ function formatAgo(ts) {
 }
 
 async function fetchOracleData() {
-    addOracleLog('⊕ Syncing with Oracle Server…', 'watch');
-    const srvUrl = localStorage.getItem('ph_url') || 'http://100.123.156.117:8000';
-    const srvKey = localStorage.getItem('ph_key') || 'axium-oracle-2026';
-    let unique = [];
-
-    try {
-        const res = await fetch(srvUrl + '/articles?limit=60', {
-            headers: { 'x-api-key': srvKey },
-            signal: AbortSignal.timeout(8000)
-        });
-        if (!res.ok) throw new Error('Oracle server returned ' + res.status);
-        const data = await res.json();
-        const serverArticles = data.articles || [];
-        if (!serverArticles.length) throw new Error('Empty signal feed from server');
-        
-        const seen = new Set();
-        unique = serverArticles.map(a => {
-            const scores = scoreArticle(a.title, "");
-            scores.sentiment = a.sentiment; // Use FinBERT sentiment
-            return {
-                title: a.title, desc: "", url: "", source: a.source, sector: a.sector,
-                pubDate: a.published, fetchedAt: new Date(a.published).getTime(), ...scores
-            };
-        }).filter(a => {
-            const key = a.title.slice(0, 40).toLowerCase();
-            if (seen.has(key)) return false;
-            seen.add(key); return true;
-        });
-    } catch (e) {
-        console.warn('[ORACLE] Failed to fetch from server, falling back to RSS', e);
-        addOracleLog('⚠ Server unreachable. Falling back to public RSS feeds…', 'alert');
-        const results = await Promise.allSettled(RSS_FEEDS.map(f => fetchFeed(f)));
-        const allArticles = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-        const seen = new Set();
-        unique = allArticles.filter(a => {
-            const key = a.title.slice(0, 40).toLowerCase();
-            if (seen.has(key)) return false;
-            seen.add(key); return true;
-        });
-    }
-
-    if (!unique.length) {
-        addOracleLog('⚠ No signals retrieved.', 'watch');
-        return;
-    }
-
+    addOracleLog('⊕ Scanning global intelligence feeds…', 'watch');
+    const results = await Promise.allSettled(RSS_FEEDS.map(f => fetchFeed(f)));
+    const allArticles = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    // Deduplicate by title prefix
+    const seen = new Set();
+    const unique = allArticles.filter(a => {
+        const key = a.title.slice(0, 40).toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+    });
     oracleState.articles = unique;
     oracleState.sectorData = computeSectorData(unique);
     oracleState.lastFetch = Date.now();
@@ -2499,7 +2418,7 @@ function getCardsForPlanet(planetName, soulKey) {
         topArticles.map(a => {
             const sentClass = a.sentiment > 0.1 ? 'pos' : a.sentiment < -0.1 ? 'neg' : 'neu';
             const sentLabel = a.sentiment > 0.1 ? 'POSITIVE' : a.sentiment < -0.1 ? 'NEGATIVE' : 'NEUTRAL';
-            return `<div ${a.url ? `onclick="window.open('${a.url.replace(/'/g, "\\'")}','_blank')" style="cursor:pointer;` : `style="`}padding:8px 10px;background:rgba(${col.rgb},0.05);border:1px solid rgba(${col.rgb},0.18);border-radius:3px;">` +
+            return '<div onclick="window.open(\'' + a.url + '\',\'_blank\')" style="padding:8px 10px;background:rgba('+col.rgb+',0.05);border:1px solid rgba('+col.rgb+',0.18);border-radius:3px;cursor:pointer;">' +
                 '<div style="font-family:Cormorant Garamond;font-size:.82rem;color:rgba(255,255,255,.72);line-height:1.4;margin-bottom:3px;">' + a.title + '</div>' +
                 '<div style="display:flex;gap:8px;align-items:center;">' +
                 '<span style="font-family:Space Mono;font-size:.32rem;letter-spacing:.1em;color:rgba(255,255,255,.22);">' + a.source + '</span>' +
@@ -2697,7 +2616,6 @@ function buildOracleConstellation() {
 // Spawn a synapse pulse along a random synapse line
 function spawnSynapsePulse(forceSector) {
     if (!oracleConstObj || oracleConstObj.synapses.length === 0) return;
-    if (oracleConstObj.activePulses.length >= 40) return; // hard cap
     // Optionally bias toward a specific sector for news-driven bursts
     let pool = oracleConstObj.synapses.filter(s => !s.line.userData.filterHidden);
     if (!pool.length) pool = oracleConstObj.synapses;
@@ -3050,53 +2968,9 @@ animate();
         drawOrb(t*2.2,17,2.0,hovered?1.0:0.75,true);drawOrb(t*2.2+Math.PI,17,1.3,hovered?0.7:0.5,true);
         drawOrb(-t*1.6,11,1.6,hovered?0.9:0.6,true);drawOrb(-t*1.6+Math.PI,11,1.0,hovered?0.55:0.38,true);
         drawOrb(t*3.5+Math.PI*0.4,20,1.1,hovered?0.6:0.32,true);
-        if(clicking){const fg=ctx.createRadialGradient(cx,cy,0,cx,cy,28);fg.addColorStop(0,getColor(0.6));fg.addColorStop(1,getColor(0));ctx.fillStyle=fg;ctx.beginPath();ctx.arc(cx,cy,28,0,Math.PI*2);ctx.fill();}}
-    resize();window.addEventListener('resize',resize);
-    (function loop(){requestAnimationFrame(loop);if(!document.hidden)frame();})();
-})();
-</script>
-<style>
-#hm-pane-5.on{display:block!important;}
-#srv-dot{position:fixed;top:72px;left:18px;z-index:20;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12);transition:background .4s,box-shadow .4s;pointer-events:none;}
-#srv-dot.live{background:#4ade80;box-shadow:0 0 8px #4ade80;animation:olbPulse 2.2s ease-in-out infinite;}
-#srv-dot.dead{background:#f87171;}
-.ph-sec{margin-bottom:10px;}.ph-lbl{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(212,175,55,.3);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.05);}
-.ph-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03);}.ph-row:last-child{border-bottom:none;}
-.ph-k{font-family:'Space Mono',monospace;font-size:.33rem;letter-spacing:.06em;color:rgba(255,255,255,.3);}
-.ph-v{font-family:'JetBrains Mono',monospace;font-size:.36rem;color:var(--gold);}.ph-v.up{color:#4ade80;}.ph-v.dn{color:#f87171;}.ph-v.fl{color:rgba(255,255,255,.35);}
-.ph-pill{display:inline-block;font-family:'Space Mono',monospace;font-size:.28rem;padding:2px 5px;border-radius:2px;border:1px solid;margin-right:4px;}
-.ph-pill.up{color:#4ade80;border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.06);}.ph-pill.dn{color:#f87171;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}.ph-pill.fl{color:#D4AF37;border-color:rgba(212,175,55,.3);background:rgba(212,175,55,.06);}
-.ph-model{padding:7px 9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:3px;margin-bottom:5px;}
-.ph-model-name{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.09em;color:var(--gold);margin-bottom:3px;}
-.ph-cfg{display:flex;gap:5px;margin-top:8px;}.ph-input{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:.36rem;color:rgba(255,255,255,.7);outline:none;}.ph-input:focus{border-color:rgba(212,175,55,.4);}
-.ph-btn{padding:5px 9px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:3px;font-family:'Space Mono',monospace;font-size:.32rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(212,175,55,.7);cursor:pointer;white-space:nowrap;}.ph-btn:hover{background:rgba(212,175,55,.18);color:var(--gold);}
-</style>
-<div id="srv-dot"></div>
-<script>
-(function(){
-const SRV={url:localStorage.getItem('ph_url')||'http://100.123.156.117:8000',key:localStorage.getItem('ph_key')||'axium-oracle-2026',live:false,h:null,p:null,s:null,d:null};
-async function pFetch(ep){try{const r=await fetch(SRV.url.replace(/\/$/,'')+ep,{headers:{'x-api-key':SRV.key},signal:AbortSignal.timeout(5000)});return r.ok?await r.json():null;}catch{return null;}}
-async function poll(){const h=await pFetch('/health');const p=h?await pFetch('/predict'):null;const s=h?await pFetch('/sentiment'):null;const d=h?await pFetch('/deviations'):null;SRV.live=!!h;SRV.h=h;SRV.p=p;SRV.s=s;SRV.d=d;const dot=document.getElementById('srv-dot');if(dot)dot.className=SRV.live?'live':SRV.url?'dead':'';if(document.getElementById('hm-pane-5')?.classList.contains('on'))render();}
-function dc(v){if(v==null)return'fl';if(typeof v==='string'){const u=v.toUpperCase();return u.includes('UP')||u.includes('BULL')||u.includes('POS')?'up':u.includes('DOWN')||u.includes('BEAR')||u.includes('NEG')?'dn':'fl';}return v>0?'up':v<0?'dn':'fl';}
-function fv(v){if(v==null)return'—';const n=parseFloat(v);return isNaN(n)?String(v).slice(0,20):(n>=0?'+':'')+n.toFixed(3);}
-function fp(v){if(v==null)return'—';const n=parseFloat(v);return isNaN(n)?String(v):(n*100).toFixed(1)+'%';}
-function render(){
-  const el=document.getElementById('prophet-body');if(!el)return;
-  if(!SRV.url||!SRV.live){el.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.8rem;color:rgba(255,255,255,.3);text-align:center;padding:10px 0 8px;">${SRV.url?'⚠ Cannot reach server':'No server configured'}</div><div class="ph-cfg"><input class="ph-input" id="ph-url" type="text" placeholder="http://100.x.x.x:8000" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Connect</button></div><div class="ph-cfg" style="margin-top:4px;"><input class="ph-input" id="ph-key" type="text" placeholder="API key" value="${SRV.key}"></div>`;return;}
-  const h=SRV.h||{},p=SRV.p||{},s=SRV.s||{},d_obj=SRV.d||{};
-  const models=h.models_loaded||[];
-  const modelHTML=models.map(m=>{const pred=(p.predictions||{})[m]||{};const d=dc(pred.direction||'FLAT');return`<div class="ph-model"><div class="ph-model-name">${m.toUpperCase()} MODEL</div><span class="ph-pill ${d}">${(pred.direction||'FLAT').toUpperCase()}</span><span style="font-family:'JetBrains Mono',monospace;font-size:.3rem;color:rgba(255,255,255,.3);">CONF ${fp(pred.confidence)}</span></div>`;}).join('')||'<div style="font-family:Cormorant Garamond,serif;font-style:italic;font-size:.78rem;color:rgba(255,255,255,.25);">No model data yet</div>';
-  const secs=s.sectors||{};
-  const secRows=Object.entries(secs).map(([k,v])=>{const score=typeof v==='object'?(v.sentiment_mean??null):v;const d=dc(score);return`<div class="ph-row"><span class="ph-k">${k}</span><span class="ph-v ${d}">${fv(score)}</span></div>`;}).join('');
-  const devs=(d_obj.deviations||[]).slice(0,5);
-  const devRows=devs.map(d=>{const col=dc(d.sentiment)==='up'?'#4ade80':dc(d.sentiment)==='dn'?'#f87171':'#D4AF37';return`<div class="ph-row" title="${(d.title||'').replace(/"/g,'&quot;')}"><span class="ph-k" style="color:${col};">● ${(d.sector||'GENERAL').slice(0,18)}</span><span class="ph-v fl" style="font-size:.3rem;overflow:hidden;text-overflow:ellipsis;max-width:130px;white-space:nowrap;">${(d.title||'').slice(0,35)}</span></div>`;}).join('');
-  const sysRows=[['Corpus',h.article_count??'—'],['Labels',h.label_count??'—'],['Trained Rows',h.training_rows??'—'],['Model Type',h.model_type??'—'],['Version',h.model_version??'—']].map(([k,v])=>`<div class="ph-row"><span class="ph-k">${k}</span><span class="ph-v fl">${String(v).slice(0,24)}</span></div>`).join('');
-  el.innerHTML=`<div class="ph-sec"><div class="ph-lbl">Prophecy · Models</div>${modelHTML}</div>`+( secRows?`<div class="ph-sec"><div class="ph-lbl">Sector Sentiment (PC)</div>${secRows}</div>`:'')+( devRows?`<div class="ph-sec"><div class="ph-lbl">Anomalies</div>${devRows}</div>`:'')+`<div class="ph-sec"><div class="ph-lbl">System</div>${sysRows}<div class="ph-cfg" style="margin-top:8px;"><input class="ph-input" id="ph-url" type="text" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Update</button></div></div>`;
-}
-window._phConnect=function(){const u=document.getElementById('ph-url')?.value?.trim();const k=document.getElementById('ph-key')?.value?.trim();if(u){SRV.url=u.replace(/\/$/,'');localStorage.setItem('ph_url',SRV.url);}if(k){SRV.key=k;localStorage.setItem('ph_key',k);}render();poll();};
-const _ot=window.switchHudTab;
-window.switchHudTab=function(idx,btn){_ot(idx,btn);if(idx===5){render();poll();}};
-poll();setInterval(poll,5*60*1000);
+        if(clicking){const fg=ctx.createRadialGradient(cx,cy,0,cx,cy,28);fg.addColorStop(0,getColor(0.6));fg.addColorStop(1,getColor(0));ctx.fillStyle=fg;ctx.beginPath();ctx.arc(cx,cy,28,0,Math.PI*2);ctx.fill();}
+        requestAnimationFrame(frame);}
+    resize();window.addEventListener('resize',resize);frame();
 })();
 </script>
 </body>
