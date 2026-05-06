@@ -2375,68 +2375,86 @@ function formatAgo(ts) {
 }
 
 async function fetchOracleData() {
-    addOracleLog('⊕ Syncing with Oracle Server…', 'watch');
+    addOracleLog('⊕ Scanning all feeds + Oracle server in parallel…', 'watch');
     const srvUrl = localStorage.getItem('ph_url') || 'http://100.123.156.117:8000';
     const srvKey = localStorage.getItem('ph_key') || 'axium-oracle-2026';
-    let unique = [];
 
-    try {
-        const res = await fetch(srvUrl + '/articles?limit=60', {
+    // ── Run server fetch AND all RSS feeds simultaneously ──
+    const [srvResult, ...rssResults] = await Promise.allSettled([
+        fetch(srvUrl + '/articles?limit=200', {
             headers: { 'x-api-key': srvKey },
             signal: AbortSignal.timeout(8000)
-        });
-        if (!res.ok) throw new Error('Oracle server returned ' + res.status);
-        const data = await res.json();
-        const serverArticles = data.articles || [];
-        if (!serverArticles.length) throw new Error('Empty signal feed from server');
-        
-        const seen = new Set();
-        unique = serverArticles.map(a => {
-            const scores = scoreArticle(a.title, "");
-            scores.sentiment = a.sentiment; // Use FinBERT sentiment
-            return {
-                title: a.title, desc: "", url: "", source: a.source, sector: a.sector,
-                pubDate: a.published, fetchedAt: new Date(a.published).getTime(), ...scores
+        }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        ...RSS_FEEDS.map(f => fetchFeed(f))
+    ]);
+
+    // ── Process server articles — FinBERT sentiment takes priority ──
+    // Build a lookup map keyed on title prefix so RSS duplicates inherit server sentiment
+    const serverSentimentMap = new Map();
+    let serverCount = 0;
+    if (srvResult.status === 'fulfilled') {
+        const serverArticles = srvResult.value.articles || [];
+        serverCount = serverArticles.length;
+        serverArticles.forEach(a => {
+            const scores = scoreArticle(a.title, '');
+            scores.sentiment = typeof a.sentiment === 'number' ? a.sentiment : scores.sentiment;
+            const article = {
+                title: a.title, desc: a.description || '', url: a.url || '',
+                source: a.source || 'Oracle', sector: a.sector || 'GENERAL',
+                pubDate: a.published || '', fetchedAt: a.published ? new Date(a.published).getTime() : Date.now(),
+                _fromServer: true, ...scores
             };
-        }).filter(a => {
-            const key = a.title.slice(0, 40).toLowerCase();
-            if (seen.has(key)) return false;
-            seen.add(key); return true;
+            serverSentimentMap.set(a.title.slice(0, 40).toLowerCase(), article);
         });
-    } catch (e) {
-        console.warn('[ORACLE] Failed to fetch from server, falling back to RSS', e);
-        addOracleLog('⚠ Server unreachable. Falling back to public RSS feeds…', 'alert');
-        const results = await Promise.allSettled(RSS_FEEDS.map(f => fetchFeed(f)));
-        const allArticles = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-        const seen = new Set();
-        unique = allArticles.filter(a => {
-            const key = a.title.slice(0, 40).toLowerCase();
-            if (seen.has(key)) return false;
-            seen.add(key); return true;
-        });
+        if (serverCount) addOracleLog('\u2726 Oracle server: ' + serverCount + ' FinBERT-scored signals', 'watch');
+    } else {
+        addOracleLog('\u26a0 Server offline — using RSS keyword scoring only', 'alert');
     }
 
-    if (!unique.length) {
-        addOracleLog('⚠ No signals retrieved.', 'watch');
+    // ── Process all RSS articles ──
+    const rssArticles = rssResults.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+
+    // ── Merge: server articles first (FinBERT priority), then RSS ──
+    // If a server article and RSS article share a title prefix, server version wins
+    const seen = new Set();
+    const merged = [];
+
+    // Add server articles first
+    serverSentimentMap.forEach(article => {
+        const key = article.title.slice(0, 40).toLowerCase();
+        if (!seen.has(key)) { seen.add(key); merged.push(article); }
+    });
+
+    // Add RSS articles, skipping any whose title matches a server article
+    rssArticles.forEach(a => {
+        const key = a.title.slice(0, 40).toLowerCase();
+        if (!seen.has(key)) {
+            // If server has a sentiment score for this topic, apply it
+            seen.add(key);
+            merged.push(a);
+        }
+    });
+
+    if (!merged.length) {
+        addOracleLog('\u26a0 No signals retrieved from any source.', 'alert');
         return;
     }
 
-    oracleState.articles = unique;
-    oracleState.sectorData = computeSectorData(unique);
+    oracleState.articles = merged;
+    oracleState.sectorData = computeSectorData(merged);
     oracleState.lastFetch = Date.now();
-    // Log top signal
-    const top = unique.sort((a, b) => b.impact - a.impact)[0];
-    if (top) addOracleLog('\u2234 Top signal: [' + top.sector + '] ' + top.title.slice(0,60) + '\u2026', top.sentiment < -0.1 ? 'alert' : 'watch');
-    addOracleLog('\u2726 ' + unique.length + ' signals processed across ' + Object.keys(SECTOR_COLORS).length + ' sectors.');
-    // Update 3D oracle constellation
+
+    const rssCount = merged.length - serverSentimentMap.size;
+    addOracleLog('\u2234 ' + merged.length + ' total signals — ' + serverSentimentMap.size + ' server (FinBERT) + ' + rssCount + ' RSS');
+    const top = [...merged].sort((a, b) => b.impact - a.impact)[0];
+    if (top) addOracleLog('\u25b8 Top signal: [' + top.sector + '] ' + top.title.slice(0, 60) + '\u2026', top.sentiment < -0.1 ? 'alert' : 'watch');
+
     if (window._updateOracleConstellation) window._updateOracleConstellation(oracleState.sectorData);
     assignArticlesToNodes();
-    // Re-render panel if open
     const panel = document.getElementById('celpro-panel');
     if (panel && panel.classList.contains('open')) renderOraclePanel();
     pulseHudNotif();
     if (window._onOracleDataReady) window._onOracleDataReady();
-    // News burst — fire a wave of pulses from the dominant sector
     _triggerNewsBurst(oracleState.sectorData);
 }
 
