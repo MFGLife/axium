@@ -2232,6 +2232,7 @@ const SECTOR_COLORS = {
     FINANCE:     { hex: '#4ade80', rgb: '74,222,128'  },
     TECHNOLOGY:  { hex: '#7EB8E8', rgb: '126,184,232' },
     GENERAL:     { hex: '#C8C8D4', rgb: '200,200,212' },
+    CULTURE:     { hex: '#C084FC', rgb: '192,132,252' },
 };
 
 // Sentiment anchor keywords — mirrors the Axium app's semantic anchors
@@ -2611,6 +2612,13 @@ const ORACLE_NODE_POSITIONS = {
         [ -5.0,  6.0,  16.0],[  14.0,  3.0, -8.5], [ -1.0, 11.0,  -3.5],
         [  8.0, -4.0,  9.0], [-10.0,  0.5, -6.5], [  2.0, 14.0, -16.5],
         [-13.5,  5.0,  8.0], [  5.5,  9.0,  0.5],  [ -7.5, -2.0,  -1.5],
+    ],
+    // CULTURE: violet — scattered mid-range, social/artistic feel
+    CULTURE: [
+        [  0.5,  9.5,  3.5], [ -8.0,  6.0,  8.0], [  6.5, -1.5, -6.5],
+        [-11.0, 10.0, -2.0], [  3.5,  5.0,  13.0], [-4.5,  2.5, -9.5],
+        [ 10.0,  7.0,  0.5], [ -6.0, -2.5,  7.0], [  1.0, 12.0, -8.0],
+        [-14.0,  4.0,  3.5], [  7.5,  3.5, -13.5],  [-2.0,  8.5,  5.5],
     ],
 };
 
@@ -3082,9 +3090,20 @@ animate();
 </script>
 <style>
 #hm-pane-5.on{display:block!important;}
-#srv-dot{position:fixed;top:72px;left:18px;z-index:20;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12);transition:background .4s,box-shadow .4s;pointer-events:none;}
-#srv-dot.live{background:#4ade80;box-shadow:0 0 8px #4ade80;animation:olbPulse 2.2s ease-in-out infinite;}
-#srv-dot.dead{background:#f87171;}
+#srv-badge{position:fixed;top:66px;left:14px;z-index:20;display:flex;align-items:center;gap:7px;text-decoration:none;padding:5px 11px 5px 9px;background:rgba(4,4,12,.82);border:1px solid rgba(255,255,255,.07);border-radius:20px;backdrop-filter:blur(12px);transition:border-color .25s,background .25s,box-shadow .25s;}
+#srv-badge:hover{background:rgba(4,4,12,.95);box-shadow:0 0 18px rgba(0,0,0,.5);}
+#srv-badge.live{border-color:rgba(74,222,128,.28);cursor:default;}
+#srv-badge.live:hover{border-color:rgba(74,222,128,.5);box-shadow:0 0 10px rgba(74,222,128,.1);}
+#srv-badge.dead{border-color:rgba(248,113,113,.2);}
+#srv-badge.dead:hover{border-color:rgba(248,113,113,.5);box-shadow:0 0 14px rgba(248,113,113,.1);}
+#srv-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0;transition:background .4s,box-shadow .4s;}
+#srv-badge.live #srv-dot{background:#4ade80;box-shadow:0 0 7px #4ade80;animation:olbPulse 2.2s ease-in-out infinite;}
+#srv-badge.dead #srv-dot{background:#f87171;}
+#srv-txt{font-family:'Space Mono',monospace;font-size:.3rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);white-space:nowrap;transition:color .25s;}
+#srv-badge.live #srv-txt{color:rgba(74,222,128,.7);}
+#srv-badge.dead #srv-txt{color:rgba(248,113,113,.55);}
+#srv-discord{font-family:'Space Mono',monospace;font-size:.28rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(212,175,55,.45);white-space:nowrap;padding-left:7px;border-left:1px solid rgba(255,255,255,.07);transition:color .25s;}
+#srv-badge:hover #srv-discord{color:var(--gold);}
 .ph-sec{margin-bottom:10px;}.ph-lbl{font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(212,175,55,.3);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.05);}
 .ph-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03);}.ph-row:last-child{border-bottom:none;}
 .ph-k{font-family:'Space Mono',monospace;font-size:.33rem;letter-spacing:.06em;color:rgba(255,255,255,.3);}
@@ -3096,12 +3115,16 @@ animate();
 .ph-cfg{display:flex;gap:5px;margin-top:8px;}.ph-input{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:.36rem;color:rgba(255,255,255,.7);outline:none;}.ph-input:focus{border-color:rgba(212,175,55,.4);}
 .ph-btn{padding:5px 9px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:3px;font-family:'Space Mono',monospace;font-size:.32rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(212,175,55,.7);cursor:pointer;white-space:nowrap;}.ph-btn:hover{background:rgba(212,175,55,.18);color:var(--gold);}
 </style>
-<div id="srv-dot"></div>
+<a id="srv-badge" class="dead" href="https://discord.gg/8jJdqpMb" target="_blank" rel="noopener">
+    <div id="srv-dot"></div>
+    <span id="srv-txt">SERVER OFFLINE</span>
+    <span id="srv-discord">⊹ JOIN DISCORD</span>
+</a>
 <script>
 (function(){
 const SRV={url:localStorage.getItem('ph_url')||'http://100.123.156.117:8000',key:localStorage.getItem('ph_key')||'axium-oracle-2026',live:false,h:null,p:null,s:null,d:null};
 async function pFetch(ep){try{const r=await fetch(SRV.url.replace(/\/$/,'')+ep,{headers:{'x-api-key':SRV.key},signal:AbortSignal.timeout(5000)});return r.ok?await r.json():null;}catch{return null;}}
-async function poll(){const h=await pFetch('/health');const p=h?await pFetch('/predict'):null;const s=h?await pFetch('/sentiment'):null;const d=h?await pFetch('/deviations'):null;SRV.live=!!h;SRV.h=h;SRV.p=p;SRV.s=s;SRV.d=d;const dot=document.getElementById('srv-dot');if(dot)dot.className=SRV.live?'live':SRV.url?'dead':'';if(document.getElementById('hm-pane-5')?.classList.contains('on'))render();}
+async function poll(){const h=await pFetch('/health');const p=h?await pFetch('/predict'):null;const s=h?await pFetch('/sentiment'):null;const d=h?await pFetch('/deviations'):null;SRV.live=!!h;SRV.h=h;SRV.p=p;SRV.s=s;SRV.d=d;const badge=document.getElementById('srv-badge');const txt=document.getElementById('srv-txt');const disc=document.getElementById('srv-discord');if(badge){badge.className=SRV.live?'live':SRV.url?'dead':'';badge.href=SRV.live?'javascript:void(0)':'https://discord.gg/8jJdqpMb';badge.target=SRV.live?'_self':'_blank';}if(txt){txt.textContent=SRV.live?'SERVER ONLINE':'SERVER OFFLINE';}if(disc){disc.style.display=SRV.live?'none':'inline';}if(document.getElementById('hm-pane-5')?.classList.contains('on'))render();}
 function dc(v){if(v==null)return'fl';if(typeof v==='string'){const u=v.toUpperCase();return u.includes('UP')||u.includes('BULL')||u.includes('POS')?'up':u.includes('DOWN')||u.includes('BEAR')||u.includes('NEG')?'dn':'fl';}return v>0?'up':v<0?'dn':'fl';}
 function fv(v){if(v==null)return'—';const n=parseFloat(v);return isNaN(n)?String(v).slice(0,20):(n>=0?'+':'')+n.toFixed(3);}
 function fp(v){if(v==null)return'—';const n=parseFloat(v);return isNaN(n)?String(v):(n*100).toFixed(1)+'%';}
