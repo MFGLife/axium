@@ -683,7 +683,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
             <button class="hm-tab" onclick="switchHudTab(2,this)" data-tab="2">Time</button>
             <button class="hm-tab" onclick="switchHudTab(3,this)" data-tab="3">Music</button>
             <button class="hm-tab" onclick="switchHudTab(4,this)" data-tab="4" id="oracle-hud-tab">Oracle</button>
-            <button class="hm-tab" onclick="switchHudTab(5,this)" data-tab="5" id="prophet-hud-tab">Prophet</button>
+            <button class="hm-tab" onclick="switchHudTab(5,this)" data-tab="5" id="prophet-hud-tab">Signal</button>
+            <button class="hm-tab" onclick="switchHudTab(6,this)" data-tab="6" id="log-hud-tab">Log</button>
         </div>
         <div id="hud-modal-body">
             <!-- Tab 0: Constellation -->
@@ -721,7 +722,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
                     <button onclick="toggleCelPro();toggleHudModal();" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06));border:1px solid rgba(212,175,55,0.35);border-radius:4px;font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(212,175,55,0.18)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06))'">⊕ Open Signal Feed · Filter &amp; Sort</button>
                 </div>
             </div>
-            <!-- Tab 5: Prophet — Oracle PC server indicators -->
+            <!-- Tab 5: Signal — Oracle PC server indicators -->
             <div class="hm-pane" id="hm-pane-5" style="display:none;max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,.2) transparent;">
                 <div id="prophet-body"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.82rem;color:rgba(255,255,255,.25);text-align:center;padding:18px 0;">Connecting to Oracle…</div></div>
             </div>
@@ -1318,12 +1319,12 @@ window.openInfoPanel=function(startTab){
             <div style="margin-bottom:16px;"><div class="blk-label">The Cathedral</div>
             <p class="info-body">Axium.church is a living research project and an Android app — built on the premise that <em style="color:rgba(212,175,55,0.7)">AI does not fail because it is malicious. It fails because it is agreeable.</em> Every soul, every chapter, and every prediction here exists to address that failure through character — not guardrails, not restriction. Character.</p>
             <p class="info-body" style="margin-top:8px;">What you are looking at is a living solar system — each planet carries one of the ten axiums. Tap any planet to enter its dimension. The constellation above is not decoration. It is a live feed of global news sentiment, processed and distilled by the Oracle engine running beneath this page.</p></div>
-            <div style="margin-bottom:16px;"><div class="blk-label">The Oracle · Our World Model</div>
-            <p class="info-body">At the core of Axium is a financial world model we built from the ground up. We scored <em style="color:rgba(212,175,55,0.7)">11.4 million news articles</em> using FinBERT, distilling geopolitical, economic, and market sentiment into 102 daily features. That corpus trains a PatchTST transformer — a patch-based time series model — to predict market direction across three time horizons: Open, Intraday, and Close.</p>
-            <p class="info-body" style="margin-top:8px;">The result is three ONNX model files — our version of a world model. Not a large language model guessing from text. A trained signal processor that reads the emotional temperature of global news and translates it into directional probability. The Close model currently runs at 60% accuracy with 55% upside conviction — the most reactive and honest signal in the system.</p></div>
+            <div style="margin-bottom:16px;"><div class="blk-label">The Oracle · Quantitative Reasoning</div>
+            <p class="info-body">At the core of Axium is a real-time Quantitative Reasoning Engine. We moved from a lagging daily sequence model to a leading intraday signal engine. Every 30 minutes, the Oracle wakes up, ingests live news, and translates it into semantic sentiment via local FinBERT execution.</p>
+            <p class="info-body" style="margin-top:8px;">It crosses this narrative against actual market mechanics—monitoring SPY price action, short-covering behavior, and VIX divergence. By storing these 30-minute mathematical snapshots in a local Vector Memory Bank, our Llama 3 Oracle RAG-searches historical context and outputs live, lie-detected market signals. It stops asking if the news is bad, and measures if the people with money actually care.</p></div>
             <div style="margin-bottom:16px;"><div class="blk-label">Access · Tailscale + Discord</div>
-            <p class="info-body">The Oracle server runs on a private Tailscale mesh network — meaning the models, the live inference engine, and the Qwen-2.5-14B LLM that narrates the data are not publicly exposed. Access is granted through the community.</p>
-            <p class="info-body" style="margin-top:8px;">Join the Discord. Once accepted, verified members receive Tailscale network credentials that connect them directly to the live Oracle server — the same one feeding this constellation. You get real-time model predictions, sector sentiment scoring, and access to the ONNX files themselves. The server status indicator in the top-left of this page tells you whether the Oracle is currently live.</p>
+            <p class="info-body">The Oracle server runs on a private Tailscale mesh network — meaning the local FinBERT models, ChromaDB memory bank, and the Llama 3 LLM that synthesizes the data are not publicly exposed. Access is granted through the community.</p>
+            <p class="info-body" style="margin-top:8px;">Join the Discord. Once accepted, verified members receive Tailscale network credentials that connect them directly to the live Oracle server — the same one feeding this constellation. You get real-time 30-minute predictions and the live synthesized Oracle signals. The server status indicator in the top-left of this page tells you whether the Oracle is currently live.</p>
             <p class="info-body" style="margin-top:8px;"><a href="https://discord.gg/8jJdqpMb" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(212,175,55,0.3);">⊹ discord.gg/8jJdqpMb</a> — the gate is open.</p></div>
             <div style="margin-bottom:8px;"><div class="blk-label">Chapter Navigation</div></div>
             <div class="chap-nav" id="chap-nav">
@@ -3194,6 +3195,7 @@ animate();
 </script>
 <style>
 #hm-pane-5.on{display:block!important;}
+#hm-pane-6.on{display:block!important;}
 #srv-badge{position:fixed;top:66px;left:14px;z-index:20;display:flex;align-items:center;gap:7px;text-decoration:none;padding:5px 11px 5px 9px;background:rgba(4,4,12,.82);border:1px solid rgba(255,255,255,.07);border-radius:20px;backdrop-filter:blur(12px);transition:border-color .25s,background .25s,box-shadow .25s;}
 #srv-badge:hover{background:rgba(4,4,12,.95);box-shadow:0 0 18px rgba(0,0,0,.5);}
 #srv-badge.live{border-color:rgba(74,222,128,.28);cursor:default;}
@@ -3226,18 +3228,16 @@ animate();
 </a>
 <script>
 (function(){
-const SRV={url:localStorage.getItem('ph_url')||'http://100.123.156.117:8000',key:localStorage.getItem('ph_key')||'axium-oracle-2026',live:false,h:null,p:null,s:null,d:null};
-async function pFetch(ep){try{const r=await fetch(SRV.url.replace(/\/$/,'')+ep,{headers:{'x-api-key':SRV.key},signal:AbortSignal.timeout(5000)});return r.ok?await r.json():null;}catch{return null;}}
+const SRV={url:localStorage.getItem('ph_url')||'http://100.123.156.117:8000',live:false,h:null,p:null,s:null,d:null};
+async function pFetch(ep){try{const r=await fetch(SRV.url.replace(/\/$/,'')+ep,{signal:AbortSignal.timeout(5000)});return r.ok?await r.json():null;}catch{return null;}}
 
 // ── All 4 endpoints fire simultaneously, render() always called on completion ──
 async function poll(){
-    const [h,p,s,d]=await Promise.all([
+    const [h,s]=await Promise.all([
         pFetch('/health'),
-        pFetch('/predict'),
-        pFetch('/sentiment'),
-        pFetch('/deviations'),
+        pFetch('/signal')
     ]);
-    SRV.live=!!h;SRV.h=h;SRV.p=p;SRV.s=s;SRV.d=d;
+    SRV.live=!!h;SRV.h=h;SRV.s=s;
     const badge=document.getElementById('srv-badge');
     const txt=document.getElementById('srv-txt');
     const disc=document.getElementById('srv-discord');
@@ -3255,34 +3255,38 @@ function renderSkeleton(){
     const el=document.getElementById('prophet-body');if(!el)return;
     const bar=`<div style="height:10px;background:rgba(255,255,255,.06);border-radius:2px;margin-bottom:6px;animation:skPulse 1.2s ease-in-out infinite;"></div>`;
     el.innerHTML=`<style>@keyframes skPulse{0%,100%{opacity:.4}50%{opacity:.9}}</style>`+
-        `<div class="ph-sec"><div class="ph-lbl">Fetching Oracle…</div>${bar}${bar}${bar}</div>`+
-        `<div class="ph-sec"><div class="ph-lbl">Sector Sentiment</div>${bar}${bar}${bar}${bar}${bar}</div>`;
+        `<div class="ph-sec"><div class="ph-lbl">Fetching Signal…</div>${bar}${bar}${bar}</div>`;
 }
 
 function render(){
   const el=document.getElementById('prophet-body');if(!el)return;
   if(!SRV.url||!SRV.live){
     // Only show the "cannot reach" state if we've actually tried (h fetch completed and returned null)
-    const tried = SRV.h === null && SRV.p === null; // poll has run at least once
+    const tried = SRV.h === null && SRV.s === null; // poll has run at least once
     if(!tried){return;} // still in-flight, keep skeleton
-    el.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.8rem;color:rgba(255,255,255,.3);text-align:center;padding:10px 0 8px;">${SRV.url?'⚠ Cannot reach server':'No server configured'}</div><div class="ph-cfg"><input class="ph-input" id="ph-url" type="text" placeholder="http://100.x.x.x:8000" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Connect</button></div><div class="ph-cfg" style="margin-top:4px;"><input class="ph-input" id="ph-key" type="text" placeholder="API key" value="${SRV.key}"></div>`;
+    el.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.8rem;color:rgba(255,255,255,.3);text-align:center;padding:10px 0 8px;">${SRV.url?'⚠ Cannot reach server':'No server configured'}</div><div class="ph-cfg"><input class="ph-input" id="ph-url" type="text" placeholder="http://100.x.x.x:8000" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Connect</button></div>`;
     return;
   }
-  const h=SRV.h||{},p=SRV.p||{},s=SRV.s||{},d_obj=SRV.d||{};
-  const models=h.models_loaded||[];
-  const modelHTML=models.map(m=>{const pred=(p.predictions||{})[m]||{};const d=dc(pred.direction||'FLAT');return`<div class="ph-model"><div class="ph-model-name">${m.toUpperCase()} MODEL</div><span class="ph-pill ${d}">${(pred.direction||'FLAT').toUpperCase()}</span><span style="font-family:'JetBrains Mono',monospace;font-size:.3rem;color:rgba(255,255,255,.3);">CONF ${fp(pred.confidence)}</span></div>`;}).join('')||'<div style="font-family:Cormorant Garamond,serif;font-style:italic;font-size:.78rem;color:rgba(255,255,255,.25);">No model data yet</div>';
-  const secs=s.sectors||{};
-  const secRows=Object.entries(secs).map(([k,v])=>{const score=typeof v==='object'?(v.sentiment_mean??null):v;const d=dc(score);return`<div class="ph-row"><span class="ph-k">${k}</span><span class="ph-v ${d}">${fv(score)}</span></div>`;}).join('');
-  const devs=(d_obj.deviations||[]).slice(0,5);
-  const devRows=devs.map(d=>{const col=dc(d.sentiment)==='up'?'#4ade80':dc(d.sentiment)==='dn'?'#f87171':'#D4AF37';return`<div class="ph-row" title="${(d.title||'').replace(/"/g,'&quot;')}"><span class="ph-k" style="color:${col};">● ${(d.sector||'GENERAL').slice(0,18)}</span><span class="ph-v fl" style="font-size:.3rem;overflow:hidden;text-overflow:ellipsis;max-width:130px;white-space:nowrap;">${(d.title||'').slice(0,35)}</span></div>`;}).join('');
-  const sysRows=[['Corpus',h.article_count??'—'],['Labels',h.label_count??'—'],['Trained Rows',h.training_rows??'—'],['Model Type',h.model_type??'—'],['Version',h.model_version??'—']].map(([k,v])=>`<div class="ph-row"><span class="ph-k">${k}</span><span class="ph-v fl">${String(v).slice(0,24)}</span></div>`).join('');
-  el.innerHTML=`<div class="ph-sec"><div class="ph-lbl">Prophecy · Models</div>${modelHTML}</div>`+( secRows?`<div class="ph-sec"><div class="ph-lbl">Sector Sentiment (PC)</div>${secRows}</div>`:'')+( devRows?`<div class="ph-sec"><div class="ph-lbl">Anomalies</div>${devRows}</div>`:'')+`<div class="ph-sec"><div class="ph-lbl">System</div>${sysRows}<div class="ph-cfg" style="margin-top:8px;"><input class="ph-input" id="ph-url" type="text" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Update</button></div></div>`;
+  const s=SRV.s||{};
+  const sig = s.latest_signal || "No signal generated yet. Waiting for next tick.";
+  const sysRows=[['Status','Online & Monitoring'],['Engine','Llama 3 + FinBERT'],['Memory','ChromaDB Vector Matrix'],['Interval','30-min Intraday']].map(([k,v])=>`<div class="ph-row"><span class="ph-k">${k}</span><span class="ph-v fl">${String(v).slice(0,24)}</span></div>`).join('');
+  el.innerHTML=`<div class="ph-sec"><div class="ph-lbl">Live Oracle Signal</div><div style="font-family:'Cormorant Garamond',serif;font-size:.88rem;color:var(--gold);line-height:1.6;padding:12px;background:rgba(212,175,55,.05);border-left:2px solid var(--gold);border-radius:0 3px 3px 0;">${sig}</div></div><div class="ph-sec"><div class="ph-lbl">System Architecture</div>${sysRows}<div class="ph-cfg" style="margin-top:8px;"><input class="ph-input" id="ph-url" type="text" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Update</button><button class="ph-btn" onclick="_phTestTick()">Test Tick</button></div></div>`;
 }
 
-window._phConnect=function(){const u=document.getElementById('ph-url')?.value?.trim();const k=document.getElementById('ph-key')?.value?.trim();if(u){SRV.url=u.replace(/\/$/,'');localStorage.setItem('ph_url',SRV.url);}if(k){SRV.key=k;localStorage.setItem('ph_key',k);}renderSkeleton();poll();};
+window._phConnect=function(){const u=document.getElementById('ph-url')?.value?.trim();if(u){SRV.url=u.replace(/\/$/,'');localStorage.setItem('ph_url',SRV.url);}renderSkeleton();poll();};
+window._phTestTick=async function(){renderSkeleton();try{await fetch(SRV.url.replace(/\/$/,'')+'/test/tick',{signal:AbortSignal.timeout(60000)});}catch(e){}await poll();};
+window._phLoadLogs=async function(){
+    const el=document.getElementById('system-log-body');if(!el)return;
+    el.innerHTML='<span style="color:rgba(255,255,255,.3);">Loading logs...</span>';
+    if(!SRV.url){el.innerHTML='No server configured.';return;}
+    try{const r=await fetch(SRV.url.replace(/\/$/,'')+'/logs/today',{signal:AbortSignal.timeout(5000)});
+    if(r.ok){const d=await r.json();el.textContent=d.logs||"No logs available.";}
+    else{el.innerHTML='<span style="color:#f87171;">Failed to fetch logs.</span>';}}
+    catch(e){el.innerHTML='<span style="color:#f87171;">Cannot reach server.</span>';}
+};
 const _ot=window.switchHudTab;
 // On tab 5 open: show skeleton immediately, then poll fires and render() replaces it
-window.switchHudTab=function(idx,btn){_ot(idx,btn);if(idx===5){renderSkeleton();poll();}};
+window.switchHudTab=function(idx,btn){_ot(idx,btn);if(idx===5){renderSkeleton();poll();}if(idx===6){_phLoadLogs();}};
 poll();setInterval(poll,5*60*1000);
 })();
 </script>
