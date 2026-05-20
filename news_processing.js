@@ -205,7 +205,7 @@ export async function fetchOracleData() {
     addOracleLog('⊕ Scanning all feeds + Oracle server in parallel…', 'watch');
     
     // Always use the secure Tailscale domain (it resolves locally on your machine too)
-    const srvUrl = 'https://axium.tail02563d.ts.net:8000/articles?limit=200';
+    const srvUrl = 'https://axium.tail02563d.ts.net/articles?limit=200';
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);

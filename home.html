@@ -3075,7 +3075,7 @@ animate();
 
         function connect() {
             // Always connect to the secure Tailscale domain.
-            const wsHost = 'axium.tail02563d.ts.net:8000';
+            const wsHost = 'axium.tail02563d.ts.net';
             socket = new WebSocket(`wss://${wsHost}/ws`); // Switched to wss:// for secure WebSockets
 
             socket.onopen = function(e) {
