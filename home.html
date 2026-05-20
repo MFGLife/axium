@@ -3074,9 +3074,9 @@ animate();
         window._renderCognitionFallback = renderCognitionFromOracle;
 
         function connect() {
-            // Dynamically determine the host so it works with localhost, Tailscale, or LAN IPs
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            socket = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            // Always connect to the secure Tailscale domain.
+            const wsHost = 'axium.tail02563d.ts.net:8000';
+            socket = new WebSocket(`wss://${wsHost}/ws`); // Switched to wss:// for secure WebSockets
 
             socket.onopen = function(e) {
                 console.log("[open] Connection established");

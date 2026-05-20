@@ -203,13 +203,15 @@ export function formatAgo(ts) {
 
 export async function fetchOracleData() {
     addOracleLog('⊕ Scanning all feeds + Oracle server in parallel…', 'watch');
-    const srvUrl = window.location.protocol === 'file:' ? 'http://localhost:8000' : window.location.origin; 
+    
+    // Always use the secure Tailscale domain (it resolves locally on your machine too)
+    const srvUrl = 'https://axium.tail02563d.ts.net:8000/articles?limit=200';
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const [srvResult, ...rssResults] = await Promise.allSettled([
-        fetch(srvUrl + '/articles?limit=200', {
+        fetch(srvUrl, {
             signal: controller.signal
         }).then(r => {
             clearTimeout(timeoutId);
