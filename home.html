@@ -2963,6 +2963,19 @@ animate();
     <span id="srv-txt">SERVER OFFLINE</span>
     <span id="srv-discord">⊹ JOIN DISCORD</span>
 </a>
+
+<!-- Prediction Modal -->
+<div id="prediction-modal">
+    <div id="prediction-hdr">
+        <span id="prediction-title">Oracle Prediction</span>
+        <button id="prediction-close" onclick="closePredictionModal()">✕</button>
+    </div>
+    <div id="prediction-body">
+        <div id="prediction-text"></div>
+        <div id="prediction-conf"></div>
+    </div>
+</div>
+
 <script>
     // Live Intelligence Feed via WebSocket
     (function() {
@@ -3073,6 +3086,22 @@ animate();
         window._renderSignalFallback = renderSignalFromOracle;
         window._renderCognitionFallback = renderCognitionFromOracle;
 
+        // Prediction Modal handlers
+        window.closePredictionModal = function() {
+            const modal = document.getElementById('prediction-modal');
+            if (modal) modal.classList.remove('open');
+        };
+        window.showPredictionModal = function(insight, confidence) {
+            const modal = document.getElementById('prediction-modal');
+            const textEl = document.getElementById('prediction-text');
+            const confEl = document.getElementById('prediction-conf');
+            if (modal && textEl && confEl) {
+                textEl.textContent = insight;
+                confEl.textContent = `CONFIDENCE: ${(confidence * 100).toFixed(0)}%`;
+                modal.classList.add('open');
+            }
+        };
+
         function connect() {
             // Always connect to the secure Tailscale domain.
             const wsHost = 'axium.tail02563d.ts.net';
@@ -3144,6 +3173,12 @@ animate();
                         entry.innerHTML = `<strong style="color:#4ade80; font-family:'Space Mono',monospace; font-size:.4rem; letter-spacing:.1em;">[${sector}]</strong><div style="font-family:'Cormorant Garamond',serif; font-size:.85rem; color:rgba(255,255,255,0.85); line-height:1.5; margin:6px 0;">${insight}</div><span style="font-family:'JetBrains Mono',monospace;font-size:.32rem;color:rgba(255,255,255,0.4);">Conf: ${(conf*100).toFixed(1)}%</span>`;
                     }
                     logBuffer.push(`<li><span style="color:#4ade80;">[COGNITION]</span> New insight for ${sector}.</li>`);
+                }
+                else if (data.type === 'PREDICTION') {
+                    const insight = data.payload.insight || '';
+                    const conf = data.payload.confidence || 0.85;
+                    if (window.showPredictionModal) window.showPredictionModal(insight, conf);
+                    logBuffer.push(`<li><span style="color:var(--gold);">[PREDICTION]</span> ${insight}</li>`);
                 }
                 else {
                     logBuffer.push(`<li>[MSG] ${JSON.stringify(data)}</li>`);

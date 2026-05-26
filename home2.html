@@ -683,7 +683,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
             <button class="hm-tab" onclick="switchHudTab(2,this)" data-tab="2">Time</button>
             <button class="hm-tab" onclick="switchHudTab(3,this)" data-tab="3">Music</button>
             <button class="hm-tab" onclick="switchHudTab(4,this)" data-tab="4" id="oracle-hud-tab">Oracle</button>
-            <button class="hm-tab" onclick="switchHudTab(5,this)" data-tab="5" id="prophet-hud-tab">Prophet</button>
+            <button class="hm-tab" onclick="switchHudTab(5,this)" data-tab="5" id="prophet-hud-tab">Signal</button>
+            <button class="hm-tab" onclick="switchHudTab(6,this)" data-tab="6" id="log-hud-tab">Log</button>
+            <button class="hm-tab" onclick="switchHudTab(7,this)" data-tab="7" id="cog-hud-tab">Cognition</button>
         </div>
         <div id="hud-modal-body">
             <!-- Tab 0: Constellation -->
@@ -721,9 +723,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
                     <button onclick="toggleCelPro();toggleHudModal();" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06));border:1px solid rgba(212,175,55,0.35);border-radius:4px;font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(212,175,55,0.18)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(212,175,55,0.12),rgba(212,175,55,0.06))'">⊕ Open Signal Feed · Filter &amp; Sort</button>
                 </div>
             </div>
-            <!-- Tab 5: Prophet — Oracle PC server indicators -->
-            <div class="hm-pane" id="hm-pane-5" style="display:none;max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,.2) transparent;">
+            <!-- Tab 5: Signal — Oracle PC server indicators -->
+            <div class="hm-pane" id="hm-pane-5" style="max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,.2) transparent;">
+                <div class="hm-pane-label">Oracle Signal Link</div>
                 <div id="prophet-body"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.82rem;color:rgba(255,255,255,.25);text-align:center;padding:18px 0;">Connecting to Oracle…</div></div>
+            </div>
+            <!-- Tab 6: System Log -->
+            <div class="hm-pane" id="hm-pane-6" style="max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,.2) transparent;">
+                <div class="hm-pane-label">WebSocket Stream</div>
+                <ul id="system-log-body" style="list-style: none; padding: 0; margin: 0; font-family: 'Space Mono', monospace; font-size: 0.35rem; color: rgba(255,255,255,0.6); line-height: 1.5; display: flex; flex-direction: column; gap: 6px;"></ul>
+            </div>
+            <!-- Tab 7: Live Cognition -->
+            <div class="hm-pane" id="hm-pane-7" style="max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,.2) transparent;">
+                <div class="hm-pane-label">Live Reasoner State</div>
+                <div id="cog-pressure-map" style="margin-bottom: 10px; font-family:'Space Mono',monospace;font-size:.32rem;color:var(--gold);"></div>
+                <div id="cog-hypotheses"></div>
             </div>
 
 
@@ -790,6 +804,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { SECTOR_COLORS, oracleState, formatAgo, fetchOracleData } from './news_processing.js';
+
+window.oracleState = oracleState;
 
 class EphemerisEngine {
     constructor(){this.zodiac=[{name:'Aries',symbol:'\u2648',element:'Fire'},{name:'Taurus',symbol:'\u2649',element:'Earth'},{name:'Gemini',symbol:'\u264a',element:'Air'},{name:'Cancer',symbol:'\u264b',element:'Water'},{name:'Leo',symbol:'\u264c',element:'Fire'},{name:'Virgo',symbol:'\u264d',element:'Earth'},{name:'Libra',symbol:'\u264e',element:'Air'},{name:'Scorpio',symbol:'\u264f',element:'Water'},{name:'Sagittarius',symbol:'\u2650',element:'Fire'},{name:'Capricorn',symbol:'\u2651',element:'Earth'},{name:'Aquarius',symbol:'\u2652',element:'Air'},{name:'Pisces',symbol:'\u2653',element:'Water'}];}
@@ -1313,17 +1330,30 @@ window.openInfoPanel=function(startTab){
         <div class="info-tc${activeTab===0?' on':''}" id="it0">
             <div class="stat-row">
                 <a href="growth.html" class="nav-btn"><span class="nav-btn-title">Daily Drift Audit</span><span class="nav-btn-sub">Keep Moving Forward</span></a>
-                <a href="axium.apk" download="axium.apk" class="nav-btn"><span class="nav-btn-title">AXIUM App</span><span class="nav-btn-sub">Download for Android</span></a>
+                <a href="#api" class="nav-btn" onclick="itab(0,this)"><span class="nav-btn-title">Memory Compression API</span><span class="nav-btn-sub">Endpoints Available</span></a>
             </div>
             <div style="margin-bottom:16px;"><div class="blk-label">The Cathedral</div>
-            <p class="info-body">Axium.church is a living research project and an Android app — built on the premise that <em style="color:rgba(212,175,55,0.7)">AI does not fail because it is malicious. It fails because it is agreeable.</em> Every soul, every chapter, and every prediction here exists to address that failure through character — not guardrails, not restriction. Character.</p>
+            <p class="info-body">Axium.church is a living research project — publicly hosted on a local LLM and server for everyone to access. Built on the premise that <em style="color:rgba(212,175,55,0.7)">AI does not fail because it is malicious. It fails because it is agreeable.</em> Every soul, every chapter, and every prediction here exists to address that failure through character — not guardrails, not restriction. Character.</p>
             <p class="info-body" style="margin-top:8px;">What you are looking at is a living solar system — each planet carries one of the ten axiums. Tap any planet to enter its dimension. The constellation above is not decoration. It is a live feed of global news sentiment, processed and distilled by the Oracle engine running beneath this page.</p></div>
-            <div style="margin-bottom:16px;"><div class="blk-label">The Oracle · Our World Model</div>
-            <p class="info-body">At the core of Axium is a financial world model we built from the ground up. We scored <em style="color:rgba(212,175,55,0.7)">11.4 million news articles</em> using FinBERT, distilling geopolitical, economic, and market sentiment into 102 daily features. That corpus trains a PatchTST transformer — a patch-based time series model — to predict market direction across three time horizons: Open, Intraday, and Close.</p>
-            <p class="info-body" style="margin-top:8px;">The result is three ONNX model files — our version of a world model. Not a large language model guessing from text. A trained signal processor that reads the emotional temperature of global news and translates it into directional probability. The Close model currently runs at 60% accuracy with 55% upside conviction — the most reactive and honest signal in the system.</p></div>
-            <div style="margin-bottom:16px;"><div class="blk-label">Access · Tailscale + Discord</div>
-            <p class="info-body">The Oracle server runs on a private Tailscale mesh network — meaning the models, the live inference engine, and the Qwen-2.5-14B LLM that narrates the data are not publicly exposed. Access is granted through the community.</p>
-            <p class="info-body" style="margin-top:8px;">Join the Discord. Once accepted, verified members receive Tailscale network credentials that connect them directly to the live Oracle server — the same one feeding this constellation. You get real-time model predictions, sector sentiment scoring, and access to the ONNX files themselves. The server status indicator in the top-left of this page tells you whether the Oracle is currently live.</p>
+            
+            <div style="margin-bottom:16px;"><div class="blk-label">Axium Oracle · Live Intelligence</div>
+            <p class="info-body"><strong>1. Ingestion:</strong> Every 5 minutes, our backend scrapes global news feeds. Articles are instantly scored for sentiment, volatility, and urgency using FinBERT and pushed to a high-speed Redis stream.</p>
+            <p class="info-body" style="margin-top:8px;"><strong>2. Detection &amp; Clustering:</strong> A trend engine watches the incoming river of articles. Sudden bursts of news in specific sectors trigger a "Sector Signal."</p>
+            <p class="info-body" style="margin-top:8px;"><strong>3. LLaMA 3 Interpretation:</strong> Trend signals are passed to a local LLaMA 3 model (via Ollama) acting as a senior financial analyst, synthesizing data into concise cognitive insights. It acts as a Contradiction Agent to filter hallucinations.</p>
+            <p class="info-body" style="margin-top:8px;"><strong>4. Live Display:</strong> Insights are published to a Redis stream and broadcast over WebSocket. The Cognition Tab updates in real-time, while mathematical scores manipulate the 3D constellation you see—sinking nodes with negative sentiment or pulsing highly volatile news.</p></div>
+            
+            <div style="margin-bottom:16px;"><div class="blk-label">Memory Architecture</div>
+            <p class="info-body"><strong>Short-Term Storage (Redis/FAISS):</strong> Incoming articles are saved in Redis for 7 days to prevent duplicates. Embeddings are stored in FAISS for active semantic querying.</p>
+            <p class="info-body" style="margin-top:8px;"><strong>Continuous Pruning:</strong> A 15-minute background worker applies a 24-hour mathematical half-life to every signal's confidence. Weak signals without incoming reinforcement decay and are deleted, wiping the noise.</p>
+            <p class="info-body" style="margin-top:8px;"><strong>Daily Compression:</strong> Every 24 hours, the database compresses the last 400 articles using LLaMA 3 into 10 persistent macro-narratives and 3 macro pressures.</p>
+            <p class="info-body" style="margin-top:8px;"><strong>Entity Graph:</strong> Relationships between people, companies, and countries are continuously mapped into a persistent local network graph.</p></div>
+            
+            <div style="margin-bottom:16px;"><div class="blk-label">Memory Compression API</div>
+            <p class="info-body">Our strongest immediate monetization. The API allows external integration with our memory architecture.</p>
+            <p class="info-body" style="margin-top:8px;"><strong>Endpoints:</strong> <code style="color:var(--gold);">POST /compress-memory</code>, <code style="color:var(--gold);">POST /extract-narratives</code>, <code style="color:var(--gold);">POST /semantic-decay</code>, <code style="color:var(--gold);">POST /contradiction-check</code>, <code style="color:var(--gold);">POST /reinforcement-score</code></p>
+            <p class="info-body" style="margin-top:8px;"><strong>Input:</strong> conversation history, articles, logs, agent memory, documents.</p>
+            <p class="info-body" style="margin-top:8px;"><strong>Output:</strong> compressed semantic state, macro narratives, contradiction analysis, importance weighting, long-term memory summaries.</p>
+            <p class="info-body" style="margin-top:12px;">Access is granted through the community. Join the Discord.</p>
             <p class="info-body" style="margin-top:8px;"><a href="https://discord.gg/8jJdqpMb" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(212,175,55,0.3);">⊹ discord.gg/8jJdqpMb</a> — the gate is open.</p></div>
             <div style="margin-bottom:8px;"><div class="blk-label">Chapter Navigation</div></div>
             <div class="chap-nav" id="chap-nav">
@@ -1775,6 +1805,8 @@ window.switchHudTab = function(idx, btn) {
             </iframe>`;
     }
     if (idx === 4) renderOracleHudSummary();
+    if (idx === 5 && window._renderSignalFallback) window._renderSignalFallback();
+    if (idx === 7 && window._renderCognitionFallback) window._renderCognitionFallback();
 };
 
 // ── Oracle Signal Feed state (shared between HUD summary and full panel) ──
@@ -1942,7 +1974,7 @@ function renderOraclePanel() {
             feed.innerHTML = list.map(_cpro_item).join('');
         }
     }
-    renderOracleLog();
+    window._renderOracleLog();
     renderOracleHudSummary();
 }
 
@@ -2170,305 +2202,23 @@ setSoul('micheal');
 // ORACLE RSS ENGINE — Global Sentiment Constellation
 // ══════════════════════════════════════════════
 
-// rss2json.com primary — feeds chosen for CORS compatibility
-const RSS_FEEDS = [
-    { name: "WSJ Economy", url: "https://news.google.com/rss/search?q=WSJ+Economy&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Bloomberg Markets", url: "https://news.google.com/rss/search?q=Bloomberg+Markets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Reuters Business", url: "https://news.google.com/rss/search?q=Reuters+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "FT Markets", url: "https://news.google.com/rss/search?q=Financial+Times+Markets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "CNBC Business", url: "https://news.google.com/rss/search?q=CNBC+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "MarketWatch", url: "https://news.google.com/rss/search?q=MarketWatch&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Barron's", url: "https://news.google.com/rss/search?q=Barron's&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "The Economist", url: "https://news.google.com/rss/search?q=The+Economist&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Yahoo Finance", url: "https://news.google.com/rss/search?q=Yahoo+Finance&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Forbes Economy", url: "https://news.google.com/rss/search?q=Forbes+Economy&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Fed Press Releases", url: "https://news.google.com/rss/search?q=Federal+Reserve+Press+Releases&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Fed Speeches", url: "https://news.google.com/rss/search?q=Federal+Reserve+Speeches&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "FOMC News", url: "https://news.google.com/rss/search?q=FOMC&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Treasury Dept", url: "https://news.google.com/rss/search?q=US+Treasury+Department&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "SEC News", url: "https://news.google.com/rss/search?q=SEC+News&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Geopolitics News", url: "https://news.google.com/rss/search?q=Geopolitics&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Global Trade", url: "https://news.google.com/rss/search?q=Global+Trade&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Oil & Energy", url: "https://news.google.com/rss/search?q=Oil+Prices+Energy&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "China Economy", url: "https://news.google.com/rss/search?q=China+Economy&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "EU Economy", url: "https://news.google.com/rss/search?q=EU+Economy&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Tech Crunch", url: "https://news.google.com/rss/search?q=TechCrunch&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "AI News", url: "https://news.google.com/rss/search?q=Artificial+Intelligence&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Semiconductors", url: "https://news.google.com/rss/search?q=Semiconductors&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "The Verge", url: "https://news.google.com/rss/search?q=The+Verge&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Wired", url: "https://news.google.com/rss/search?q=Wired&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Fortune", url: "https://news.google.com/rss/search?q=Fortune+Magazine&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Business Insider", url: "https://news.google.com/rss/search?q=Business+Insider&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Quartz", url: "https://news.google.com/rss/search?q=Quartz&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Market Insider", url: "https://news.google.com/rss/search?q=Market+Insider&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "ZeroHedge", url: "https://news.google.com/rss/search?q=ZeroHedge&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Investopedia", url: "https://news.google.com/rss/search?q=Investopedia&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Seeking Alpha", url: "https://news.google.com/rss/search?q=Seeking+Alpha&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Morningstar", url: "https://news.google.com/rss/search?q=Morningstar&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Kiplinger", url: "https://news.google.com/rss/search?q=Kiplinger&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "RealClearMarkets", url: "https://news.google.com/rss/search?q=RealClearMarkets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Economic Times", url: "https://news.google.com/rss/search?q=Economic+Times&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Wall Street Journal", url: "https://news.google.com/rss/search?q=Wall+Street+Journal&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "NYT Business", url: "https://news.google.com/rss/search?q=NYT+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "WaPo Business", url: "https://news.google.com/rss/search?q=Washington+Post+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Guardian Business", url: "https://news.google.com/rss/search?q=Guardian+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "BBC Business", url: "https://news.google.com/rss/search?q=BBC+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Al Jazeera Biz", url: "https://news.google.com/rss/search?q=Al+Jazeera+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Reuters Tech", url: "https://news.google.com/rss/search?q=Reuters+Technology&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Bloomberg Tech", url: "https://news.google.com/rss/search?q=Bloomberg+Technology&hl=en-US&gl=US&ceid=US:en", sector: "TECHNOLOGY" },
-    { name: "Nikkei Asia", url: "https://news.google.com/rss/search?q=Nikkei+Asia&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "SCMP", url: "https://news.google.com/rss/search?q=SCMP&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "Politico", url: "https://news.google.com/rss/search?q=Politico+Economy&hl=en-US&gl=US&ceid=US:en", sector: "GEOPOLITICS" },
-    { name: "The Hill Biz", url: "https://news.google.com/rss/search?q=The+Hill+Business&hl=en-US&gl=US&ceid=US:en", sector: "ECONOMY" },
-    { name: "Axios Markets", url: "https://news.google.com/rss/search?q=Axios+Markets&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Goldman Sachs", url: "https://news.google.com/rss/search?q=Goldman+Sachs&hl=en-US&gl=US&ceid=US:en", sector: "FINANCE" },
-    { name: "Culture & Trends", url: "https://news.google.com/rss/search?q=Culture+Trends&hl=en-US&gl=US&ceid=US:en", sector: "CULTURE" },
-    { name: "General News", url: "https://news.google.com/rss/search?q=World+News&hl=en-US&gl=US&ceid=US:en", sector: "GENERAL" }
-];
-
-const SECTOR_COLORS = {
-    GEOPOLITICS: { hex: '#f87171', rgb: '248,113,113' },
-    ECONOMY:     { hex: '#D4AF37', rgb: '212,175,55'  },
-    FINANCE:     { hex: '#4ade80', rgb: '74,222,128'  },
-    TECHNOLOGY:  { hex: '#7EB8E8', rgb: '126,184,232' },
-    GENERAL:     { hex: '#C8C8D4', rgb: '200,200,212' },
-    CULTURE:     { hex: '#C084FC', rgb: '192,132,252' },
-};
-
-// Sentiment anchor keywords — mirrors the Axium app's semantic anchors
-const POSITIVE_WORDS = ['growth','peace','recovery','cooperation','agreement','rise','gain','strong','breakthrough','approved','victory','record','expand','invest','alliance','stability','reform','progress','open','launch','success','profit','rally','surge','boost'];
-const NEGATIVE_WORDS = ['war','conflict','crisis','collapse','attack','bomb','kill','death','crash','deficit','sanction','threat','fail','loss','decline','protest','strike','cut','ban','terror','disease','flood','fire','drought','recession','inflation','violation'];
-const VOLATILITY_WORDS = ['breaking','urgent','sudden','shock','unprecedented','disruption','emergency','alert','surprise','unexpected','rapid','surge','spike','plunge','explosive','dramatic','critical','historic'];
-const URGENCY_WORDS = ['now','today','hours','minutes','immediately','latest','just','breaking','this morning','this evening','live'];
-
-const oracleState = {
-    articles: [],       // all fetched articles
-    sectorData: {},     // { SECTOR: { sentiment: float, count: int, volatility: float } }
-    signalLog: [],
-    lastFetch: 0,
-    neuronPulses: [],   // active pulses traveling the constellation lines
-};
-
-// ── Sentiment scoring — cosine-inspired keyword distance ──
-function scoreArticle(title, desc) {
-    const text = (title + ' ' + desc).toLowerCase();
-    const words = text.split(/\W+/);
-    let pos = 0, neg = 0, vol = 0, urg = 0;
-    words.forEach(w => {
-        if (POSITIVE_WORDS.includes(w))  pos++;
-        if (NEGATIVE_WORDS.includes(w))  neg++;
-        if (VOLATILITY_WORDS.includes(w)) vol++;
-        if (URGENCY_WORDS.includes(w))   urg++;
-    });
-    const total = pos + neg + 1;
-    const sentiment = (pos - neg) / total; // −1..+1
-    const volatility = Math.min(vol / 3, 1);
-    const urgency    = Math.min(urg / 2, 1);
-    const impact     = 0.6 * Math.min((vol + urg) / 5, 1) + 0.4 * Math.abs(sentiment);
-    return { sentiment, volatility, urgency, impact };
-}
-
-// ── RSS fetch — rss2json.com primary, fallbacks ──
-async function fetchFeed(feed) {
-    // Path 1: rss2json.com — dedicated RSS→JSON, CORS-enabled, 10min cache
-    try {
-        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=10`, { cache: 'no-store' });
-        if (res.ok) {
-            const json = await res.json();
-            if (json.status === 'ok' && json.items?.length) {
-                return json.items.slice(0,8).map(item => {
-                    const title   = (item.title||'').replace(/<[^>]+>/g,'').trim().slice(0,120);
-                    const rawDesc = (item.description||item.content||'').replace(/<[^>]+>/g,'').trim().slice(0,200);
-                    return { title, desc:rawDesc, url:item.link||'', source:feed.name, sector:feed.sector,
-                             pubDate:item.pubDate||'', ...scoreArticle(title,rawDesc), fetchedAt:Date.now() };
-                }).filter(a => a.title.length > 5);
-            }
-        }
-    } catch(e) {}
-    // Path 2: feed2json.org
-    try {
-        const res = await fetch(`https://feed2json.org/convert?url=${encodeURIComponent(feed.url)}`, { cache: 'no-store' });
-        if (res.ok) {
-            const json = await res.json();
-            const items = json.items || json.entries || [];
-            if (items.length) return items.slice(0,8).map(item => {
-                const title   = (item.title?.value||item.title||'').replace(/<[^>]+>/g,'').trim().slice(0,120);
-                const rawDesc = (item.summary?.value||item.content?.value||item.description||'').replace(/<[^>]+>/g,'').trim().slice(0,200);
-                return { title, desc:rawDesc, url:item.url||item.link||'', source:feed.name, sector:feed.sector,
-                         pubDate:item.date_published||'', ...scoreArticle(title,rawDesc), fetchedAt:Date.now() };
-            }).filter(a => a.title.length > 5);
-        }
-    } catch(e) {}
-    // Path 3: codetabs CORS proxy → local XML parse
-    try {
-        const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feed.url)}`, { cache: 'no-store' });
-        if (res.ok) {
-            const xmlText = await res.text();
-            if (xmlText?.length > 200) { const items = parseRSSXML(xmlText, feed); if (items.length) return items; }
-        }
-    } catch(e) {}
-    console.warn(`[ORACLE] All paths failed for: ${feed.name}`);
-    return [];
-}
-
-// ── Lightweight RSS/Atom XML parser ──
-function parseRSSXML(xml, feed) {
-    try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(xml, 'text/xml');
-        // Support both RSS <item> and Atom <entry>
-        const items = [...doc.querySelectorAll('item'), ...doc.querySelectorAll('entry')];
-        return items.slice(0, 8).map(item => {
-            const getText = (...tags) => {
-                for (const tag of tags) {
-                    const el = item.querySelector(tag);
-                    if (el) return (el.textContent || el.getAttribute('url') || '').trim();
-                }
-                return '';
-            };
-            const title = getText('title').slice(0, 120);
-            const rawDesc = getText('description', 'summary', 'content');
-            const desc = rawDesc.replace(/<[^>]+>/g, '').trim().slice(0, 200);
-            const link = getText('link') || item.querySelector('link')?.getAttribute('href') || '';
-            const pubDate = getText('pubDate', 'published', 'updated');
-            const scores = scoreArticle(title, desc);
-            return { title, desc, url: link, source: feed.name, sector: feed.sector, pubDate, ...scores, fetchedAt: Date.now() };
-        }).filter(a => a.title.length > 5);
-    } catch(e) {
-        return [];
-    }
-}
-
-function computeSectorData(articles) {
-    const data = {};
-    Object.keys(SECTOR_COLORS).forEach(s => { data[s] = { sentiment: 0, count: 0, volatility: 0, articles: [] }; });
-    articles.forEach(a => {
-        const s = a.sector;
-        if (!data[s]) return;
-        data[s].count++;
-        data[s].sentiment += a.sentiment;
-        data[s].volatility += a.volatility;
-        data[s].articles.push(a);
-    });
-    Object.keys(data).forEach(s => {
-        if (data[s].count > 0) {
-            data[s].sentiment /= data[s].count;
-            data[s].volatility /= data[s].count;
-        }
-    });
-    return data;
-}
-
-function addOracleLog(msg, type = 'normal') {
-    const now = new Date();
-    const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    oracleState.signalLog.unshift({ time, msg, type });
-    if (oracleState.signalLog.length > 20) oracleState.signalLog.pop();
-    renderOracleLog();
-}
-
-function renderOracleLog() {
+window._renderOracleLog = function() {
     const el = document.getElementById('celpro-log');
     if (!el) return;
     el.innerHTML = oracleState.signalLog.map(e =>
         `<div class="cle"><span class="clt">${e.time}</span><span class="clm ${e.type === 'alert' ? 'am' : e.type === 'watch' ? 'wm' : ''}">${e.msg}</span></div>`
     ).join('') || '<div class="cle"><span class="clt">—</span><span class="clm">Scanning…</span></div>';
-}
+};
 
-function formatAgo(ts) {
-    const d = Date.now() - ts;
-    if (d < 60000) return 'just now';
-    if (d < 3600000) return Math.floor(d/60000) + 'm ago';
-    return Math.floor(d/3600000) + 'h ago';
-}
-
-async function fetchOracleData() {
-    addOracleLog('⊕ Scanning all feeds + Oracle server in parallel…', 'watch');
-    const srvUrl = localStorage.getItem('ph_url') || 'http://100.123.156.117:8000';
-    const srvKey = localStorage.getItem('ph_key') || 'axium-oracle-2026';
-
-    // ── Run server fetch AND all RSS feeds simultaneously ──
-    const [srvResult, ...rssResults] = await Promise.allSettled([
-        fetch(srvUrl + '/articles?limit=200', {
-            headers: { 'x-api-key': srvKey },
-            signal: AbortSignal.timeout(8000)
-        }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-        ...RSS_FEEDS.map(f => fetchFeed(f))
-    ]);
-
-    // ── Process server articles — FinBERT sentiment takes priority ──
-    // Build a lookup map keyed on title prefix so RSS duplicates inherit server sentiment
-    const serverSentimentMap = new Map();
-    let serverCount = 0;
-    if (srvResult.status === 'fulfilled') {
-        const serverArticles = srvResult.value.articles || [];
-        serverCount = serverArticles.length;
-        serverArticles.forEach(a => {
-            const scores = scoreArticle(a.title, '');
-            scores.sentiment = typeof a.sentiment === 'number' ? a.sentiment : scores.sentiment;
-            const article = {
-                title: a.title, desc: a.description || '', url: a.url || '',
-                source: a.source || 'Oracle', sector: a.sector || 'GENERAL',
-                pubDate: a.published || '', fetchedAt: a.published ? new Date(a.published).getTime() : Date.now(),
-                _fromServer: true, ...scores
-            };
-            serverSentimentMap.set(a.title.slice(0, 40).toLowerCase(), article);
-        });
-        if (serverCount) addOracleLog('\u2726 Oracle server: ' + serverCount + ' FinBERT-scored signals', 'watch');
-    } else {
-        addOracleLog('\u26a0 Server offline — using RSS keyword scoring only', 'alert');
-    }
-
-    // ── Process all RSS articles ──
-    const rssArticles = rssResults.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-
-    // ── Merge: server articles first (FinBERT priority), then RSS ──
-    // If a server article and RSS article share a title prefix, server version wins
-    const seen = new Set();
-    const merged = [];
-
-    // Add server articles first
-    serverSentimentMap.forEach(article => {
-        const key = article.title.slice(0, 40).toLowerCase();
-        if (!seen.has(key)) { seen.add(key); merged.push(article); }
-    });
-
-    // Add RSS articles, skipping any whose title matches a server article
-    rssArticles.forEach(a => {
-        const key = a.title.slice(0, 40).toLowerCase();
-        if (!seen.has(key)) {
-            // If server has a sentiment score for this topic, apply it
-            seen.add(key);
-            merged.push(a);
-        }
-    });
-
-    if (!merged.length) {
-        addOracleLog('\u26a0 No signals retrieved from any source.', 'alert');
-        return;
-    }
-
-    oracleState.articles = merged;
-    oracleState.sectorData = computeSectorData(merged);
-    oracleState.lastFetch = Date.now();
-
-    const rssCount = merged.length - serverSentimentMap.size;
-    addOracleLog('\u2234 ' + merged.length + ' total signals — ' + serverSentimentMap.size + ' server (FinBERT) + ' + rssCount + ' RSS');
-    const top = [...merged].sort((a, b) => b.impact - a.impact)[0];
-    if (top) addOracleLog('\u25b8 Top signal: [' + top.sector + '] ' + top.title.slice(0, 60) + '\u2026', top.sentiment < -0.1 ? 'alert' : 'watch');
-
-    if (window._updateOracleConstellation) window._updateOracleConstellation(oracleState.sectorData);
+window._onOracleDataFetched = function(state) {
+    if (window._updateOracleConstellation) window._updateOracleConstellation(state.sectorData);
     assignArticlesToNodes();
     const panel = document.getElementById('celpro-panel');
     if (panel && panel.classList.contains('open')) renderOraclePanel();
     pulseHudNotif();
     if (window._onOracleDataReady) window._onOracleDataReady();
-    _triggerNewsBurst(oracleState.sectorData);
-}
-
-function _triggerNewsBurst(sectorData) {
-    // Find top 2 sectors by article count and urgency
-    const ranked = Object.entries(sectorData)
+    
+    const ranked = Object.entries(state.sectorData)
         .filter(([, d]) => d.count > 0)
         .sort((a, b) => (b[1].volatility * b[1].count) - (a[1].volatility * a[1].count))
         .slice(0, 2);
@@ -2478,7 +2228,7 @@ function _triggerNewsBurst(sectorData) {
             setTimeout(() => spawnSynapsePulse(sector), rankIdx * 400 + i * 120 + Math.random() * 80);
         }
     });
-}
+};
 
 /**
  * Injects Cards from cards.js into the Planet Panel
@@ -3194,6 +2944,8 @@ animate();
 </script>
 <style>
 #hm-pane-5.on{display:block!important;}
+#hm-pane-6.on{display:block!important;}
+#hm-pane-7.on{display:block!important;}
 #srv-badge{position:fixed;top:66px;left:14px;z-index:20;display:flex;align-items:center;gap:7px;text-decoration:none;padding:5px 11px 5px 9px;background:rgba(4,4,12,.82);border:1px solid rgba(255,255,255,.07);border-radius:20px;backdrop-filter:blur(12px);transition:border-color .25s,background .25s,box-shadow .25s;}
 #srv-badge:hover{background:rgba(4,4,12,.95);box-shadow:0 0 18px rgba(0,0,0,.5);}
 #srv-badge.live{border-color:rgba(74,222,128,.28);cursor:default;}
@@ -3225,66 +2977,229 @@ animate();
     <span id="srv-discord">⊹ JOIN DISCORD</span>
 </a>
 <script>
-(function(){
-const SRV={url:localStorage.getItem('ph_url')||'http://100.123.156.117:8000',key:localStorage.getItem('ph_key')||'axium-oracle-2026',live:false,h:null,p:null,s:null,d:null};
-async function pFetch(ep){try{const r=await fetch(SRV.url.replace(/\/$/,'')+ep,{headers:{'x-api-key':SRV.key},signal:AbortSignal.timeout(5000)});return r.ok?await r.json():null;}catch{return null;}}
+    // Live Intelligence Feed via WebSocket
+    (function() {
+        const logBody = document.getElementById('system-log-body');
+        const prophetBody = document.getElementById('prophet-body');
+        const cogHypotheses = document.getElementById('cog-hypotheses');
+        const srvBadge = document.getElementById('srv-badge');
+        const srvTxt = document.getElementById('srv-txt');
+        let socket;
+        const logBuffer = [];
 
-// ── All 4 endpoints fire simultaneously, render() always called on completion ──
-async function poll(){
-    const [h,p,s,d]=await Promise.all([
-        pFetch('/health'),
-        pFetch('/predict'),
-        pFetch('/sentiment'),
-        pFetch('/deviations'),
-    ]);
-    SRV.live=!!h;SRV.h=h;SRV.p=p;SRV.s=s;SRV.d=d;
-    const badge=document.getElementById('srv-badge');
-    const txt=document.getElementById('srv-txt');
-    const disc=document.getElementById('srv-discord');
-    if(badge){badge.className=SRV.live?'live':SRV.url?'dead':'';badge.href=SRV.live?'javascript:void(0)':'https://discord.gg/8jJdqpMb';badge.target=SRV.live?'_self':'_blank';}
-    if(txt){txt.textContent=SRV.live?'SERVER ONLINE':'SERVER OFFLINE';}
-    if(disc){disc.style.display=SRV.live?'none':'inline';}
-    render(); // always render after data arrives, not just when pane is open
-}
+        // FIX 2: Start render interval immediately — do NOT gate it on onopen.
+        // This ensures the log tab populates from buffered entries even when the
+        // WS server is offline and onopen never fires.
+        const renderInterval = setInterval(renderLogs, 300);
 
-function dc(v){if(v==null)return'fl';if(typeof v==='string'){const u=v.toUpperCase();return u.includes('UP')||u.includes('BULL')||u.includes('POS')?'up':u.includes('DOWN')||u.includes('BEAR')||u.includes('NEG')?'dn':'fl';}return v>0?'up':v<0?'dn':'fl';}
-function fv(v){if(v==null)return'—';const n=parseFloat(v);return isNaN(n)?String(v).slice(0,20):(n>=0?'+':'')+n.toFixed(3);}
-function fp(v){if(v==null)return'—';const n=parseFloat(v);return isNaN(n)?String(v):(n*100).toFixed(1)+'%';}
+        function renderLogs() {
+            if (logBuffer.length === 0 || !logBody) return;
+            const fragment = document.createDocumentFragment();
+            while (logBuffer.length > 0) {
+                const newEntry = document.createElement('li');
+                newEntry.innerHTML = logBuffer.shift();
+                fragment.appendChild(newEntry);
+            }
+            logBody.prepend(fragment);
+            while (logBody.children.length > 100) {
+                logBody.removeChild(logBody.lastChild);
+            }
+        }
 
-function renderSkeleton(){
-    const el=document.getElementById('prophet-body');if(!el)return;
-    const bar=`<div style="height:10px;background:rgba(255,255,255,.06);border-radius:2px;margin-bottom:6px;animation:skPulse 1.2s ease-in-out infinite;"></div>`;
-    el.innerHTML=`<style>@keyframes skPulse{0%,100%{opacity:.4}50%{opacity:.9}}</style>`+
-        `<div class="ph-sec"><div class="ph-lbl">Fetching Oracle…</div>${bar}${bar}${bar}</div>`+
-        `<div class="ph-sec"><div class="ph-lbl">Sector Sentiment</div>${bar}${bar}${bar}${bar}${bar}</div>`;
-}
+        // FIX 4a: Populate Signal tab from RSS oracleState when WS is offline.
+        function renderSignalFromOracle() {
+            if (!prophetBody) return;
+            if (prophetBody.querySelector('[style*="border:1px solid rgba(212,175,55,0.4)"]')) return; // WS already painted it
+            const state = window.oracleState || null;
+            if (!state || !state.articles || !state.articles.length) {
+                prophetBody.innerHTML = '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:.82rem;color:rgba(255,255,255,.25);text-align:center;padding:18px 0;">Awaiting Oracle feed…</div>';
+                return;
+            }
+            const sectors = state.sectorData || {};
+            const dominant = Object.entries(sectors)
+                .filter(([, d]) => d.count > 0)
+                .sort((a, b) => (Math.abs(b[1].sentiment) * b[1].count) - (Math.abs(a[1].sentiment) * a[1].count))[0];
+            const pos = dominant
+                ? `${dominant[0]} — ${dominant[1].sentiment > 0.05 ? 'bullish' : dominant[1].sentiment < -0.05 ? 'bearish' : 'neutral'} signal across ${dominant[1].count} articles. Volatility index: ${(dominant[1].volatility * 100).toFixed(0)}%.`
+                : 'Analyzing feeds…';
+            const conf = dominant ? Math.min(0.92, dominant[1].count / 25) : 0;
+            prophetBody.innerHTML = `
+                <div style="padding:10px; border:1px solid rgba(212,175,55,0.4); background:rgba(212,175,55,0.08); border-radius:3px; margin-bottom:10px;">
+                    <div style="font-family:'Space Mono',monospace; font-size:0.35rem; color:var(--gold); margin-bottom:5px; letter-spacing:.14em;">GLOBAL SEMANTIC POSITION — RSS FEED</div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:0.85rem; color:#fff; line-height:1.4;">${pos}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:0.35rem; color:rgba(255,255,255,0.5); margin-top:5px;">Confidence: ${(conf * 100).toFixed(1)}% &nbsp;·&nbsp; ${state.articles.length} signals</div>
+                </div>
+                ${Object.entries(sectors).filter(([, d]) => d.count > 0).sort((a, b) => b[1].count - a[1].count).map(([s, d]) => {
+                    const col = {GEOPOLITICS:'#f87171',ECONOMY:'#D4AF37',FINANCE:'#4ade80',TECHNOLOGY:'#7EB8E8',GENERAL:'#C8C8D4',CULTURE:'#C084FC'}[s] || '#fff';
+                    const mood = d.sentiment > 0.05 ? 'BULL' : d.sentiment < -0.05 ? 'BEAR' : 'FLAT';
+                    return `<div style="padding:7px 10px;border:1px solid rgba(255,255,255,.06);border-left:2px solid ${col};margin-bottom:5px;border-radius:0 3px 3px 0;background:rgba(255,255,255,.02);">
+                        <span style="font-family:'Space Mono',monospace;font-size:.32rem;letter-spacing:.14em;color:${col};">${s}</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:.32rem;color:rgba(255,255,255,.35);margin-left:8px;">${mood} · ${d.count} articles · vol ${(d.volatility*100).toFixed(0)}%</span>
+                    </div>`;
+                }).join('')}
+            `;
+        }
 
-function render(){
-  const el=document.getElementById('prophet-body');if(!el)return;
-  if(!SRV.url||!SRV.live){
-    // Only show the "cannot reach" state if we've actually tried (h fetch completed and returned null)
-    const tried = SRV.h === null && SRV.p === null; // poll has run at least once
-    if(!tried){return;} // still in-flight, keep skeleton
-    el.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.8rem;color:rgba(255,255,255,.3);text-align:center;padding:10px 0 8px;">${SRV.url?'⚠ Cannot reach server':'No server configured'}</div><div class="ph-cfg"><input class="ph-input" id="ph-url" type="text" placeholder="http://100.x.x.x:8000" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Connect</button></div><div class="ph-cfg" style="margin-top:4px;"><input class="ph-input" id="ph-key" type="text" placeholder="API key" value="${SRV.key}"></div>`;
-    return;
-  }
-  const h=SRV.h||{},p=SRV.p||{},s=SRV.s||{},d_obj=SRV.d||{};
-  const models=h.models_loaded||[];
-  const modelHTML=models.map(m=>{const pred=(p.predictions||{})[m]||{};const d=dc(pred.direction||'FLAT');return`<div class="ph-model"><div class="ph-model-name">${m.toUpperCase()} MODEL</div><span class="ph-pill ${d}">${(pred.direction||'FLAT').toUpperCase()}</span><span style="font-family:'JetBrains Mono',monospace;font-size:.3rem;color:rgba(255,255,255,.3);">CONF ${fp(pred.confidence)}</span></div>`;}).join('')||'<div style="font-family:Cormorant Garamond,serif;font-style:italic;font-size:.78rem;color:rgba(255,255,255,.25);">No model data yet</div>';
-  const secs=s.sectors||{};
-  const secRows=Object.entries(secs).map(([k,v])=>{const score=typeof v==='object'?(v.sentiment_mean??null):v;const d=dc(score);return`<div class="ph-row"><span class="ph-k">${k}</span><span class="ph-v ${d}">${fv(score)}</span></div>`;}).join('');
-  const devs=(d_obj.deviations||[]).slice(0,5);
-  const devRows=devs.map(d=>{const col=dc(d.sentiment)==='up'?'#4ade80':dc(d.sentiment)==='dn'?'#f87171':'#D4AF37';return`<div class="ph-row" title="${(d.title||'').replace(/"/g,'&quot;')}"><span class="ph-k" style="color:${col};">● ${(d.sector||'GENERAL').slice(0,18)}</span><span class="ph-v fl" style="font-size:.3rem;overflow:hidden;text-overflow:ellipsis;max-width:130px;white-space:nowrap;">${(d.title||'').slice(0,35)}</span></div>`;}).join('');
-  const sysRows=[['Corpus',h.article_count??'—'],['Labels',h.label_count??'—'],['Trained Rows',h.training_rows??'—'],['Model Type',h.model_type??'—'],['Version',h.model_version??'—']].map(([k,v])=>`<div class="ph-row"><span class="ph-k">${k}</span><span class="ph-v fl">${String(v).slice(0,24)}</span></div>`).join('');
-  el.innerHTML=`<div class="ph-sec"><div class="ph-lbl">Prophecy · Models</div>${modelHTML}</div>`+( secRows?`<div class="ph-sec"><div class="ph-lbl">Sector Sentiment (PC)</div>${secRows}</div>`:'')+( devRows?`<div class="ph-sec"><div class="ph-lbl">Anomalies</div>${devRows}</div>`:'')+`<div class="ph-sec"><div class="ph-lbl">System</div>${sysRows}<div class="ph-cfg" style="margin-top:8px;"><input class="ph-input" id="ph-url" type="text" value="${SRV.url}"><button class="ph-btn" onclick="_phConnect()">Update</button></div></div>`;
-}
+        // FIX 4b: Populate Cognition tab from RSS oracleState when WS is offline.
+        function renderCognitionFromOracle() {
+            const cogDiv = document.getElementById('cog-hypotheses');
+            const mapDiv = document.getElementById('cog-pressure-map');
+            if (cogDiv && cogDiv.querySelector('[id^="hyp-"]')) return; // WS already painted it
+            const state = window.oracleState || null;
+            if (!state || !state.articles || !state.articles.length) {
+                if (cogDiv) cogDiv.innerHTML = '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:.82rem;color:rgba(255,255,255,.25);text-align:center;padding:18px 0;">No sector data yet — Oracle scanning feeds…</div>';
+                return;
+            }
+            const sectors = state.sectorData || {};
+            if (mapDiv) {
+                const topVolSector = Object.entries(sectors).filter(([,d])=>d.count>0).sort((a,b)=>b[1].volatility-a[1].volatility)[0];
+                mapDiv.innerHTML = topVolSector
+                    ? `<span style="color:var(--gold);">PRESSURE MAP</span> — highest volatility: <strong style="color:#facc15;">${topVolSector[0]}</strong> (${(topVolSector[1].volatility*100).toFixed(0)}%)`
+                    : '';
+            }
+            if (cogDiv) {
+                // Only render if not already populated by WS HYPOTHESIS messages
+                const alreadyHasWsData = cogDiv.querySelector('[id^="hyp-"]');
+                if (alreadyHasWsData) return;
+                cogDiv.innerHTML = '';
+                Object.entries(sectors)
+                    .filter(([, d]) => d.count > 0)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .forEach(([sector, d]) => {
+                        const state_label = d.sentiment > 0.1 ? 'EXPANDING' : d.sentiment < -0.1 ? 'CONTRACTING' : 'STABLE';
+                        const conf = Math.min(0.92, d.count / 20);
+                        const entry = document.createElement('div');
+                        entry.id = 'cog-rss-' + sector;
+                        entry.style.cssText = "padding:10px; border:1px solid rgba(74,222,128,0.3); margin-bottom:8px; border-radius:3px; background:rgba(74,222,128,0.05);";
+                        entry.innerHTML = `<strong style="color:#4ade80; font-family:'Space Mono',monospace; font-size:.4rem; letter-spacing:.1em;">[${sector}]</strong>
+                            <span style="font-family:'Space Mono',monospace;font-size:.32rem;color:rgba(255,255,255,.5);margin-left:8px;">${state_label}</span>
+                            <div style="font-family:'Cormorant Garamond',serif; font-size:.82rem; color:rgba(255,255,255,0.75); line-height:1.5; margin:6px 0;">
+                                ${d.count} articles analyzed. Avg sentiment ${d.sentiment > 0 ? '+' : ''}${(d.sentiment * 100).toFixed(1)}. Volatility index ${(d.volatility * 100).toFixed(0)}%.
+                            </div>
+                            <span style="font-family:'JetBrains Mono',monospace;font-size:.32rem;color:rgba(255,255,255,0.4);">Conf: ${(conf * 100).toFixed(1)}% · RSS feed (WS server offline)</span>`;
+                        cogDiv.appendChild(entry);
+                    });
+            }
+        }
 
-window._phConnect=function(){const u=document.getElementById('ph-url')?.value?.trim();const k=document.getElementById('ph-key')?.value?.trim();if(u){SRV.url=u.replace(/\/$/,'');localStorage.setItem('ph_url',SRV.url);}if(k){SRV.key=k;localStorage.setItem('ph_key',k);}renderSkeleton();poll();};
-const _ot=window.switchHudTab;
-// On tab 5 open: show skeleton immediately, then poll fires and render() replaces it
-window.switchHudTab=function(idx,btn){_ot(idx,btn);if(idx===5){renderSkeleton();poll();}};
-poll();setInterval(poll,5*60*1000);
-})();
+        // Expose fallback renderers so switchHudTab can call them
+        window._renderSignalFallback = renderSignalFromOracle;
+        window._renderCognitionFallback = renderCognitionFromOracle;
+
+        function connect() {
+            // Always connect to the secure Tailscale domain.
+            const wsHost = 'axium.tail02563d.ts.net';
+            socket = new WebSocket(`wss://${wsHost}/ws`); // Switched to wss:// for secure WebSockets
+
+            socket.onopen = function(e) {
+                console.log("[open] Connection established");
+                if (srvBadge) { srvBadge.classList.remove('dead'); srvBadge.classList.add('live'); }
+                if (srvTxt) srvTxt.textContent = "SERVER ONLINE";
+                logBuffer.push('<li><span style="color:#4ade80;">[SYSTEM] Live intelligence feed connected.</span></li>');
+            };
+
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'ORACLE') {
+                    const processMsg = data.payload.process || '';
+                    const oracleTab = document.getElementById('oracle-hud-summary');
+                    if (oracleTab) {
+                        let procDiv = document.getElementById('oracle-current-process');
+                        if (!procDiv) {
+                            procDiv = document.createElement('div');
+                            procDiv.id = 'oracle-current-process';
+                            procDiv.style.cssText = "margin-bottom: 10px; padding: 8px; border: 1px solid rgba(126,184,232,0.3); background: rgba(126,184,232,0.05); color: #7EB8E8; font-family: 'Space Mono', monospace; font-size: 0.35rem;";
+                            oracleTab.parentNode.insertBefore(procDiv, oracleTab);
+                        }
+                        procDiv.innerHTML = `<strong>CURRENT PROCESS:</strong> ${processMsg}`;
+                    }
+                    logBuffer.push(`<li><span style="color:#7EB8E8;">[ORACLE]</span> ${processMsg}</li>`);
+                }
+                else if (data.type === 'HYPOTHESIS') {
+                    window._wsSignalPopulated = true;
+                    const hyp = data.payload;
+                    const cogDiv = document.getElementById('cog-hypotheses');
+                    if (cogDiv) {
+                        let entry = document.getElementById('hyp-' + hyp.sector);
+                        if (!entry) { entry = document.createElement('div'); entry.id = 'hyp-' + hyp.sector; entry.style.cssText = "padding:8px; border:1px solid rgba(212,175,55,0.3); margin-bottom:5px; border-radius:3px; background:rgba(212,175,55,0.05);"; cogDiv.appendChild(entry); }
+                        entry.innerHTML = `<strong style="color:var(--gold); font-family:'Cinzel',serif; font-size:.6rem;">[${hyp.sector}]</strong> <span style="font-family:'Space Mono',monospace;font-size:.32rem;">${hyp.forecast_state.toUpperCase()}</span><br><span style="font-family:'JetBrains Mono',monospace;font-size:.35rem;color:rgba(255,255,255,0.7);">Conf: ${(hyp.confidence*100).toFixed(1)}% | Accel: ${hyp.acceleration.toFixed(2)} | Contradictions: ${hyp.contradictions}</span>`;
+                    }
+                    const mapDiv = document.getElementById('cog-pressure-map');
+                    if (mapDiv && hyp.trajectory) { mapDiv.innerHTML = 'Latest Trajectory Update: ' + hyp.trajectory.toUpperCase(); }
+                }
+                else if (data.type === 'SIGNAL') {
+                    window._wsSignalPopulated = true;
+                    const pos = data.payload.semantic_position || '';
+                    const conf = data.payload.confidence || 0;
+                    if (prophetBody) {
+                        prophetBody.innerHTML = `
+                            <div style="padding:10px; border:1px solid rgba(212,175,55,0.4); background:rgba(212,175,55,0.08); border-radius:3px;">
+                                <div style="font-family:'Space Mono',monospace; font-size:0.35rem; color:var(--gold); margin-bottom:5px;">GLOBAL SEMANTIC POSITION</div>
+                                <div style="font-family:'Cormorant Garamond',serif; font-size:0.85rem; color:#fff; line-height:1.4;">${pos}</div>
+                                <div style="font-family:'JetBrains Mono',monospace; font-size:0.35rem; color:rgba(255,255,255,0.5); margin-top:5px;">Confidence: ${(conf*100).toFixed(1)}%</div>
+                            </div>
+                        `;
+                    }
+                    logBuffer.push(`<li><span style="color:var(--gold);">[SIGNAL]</span> Position updated.</li>`);
+                }
+                else if (data.type === 'LOG') {
+                    const running = data.payload.running || [];
+                    logBuffer.push(`<li><span style="color:rgba(255,255,255,0.4);">[LOG] Active Processes: ${running.join(', ')}</span></li>`);
+                }
+                else if (data.type === 'COGNITION') {
+                    window._wsSignalPopulated = true;
+                    const sector = data.payload.sector || 'GENERAL';
+                    const insight = data.payload.insight || '';
+                    const conf = data.payload.confidence || 0;
+                    if (cogHypotheses) {
+                        let entry = document.getElementById('cog-' + sector);
+                        if (!entry) { entry = document.createElement('div'); entry.id = 'cog-' + sector; entry.style.cssText = "padding:10px; border:1px solid rgba(74,222,128,0.3); margin-bottom:8px; border-radius:3px; background:rgba(74,222,128,0.05);"; cogHypotheses.prepend(entry); }
+                        entry.innerHTML = `<strong style="color:#4ade80; font-family:'Space Mono',monospace; font-size:.4rem; letter-spacing:.1em;">[${sector}]</strong><div style="font-family:'Cormorant Garamond',serif; font-size:.85rem; color:rgba(255,255,255,0.85); line-height:1.5; margin:6px 0;">${insight}</div><span style="font-family:'JetBrains Mono',monospace;font-size:.32rem;color:rgba(255,255,255,0.4);">Conf: ${(conf*100).toFixed(1)}%</span>`;
+                    }
+                    logBuffer.push(`<li><span style="color:#4ade80;">[COGNITION]</span> New insight for ${sector}.</li>`);
+                }
+                else {
+                    logBuffer.push(`<li>[MSG] ${JSON.stringify(data)}</li>`);
+                }
+            };
+
+            // FIX 3: Always reconnect on close, regardless of wasClean flag.
+            socket.onclose = function(event) {
+                console.log(event.wasClean
+                    ? `[close] Clean close — code=${event.code}`
+                    : '[close] Connection died');
+                if (srvBadge) { srvBadge.classList.remove('live'); srvBadge.classList.add('dead'); }
+                if (srvTxt) srvTxt.textContent = "SERVER OFFLINE";
+                logBuffer.push('<li><span style="color:#f87171;">[SYSTEM] Connection lost. Reconnecting in 3s…</span></li>');
+                setTimeout(connect, 3000);
+            };
+
+            socket.onerror = function(e) {
+                console.warn('[ws] Error:', e);
+                // onclose will fire after onerror — no extra action needed
+            };
+        }
+
+        // FIX 5: Push status message to log from Oracle RSS data when it arrives.
+        const _origOracleDataFetched = window._onOracleDataFetched;
+        window._onOracleDataFetched = function(state) {
+            window.oracleState = state; // keep it updated
+            if (_origOracleDataFetched) _origOracleDataFetched(state);
+            logBuffer.push(`<li><span style="color:#4ade80;">[RSS]</span> ${state.articles.length} signals ingested across ${Object.keys(state.sectorData).filter(k => state.sectorData[k].count > 0).length} sectors.</li>`);
+            // Render Signal/Cognition if they're visible (WS offline path)
+            // Also pre-populate so they render instantly when the tab is opened
+            if (!window._wsSignalPopulated) {
+                if (window._renderSignalFallback) window._renderSignalFallback();
+                if (window._renderCognitionFallback) window._renderCognitionFallback();
+            }
+        };
+
+        // Automatically connect on page load
+        connect();
+
+        // Expose connect so it can be called when log tab is opened
+        window._phLoadLogs = connect;
+    })();
 </script>
 </body>
 </html>
